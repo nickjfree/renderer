@@ -1,0 +1,398 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="源文件\Lib">
+      <UniqueIdentifier>{d7645d21-7b22-4979-8ad7-1fa8e1944b00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\ModelManager">
+      <UniqueIdentifier>{a314513f-1bf1-43df-9838-38d12ec440e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Camera">
+      <UniqueIdentifier>{08cdfb0c-220c-489a-a9da-b2ff42f65a59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Math">
+      <UniqueIdentifier>{4067189f-92b7-4fc7-be1b-ae62b8327a96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Terrain">
+      <UniqueIdentifier>{ef34e294-d631-46f9-b201-e345d44742f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\SceneManager">
+      <UniqueIdentifier>{89c528e1-3364-4307-800f-734b514b68ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\ResourceManager">
+      <UniqueIdentifier>{83753de0-9462-439d-94f0-6f869911b98b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Render">
+      <UniqueIdentifier>{46959f84-bb27-4808-b4fe-17cdf3717fb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="头文件\include">
+      <UniqueIdentifier>{4911f7c5-e38a-4606-b70b-e9ea01af124a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\ModelManager">
+      <UniqueIdentifier>{6ed0397d-47a1-4c6e-868b-183d48a2ce4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Camera">
+      <UniqueIdentifier>{62bc520f-e061-4e58-885c-c54335b3bcbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Graphic">
+      <UniqueIdentifier>{787c3204-0472-4703-907d-6713fa4acfc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Lib">
+      <UniqueIdentifier>{b5476eac-b2a9-4c0e-9347-6fc5fb596d0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Math">
+      <UniqueIdentifier>{e6d904fc-5edf-45e2-a259-43c06a20cf5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Terrain">
+      <UniqueIdentifier>{f86354ea-e234-4163-852e-74c5e055e1f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\SceneManager">
+      <UniqueIdentifier>{3aeba5f8-f910-419d-ae5c-965d962fe944}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\ResourceManager">
+      <UniqueIdentifier>{4c1fe411-4d5a-4a75-8f8b-77ec99411684}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\include\Render">
+      <UniqueIdentifier>{4cc43876-a9f8-4043-a5a4-d6a3abcc99a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FileLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderEngine.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MCore.cpp">
+      <Filter>源文件\Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>源文件\ModelManager</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCamera.cpp">
+      <Filter>源文件\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="MathLib.cpp">
+      <Filter>源文件\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>源文件\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="W3ELoader.cpp">
+      <Filter>源文件\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTree.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadTreeNode.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Rect2D.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLight.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SenceObject.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectContainer.cpp">
+      <Filter>源文件\ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderResource.cpp">
+      <Filter>源文件\ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>源文件\ResourceManager</Filter>
+    </ClCompile>
+    <ClCompile Include="CreationQueue.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Render.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderQueue.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="LightProcesser.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="LightPreProcesser.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="NormalProcesser.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Processer.cpp">
+      <Filter>源文件\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneBasicGeometry.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSoftBody.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSprite.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneOccludee.cpp">
+      <Filter>源文件\SceneManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="XMLParser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PostProcesser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HDRProcesser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneHDR.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneScreenLight.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowNormalProcesser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CullingSolver.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CullingProxy.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CullingPrimitive.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CullingFrustum.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CullingManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureLoader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CreationCommand.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneInstancing.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\FileLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\h3d.h">
+      <Filter>头文件\include\ModelManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ModelLoader.h">
+      <Filter>头文件\include\ModelManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GameCamera.h">
+      <Filter>头文件\include\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\IMRender.h">
+      <Filter>头文件\include\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\vertextype.h">
+      <Filter>头文件\include\Graphic</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GameLib.h">
+      <Filter>头文件\include\Lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\MathLib.h">
+      <Filter>头文件\include\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Terrain.h">
+      <Filter>头文件\include\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TilePoint.h">
+      <Filter>头文件\include\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\w3e.h">
+      <Filter>头文件\include\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="w3e.h">
+      <Filter>头文件\include\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\W3ELoader.h">
+      <Filter>头文件\include\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Entity.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Point.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\QuadTree.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Rect2D.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneBasicGeometry.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneLight.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneNode.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneObject.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneSoftBody.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ObjectContainer.h">
+      <Filter>头文件\include\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderResource.h">
+      <Filter>头文件\include\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ResourceContainer.h">
+      <Filter>头文件\include\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ResourceManager.h">
+      <Filter>头文件\include\ResourceManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CreationQueue.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\DefaultProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Render.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderQueue.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LightPreProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\LightProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\NormalProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneSprite.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Material.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\MaterialManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\XMLParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneScreenLight.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneManager.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\PostProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HDRProcesser.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneHDR.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneOccludee.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShadowNormalProcesser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CullingSolver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CullingProxy.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CullingPrimitive.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CullingFrustum.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CullingManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\TextureLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\CreationCommand.h">
+      <Filter>头文件\include\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SceneInstancing.h">
+      <Filter>头文件\include\SceneManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\common.h">
+      <Filter>头文件\include\Lib</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
+    <None Include="ClassDiagram3.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

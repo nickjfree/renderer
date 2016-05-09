@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<shaders>
+  <shader name="Basic">
+    <technique name="Light-Pre">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+        <vs url="Shaders\shaders\basic-pre.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
+  <shader name="BasicNoCull">
+    <technique name="Light-Pre">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\basic-pre.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
+  <shader name="BasicPostObject">
+      <technique name="Light-Pre">
+        <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+          <vs url="Shaders\shaders\basic-pre.vs"></vs>
+          <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        </pass>
+      </technique>
+      <technique name="Shading">
+        <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+          <vs url="Shaders\shaders\basic.vs"></vs>
+          <ps url="Shaders\shaders\basic.ps"></ps>
+        </pass>
+      </technique>
+   </shader>
+
+  <shader name="PointLight">
+    <technique name="stencil">
+      <pass name="stencil" depthstencil="TwoSideStencil" rasterizer="NoCull" blend="NoFrame">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Quad">
+      <pass name="quad" depthstencil="NoZ" rasterizer="NoCull" blend="Additive">
+        <vs url="Shaders\shaders\pointlight.vs"></vs>
+        <ps url="Shaders\shaders\pointlight.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+  
+  <shader name="SSAO">
+    <technique name="ssao">
+      <pass name="ssao" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\ssao.vs"></vs>
+        <ps url="Shaders\shaders\ssao.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+  
+</shaders>
+  

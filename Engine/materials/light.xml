@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<material>
+  <textures>
+  </textures>
+  <shader name="PointLight" url="Shader\shaders\PointLight\0"></shader>
+</material>

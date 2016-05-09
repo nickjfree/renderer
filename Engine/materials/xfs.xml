@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<material>
+  <textures>
+    <texture unit="gDiffuseMap0" name="xfs_diffuse" url="Texture\textures\xfs_diffuse.dds\0">xfs_diifuse</texture>
+    <texture unit="gNormalMap0" name="xfs_diffuse" url="Texture\textures\xfs_normal.dds\0">xfs_normal</texture>
+  </textures>
+
+  <shader name="Basic" url="Shader\shaders\Basic\0"></shader>
+</material>

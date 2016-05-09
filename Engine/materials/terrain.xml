@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<material>
+  <shadow_shader>
+    <major>15</major>
+    <minor>0</minor>
+  </shadow_shader>
+  <pre_shader>
+    <major>0</major>
+    <minor>0</minor>
+  </pre_shader>
+  <shader>
+    <major>12</major>
+    <minor>0</minor>
+  </shader>
+   	<texture>
+		<diffuse>gravel.dds,grass.dds</diffuse>
+		<normal>SlateTile.dds</normal>
+		<specular>zealot_specular.dds</specular>
+		<cube></cube>
+   	</texture>
+  <diffuse_factor>0.5</diffuse_factor>
+  <specular_factor>0.5</specular_factor>
+</material>

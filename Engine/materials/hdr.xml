@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<material>
+  <shadow_shader>
+    <major>-1</major>
+    <minor>-1</minor>
+  </shadow_shader>
+  <pre_shader>
+    <major>-1</major>
+    <minor>-1</minor>
+  </pre_shader>
+  <shader>
+    <major>14</major>
+    <minor>0</minor>
+  </shader>
+  <texture>
+    <diffuse></diffuse>
+    <normal></normal>
+    <specular></specular>
+    <cube></cube>
+  </texture>
+  <diffuse_factor>0.5</diffuse_factor>
+  <specular_factor>0.5</specular_factor>
+</material>

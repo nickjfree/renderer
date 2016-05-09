@@ -1,0 +1,59 @@
+#ifndef __NODE_H__
+#define __NODE_H__
+
+#include "Core\Allocater.h"
+#include "Core\Shortcuts.h"
+#include "Container\LinkList.h"
+#include "Math\Collision.h"
+#include "Math\LinearMath.h"
+#include "Container\Vector.h"
+#include "BatchCompiler.h"
+
+/*
+	spatial tree node
+*/
+typedef AABB CullingObject;
+
+class Node
+{
+	DECLAR_ALLOCATER(Node);
+	friend Node;
+protected:
+	// positions
+	Vector3 Position;
+	// rotation
+	Quaternion Rotation;
+	// AABB
+	CullingObject CullingObj;
+	// subnode of this node
+	LinkList<Node> SubNodes;
+	// sibline node
+	LinkList<Node> Sibling;
+	// node type
+	int Type;
+	// world matrix
+	Matrix4x4 Transform;
+public:
+	enum {
+		NODE = 1,
+		RENDEROBJECT = 2,
+		LIGHT = 4,
+		REFLECT = 8,
+		PORTAL = 16,
+		POST
+	};
+public:
+	Node();
+	virtual ~Node();
+	CullingObject& GetCullingObject() { return CullingObj; }
+	int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
+	void AddChild(Node * Child);
+	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
+	Matrix4x4& GetWorldMatrix();
+	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);
+	void SetPosition(Vector3& Position_);
+	void SetRotation(Quaternion& Rot);
+};
+
+
+#endif

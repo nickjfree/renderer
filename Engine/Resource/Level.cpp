@@ -164,7 +164,7 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 }
 
 void Level::Update(int ms) {
-	// test update
+
 	Vector<GameObject *>::Iterator Iter;
 	float speed = 0.5f/1000.0f;
 	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {

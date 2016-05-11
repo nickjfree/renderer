@@ -227,6 +227,7 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClInclude Include="Rendering\RenderStage.h" />
     <ClInclude Include="Rendering\RenderView.h" />
     <ClInclude Include="Rendering\Shader.h" />
+    <ClInclude Include="Rendering\ShadowMapStage.h" />
     <ClInclude Include="Rendering\Spatial.h" />
     <ClInclude Include="Rendering\Texture.h" />
     <ClInclude Include="resource.h" />
@@ -297,6 +298,7 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClCompile Include="Rendering\RenderStage.cpp" />
     <ClCompile Include="Rendering\RenderView.cpp" />
     <ClCompile Include="Rendering\Shader.cpp" />
+    <ClCompile Include="Rendering\ShadowMapStage.cpp" />
     <ClCompile Include="Rendering\Spatial.cpp" />
     <ClCompile Include="Rendering\Texture.cpp" />
     <ClCompile Include="Resource\BinarySerializer.cpp" />

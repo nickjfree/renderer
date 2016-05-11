@@ -45,6 +45,16 @@ void RenderLight::SetShadowCast(int Flag) {
 	ShadowCast = Flag;
 }
 
+void RenderLight::SetShadowMap(int id) {
+	Parameter["gShadowMap"].as<int>() = id;
+}
+
+RenderingCamera * RenderLight::GetLightCamera() {
+	Matrix4x4 Projection = Matrix4x4::PerspectiveFovLH(0.25f * 3.1415926f, 1.0f, 1, Radius);
+	LightCamera.FromLight(Position, Rotation, Projection);
+	return &LightCamera;
+}
+
 
 int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, RenderingCamera * Camera, RenderContext * Context){
 	Stage = 0;

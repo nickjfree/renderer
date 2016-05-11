@@ -50,7 +50,6 @@ public:
 	Matrix4x4& GetProjection() { return Projection; }
 	Matrix4x4& GetInvertView() { return InvertView; }
 	Vector3& GetViewPoint() { return Position; }
-
-
+	void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
 };
 #endif

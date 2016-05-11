@@ -20,6 +20,17 @@ RenderingCamera::~RenderingCamera()
 {
 }
 
+void RenderingCamera::FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection) {
+	Projection = Projection;
+	Position = Position;
+	Look = Vector3(0, 0, 1) * Orientation;
+	Up = Vector3(0, 1, 0) * Orientation;
+	Right = Vector3(1, 0, 0) * Orientation;
+	ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
+	Matrix4x4::Inverse(ViewMatrix, &InvertView);
+	ViewProjection = ViewMatrix * Projection;
+}
+
 Frustum& RenderingCamera::GetFrustum() {
 	frustum = Frustum::CreateFromProjection(Position, Orientation, Projection);
 	//frustum = Frustum::CreateFromProjection(Projection);

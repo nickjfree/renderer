@@ -22,8 +22,10 @@ RenderView::~RenderView()
 int RenderView::Compile() {
 	int Compiled = 0;
 	Compiled += Compiler->SetDepthBuffer(Depth);
-	Compiled += Compiler->SetRenderTargets(TargetCount, Targets);
-	Compiled += Compiler->ClearRenderTarget();
+	if (TargetCount) {
+		Compiled += Compiler->SetRenderTargets(TargetCount, Targets);
+		Compiled += Compiler->ClearRenderTarget();
+	}
 	if (ClearDepth) {
 		Compiled += Compiler->ClearDepthStencil();
 	}

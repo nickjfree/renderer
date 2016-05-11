@@ -2,6 +2,7 @@
 #define __RENDER_LIGHT__
 
 #include "RenderObject.h"
+#include "RenderingCamera.h"
 /*
 	light node
 */
@@ -22,6 +23,8 @@ private:
 	float SpotAngle;
 	// shadow cast
 	int ShadowCast;
+	// light camera
+	RenderingCamera LightCamera;
 public:
 	RenderLight();
 	~RenderLight();
@@ -35,6 +38,16 @@ public:
 	void SetIntensity(float Intensity);
 	// set shdowcast disable/enable
 	void SetShadowCast(int Flag);
+	// set shadow map
+	void SetShadowMap(int id);
+	// get radius
+	float GetRadius() { return Radius; }
+	// get spot angle
+	float GetSpotAngle() { return SpotAngle; }
+	// get shadow casting
+	int GetShadowCasting() { return ShadowCast; }
+	// get Light Camera
+	RenderingCamera * GetLightCamera();
 };
 
 #endif

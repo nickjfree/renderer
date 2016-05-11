@@ -53,6 +53,8 @@ public:
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);
 	void SetPosition(Vector3& Position_);
 	void SetRotation(Quaternion& Rot);
+	Vector3& GetPosition() { return Position; }
+	Quaternion& GetRotation() { return Rotation; }
 };
 
 

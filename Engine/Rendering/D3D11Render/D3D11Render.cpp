@@ -206,6 +206,9 @@ void D3D11Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 		Device->CreateTexture2D(&desc, pInitial, (ID3D11Texture2D**)&texture.Texture);
 		D3D11_SHADER_RESOURCE_VIEW_DESC srDesc;
 		srDesc.Format = desc.Format;
+		if (desc.Format == FORMAT_R32_TYPELESS) {
+			srDesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
+		}
 		srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srDesc.Texture2D.MostDetailedMip = 0;
 		srDesc.Texture2D.MipLevels = 1;
@@ -221,6 +224,9 @@ void D3D11Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsDesc;
 			ZeroMemory(&dsDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
 			dsDesc.Format = desc.Format;
+			if (desc.Format == FORMAT_R32_TYPELESS) {
+				dsDesc.Format = (DXGI_FORMAT)FORMAT_D32_FLOAT;
+			}
 			dsDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 			dsDesc.Texture2D.MipSlice = 0;
 			Device->CreateDepthStencilView(texture.Texture, &dsDesc, &texture.Depth);

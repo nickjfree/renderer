@@ -2,6 +2,7 @@
 #include "CullingTask.h"
 #include "PrepassStage.h"
 #include "PostpassStage.h"
+#include "ShadowMapStage.h"
 
 
 RenderControl::RenderControl(RenderContext * Context_) :Context(Context_)
@@ -19,11 +20,15 @@ int RenderControl::Initialize() {
 	RenderQueue_ = new RenderQueue();
 	// init render processer
 	RenderProcesser_ = new RenderProcesser(Context);
-	// initialize light-pre pass
-	RenderStage * Stage = new PrepassStage(Context);
 	RenderingPath * LightPrePass = new RenderingPath(Context);
+	RenderStage * Stage = 0;
+	// initialize shadow map pass
+	Stage = new ShadowMapStage(Context);
 	LightPrePass->Stages.PushBack(Stage);
-	// post pass
+	// initialize light-pre pass
+	Stage = new PrepassStage(Context);
+	LightPrePass->Stages.PushBack(Stage);
+	// initialize post pass
 	Stage = new PostpassStage(Context);
 	LightPrePass->Stages.PushBack(Stage);
 	RenderPath[LIGHT_PRE] = LightPrePass;

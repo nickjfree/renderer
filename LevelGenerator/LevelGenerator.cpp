@@ -88,7 +88,7 @@ int TestGen(char * File) {
 	// light1
 	strcpy_s(object.Name, "Light1");
 	object.NumComponents = 1;
-	object.Position = Vector3(10, 30, 10);
+	object.Position = Vector3(0, 3, 15);
 	object.Rotation = Quaternion();
 	object.Scale = Vector3(1, 1, 1);
 	light.MaterialIndex = 0;
@@ -104,7 +104,7 @@ int TestGen(char * File) {
 
 	strcpy_s(object.Name, "Light2");
 	object.NumComponents = 1;
-	object.Position = Vector3(0, -30, -30);
+	object.Position = Vector3(0, 4, -15);
 	object.Rotation = Quaternion();
 	object.Scale = Vector3(1, 1, 1);
 	light.MaterialIndex = 0;

@@ -40,7 +40,7 @@ int RenderObject::GetRenderMesh(int Stage, int Lod) {
 	return -1;
 }
 
-int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, RenderingCamera * Camera, RenderContext * Context){
+int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){
 	if (Stage == R_STAGE_PREPASSS) {
 		Stage = 0;
 	} else if (Stage == R_STAGE_SHADING || Stage == R_STAGE_SHADOW) {
@@ -49,14 +49,14 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Renderin
 	Matrix4x4 Transform = GetWorldMatrix();
 	Matrix4x4 Tmp;
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Tmp);
-	Parameter["gWorldViewProjection"].as<Matrix4x4>() = Tmp;
+	StageParameter["gWorldViewProjection"].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Tmp);
-	Parameter["gWorldViewMatrix"].as<Matrix4x4>() = Tmp;
+	StageParameter["gWorldViewMatrix"].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Camera->GetInvertView(), &Tmp);
-	Parameter["gInvertViewMaxtrix"].as<Matrix4x4>() = Tmp;
+	StageParameter["gInvertViewMaxtrix"].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
-	Parameter["gProjectionMatrix"].as<Matrix4x4>() = Tmp;
-	Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
+	StageParameter["gProjectionMatrix"].as<Matrix4x4>() = Tmp;
+	StageParameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 	// process matrix
 	// process material
 	int Compiled = 0;
@@ -64,7 +64,7 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Renderin
 		Compiled += material->Compile(Compiler, Stage, Lod);
 		// process shader
 		Shader * shader = material->GetShader();
-		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), Parameter, Context);
+		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
 	}
 	int Geometry = GetRenderMesh(Stage, Lod);
 	if (Geometry != -1) {

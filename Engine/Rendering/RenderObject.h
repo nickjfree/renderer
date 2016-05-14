@@ -33,7 +33,7 @@ public:
 	int SetMaterial(Material* material);
 	// get render mesh
 	virtual int GetRenderMesh(int Stage, int Lod);
-	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, RenderingCamera * Camera, RenderContext * Context);
+	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
 };
 
 #endif

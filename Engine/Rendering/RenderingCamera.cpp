@@ -20,9 +20,10 @@ RenderingCamera::~RenderingCamera()
 {
 }
 
-void RenderingCamera::FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection) {
-	Projection = Projection;
-	Position = Position;
+void RenderingCamera::FromLight(Vector3& Position_, Quaternion& Orientation_, Matrix4x4& Projection_) {
+	Projection = Projection_;
+	Position = Position_;
+	Orientation = Orientation_;
 	Look = Vector3(0, 0, 1) * Orientation;
 	Up = Vector3(0, 1, 0) * Orientation;
 	Right = Vector3(1, 0, 0) * Orientation;

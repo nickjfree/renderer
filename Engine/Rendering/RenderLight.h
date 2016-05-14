@@ -25,11 +25,15 @@ private:
 	int ShadowCast;
 	// light camera
 	RenderingCamera LightCamera;
+
+private:
+	void UpdateLightView();
+
 public:
 	RenderLight();
 	~RenderLight();
 	 // compile
-	int Compile(BatchCompiler * Compiler, int Stage, int Lod, RenderingCamera * Camera, RenderContext * Context);
+	int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
 	// set radius
 	void SetRadius(float r);
 	// set color

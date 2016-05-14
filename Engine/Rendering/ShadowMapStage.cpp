@@ -45,6 +45,7 @@ int ShadowMapStage::ShadowPass(RenderingCamera * Camera, Spatial * spatial, Rend
 		RenderLight * Light = (RenderLight*)Lights[i];
 		// just assum all lights are shadow casting lights for now
 		// create render view with light cameras and submit tasks
+		Light->SetShadowMap(Targets[TargetsUsed]);
 		RenderView * renderview = RenderView::Create();
 		RenderViews.PushBack(renderview);
 		renderview->Camera = Light->GetLightCamera();
@@ -55,7 +56,7 @@ int ShadowMapStage::ShadowPass(RenderingCamera * Camera, Spatial * spatial, Rend
 		// set render target
 		renderview->TargetCount = 0;
 		renderview->ClearDepth = 1;
-		// 4. submit to workqueue
+		// 4. submit to workqueue 
 		int count = 1;
 		while (count--) {
 			CullingTask * task = CullingTask::Create();

@@ -15,9 +15,11 @@ USING_ALLOCATER(RenderLight);
 RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 0.1f, 0.0f)), ShadowCast(0)
 {
 	Type = Node::LIGHT;
+	Matrix4x4 InitMatrix;
 	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	Parameter["gLightColor"].as<Vector3>() = Color;
 	Parameter["gScreenSize"].as<Vector2>() = Vector2(1920,1080);
+	Parameter["gLightViewProjection"].as<Matrix4x4>() = InitMatrix;
 }
 
 
@@ -56,7 +58,11 @@ RenderingCamera * RenderLight::GetLightCamera() {
 }
 
 
-int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, RenderingCamera * Camera, RenderContext * Context){
+void RenderLight::UpdateLightView() {
+	Matrix4x4::Tranpose(LightCamera.GetViewProjection(), &Parameter["gLightViewProjection"].as<Matrix4x4>());
+}
+
+int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){
 	Stage = 0;
 	// process matrix
 	Matrix4x4 Transform = GetWorldMatrix();
@@ -75,6 +81,10 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Rendering
 	Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 	// light parameters
 	Parameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
+	// light iewprojection
+	UpdateLightView();
+	// stage parameters
+	// StageParameter["gLightViewProjection"] = Parameter["gLightViewProjection"];
 
 	// process material
 	int Compiled = 0;

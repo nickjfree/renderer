@@ -88,8 +88,9 @@ int TestGen(char * File) {
 	// light1
 	strcpy_s(object.Name, "Light1");
 	object.NumComponents = 1;
-	object.Position = Vector3(0, 3, 15);
+	object.Position = Vector3(0, 30, 0);
 	object.Rotation = Quaternion();
+	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
 	light.MaterialIndex = 0;
 	light.ModelIndex = 2;
@@ -104,8 +105,8 @@ int TestGen(char * File) {
 
 	strcpy_s(object.Name, "Light2");
 	object.NumComponents = 1;
-	object.Position = Vector3(0, 4, -15);
-	object.Rotation = Quaternion();
+	object.Position = Vector3(0, 1000, 3);
+	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
 	light.MaterialIndex = 0;
 	light.ModelIndex = 2;

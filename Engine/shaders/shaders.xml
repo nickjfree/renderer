@@ -68,6 +68,45 @@
       </pass>
     </technique>
   </shader>
+
+  <shader name="HDR">
+    <technique name="scale_log">
+      <pass name="scale_log" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_scale.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="lum_avg">
+      <pass name="lum_avg" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_avg.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="adapt_lum">
+      <pass name="adapt_lum" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_adapt.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="bright_pass">
+      <pass name="bright_pass" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\ssao.vs"></vs>
+        <ps url="Shaders\shaders\ssao.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="bloom">
+      <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\ssao.vs"></vs>
+        <ps url="Shaders\shaders\ssao.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="tonemapping">
+      <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_tone.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
   
 </shaders>
   

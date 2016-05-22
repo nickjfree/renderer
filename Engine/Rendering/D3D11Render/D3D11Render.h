@@ -101,7 +101,8 @@ namespace D3D11API {
 		virtual void SetDepthStencilStatus(int DepthStencil);
 		// rasterizer
 		virtual void SetRasterizerStatus(int Rasterizer);
-
+		// viewport
+		virtual void SetViewPort(float tlx, float tly, float width, float height, float minz, float maxz);
 		// draw single geometry
 		virtual void Draw(int Geometry);
 		// draw instance geometry

@@ -36,7 +36,7 @@ int RenderView::Compile() {
 int RenderView::QueueCommand() {
 	int Stage = Type + Index;
 	if (!Targets[0]) {
-		// only baclbuffer need present
+		// only backbuffer need present
 		Compiler->Present();
 	}
 	Compiler->EndBuffer();

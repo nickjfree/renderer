@@ -145,6 +145,24 @@ int BatchCompiler::SetShaderParameter(int Slot, int offset, int Size, void * Dat
 	return sizeof(char)+sizeof(char)+sizeof(int)+sizeof(int)+Size;
 }
 
+
+int BatchCompiler::SetViewport(float tlx, float tly, float width, float height, float minz, float maxz) {
+	*Offset++ = OP_VIEWPORT;
+	*(float*)Offset = tlx;
+	Offset += sizeof(float);
+	*(float*)Offset = tly;
+	Offset += sizeof(float);
+	*(float*)Offset = width;
+	Offset += sizeof(float);
+	*(float*)Offset = height;
+	Offset += sizeof(float);
+	*(float*)Offset = minz;
+	Offset += sizeof(float);
+	*(float*)Offset = maxz;
+	Offset += sizeof(float);
+	return sizeof(char) + sizeof(float) * 6;
+}
+
 int BatchCompiler::UpdateConstant(int Slot) {
 	*Offset++ = OP_UP_CONSTANT;
 	*(unsigned char *)Offset++ = Slot;

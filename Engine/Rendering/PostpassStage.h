@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#define MAX_HDR_LUM 8
 
 class PostpassStage : public RenderStage {
 
@@ -16,12 +17,41 @@ private:
 	Material * ssaoMaterial;
 	// depthstencial
 	int DepthStat[8];
+	// Parameters fot post stage
+	Dict Parameter;
+	// HDR buffers and parameters
+	float ScaleOffset[MAX_HDR_LUM][16];
+	int AvgIter;
+	int LumScaleBy4;
+	int LumScaleArray[MAX_HDR_LUM];
+	int AdaptLum[2];
+	int Bright;
+	int Bloom;
+	int Star;
+	// current time
+	unsigned int Time;
+	Shader * HDRShader;
 private:
 	void CreatePingPongBuffer();
+	void CreateHDRBuffer();
+	void InitSampleOffset();
 	void InitPostSchema();
 	void Initiallize();
-	int SSAO(BatchCompiler * Compiler);
+	// frame delta
+	unsigned int GetFrameDelta();
+	// pingpong
+	void SwapPingPong();
 
+	// SSAO
+	int SSAO(BatchCompiler * Compiler);
+	// HDR
+	int ScaleBy4(BatchCompiler * Compiler);
+	int CalcAvgLum(BatchCompiler * Compiler);
+	int CalcAdaptLum(BatchCompiler * Compiler);
+	int BrightPass(BatchCompiler * Compiler);
+	int BloomPass(BatchCompiler * COmpiler);
+	int ToneMapping(BatchCompiler * Compiler);
+	int HDR(BatchCompiler * Compiler);
 public:
 	PostpassStage(RenderContext * Context);
 	virtual ~PostpassStage();

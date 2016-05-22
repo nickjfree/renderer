@@ -27,6 +27,7 @@ RenderProcesser::RenderProcesser(RenderContext * context_) :context(context_)
 	Cmds[OP_INPUT_LAYOUT].cmd = &RenderProcesser::SetInputLayout;
 	Cmds[OP_CLEAR_DEPTH].cmd = &RenderProcesser::ClearDepthStencil;
 	Cmds[OP_CLEAR_TARGET].cmd = &RenderProcesser::ClearRenderTarget;
+	Cmds[OP_VIEWPORT].cmd = &RenderProcesser::SetViewport;
 	Cmds[OP_PRESENT].cmd = &RenderProcesser::Present;
 	Cmds[OP_QUAD].cmd = &RenderProcesser::RenderQuad;
 }
@@ -218,6 +219,14 @@ int RenderProcesser::ClearDepthStencil(void * data) {
 	//printf("%s\n", __FUNCTION__);
 	Interface->ClearDepth(1, 0);
 	ip += 1;
+	return 1;
+}
+
+int RenderProcesser::SetViewport(void * data) {
+	ip += 1 ;
+	float * p = (float*)data;
+	ip += sizeof(float) * 6;
+	Interface->SetViewPort(p[0], p[1], p[2], p[3], p[4], p[5]);
 	return 1;
 }
 

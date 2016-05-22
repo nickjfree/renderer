@@ -3,15 +3,8 @@
 #define  __COMMON__
 
 SamplerState gSam : register(s0);
-//{
-//    Filter = MIN_MAG_MIP_POINT;
-//    
-//};
-
-SamplerState gSamBoneMatrix :register(s1);
-//{
-//    Filter = 0;
-//};
+SamplerState gSamBilinear :register(s1);
+SamplerState gSamBoneMatrix :register(s2);
 
 //multi texture, 8 texture at most 
 Texture2D gDiffuseMap0 : register(t0);
@@ -66,8 +59,8 @@ cbuffer SkinningBuffer : register(b2)
 
 cbuffer SampleBuffer: register(b3)
 {
-	float4   gSampleOffsets[16];
-	float4   gSampleWeights[16];
+	float4   gSampleOffsets[4];
+	float4   gSampleWeights[4];
 }
 
 cbuffer Time: register(b4)

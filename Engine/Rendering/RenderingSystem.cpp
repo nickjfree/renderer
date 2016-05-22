@@ -41,11 +41,17 @@ void RenderingSystem::InitTopLevel() {
 
 void RenderingSystem::PreloadingResource() {
 	ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
+	// loading ssao
 	Preloadings[0] = String("Material\\Materials\\ssao.xml\\0");
 	Variant Param;
 	Param.as<String*>() = &Preloadings[0];
 	RenderPreloading * Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[0], Preloading, Param);
+	// loading hdr shaders
+	Preloadings[1] = String("Shader\\shaders\\HDR\\0");
+	Param.as<String*>() = &Preloadings[1];
+	Preloading = new RenderPreloading(context);
+	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

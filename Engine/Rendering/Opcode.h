@@ -57,6 +57,10 @@
 */
 #define OP_INPUT_LAYOUT 0x13
 
+/*
+	viewport
+*/
+#define OP_VIEWPORT 0x14
 
 
 #endif

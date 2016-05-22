@@ -79,7 +79,7 @@ __declspec(align(16)) struct Vector3 {
 	union {
 		XMVECTOR vector;
 		struct {
-			float x, y, z;
+			float x, y, z, w;
 		};
 	};
 

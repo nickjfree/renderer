@@ -121,6 +121,7 @@ void D3D11Render::InitD3D11(){
 	ID3D11SamplerState * Sampler;
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	// anisotropic sampler
 	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;// D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -130,6 +131,13 @@ void D3D11Render::InitD3D11(){
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	Device->CreateSamplerState(&sampDesc, &Sampler);
 	DeviceContext->PSSetSamplers(0, 1, &Sampler);
+	// bilinear sampler
+	sampDesc.Filter = D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	Device->CreateSamplerState(&sampDesc, &Sampler);
+	DeviceContext->PSSetSamplers(1, 1, &Sampler);
 }
 
 int D3D11Render::Initialize(int Width_, int Height_) {
@@ -429,6 +437,18 @@ void D3D11Render::SetRasterizerStatus(int Rasterizer) {
 	}
 }
 
+// viewport
+void D3D11Render::SetViewPort(float tlx, float tly, float width, float height, float minz, float maxz) {
+	D3D11_VIEWPORT viewport;
+	viewport.MinDepth = minz;
+	viewport.MaxDepth = maxz;
+	viewport.TopLeftX = tlx;
+	viewport.TopLeftY = tly;
+	viewport.Width = width;
+	viewport.Height = height;
+	DeviceContext->RSSetViewports(1, &viewport);
+}
+
 
 void D3D11Render::SetDepthStencil(int Depth) {
 	if (Depth >= 0) {
@@ -453,6 +473,7 @@ void D3D11Render::SetTexture(int StartSlot, int * Texture, int Count) {
 		D3DTexture& texture = Textures[Texture[i]];
 		Views[i] = texture.Resource;
 	}
+	//printf("%d %d\n", StartSlot, Texture[0]);
 	DeviceContext->VSSetShaderResources(StartSlot, Count, Views);
 	DeviceContext->GSSetShaderResources(StartSlot, Count, Views);
 	DeviceContext->PSSetShaderResources(StartSlot, Count, Views);

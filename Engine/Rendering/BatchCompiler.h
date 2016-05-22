@@ -63,6 +63,8 @@ public:
 	int SetInputLayout(int Id);
 	// set constane parameter
 	int SetShaderParameter(int Slot, int Offset, int Size, void * Data);
+	// int set viewport
+	int SetViewport(float tlx, float tly, float width, float height, float minz, float maxz);
 	// update constant
 	int UpdateConstant(int Slot);
 	// clear rendertarget

@@ -69,6 +69,8 @@ protected:
 	int ClearRenderTarget(void * data);
 	// clear depth stencial
 	int ClearDepthStencil(void * data);
+	// set view port
+	int SetViewport(void * data);
 	// present
 	int Present(void * data);
 public:

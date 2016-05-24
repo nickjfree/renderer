@@ -21,12 +21,15 @@ private:
 	Dict Parameter;
 	// HDR buffers and parameters
 	float ScaleOffset[MAX_HDR_LUM][16];
+	float BrightOffset[16];
+	float BloomOffset[2][16];
+	float BloomWeight[16];
 	int AvgIter;
 	int LumScaleBy4;
 	int LumScaleArray[MAX_HDR_LUM];
 	int AdaptLum[2];
 	int Bright;
-	int Bloom;
+	int Bloom[3];
 	int Star;
 	// current time
 	unsigned int Time;

@@ -90,14 +90,14 @@
     </technique>
     <technique name="bright_pass">
       <pass name="bright_pass" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\ssao.vs"></vs>
-        <ps url="Shaders\shaders\ssao.ps"></ps>
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_bright.ps"></ps>
       </pass>
     </technique>
     <technique name="bloom">
       <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\ssao.vs"></vs>
-        <ps url="Shaders\shaders\ssao.ps"></ps>
+        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <ps url="Shaders\shaders\hdr_bloom.ps"></ps>
       </pass>
     </technique>
     <technique name="tonemapping">

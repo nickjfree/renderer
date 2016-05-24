@@ -74,6 +74,31 @@ void PostpassStage::InitSampleOffset() {
 		Width /= 4;
 		Height /= 4;
 	}
+	// bright pass offset
+	float tux = 2.0f / 1920;
+	float tuy = 2.0f / 1080;
+	int Index = 0;
+	for (int x = 0; x < 4; x += 2) {
+		for (int y = 0; y < 4; y += 2) {
+			BrightOffset[Index] = (x - 1) * tux;
+			BrightOffset[Index + 1] = (y - 1) * tuy;
+			Index += 4;
+		}
+	}
+	// bloom gauss bloom offset
+	tux = 8.0f / 1920;
+	tuy = 8.0f / 1080;
+	memset(BloomOffset, 0, sizeof(float) * 32);
+	memset(BloomWeight, 0, sizeof(float) * 16);
+	// horizion
+	BloomOffset[0][4] = (1.0f + 0.5 / 1.3f) * tux;
+	BloomOffset[0][8] = -BloomOffset[0][4];
+	// vertical
+	BloomOffset[1][5] = (1.0f + 0.5 / 1.3f) * tuy;
+	BloomOffset[1][9] = -BloomOffset[1][5];
+	// bloom weight
+	BloomWeight[0] = 1.0f;
+	BloomWeight[4] = BloomWeight[8] = 1.3f;
 }
 
 void PostpassStage::CreateHDRBuffer() {
@@ -100,6 +125,7 @@ void PostpassStage::CreateHDRBuffer() {
 		height /= 4;
 		desc.Width = width;
 		desc.Height = height;
+		desc.Format = FORMAT_R16_FLOAT;
 		if (width==1 && height==1) {
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 			AdaptLum[0] = LumScaleArray[i];
@@ -112,13 +138,16 @@ void PostpassStage::CreateHDRBuffer() {
 		}
 	}
 	// create Bright
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.Width = Width/2;
 	desc.Height = Height/2;
 	Bright = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// bloom 
-	desc.Width = Width/4;
-	desc.Height = Height/4;
-	Bloom = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.Width = Width/8;
+	desc.Height = Height/8;
+	Bloom[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	Bloom[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	Bloom[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// Star
 	Star = Interface->CreateTexture2D(&desc, 0, 0, 0);
 }
@@ -209,10 +238,48 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 }
 
 int PostpassStage::BrightPass(BatchCompiler * Compiler){
+	// bright pass to bloom 0
+	int Width = 1920 / 2.0f;
+	int Height = 1080 / 2.0f;
+	Parameter["gPostBuffer"].as<int>() = PingPong[1];
+	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[0];
+	Compiler->SetRenderTargets(1, &Bright);
+	HDRShader->Compile(Compiler, 3, 0, Parameter, Parameter, Context);
+	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->Quad();
+	// downsample to bloom0
+	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	Parameter["gPostBuffer"].as<int>() = Bright;
+	memcpy_s(Offset, sizeof(Variant), BrightOffset, sizeof(float) * 16);
+	Compiler->SetRenderTargets(1, &Bloom[0]);
+	HDRShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
+	Compiler->SetViewport(0, 0, Width/4, Height/4, 0, 1);
+	Compiler->Quad();
 	return 0;
 }
 
-int PostpassStage::BloomPass(BatchCompiler * COmpiler) {
+int PostpassStage::BloomPass(BatchCompiler * Compiler) {
+	// bright pass
+	int Width = 1920 / 8.0f;
+	int Height = 1080 / 8.0f;
+	float * Weight = Parameter["gSampleWeights"].as<float[16]>();
+	memcpy_s(Weight, sizeof(Variant), BloomWeight, sizeof(float) * 16);
+	// horizion bloom0 -> bloom1
+	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	memcpy_s(Offset, sizeof(Variant), &BloomOffset[0], sizeof(float) * 16);
+	Parameter["gPostBuffer"].as<int>() = Bloom[0];
+	Compiler->SetRenderTargets(1, &Bloom[1]);
+	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
+	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->Quad();
+	// horizion bloom1->bloom2
+	Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	memcpy_s(Offset, sizeof(Variant), &BloomOffset[1], sizeof(float) * 16);
+	Parameter["gPostBuffer"].as<int>() = Bloom[1];
+	Compiler->SetRenderTargets(1, &Bloom[2]);
+	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
+	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->Quad();
 	return 0;
 }
 
@@ -220,6 +287,7 @@ int PostpassStage::ToneMapping(BatchCompiler * Compiler) {
 	int Target = 0;
 	Parameter["gPostBuffer"].as<int>() = PingPong[1];
 	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[0];
+	Parameter["gDiffuseMap1"].as<int>() = Bloom[2];
 	Compiler->SetRenderTargets(1, &Target);
 	HDRShader->Compile(Compiler, 5, 0, Parameter, Parameter, Context);
 	// restore viewport
@@ -235,6 +303,8 @@ int PostpassStage::HDR(BatchCompiler * Compiler) {
 		Compiled += ScaleBy4(Compiler);
 		Compiled += CalcAvgLum(Compiler);
 		Compiled += CalcAdaptLum(Compiler);
+		Compiled += BrightPass(Compiler);
+		Compiled += BloomPass(Compiler);
 		Compiled += ToneMapping(Compiler);
 	} else {
 		Variant * Value = Context->GetResource(String("Shader\\shaders\\HDR\\0"));

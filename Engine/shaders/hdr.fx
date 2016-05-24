@@ -8,6 +8,8 @@
 //BTW: every shaders use the same vertex format
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
+static const float MiddleGray = 0.5f;
+static const float BRIGHT_PASS_THRESHOLD = 5.0f;
 
 
 struct VS_Input
@@ -47,7 +49,7 @@ PS_Output PS_Log(PS_Input input)
     {
         // Compute the sum of log(luminance) throughout the sample points
 		vSample = gPostBuffer.Sample(gSamBilinear, input.TexCoord + gSampleOffsets[iSample]);
-        fLogLumSum += dot(vSample, LumVector);
+        fLogLumSum += log(dot(vSample, LumVector)+0.0001f);
     }
     // Divide the sum to complete the average
     fLogLumSum *= 0.25;
@@ -102,13 +104,14 @@ PS_Output PS_ToneMapping(PS_Input input)
 	float vLum = 0.0f;
 	float4 vBloom = 0.0f;
     vLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));
+	vLum = exp(vLum);
 	vSample = gPostBuffer.Sample(gSam,input.TexCoord);
-	//vBloom =  gDiffuseMap1.Sample(gSam,input.TexCoord);
-	vSample.xyz *= 1.0f/(vLum + 0.001f);
+	vBloom =  gDiffuseMap1.Sample(gSam,input.TexCoord);
+	vSample.xyz *= MiddleGray /(vLum + 0.001f);
 	vSample.xyz /= (1.0f + vSample);
 
 	// bloom effect
-	//vSample += vBloom * 1.0f;
+	vSample += vBloom * 1.0f;
 	output.Color = float4(vSample, 0);
 	//output.Color = vBloom;
 	return output;
@@ -117,14 +120,14 @@ PS_Output PS_ToneMapping(PS_Input input)
 PS_Output PS_BrightPass(PS_Input input)
 {
 	PS_Output output = (PS_Output)0;
-	float4 vSample = gFinalBuffer.Sample(gSam,input.TexCoord);
+	float4 vSample = gPostBuffer.Sample(gSam,input.TexCoord);
 	float  fAdaptedLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));;
-	
+	fAdaptedLum = exp(fAdaptedLum);
 	// Determine what the pixel's value will be after tone-mapping occurs
-	vSample.rgb *= 0.25f/(fAdaptedLum + 0.001f);
+	vSample.rgb *= MiddleGray /(fAdaptedLum + 0.001f);
 	
 	// Subtract out dark pixels
-	vSample.rgb -= 1;
+	vSample.rgb -= BRIGHT_PASS_THRESHOLD;
 	
 	// Clamp to 0
 	vSample = max(vSample, 0.0f);
@@ -142,25 +145,9 @@ PS_Output PS_GaussBloom5x5(PS_Input input)
 	PS_Output output = (PS_Output)0;
 	//oColor = (light + 0.1);
 	float4 vSample = 0.0f;
-    for(int iSample = 0; iSample < 13; iSample++)
+    for(int iSample = 0; iSample < 3; iSample++)
     {
-        // Compute the sum of log(luminance) throughout the sample points
-        vSample += gSampleWeights[iSample] * gDiffuseMap0.Sample(gSam,input.TexCoord + gSampleOffsets[iSample]);
-    }
-	output.Color = vSample;
-	return output;
-}
-
-
-PS_Output PS_GaussBloom(PS_Input input)
-{
-	PS_Output output = (PS_Output)0;
-	//oColor = (light + 0.1);
-	float4 vSample = 0.0f;
-    for(int iSample = 0; iSample < 15; iSample++)
-    {
-        // Compute the sum of log(luminance) throughout the sample points
-        vSample += gSampleWeights[iSample] * gDiffuseMap0.Sample(gSam,input.TexCoord + gSampleOffsets[iSample]);
+        vSample += gSampleWeights[iSample].x * gPostBuffer.Sample(gSamBilinear,input.TexCoord + gSampleOffsets[iSample]);
     }
 	output.Color = vSample;
 	return output;

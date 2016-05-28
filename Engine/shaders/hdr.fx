@@ -8,7 +8,7 @@
 //BTW: every shaders use the same vertex format
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
-static const float MiddleGray = 0.5f;
+static const float MiddleGray = 0.2f;
 static const float BRIGHT_PASS_THRESHOLD = 5.0f;
 
 
@@ -113,7 +113,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	// bloom effect
 	vSample += vBloom * 1.0f;
 	output.Color = float4(vSample, 0);
-	//output.Color = vBloom;
+	//output.Color = vLum;
 	return output;
 }
 
@@ -135,7 +135,7 @@ PS_Output PS_BrightPass(PS_Input input)
 	// Map the resulting value into the 0 to 1 range. Higher values for
 	// BRIGHT_PASS_OFFSET will isolate lights from illuminated scene 
 	// objects.
-	vSample.rgb /= (5+vSample);
+	vSample.rgb /= (10 +vSample);
 	output.Color = vSample;
 	return output;
 }

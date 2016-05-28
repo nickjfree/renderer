@@ -61,7 +61,7 @@ PS_Output PS_ScreenQuadLight(PS_Input input)
 PS_Output PS_ScreenQuadLightShadow(PS_Input input)
 {
 	PS_Output output = (PS_Output)0;
-	float Bias = 0.0001f;
+	float Bias = 0.001f;
 	float4 Normal = GetNormal(input.TexCoord);
 	float3 Position = GetPosition(input.TexCoord);
 	//Normal = Normal * 2 - 1;

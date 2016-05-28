@@ -30,8 +30,8 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	aiVector3D * texcoord = Mesh->mTextureCoords[0];
 	for (int i = 0; i < Mesh->mNumVertices; i++) {
 		vertex[i].position = Vector3(position[i].x, position[i].y, position[i].z);
-		//printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
-		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].x);
+//		printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
+		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].z);
 		if (tangent) {
 			vertex[i].tangent = Vector3(tangent[i].x, tangent[i].y, tangent[i].z);
 		}
@@ -102,7 +102,7 @@ bool DoTheImportThing(const std::string& pFile) {
 	aiScene* scene = (aiScene*)importer.ReadFile(pFile,
 		aiProcess_CalcTangentSpace
 		| aiProcess_Triangulate
-		| aiProcess_JoinIdenticalVertices
+	/*	| aiProcess_JoinIdenticalVertices*/
 		| aiProcess_SortByPType 
 		| aiProcess_MakeLeftHanded
 		/*| aiProcess_FlipWindingOrder*/);
@@ -121,7 +121,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("adata.dae");
+	DoTheImportThing("usbdrive.dae");
 	return 0;
 }
 

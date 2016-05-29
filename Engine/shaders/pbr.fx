@@ -3,14 +3,15 @@
 
 #include "common.fx"
 
-//the most common vertext shader
-//using vertex type of vertex_dynamic_instancing
-//BTW: every shaders use the same vertex format
+// Physics Based Shading for point light
+
+#define  PI  3.141592657;
+
 
 struct VS_Input
 {
 	float3 PosL  : POSITION;
-    float2 TexCoord : TEXCOORD;
+	float2 TexCoord : TEXCOORD;
 };
 
 struct PS_Input
@@ -24,7 +25,104 @@ struct PS_Output
 	float4 Light : SV_Target0;
 };
 
-PS_Input VS_ScreenQuadLight(VS_Input input)
+
+// pbr functions
+float3 F_Schlick(in float3 f0, in float f90, in float u)
+{
+	return f0 + (f90 - f0) * pow(1.f - u, 5.f);
+}
+
+
+float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
+{
+	// Original formulation of G_SmithGGX Correlated 9 
+	// lambda_v = (-1 + sqrt(alphaG2 * (1 - NdotL2) / NdotL2 + 1)) * 0.5f;  
+	// lambda_l = (-1 + sqrt(alphaG2 * (1 - NdotV2) / NdotV2 + 1)) * 0.5f; 
+	// G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l);  
+	// V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0f * NdotL * NdotV);
+
+	// This is the optimize version 
+	float alphaG2 = alphaG * alphaG;
+	// Caution: the "NdotL *" and "NdotV *" are explicitely inversed , this is not a mistake. 
+	float Lambda_GGXV = NdotL * sqrt((-NdotV * alphaG2 + NdotV) * NdotV + alphaG2);
+	float Lambda_GGXL = NdotV * sqrt((-NdotL * alphaG2 + NdotL) * NdotL + alphaG2);
+
+	return 0.5f / (Lambda_GGXV + Lambda_GGXL);
+}
+
+float D_GGX(float NdotH, float m)
+{
+	// Divide by PI is apply later 
+	float m2 = m * m;
+	float f = (NdotH * m2 - NdotH) * NdotH + 1;
+	return m2 / (f * f);
+
+}
+
+float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughness)
+{
+	float energyBias = lerp(0, 0.5, linearRoughness);
+	float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
+	float fd90 = energyBias + 2.0 * LdotH*LdotH * linearRoughness;
+	float3 f0 = float3(1.0f, 1.0f, 1.0f);
+	float lightScatter = F_Schlick(f0, fd90, NdotL).r;
+	float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+
+	return lightScatter * viewScatter * energyFactor;
+}
+
+
+
+
+
+//// This code is an example of call of previous functions 
+//
+//float NdotV = abs(dot(N, V)) + 1e-5f; 
+//// avoid artifact 
+//float3 H = normalize(V + L);
+//float LdotH = saturate(dot(L, H));
+//float NdotH = saturate(dot(N, H)); 
+//float NdotL = saturate(dot(N, L)); 
+//
+//// Specular BRDF
+//float3 F = F_Schlick(f0, f90, LdotH); 
+//float Vis = V_SmithGGXCorrelated(NdotV , NdotL , roughness); 
+//float D = D_GGX(NdotH , roughness); 
+//float Fr = D * F * Vis / PI; 
+//
+//// Diffuse BRDF 
+//float Fd = Fr_DisneyDiffuse(NdotV , NdotL , LdotH , linearRoughness) / PI
+
+
+// f0 = 0.16 reflectance2
+// roughness = (10-7 Smoothness)^6
+
+
+
+float4 Calc_PointLight(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness, float3 albedo) {
+
+	float NdotV = abs(dot(N, V)) + 1e-5f;
+	// avoid artifact 
+	float3 H = normalize(V + L);
+	float LdotH = saturate(dot(L, H));
+	float NdotH = saturate(dot(N, H));
+	float NdotL = saturate(dot(N, L));
+
+	// Specular BRDF
+	float3 F = F_Schlick(f0, f90, LdotH);
+	float Vis = V_SmithGGXCorrelated(NdotV, NdotL, roughness);
+	float D = D_GGX(NdotH, roughness);
+	float3 Fr = D * F * Vis / PI;
+
+	// Diffuse BRDF 
+	float Fd = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, roughness) / PI;
+	return float4(albedo * Fd + Fr, 0);
+}
+
+
+
+
+PS_Input VS_LightQuad(VS_Input input)
 {
 	PS_Input output = (PS_Input)0;
 	output.PosH.xy = 2 * input.PosL.xy - 1;
@@ -33,32 +131,7 @@ PS_Input VS_ScreenQuadLight(VS_Input input)
 	return output;
 }
 
-
-PS_Output PS_ScreenQuadLight(PS_Input input)
-{
-	PS_Output output = (PS_Output)0;
-	float Depth  = gDepthBuffer.Load(float3(input.PosH.xy,0));
-	float4 Normal =  gNormalBuffer.Load(float3(input.PosH.xy,0));
-	Normal = Normal * 2 - 1;
-	float3 Position = GetPosition(input.TexCoord);
-	float radius = gRadiusIntensity.x;
-	float intensity = gRadiusIntensity.y;
-	float3 L = gLightPosition - Position.xyz;
-	float3 V = -Position.xyz;
-	L = normalize(L);
-	V = normalize(V);
-	float3 H = normalize( L + V );
-	float d = distance(gLightPosition,Position.xyz);
-	float3 diffuse = gLightColor * saturate(dot(L, Normal.xyz));
-	diffuse = diffuse * intensity * saturate(1 - d/radius);
-	float specular = intensity * pow(saturate(dot(Normal,H)),20);
-	output.Light = float4(diffuse,specular);
-//	output.Light = Normal;
-	return output;
-}
-
-
-PS_Output PS_ScreenQuadLightShadow(PS_Input input)
+PS_Output PS_PointLightShadow(PS_Input input)
 {
 	PS_Output output = (PS_Output)0;
 	float Bias = 0.001f;
@@ -86,12 +159,14 @@ PS_Output PS_ScreenQuadLightShadow(PS_Input input)
 			V = normalize(V);
 			float3 H = normalize(L + V);
 			float d = distance(gLightPosition, Position.xyz);
-			float3 diffuse = gLightColor * saturate(dot(L, Normal.xyz));
-			diffuse = diffuse * intensity * saturate(1 - d / radius);
-			float specular = intensity * pow(saturate(dot(Normal, H)), 20);
-			output.Light = float4(diffuse, specular);
-			float4 Color = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-			output.Light = float4(diffuse * Color + diffuse * specular, 0);
+			float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
+			float3 f0 = float3(0.22181983, 0.22181983, 0.22181983);
+			//f0 = float3(1,0.765557,0.336057);
+			float f90 = 1;
+			float roughness = pow(1 - 0.7*0.4, 6);
+			float3 color = Calc_PointLight(Normal, V, L, f0, f90, roughness, albedo.xyz);
+			float3 an = gLightColor * intensity * saturate(1 - d / radius);
+			output.Light = float4(color * an * saturate(dot(Normal, L)), 0);
 			return output;
 		}
 		//output.Light = float4(1,1,1,0);

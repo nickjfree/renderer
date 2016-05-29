@@ -161,9 +161,6 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Container\Dict.h" />
     <ClInclude Include="Container\HashIndex.h" />
     <ClInclude Include="Container\HashMap.h" />
@@ -252,7 +249,6 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClInclude Include="Tasks\Task.h" />
     <ClInclude Include="Tasks\WorkerThread.h" />
     <ClInclude Include="Tasks\WorkQueue.h" />
-    <ClInclude Include="标头.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Container\Dict.cpp" />

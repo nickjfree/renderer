@@ -55,7 +55,8 @@
     <technique name="Quad">
       <pass name="quad" depthstencil="NoZ" rasterizer="NoCull" blend="Additive">
         <vs url="Shaders\shaders\pointlight.vs"></vs>
-        <ps url="Shaders\shaders\pointlight.ps"></ps>
+        <!--<ps url="Shaders\shaders\pointlight.ps"></ps>-->
+        <ps url="Shaders\shaders\light_pbr.ps"></ps>
       </pass>
     </technique>
   </shader>

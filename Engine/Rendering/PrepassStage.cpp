@@ -28,6 +28,10 @@ void PrepassStage::CreateGBuffer() {
 	Targets[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	Targets[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.Format = FORMAT_R8G8B8A8_UNORM;
+	Targets[3] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.Format = FORMAT_R8G8B8A8_UNORM;
+	Targets[4] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	desc.BindFlag = BIND_DEPTH_STENCIL;
 	desc.Format = FORMAT_D24_UNORM_S8_UINT;
@@ -36,6 +40,8 @@ void PrepassStage::CreateGBuffer() {
 	Context->RegisterRenderTarget(String("gDepthBuffer"), Targets[0]);
 	Context->RegisterRenderTarget(String("gNormalBuffer"), Targets[1]);
 	Context->RegisterRenderTarget(String("gLightBuffer"), Targets[2]);
+	Context->RegisterRenderTarget(String("gDiffuseBuffer"), Targets[3]);
+	Context->RegisterRenderTarget(String("gSpecularBuffer"), Targets[4]);
 	Context->RegisterRenderTarget(String("Depth"), Depth);
 }
 
@@ -144,9 +150,11 @@ void PrepassStage::PrePass(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
 	// set render target
-	renderview->TargetCount = 2;
+	renderview->TargetCount = 4;
 	renderview->Targets[0] = Targets[0];
 	renderview->Targets[1] = Targets[1];
+	renderview->Targets[2] = Targets[3];
+	renderview->Targets[3] = Targets[4];
 	renderview->Depth = Depth;
 	renderview->ClearDepth = 1;
 	// 4. submit to workqueue
@@ -172,7 +180,7 @@ void PrepassStage::LigthingPass(RenderingCamera * Camera, Spatial * spatial, Ren
 	renderview->Queue = renderQueue;
 	// set render target
 	renderview->TargetCount = 1;
-	renderview->Targets[0] = Targets[2];
+	renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer")); // Targets[2];
 	// 4. submit to workqueue
 	int count = 1;
 	while (count--) {
@@ -212,7 +220,7 @@ void PrepassStage::ShadingPass(RenderingCamera * Camera, Spatial * spatial, Rend
 int PrepassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events) {
 	PrePass(Camera, spatial, renderQueue, Queue, Events);
 	LigthingPass(Camera, spatial, renderQueue, Queue, Events);
-	ShadingPass(Camera, spatial, renderQueue, Queue, Events);
+//	ShadingPass(Camera, spatial, renderQueue, Queue, Events);
 	return 0;
 }
 

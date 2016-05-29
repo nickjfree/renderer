@@ -168,6 +168,7 @@ __declspec(align(16)) struct Quaternion {
 	Quaternion operator * (Quaternion& rh) {
 		Quaternion result;
 		result.quaternion = XMQuaternionMultiply(quaternion, rh.quaternion);
+		result.quaternion = XMQuaternionNormalize(result.quaternion);
 		return result;
 	}
 

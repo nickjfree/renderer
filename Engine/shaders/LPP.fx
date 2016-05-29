@@ -41,6 +41,8 @@ struct PS_Output
 {
 	float4 Depth : SV_Target0;
 	float4 Normal: SV_Target1;
+	float4 Diffuse: SV_Target2;
+	float4 Specular: SV_Target3;
 };
 
 PS_Input VS_LPP_Normal(VS_Input input)
@@ -86,26 +88,6 @@ PS_Input VS_LPP_Skinning(VS_Input input)
 	return output;
 }
 
-PS_Input VS_LPP_Terrain(VS_InputTerrain input)
-{
-	PS_Input output = (PS_Input)0;
-    // Transform to homogeneous clip space.
-	float3 world_pos = input.PosL * input.Scale + input.Center;
-	input.PosL = BlendTerrain(world_pos, input.PosL, input.Center.y);
-	float4 pos = float4(input.PosL * input.Scale + input.Center, 1);
-	float Height = gHeightMap.Load(float3(pos.xz / 2, 0));
-	pos.y = Height + 2;
-	output.PosH = mul(pos, gWorldViewProjection);
-	pos = mul(pos, gWorldViewMatrix);
-	input.Normal = float4(0,1,0,0);
-	output.Tangent = mul(input.Tangent,gWorldViewMatrix);
-    output.Normal = mul(input.Normal,gWorldViewMatrix);
-	output.BiNormal = float4(cross(output.Normal.xyz, output.Tangent.xyz),0);
-//	output.BiNormal = output.Tangent;
-    output.Depth = pos.z;
-	output.TexCoord = input.TexCoord;
-	return output;
-}
 
 PS_Output PS_LPP(PS_Input input)
 {	
@@ -132,12 +114,15 @@ PS_Output PS_LPP_Normal(PS_Input input)
 {	
 	PS_Output output = (PS_Output)0;
 	float4 normal = gNormalMap0.Sample(gSam,input.TexCoord);
+	float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
 	normal = normal * 2.0 - 1; 
 	//oColor = (light + 0.1);
 	normal = input.Normal + normal.x * input.Tangent + normal.y * input.BiNormal;
 	output.Normal = normalize(normal);
 	output.Normal = output.Normal * 0.5 + 0.5;
 	output.Depth.x = input.Depth;
+	output.Diffuse = diffuse;
+	output.Specular = float4(0,0,0,0);
 	return output;
 }
 

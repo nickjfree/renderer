@@ -90,7 +90,8 @@ PS_Output PS_ScreenQuadLightShadow(PS_Input input)
 			diffuse = diffuse * intensity * saturate(1 - d / radius);
 			float specular = intensity * pow(saturate(dot(Normal, H)), 20);
 			output.Light = float4(diffuse, specular);
-			//output.Light = 0.3;
+			float4 Color = gDiffuseBuffer.Sample(gSam, input.TexCoord);
+			output.Light = float4(diffuse * Color + diffuse * specular, 0);
 			return output;
 		}
 		//output.Light = float4(1,1,1,0);

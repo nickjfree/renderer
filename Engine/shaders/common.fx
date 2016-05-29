@@ -15,23 +15,18 @@ Texture2D gNormalMap0 : register(t4);
 Texture2D gNormalMap1 : register(t5);
 Texture2D gNormalMap2 : register(t6);
 Texture2D gNormalMap3 : register(t7);
-Texture2D gSpecularMap : register(t8);
-//a light buffer for light pre-pass,it seems CryEngine 2 do it this way
+Texture2D gSpecularMap0 : register(t8);
+// defferd shading GBuffer
 Texture2D gDepthBuffer : register(t9);
 Texture2D gNormalBuffer: register(t10);
-Texture2D gLightBuffer : register(t11);
-Texture2D gPostBuffer : register(t12); 
-Texture2D gFinalBuffer: register(t13);
+Texture2D gDiffuseBuffer: register(t11);
+Texture2D gSpecularBuffer: register(t12);
+Texture2D gLightBuffer : register(t13);
+Texture2D gPostBuffer : register(t14); 
+Texture2D gFinalBuffer: register(t15);
 
-// HDR lighting buffers
-Texture2D gScaledBuffer : register(t14);
-Texture2D gLumBuffer :  register(t15);
-Texture2D gCurrentLum:  register(t16);
-Texture2D gBloomBuffer :  register(t17);
 
-//Shadow Maps
-Texture2D gShadowMap: register(t18);
-Texture2D gHeightMap: register(t19);
+Texture2D gShadowMap: register(t16);
 
 
 cbuffer MatrixBuffer : register(b0)

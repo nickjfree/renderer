@@ -1,6 +1,5 @@
 # renderer
 A  simple 3d renderer
-just for fun.  
 
 * Entity component System
 * Multithreaded Task

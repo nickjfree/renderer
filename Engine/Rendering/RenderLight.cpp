@@ -15,6 +15,7 @@ USING_ALLOCATER(RenderLight);
 RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 0.1f, 0.0f)), ShadowCast(0)
 {
 	Type = Node::LIGHT;
+	LightType = RenderLight::POINT;
 	Matrix4x4 InitMatrix;
 	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	Parameter["gLightColor"].as<Vector3>() = Color;
@@ -25,6 +26,10 @@ RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 
 
 RenderLight::~RenderLight()
 {
+}
+
+void RenderLight::SetLightType(int Type) {
+	LightType = Type;
 }
 
 void RenderLight::SetRadius(float r) {
@@ -41,6 +46,11 @@ void RenderLight::SetColor(Vector3& Color_) {
 void RenderLight::SetIntensity(float Intensity_) {
 	Intensity = Intensity_;
 	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+}
+// set direction
+void RenderLight::SetDirection(Vector3& Direction_) {
+	Direction = Direction_;
+	Parameter["gLightDirection"].as<Vector3>() = Direction;
 }
 // set shdowcast disable/enable
 void RenderLight::SetShadowCast(int Flag) {
@@ -81,11 +91,9 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 	// light parameters
 	Parameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
+	Parameter["gLightDirection"].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
 	// light iewprojection
 	UpdateLightView();
-	// stage parameters
-	// StageParameter["gLightViewProjection"] = Parameter["gLightViewProjection"];
-
 	// process material
 	int Compiled = 0;
 	// stencil-pass
@@ -97,12 +105,25 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), Parameter, Context);
 	}
 	int Geometry = GetRenderMesh(Stage, Lod);
-	if (Geometry != -1) {
+	if (Geometry != -1 && LightType == POINT) {
 		//Compiled += Compiler->SetTransform(Transform);
 		Compiled += Compiler->RenderGeometry(Geometry);
 	}
 	// lighting-pass
-	Stage = 1;
+	// get quad shader stage types
+	switch (LightType) {
+	case POINT:
+		Stage = 1;
+		break;
+	case DIRECTION:
+		Stage = 2;
+		break;
+	case ENV:
+		Stage = 3;
+		break;
+	default:
+		Stage = 1;
+	}
 	Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), Parameter, Context);
 	// full screen quad
 	Compiled += Compiler->Quad();

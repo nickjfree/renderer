@@ -21,7 +21,9 @@ int Light::Load(void * Raw, Level * level) {
 	SetRadius(Entry->Radius);
 	SetColor(Entry->Color);
 	SetIntensity(Entry->Intensity);
+	SetDirection(Entry->Direction);
 	SetShadowCast(0);
+	SetType(Entry->Type);
 	return sizeof(LightEntry);
 }
 
@@ -59,5 +61,9 @@ void Light::SetColor(Vector3& Color) {
 
 void Light::SetIntensity(float intensity) {
 	renderLight->SetIntensity(intensity);
+}
+
+void Light::SetDirection(Vector3& Direction) {
+	renderLight->SetDirection(Direction);
 }
 

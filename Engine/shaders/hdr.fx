@@ -111,7 +111,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	vSample.xyz /= (1.0f + vSample);
 
 	// bloom effect
-	vSample += vBloom * 1.0f;
+	// vSample += vBloom * 1.0f;
 	output.Color = float4(vSample, 0);
 	//output.Color = vLum;
 	return output;

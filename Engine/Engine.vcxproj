@@ -96,7 +96,7 @@
       <AdditionalOptions>D3Dcompiler.lib DXGUID.lib d3d11.lib dxgi.lib DirectXTK.lib
 
  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalLibraryDirectories>F:\proj\Game11\Game\Debug;E:\Program Files\Microsoft DirectX SDK %28June 2010%29\Lib\x86;E:\DirectX11\DirectXTK\Bin\Desktop_2012\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\proj\Game11\Game\Debug;E:\Program Files\Microsoft DirectX SDK %28June 2010%29\Lib\x86;E:\DirectX11\DirectXTK\Bin\Desktop_2015\Win32\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -157,7 +157,7 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalOptions>DXGUID.lib d3d11.lib  dxgi.lib D3Dcompiler.lib DirectXTK.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalLibraryDirectories>F:\proj\Game11\Game\x64\Release;E:\Program Files\Microsoft DirectX SDK %28June 2010%29\Lib\x64;E:\DirectX11\DirectXTK\Bin\Desktop_2012\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\proj\Game11\Game\x64\Release;E:\Program Files\Microsoft DirectX SDK %28June 2010%29\Lib\x64;E:\DirectX11\DirectXTK\Bin\Desktop_2015\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -52,14 +52,26 @@
         <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
     </technique>
-    <technique name="Quad">
+    <technique name="QuadPointLight">
       <pass name="quad" depthstencil="NoZ" rasterizer="NoCull" blend="Additive">
         <vs url="Shaders\shaders\pointlight.vs"></vs>
-        <!--<ps url="Shaders\shaders\pointlight.ps"></ps>-->
         <ps url="Shaders\shaders\light_pbr.ps"></ps>
       </pass>
     </technique>
+    <technique name="QuadDirectionLight">
+      <pass name="quad" depthstencil="NoZTest" rasterizer="NoCull" blend="Additive">
+        <vs url="Shaders\shaders\pointlight.vs"></vs>
+        <ps url="Shaders\shaders\light_direction.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="ImageBasedLight">
+      <pass name="quad" depthstencil="NoZTest" rasterizer="NoCull" blend="Additive">
+        <vs url="Shaders\shaders\pointlight.vs"></vs>
+        <ps url="Shaders\shaders\ibl.ps"></ps>
+      </pass>
+    </technique>
   </shader>
+  
   
   <shader name="SSAO">
     <technique name="ssao">

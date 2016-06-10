@@ -119,6 +119,8 @@ __declspec(align(16)) struct Vector3 {
 
 	Vector3 Vector3::operator*(Matrix4x4& rh);
 
+	Vector3 Vector3::RotateBy(Matrix4x4& rh);
+
 	float Dot(Vector3& rh) {
 		XMVECTOR result = XMVector3Dot(vector, rh.vector);
 		return XMVectorGetX(result);
@@ -135,6 +137,8 @@ __declspec(align(16)) struct Vector3 {
 	float LengthSq() {
 		return XMVectorGetX(XMVector3LengthSq(vector));
 	}
+
+
 
 
 

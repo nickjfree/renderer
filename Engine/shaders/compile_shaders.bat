@@ -7,7 +7,9 @@ fxc /T ps_5_0 /E PS /Fo basic.ps  normal.fx
 
 fxc /T vs_5_0 /E VS_ScreenQuadLight /Fo pointlight.vs  light.fx
 fxc /T ps_5_0 /E PS_ScreenQuadLightShadow /Fo pointlight.ps  light.fx
-
+fxc /T ps_5_0 /E PS_PointLightShadow /Fo light_pbr.ps pbr.fx
+fxc /T ps_5_0 /E PS_DirectionLight /Fo light_direction.ps pbr.fx
+fxc /T ps_5_0 /E PS_ImageBasedLight /Fo ibl.ps pbr.fx
 
 fxc /T vs_5_0 /E VS /Fo ssao.vs  post_screen.fx
 fxc /T ps_5_0 /E PS /Fo ssao.ps  post_screen.fx

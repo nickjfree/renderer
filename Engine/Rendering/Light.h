@@ -28,11 +28,14 @@ public:
 	enum {
 		POINT,
 		DIRECTION,
-		SPOT
+		SPOT,
+		ENV,
 	};
 public:
 	Light(Context * context);
 	virtual ~Light();
+	// set type
+	void SetType(int Type) { renderLight->SetLightType(Type); };
 	// set redius
 	void SetRadius(float Radius);
 	// set shadow flag
@@ -41,6 +44,8 @@ public:
 	void SetColor(Vector3& Color);
 	// intensity
 	void SetIntensity(float intensity);
+	// direction
+	void SetDirection(Vector3& Direction);
 	// on attach
 	virtual int OnAttach(GameObject * GameObj);
 	// Handler event

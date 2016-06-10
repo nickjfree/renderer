@@ -24,9 +24,13 @@ Texture2D gSpecularBuffer: register(t12);
 Texture2D gLightBuffer : register(t13);
 Texture2D gPostBuffer : register(t14); 
 Texture2D gFinalBuffer: register(t15);
-
-
 Texture2D gShadowMap: register(t16);
+
+// image based light
+TextureCube  gLightProbe		   : register(t17);
+Texture2D	 gLUT                  : register(t18);
+TextureCube  gLdCube               : register(t19);
+TextureCube  gLightProbeIrradiance : register(t20);
 
 
 cbuffer MatrixBuffer : register(b0)
@@ -71,6 +75,7 @@ cbuffer Light: register(b5)
 	float4 gLightPosition;
 	float4 gLightColor;
 	float4 gRadiusIntensity;
+	float4 gLightDirection;
 };
 
 cbuffer Options: register(b6)

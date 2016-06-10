@@ -19,7 +19,12 @@ int TestGen(char * File) {
 	LevelHeader Header = {};
 	int Num = 4;
 	Header.NumEntries = Num;
-	char * meshes[4] = {"Mesh\\Unit.pack\\adata121\\0", "Mesh\\Unit.pack\\plane2\\0", "Mesh\\Unit.pack\\sphere\\0", "Mesh\\Unit.pack\\qianzhihe2\\0" };
+	char * meshes[4] = {
+		"Mesh\\Unit.pack\\adata121\\0", 
+		"Mesh\\Unit.pack\\plane2\\0", 
+		"Mesh\\Unit.pack\\sphere\\0", 
+		"Mesh\\Unit.pack\\qianzhihe2\\0" 
+	};
 	MeshEntry mesh = {};
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	while (Num--) {
@@ -27,9 +32,15 @@ int TestGen(char * File) {
 		WriteFile(hFile, &mesh, sizeof(mesh), &write, 0);
 	}
 	// write material 
-	char * materials[4] = { "Material\\Materials\\qianzhihe.xml\\0", "Material\\Materials\\usbdrive.xml\\0", "Material\\Materials\\cylinder.xml\\0", "Material\\Materials\\light.xml\\0" };
+	char * materials[5] = { 
+		"Material\\Materials\\lightprobe.xml\\0", 
+		"Material\\Materials\\qianzhihe.xml\\0", 
+		"Material\\Materials\\usbdrive.xml\\0", 
+		"Material\\Materials\\cylinder.xml\\0", 
+		"Material\\Materials\\light.xml\\0"
+	};
 	MatrialEntry material = {};
-	Num = 4;
+	Num = 5;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	while (Num--) {
@@ -53,7 +64,7 @@ int TestGen(char * File) {
 	LightEntry light = {};
 	ObjectEntry object = {};
 	
-	Num = 5;
+	Num = 6;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	Quaternion rot = Quaternion();
@@ -106,15 +117,16 @@ int TestGen(char * File) {
 
 	strcpy_s(object.Name, "Light2");
 	object.NumComponents = 1;
-	object.Position = Vector3(0, 1000, 3);
+	object.Position = Vector3(0, 1, 3);
 	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
 	light.MaterialIndex = 0;
 	light.ModelIndex = 2;
 	light.Color = Vector3(1, 1, 1);
-	light.Intensity = 0.5;
+	light.Intensity = 3.14;
 	light.Radius = 50;
-	light.Type = 0;
+	light.Type = 1;
+	light.Direction = Vector3(1.414f, -1.414f, 0.5);
 	strcpy_s(light.Info.TypeName, "Light");
 	// write light2
 	WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
@@ -135,6 +147,25 @@ int TestGen(char * File) {
 	// write qianzhihe
 	WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
 	WriteFile(hFile, &render, sizeof(render), &write, 0);
+
+	// envirremont light
+	strcpy_s(object.Name, "LightProb");
+	object.NumComponents = 1;
+	object.Position = Vector3(0, 1, 3);
+	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
+	object.Scale = Vector3(1, 1, 1);
+	light.MaterialIndex = 4;
+	light.ModelIndex = 2;
+	light.Color = Vector3(1, 1, 1);
+	light.Intensity = 3.14;
+	light.Radius = 50;
+	light.Type = 3;
+	light.Direction = Vector3(1.414f, -1.414f, 0.5);
+	strcpy_s(light.Info.TypeName, "Light");
+	// write light2
+	WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
+	WriteFile(hFile, &light, sizeof(light), &write, 0);
+
 
 	// over
 	CloseHandle(hFile);

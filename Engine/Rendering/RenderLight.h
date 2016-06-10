@@ -25,7 +25,13 @@ private:
 	int ShadowCast;
 	// light camera
 	RenderingCamera LightCamera;
-
+	int LightType;
+	enum {
+		POINT,
+		DIRECTION,
+		SPOT,
+		ENV,
+	};
 private:
 	void UpdateLightView();
 
@@ -34,12 +40,16 @@ public:
 	~RenderLight();
 	 // compile
 	int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
+	// set light type
+	void SetLightType(int Type);
 	// set radius
 	void SetRadius(float r);
 	// set color
 	void SetColor(Vector3& Color);
 	// set intensity
 	void SetIntensity(float Intensity);
+	// set direction
+	void SetDirection(Vector3& Direction);
 	// set shdowcast disable/enable
 	void SetShadowCast(int Flag);
 	// set shadow map

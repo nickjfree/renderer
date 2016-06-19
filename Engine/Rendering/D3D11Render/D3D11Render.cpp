@@ -138,6 +138,13 @@ void D3D11Render::InitD3D11(){
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	Device->CreateSamplerState(&sampDesc, &Sampler);
 	DeviceContext->PSSetSamplers(1, 1, &Sampler);
+	// point sampler
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	Device->CreateSamplerState(&sampDesc, &Sampler);
+	DeviceContext->PSSetSamplers(1, 2, &Sampler);
 }
 
 int D3D11Render::Initialize(int Width_, int Height_) {
@@ -157,26 +164,26 @@ void D3D11Render::InitShortOperation() {
 	VBuffer[0].x = 0;
 	VBuffer[0].y = 1;
 	VBuffer[0].z = 0;
-	VBuffer[0].u = 0;
-	VBuffer[0].v = 0;
+	VBuffer[0].u = 0 + (float)1 / Width;
+	VBuffer[0].v = 0 + (float)1 / Height;
 	//2
 	VBuffer[1].x = 1;
 	VBuffer[1].y = 1;
 	VBuffer[1].z = 0;
-	VBuffer[1].u = 1;
-	VBuffer[1].v = 0;
+	VBuffer[1].u = 1 + (float)1 / Width;
+	VBuffer[1].v = 0 + (float)1 / Height;
 	//3
 	VBuffer[2].x = 0;
 	VBuffer[2].y = 0;
 	VBuffer[2].z = 0;
-	VBuffer[2].u = 0;
-	VBuffer[2].v = 1;
+	VBuffer[2].u = 0 + (float)1 / Width;
+	VBuffer[2].v = 1 + (float)1 / Height;
 	//4
 	VBuffer[3].x = 1;
 	VBuffer[3].y = 0;
 	VBuffer[3].z = 0;
-	VBuffer[3].u = 1;
-	VBuffer[3].v = 1;
+	VBuffer[3].u = 1 + (float)1 / Width;
+	VBuffer[3].v = 1 + (float)1 / Height;
 	//m_ScreenRectIndex = {0,1,2,2,1,3};
 	IBuffer[0] = 0;
 	IBuffer[1] = 1;

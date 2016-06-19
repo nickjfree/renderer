@@ -4,7 +4,7 @@
 
 SamplerState gSam : register(s0);
 SamplerState gSamBilinear :register(s1);
-SamplerState gSamBoneMatrix :register(s2);
+SamplerState gSamPoint :register(s2);
 
 //multi texture, 8 texture at most 
 Texture2D gDiffuseMap0 : register(t0);
@@ -115,18 +115,31 @@ float4 GetLookVector(float2 uv)
 	return LookVec;
 }
 
+float2 EncodeNormal(float3 normal) {
+	normal = normalize(normal);
+	return normal.xy * 0.5 + 0.5;
+}
+
+float3 DecodeNormal(float2 normal) {
+	normal = normal * 2 - 1;
+	float3 n = float3(normal.xy, -sqrt(1-normal.x * normal.x - normal.y*normal.y));
+	return normalize(n);
+}
+
 float3 GetPosition(float2 uv)
 {
-	float Depth  = gDepthBuffer.Sample(gSam, uv);
+	float Depth  = gDepthBuffer.Sample(gSamPoint, uv);
 	float3 Position = GetLookVector(uv) * Depth;
 	return Position;
 }
 
 float4 GetNormal(float2 uv)
 {
-	float4 Normal =  gNormalBuffer.Sample(gSam, uv);
-	Normal = Normal * 2 - 1;
-	return Normal;
+	float4 raw =  gNormalBuffer.Sample(gSamPoint, uv);
+	return float4(DecodeNormal(raw), 0);
+	//Normal = Normal * 2 - 1;
+	//Normal = float4(normalize(Normal.xyz), 0);
+	//return Normal;
 }
 
 

@@ -57,6 +57,8 @@ PS_Input VS_LPP_Normal(VS_Input input)
 	output.Tangent = mul(float4(input.Tangent.xyz, 0),gWorldViewMatrix);
 	output.BiNormal = float4(cross(output.Normal.xyz, output.Tangent.xyz),0);
 	output.BiNormal = normalize(output.BiNormal);
+	output.Normal = normalize(output.Normal);
+	output.Tangent = normalize(output.Tangent);
 	output.TexCoord = input.TexCoord;
     output.Depth = pos.z;
 	return output;
@@ -113,16 +115,16 @@ PS_Output PS_LPP(PS_Input input)
 PS_Output PS_LPP_Normal(PS_Input input)
 {	
 	PS_Output output = (PS_Output)0;
-	float4 normal = gNormalMap0.Sample(gSam,input.TexCoord);
+	float4 normal = gNormalMap0.Sample(gSamBilinear,input.TexCoord);
 	float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
-	normal = normal * 2.0 - 1; 
+	normal = normal * 2.0 - 1;
+	normal = normalize(normal);
 	//oColor = (light + 0.1);
 	normal = input.Normal + normal.x * input.Tangent + normal.y * input.BiNormal;
-	output.Normal = normalize(normal);
-	output.Normal = output.Normal * 0.5 + 0.5;
+	output.Normal.xy = EncodeNormal(normal);
 	output.Depth.x = input.Depth;
 	output.Diffuse = diffuse;
-//	output.Diffuse = float4(0.5,0.5,0.5,0);
+	output.Diffuse = float4(1,1,1,0);
 	output.Specular = float4(0,0,0,0);
 	return output;
 }

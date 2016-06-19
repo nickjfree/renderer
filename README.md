@@ -1,12 +1,13 @@
 # renderer
-A very very very simple 3d renderer
-just for fun.  
+A  simple 3d renderer
 
 * Entity component System
 * Multithreaded Task
-* Light-Pre pass Rendering
-* Shadow maps
-* Scren Space Ambiant Oclusion(SSAO)
+* Physics Based Rendering
+* Simple Shadow maps
+* SSAO
+* HDR pipline
+* Unreal like IBL
 
 
 

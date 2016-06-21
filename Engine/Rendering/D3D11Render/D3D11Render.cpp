@@ -144,7 +144,7 @@ void D3D11Render::InitD3D11(){
 	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
 	Device->CreateSamplerState(&sampDesc, &Sampler);
-	DeviceContext->PSSetSamplers(1, 2, &Sampler);
+	DeviceContext->PSSetSamplers(2, 1, &Sampler);
 }
 
 int D3D11Render::Initialize(int Width_, int Height_) {

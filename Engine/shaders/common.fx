@@ -115,15 +115,47 @@ float4 GetLookVector(float2 uv)
 	return LookVec;
 }
 
-float2 EncodeNormal(float3 normal) {
-	normal = normalize(normal);
-	return normal.xy * 0.5 + 0.5;
+float2 EncodeNormal(float3 N) {
+	N = normalize(N);
+	//float2 enc;
+	//enc = normalize(N.xy)*sqrt(abs(N.z*0.5 + 0.5));
+	//return enc * 0.5 + 0.5;
+
+
+	//return N.xy * 0.5 + 0.5;
+
+	float scale = 1.7777;
+	float2 enc = N.xy / (N.z + 1);
+	enc /= scale;
+	enc = enc*0.5 + 0.5;
+	return enc;
+
 }
 
-float3 DecodeNormal(float2 normal) {
-	normal = normal * 2 - 1;
-	float3 n = float3(normal.xy, -sqrt(1-normal.x * normal.x - normal.y*normal.y));
-	return normalize(n);
+float3 DecodeNormal(float2 G) {
+	//float4 N = float4(G * float4(2, 2, 0, 0) + float4(-1, -1, 1, -1),0,0);
+	//float l = dot(N.xyz, -N.xyw);
+	//N.z = l;
+	//N.xy *= sqrt(l);
+	//return N.xyz * 2 + float3(0, 0, -1);
+	
+	/*float3 N;
+	G = G * 2 - 1;
+	N.z = dot(G.xy, G.xy) * 2 - 1;
+	N.xy = normalize(G.xy)*sqrt(abs(1 - N.z*N.z));
+	return float3(N.x, N.y, N.z);*/
+	//G = G * 2 - 1;
+	//float3 n = float3(G.xy, -sqrt(1- dot(G.xy, G.xy)));
+	//return n;
+//	return normalize(n);
+
+	float scale = 1.7777;
+	float3 nn = float3(G.xy, 0) * float3(2 * scale, 2 * scale, 0) + float3(-scale, -scale, 1);
+	float g = 2.0 / dot(nn.xyz, nn.xyz);
+	float3 n;
+	n.xy = g*nn.xy;
+	n.z = g - 1;
+	return n;
 }
 
 float3 GetPosition(float2 uv)

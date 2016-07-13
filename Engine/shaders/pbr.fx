@@ -7,10 +7,10 @@
 
 #define  PI  3.141592657
 #define  IBL_LD_MIPMAPS 6
-#define  SMOOTHNESS 1
+#define  SMOOTHNESS 0.4
 #define  F0 float3(0.04, 0.04, 0.04)
 #define  F90 1
-#define  METALLIC 1
+#define  METALLIC 0
 
 struct VS_Input
 {

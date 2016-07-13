@@ -23,7 +23,7 @@ int TestGen(char * File) {
 		"Mesh\\Unit.pack\\adata121\\0", 
 		"Mesh\\Unit.pack\\plane2\\0", 
 		"Mesh\\Unit.pack\\sphere\\0", 
-		"Mesh\\Unit.pack\\qianzhihe2\\0" 
+		"Mesh\\Unit.pack\\sneak\\0" 
 	};
 	MeshEntry mesh = {};
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
@@ -34,7 +34,7 @@ int TestGen(char * File) {
 	// write material 
 	char * materials[5] = { 
 		"Material\\Materials\\lightprobe.xml\\0", 
-		"Material\\Materials\\qianzhihe.xml\\0", 
+		"Material\\Materials\\sneak.xml\\0", 
 		"Material\\Materials\\usbdrive.xml\\0", 
 		"Material\\Materials\\cylinder.xml\\0", 
 		"Material\\Materials\\light.xml\\0"
@@ -139,7 +139,8 @@ int TestGen(char * File) {
 //	Quaternion rot = Quaternion();
 	rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
 	object.Rotation = rot;
-//	object.Rotation = Quaternion();
+	object.Rotation = Quaternion();
+	object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
 	render.MaterialIndex = 3;
 	render.ModelIndex = 3;

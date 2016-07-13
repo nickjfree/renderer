@@ -121,7 +121,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("usbdrive.dae");
+	DoTheImportThing("sneak.dae");
 	return 0;
 }
 

@@ -10,6 +10,9 @@
 #include "Rendering\Light.h"
 #include "Resource\ResourceCache.h"
 
+#include "Script\LuaStack.h"
+#include "Script\Proxy.h"
+
 
 USING_ALLOCATER(Level);
 
@@ -164,6 +167,10 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 }
 
 void Level::Update(int ms) {
+
+	// tesing 
+
+	TestCall(&GameObject::GetComponent);
 
 	Vector<GameObject *>::Iterator Iter;
 	float speed = 0.5f/1000.0f;

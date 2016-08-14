@@ -7,7 +7,6 @@
 
 
 
-
 Engine::Engine()
 {
 }
@@ -19,6 +18,7 @@ Engine::~Engine()
 
 int Engine::Initialize(void) {
 	context = new Context();
+	//LuaStack::Push(NULL, context);
 	return 0;
 }
 

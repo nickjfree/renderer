@@ -6,6 +6,8 @@
 */
 
 #include  "DirectXMath.h"
+#include "Core\Shortcuts.h"
+#include "Core\Str.h"
 using namespace DirectX;
 
 
@@ -76,6 +78,7 @@ __declspec(align(16)) struct Vector2 {
 };
 
 __declspec(align(16)) struct Vector3 {
+	
 	union {
 		XMVECTOR vector;
 		struct {

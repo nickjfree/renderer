@@ -9,6 +9,8 @@
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
 #include "LevelDesc.h"
+#include "Script\Proxy.h"
+
 
 class GameObject;
 class Scene;
@@ -45,6 +47,10 @@ private:
 	Mesh * light_mesh;
 	Material * material;
 	Material * light_material;
+
+	// Lua state
+	lua_State * LuaState;
+
 private:
 	int InitGameObjects();
 	int InitLevel();
@@ -61,6 +67,8 @@ public:
 	virtual int OnCreateComplete(Variant& Parameter);
 	virtual int OnSubResource(int Message, Resource * Sub, Variant& Parameter);
 
+	// init script
+	virtual int InitScript();
 	// get mesh
 	Mesh * GetMesh(int Index) {	return Meshs[Index];};
 	// get model

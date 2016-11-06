@@ -40,6 +40,7 @@ public:
 
 	//set translation
 	void SetTranslation(Vector3& Translation);
+
 	// set rotation
 	void SetRotation(Quaternion& Rotation);
 	// set transform
@@ -61,7 +62,9 @@ public:
 	}
 	// get name
 	String& GetName() { return Name; }
-
+	// set name
+	void SetName(char * Name_) { Name = Name_; };
+	void SetName(String& Name_) { Name = Name; };
 
 protected:
 	// name

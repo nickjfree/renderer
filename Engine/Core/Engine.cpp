@@ -4,7 +4,7 @@
 #include "Tasks\WorkQueue.h"
 #include "Resource\ResourceCache.h"
 #include "Scene\Levelloader.h"
-
+#include "Script\Proxy.h"
 
 
 Engine::Engine()

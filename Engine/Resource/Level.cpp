@@ -12,6 +12,7 @@
 
 #include "Script\LuaStack.h"
 #include "Script\Proxy.h"
+#include "Script\Export.h"
 
 
 USING_ALLOCATER(Level);
@@ -83,6 +84,8 @@ int Level::CreateScene() {
 	GameObject * MainCamera = scene->CreateGameObject("MainCamera");
 	Camera * camera = new Camera(context);
 	MainCamera->AddComponent(camera);
+
+
 	return 0;
 }
 
@@ -161,8 +164,41 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 		InitLevel();
 		InitGameObjects();
 		CreateScene();
+		InitScript();
 	}
 	printf("-------decount %d\n", DepCount);
+	return 0;
+}
+
+int Level::InitScript() {
+	static int flag = 0;
+	if (flag) {
+		return -1;
+	}
+	LuaState = luaL_newstate();
+	luaL_openlibs(LuaState);
+	// test register class
+	REGISTER_CLASS(LuaState, GameObject);
+	Vector<GameObject *>::Iterator Iter;
+	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+		GameObject * Object = *Iter;
+		// set a gameobject to gloabal
+		void * user_data = lua_newuserdata(LuaState, sizeof(void*));
+		*(GameObject **)user_data = Object;
+		int exists = luaL_newmetatable(LuaState, "GameObject");
+		lua_setmetatable(LuaState, -2);
+		lua_setglobal(LuaState, Object->GetName());
+	}
+	// load the scripts
+	int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
+	if (ret) {
+		printf("Couldn't load file: %s\n", lua_tostring(LuaState, -1));
+	}
+	ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
+	if (ret) {
+		printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
+	}
+	flag = 1;
 	return 0;
 }
 
@@ -170,7 +206,7 @@ void Level::Update(int ms) {
 
 	// tesing 
 
-	TestCall(&GameObject::GetComponent);
+	//TestCall(&GameObject::GetComponent);
 
 	Vector<GameObject *>::Iterator Iter;
 	float speed = 0.5f/1000.0f;

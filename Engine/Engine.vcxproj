@@ -77,6 +77,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>F:\proj\Game11\Game\Engine\Script\lua;$(IncludePath)</IncludePath>
+    <SourcePath>F:\proj\Game11\Game\Engine\Script\lua;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -242,6 +244,9 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClInclude Include="Scene\Levelloader.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\TestComponent.h" />
+    <ClInclude Include="Script\Export.h" />
+    <ClInclude Include="Script\LuaStack.h" />
+    <ClInclude Include="Script\Proxy.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tasks\Mutex.h" />
@@ -304,6 +309,40 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClCompile Include="Resource\ResourceTask.cpp" />
     <ClCompile Include="Resource\XMLParser.cpp" />
     <ClCompile Include="Scene\Levelloader.cpp" />
+    <ClCompile Include="Script\lua\lapi.c" />
+    <ClCompile Include="Script\lua\lauxlib.c" />
+    <ClCompile Include="Script\lua\lbaselib.c" />
+    <ClCompile Include="Script\lua\lbitlib.c" />
+    <ClCompile Include="Script\lua\lcode.c" />
+    <ClCompile Include="Script\lua\lcorolib.c" />
+    <ClCompile Include="Script\lua\lctype.c" />
+    <ClCompile Include="Script\lua\ldblib.c" />
+    <ClCompile Include="Script\lua\ldebug.c" />
+    <ClCompile Include="Script\lua\ldo.c" />
+    <ClCompile Include="Script\lua\ldump.c" />
+    <ClCompile Include="Script\lua\lfunc.c" />
+    <ClCompile Include="Script\lua\lgc.c" />
+    <ClCompile Include="Script\lua\linit.c" />
+    <ClCompile Include="Script\lua\liolib.c" />
+    <ClCompile Include="Script\lua\llex.c" />
+    <ClCompile Include="Script\lua\lmathlib.c" />
+    <ClCompile Include="Script\lua\lmem.c" />
+    <ClCompile Include="Script\lua\loadlib.c" />
+    <ClCompile Include="Script\lua\lobject.c" />
+    <ClCompile Include="Script\lua\lopcodes.c" />
+    <ClCompile Include="Script\lua\loslib.c" />
+    <ClCompile Include="Script\lua\lparser.c" />
+    <ClCompile Include="Script\lua\lstate.c" />
+    <ClCompile Include="Script\lua\lstring.c" />
+    <ClCompile Include="Script\lua\lstrlib.c" />
+    <ClCompile Include="Script\lua\ltable.c" />
+    <ClCompile Include="Script\lua\ltablib.c" />
+    <ClCompile Include="Script\lua\ltm.c" />
+    <ClCompile Include="Script\lua\lundump.c" />
+    <ClCompile Include="Script\lua\lutf8lib.c" />
+    <ClCompile Include="Script\lua\lvm.c" />
+    <ClCompile Include="Script\lua\lzio.c" />
+    <ClCompile Include="Script\Register.cpp" />
     <ClCompile Include="Tasks\Mutex.cpp" />
     <ClCompile Include="Tasks\OsEvent.cpp" />
     <ClCompile Include="Tasks\Task.cpp" />

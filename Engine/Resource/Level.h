@@ -2,7 +2,6 @@
 #define __LEVEL_RES__
 
 #include "Resource.h"
-#include "Resource\Mesh.h"
 #include "Rendering\Material.h"
 #include "Rendering\Model.h"
 

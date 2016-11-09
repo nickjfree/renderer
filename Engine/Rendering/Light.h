@@ -50,6 +50,9 @@ public:
 	virtual int OnAttach(GameObject * GameObj);
 	// Handler event
 	virtual int HandleEvent(Event * Ev);
+	// on transform
+	// transform change
+	virtual int OnTransform(GameObject * GameObj);
 	// set model
 	void SetModel(Model * model) { renderLight->SetModel(model); }
 	// set material

@@ -48,6 +48,10 @@ void GameObject::NotifyTransform() {
 	if (component) {
 		component->OnTransform(this);
 	}
+	component = GetComponent(String("Light"));
+	if (component) {
+		component->OnTransform(this);
+	}
 }
 
 void GameObject::SetTranslation(Vector3& Translation_) {

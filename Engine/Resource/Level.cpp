@@ -2,7 +2,6 @@
 #include "Rendering\GPUResource.h"
 #include "Scene\Scene.h"
 #include "Scene\TestComponent.h"
-#include "Resource\Mesh.h"
 #include "Rendering\MeshRenderer.h"
 #include "Rendering\QuadTree.h"
 #include "Rendering\BasicPartition.h"
@@ -182,11 +181,15 @@ int Level::InitScript() {
 	Vector<GameObject *>::Iterator Iter;
 	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
 		GameObject * Object = *Iter;
-		// set a gameobject to gloabal
-		void * user_data = lua_newuserdata(LuaState, sizeof(void*));
-		*(GameObject **)user_data = Object;
+		// new table as the object
+		lua_newtable(LuaState);
 		int exists = luaL_newmetatable(LuaState, "GameObject");
 		lua_setmetatable(LuaState, -2);
+		// set a userdata to __self field
+		void * user_data = lua_newuserdata(LuaState, sizeof(void*));
+		*(GameObject **)user_data = Object;
+		lua_setfield(LuaState, -2, "__self");
+		// set the table as a global test object
 		lua_setglobal(LuaState, Object->GetName());
 	}
 	// load the scripts

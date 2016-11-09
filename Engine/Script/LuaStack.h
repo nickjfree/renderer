@@ -108,7 +108,9 @@ public:
 	template <typename T>
 	static void Get(lua_State* vm, int index, T* &value) {
 		char * Name = T::GetTypeNameStatic();
-		T * data = *(T **)luaL_checkudata(vm, index, Name);
+		luaL_checktype(vm, 1, LUA_TTABLE);
+		lua_getfield(vm, 1, "__self");
+		T * data = *(T **)lua_touserdata(vm, -1);
 		value = data;
 	}
 

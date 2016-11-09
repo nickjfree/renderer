@@ -42,6 +42,13 @@ int Light::OnAttach(GameObject * GameObj) {
 	return Component::OnAttach(GameObj);
 }
 
+int Light::OnTransform(GameObject * GameObj) {
+	// set init position
+	renderLight->SetPosition(GameObj->GetTranslation());
+	renderLight->SetRotation(GameObj->GetRotation());
+	return 0;
+}
+
 
 int Light::HandleEvent(Event * Ev) {
 	return 0;

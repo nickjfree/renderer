@@ -158,7 +158,7 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 	}
 	if (!DepCount) {
 		// init level
-		printf("mesh create complete\nnow, create the scene");
+		printf("mesh create complete\nnow, create the scene\n");
 		InitModel();
 		InitLevel();
 		InitGameObjects();
@@ -174,34 +174,12 @@ int Level::InitScript() {
 	if (flag) {
 		return -1;
 	}
-	LuaState = luaL_newstate();
-	luaL_openlibs(LuaState);
-	// test register class
-	REGISTER_CLASS(LuaState, GameObject);
-	Vector<GameObject *>::Iterator Iter;
-	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
-		GameObject * Object = *Iter;
-		// new table as the object
-		lua_newtable(LuaState);
-		int exists = luaL_newmetatable(LuaState, "GameObject");
-		lua_setmetatable(LuaState, -2);
-		// set a userdata to __self field
-		void * user_data = lua_newuserdata(LuaState, sizeof(void*));
-		*(GameObject **)user_data = Object;
-		lua_setfield(LuaState, -2, "__self");
-		// set the table as a global test object
-		lua_setglobal(LuaState, Object->GetName());
-	}
-	// load the scripts
-	int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
-	if (ret) {
-		printf("Couldn't load file: %s\n", lua_tostring(LuaState, -1));
-	}
-	ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
-	if (ret) {
-		printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
-	}
-	flag = 1;
+	// send event to scripting subsystem
+	Event * event = Event::Create();
+	event->EventId = 400;
+	event->EventParam["Level"].as<Level *>() = this;
+	context->BroadCast(event);
+	event->Recycle();
 	return 0;
 }
 

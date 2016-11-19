@@ -8,7 +8,6 @@
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
 #include "LevelDesc.h"
-#include "Script\Proxy.h"
 
 
 class GameObject;
@@ -47,9 +46,6 @@ private:
 	Material * material;
 	Material * light_material;
 
-	// Lua state
-	lua_State * LuaState;
-
 private:
 	int InitGameObjects();
 	int InitLevel();
@@ -74,7 +70,8 @@ public:
 	Model * GetModel(int Index) { return Models[Index]; };
 	// get material
 	Material * GetMaterial(int Index) { return Materials[Index]; };
-
+	// get all gameobjects
+	Vector<GameObject *> & GetGameObjects() { return GameObjects; };
 	// test method
 	void Update(int ms);
 };

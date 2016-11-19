@@ -6,12 +6,24 @@
 
 Context::Context()
 {
+	GlobalEventNode = new EventNode(this);
 }
 
 
 Context::~Context()
 {
 }
+
+
+int Context::SubscribeFor(System * subsystem, int EventId) {
+	return GlobalEventNode->AddEventHandler(EventId, subsystem);
+}
+
+
+int Context::UnSubscribeFor(System * subsystem, int EventId) {
+	return GlobalEventNode->RemoveEventHandler(EventId, subsystem);
+}
+
 
 int Context::SendEvent(EventNode * Receiver, Event * event){
 	return Receiver->HandleEvent(event);

@@ -39,6 +39,11 @@ public:
 	int SendEvent(EventNode * Receiver, Event * event);
 	// BroadCast
 	int BroadCast(Event * event);
+	// Add eventhandler for system
+	int SubscribeFor(System * subsystem, int EventId);
+	// remove eventhandler
+	int UnSubscribeFor(System * subsystem, int EventId);
+
 
 	// subsystem
 	template <class T> T*  RegisterSubsystem() {

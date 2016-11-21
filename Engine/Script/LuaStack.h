@@ -34,6 +34,16 @@ public:
 		lua_pushstring(vm, value);
 	}
 
+	static void Push(lua_State* vm, Vector3& value) {
+		lua_newtable(vm);
+		lua_pushnumber(vm, value.x);
+		lua_setfield(vm, -2, "x");
+		lua_pushnumber(vm, value.y);
+		lua_setfield(vm, -2, "y");
+		lua_pushnumber(vm, value.z);
+		lua_setfield(vm, -2, "z");
+	}
+
 	template <typename T>
 	static void Push(lua_State* vm, T& value) {
 		return;
@@ -98,6 +108,18 @@ public:
 		value = (char*)lua_tostring(vm, -1);
 	}
 
+	static void Get(lua_State* vm, int index, Vector3& value) {
+		float x, y, z;
+		luaL_checktype(vm, index, LUA_TTABLE);
+		lua_getfield(vm, index, "x");
+		x = luaL_checknumber(vm, -1);
+		lua_getfield(vm, index, "y");
+		y = luaL_checknumber(vm, -1);
+		lua_getfield(vm, index, "z");
+		z = luaL_checknumber(vm, -1);
+		value = Vector3(x, y, z);
+	}
+
 	template <typename T>
 	static void Get(lua_State* vm, int index, T& value) {
 		char * Name = T::GetTypeNameStatic();
@@ -108,7 +130,7 @@ public:
 	template <typename T>
 	static void Get(lua_State* vm, int index, T* &value) {
 		char * Name = T::GetTypeNameStatic();
-		luaL_checktype(vm, 1, LUA_TTABLE);
+		luaL_checktype(vm, index, LUA_TTABLE);
 		lua_getfield(vm, 1, "__self");
 		T * data = *(T **)lua_touserdata(vm, -1);
 		value = data;

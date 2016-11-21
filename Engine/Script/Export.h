@@ -8,6 +8,8 @@
 BEGIN_PROXY(GameObject)
 	METHOD(GetName, &GameObject::GetName)
 	METHOD(SetName, (void (GameObject::*)(char *))&GameObject::SetName)
+	METHOD(SetTranslation, &GameObject::SetTranslation)
+	METHOD(GetTranslation, &GameObject::GetTranslation)
 END_PROXY()
 
 

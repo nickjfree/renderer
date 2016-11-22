@@ -1,13 +1,12 @@
 #include "Object.h"
 #include <Windows.h>
 
-Object::Object(Context * context_) :RefCount(0), context(context_)
-{
+
+Object::Object(Context * context_) :RefCount(0), context(context_), ObjectId(-1) {
 }
 
 
-Object::~Object()
-{
+Object::~Object() {
 }
 
 int Object::AddRef() {
@@ -18,5 +17,9 @@ int Object::AddRef() {
 int Object::DecRef() {
 	InterlockedDecrement(&RefCount);
 	return RefCount;
+}
+
+unsigned int Object::GetObjectId() {
+	return -1;
 }
 

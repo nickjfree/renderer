@@ -22,6 +22,7 @@ friend GameObject;
 	OBJECT(GameObject);
 	BASEOBJECT(GameObject);
 	DECLAR_ALLOCATER(GameObject)
+	UUID()
 public:
 	GameObject(Context * context_);
 	GameObject(Context * context, String& Name);

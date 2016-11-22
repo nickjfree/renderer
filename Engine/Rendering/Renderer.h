@@ -10,6 +10,7 @@ class Renderer : public Component
 {
 	OBJECT(Renderer);
 	DECLAR_ALLOCATER(Renderer);
+	UUID();
 public:
 	Renderer(Context * context);
 	virtual ~Renderer();

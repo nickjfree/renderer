@@ -6,6 +6,7 @@
 #include "RenderView.h"
 #include "Spatial.h"
 #include "Tasks\OsEvent.h"
+#include "Core\Shortcuts.h"
 
 /*
 	Task for querying visible objects from scene and then generating command buffer from them

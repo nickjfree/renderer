@@ -42,6 +42,7 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	Vector<GameObject *>::Iterator Iter;
 	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
 		GameObject * Object = *Iter;
+		unsigned int ObjectId = Object->GetObjectId();
 		// new table as the object
 		lua_newtable(LuaState);
 		int exists = luaL_newmetatable(LuaState, "GameObject");

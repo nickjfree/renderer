@@ -10,14 +10,12 @@
 	model component for rendering system
 */
 
-class Model
-{
+class Model {
 public:
 	// macros
 	OBJECT(Model);
 	BASEOBJECT(Model);
 	DECLAR_ALLOCATER(Model);
-
 public:
 	// mesh name for easy display
 	char * MeshName;

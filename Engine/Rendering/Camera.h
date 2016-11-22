@@ -13,6 +13,7 @@ class Camera : public Component
 {
 	OBJECT(Camera);
 	DECLAR_ALLOCATER(Camera);
+	UUID()
 private:
 	RenderingCamera * RenderCamera;
 protected:

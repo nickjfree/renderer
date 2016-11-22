@@ -6,21 +6,24 @@
 #include "Context.h"
 #include "Allocater.h"
 
+// typedefine 
+
 
 // Base class of GameObject, Component, SubSystem, eg. with TypeHash, TypeName, and Id
 class Object
 {
 	BASEOBJECT(Object);
 	OBJECT(Object);
-private:
-	unsigned int RefCount;
 protected:
 	Context * context;
+	unsigned int RefCount;
+	unsigned int ObjectId;
 public:
 	Object(Context * context_);
 	virtual ~Object();
 	int AddRef();
 	int DecRef();
+	virtual unsigned int GetObjectId();
 };
 
 #endif

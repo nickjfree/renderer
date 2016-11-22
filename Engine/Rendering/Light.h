@@ -14,6 +14,7 @@ class Light : public Component
 	OBJECT(Light);
 	BASEOBJECT(Light);
 	DECLAR_ALLOCATER(Light);
+	UUID();
 private:
 	RenderLight * renderLight;
 	// light type

@@ -2,8 +2,7 @@
 
 USING_ALLOCATER(Model);
 
-Model::Model()
-{
+Model::Model() {
 }
 
 

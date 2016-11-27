@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Rendering\RenderingSystem.h"
+#include "Scene\GameObject.h"
 
 USING_ALLOCATER(Camera);
 
@@ -25,5 +26,12 @@ void Camera::Disable() {
 
 int Camera::HandleEvent(Event * Ev) {
 
+	return 0;
+}
+
+int Camera::OnTransform(GameObject * GameObj) {
+	// set init position
+	RenderCamera->SetTransform(GameObj->GetTranslation());
+	RenderCamera->SetRotation(GameObj->GetRotation());
 	return 0;
 }

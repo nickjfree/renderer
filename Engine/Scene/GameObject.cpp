@@ -52,6 +52,10 @@ void GameObject::NotifyTransform() {
 	if (component) {
 		component->OnTransform(this);
 	}
+	component = GetComponent(String("Camera"));
+	if (component) {
+		component->OnTransform(this);
+	}
 }
 
 void GameObject::SetTranslation(Vector3& Translation_) {

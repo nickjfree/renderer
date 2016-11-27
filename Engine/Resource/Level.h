@@ -28,6 +28,10 @@ private:
 	Vector<Model*> Models;
 	Vector<GameObject*> GameObjects;
 
+	// test
+	GameObject * MainCamera;
+
+
 	// level infos
 	int NumMeshes;
 	MeshEntry * MeshEntries;
@@ -38,6 +42,8 @@ private:
 	int NumObjects;
 	ObjectEntry * ObjectEntries;
 
+	// loaded
+	int Loaded;
 	// scene
 	Scene * scene;
 

@@ -6,6 +6,7 @@
 #include "Scene\Levelloader.h"
 #include "Script\Proxy.h"
 #include "Script\ScriptingSystem.h"
+#include "Input\InputSystem.h"
 
 
 Engine::Engine()
@@ -34,6 +35,8 @@ int Engine::InitSubsystems() {
 	LevelLoader * Level = context->RegisterSubsystem<LevelLoader>();
 	// scripting
 	ScriptingSystem * Script = context->RegisterSubsystem<ScriptingSystem>();
+	// input
+	InputSystem * Input = context->RegisterSubsystem<InputSystem>();
 	// more post tasks
 	Render->PreloadingResource();
 	return 0;
@@ -44,11 +47,19 @@ int Engine::Update(int ms) {
 	LevelLoader * Level = context->GetSubsystem<LevelLoader>();
 	WorkQueue * Queue = context->GetSubsystem<WorkQueue>();
 	ScriptingSystem * Script = context->GetSubsystem<ScriptingSystem>();
+	InputSystem * Input = context->GetSubsystem<InputSystem>();
 	Queue->Update(ms);
 	Level->Update(ms);
 	Render->Update(ms);
 	Script->Update(ms);
+
+	Input->Update(ms);
 	return 0;
+}
+
+int Engine::OnMessage(int msg, DWORD lParam, DWORD wParam) {
+	InputSystem * Input = context->GetSubsystem<InputSystem>();
+	return Input->OnWindowsMessage(msg, lParam, wParam);
 }
 
 int Engine::Shutdown() {

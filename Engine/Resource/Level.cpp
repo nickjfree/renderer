@@ -13,12 +13,14 @@
 #include "Script\Proxy.h"
 #include "Script\Export.h"
 
+#include "Input\InputSystem.h"
+
+
 
 USING_ALLOCATER(Level);
 
 
-Level::Level(Context * context) :Resource(context)
-{
+Level::Level(Context * context): Resource(context), Loaded(0) {
 }
 
 
@@ -80,11 +82,11 @@ int Level::CreateScene() {
 	for (int i = 0; i < Objects; i++) {
 		// do nothing now
 	}
-	GameObject * MainCamera = scene->CreateGameObject("MainCamera");
+	MainCamera = scene->CreateGameObject("MainCamera");
 	Camera * camera = new Camera(context);
 	MainCamera->AddComponent(camera);
-
-
+	
+	MainCamera->SetTranslation(Vector3(0, 20, -50));
 	return 0;
 }
 
@@ -164,6 +166,7 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 		InitGameObjects();
 		CreateScene();
 		InitScript();
+		Loaded = 1;
 	}
 	printf("-------decount %d\n", DepCount);
 	return 0;
@@ -186,9 +189,9 @@ int Level::InitScript() {
 void Level::Update(int ms) {
 
 	// tesing 
-
-	//TestCall(&GameObject::GetComponent);
-
+	if (!Loaded) {
+		return;
+	}
 	Vector<GameObject *>::Iterator Iter;
 	float speed = 0.5f/1000.0f;
 	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
@@ -200,4 +203,56 @@ void Level::Update(int ms) {
 			Object->SetRotation(Object->GetRotation() * rotation);
 		}
 	}
+	// test for camera moves, all these should be moved into scripts when scripting is ready;
+	Quaternion rotation = MainCamera->GetRotation();
+	Vector3 translation = MainCamera->GetTranslation();
+	Vector3 Up = Vector3(0, 1, 0) * rotation;
+	Vector3 Right = Vector3(1, 0, 0) * rotation;
+	Vector3 Look = Vector3(0, 0, 1) * rotation;
+	Up.Normalize();
+	Right.Normalize();
+	Look.Normalize();
+	Vector3 Delta = Vector3();
+	Quaternion DRotation = Quaternion();
+	// get inputs
+	InputSystem * Input = context->GetSubsystem<InputSystem>();
+
+	float Degrees = ms * 0.1f;
+	float move = 0.05f * ms;
+	float angle = Degrees* (3.1415926f / 180.0f);
+
+	//walk
+	if (Input->GetAction(ACT_FORWARD))
+		Delta =  Look * move;
+	if (Input->GetAction(ACT_BACK))
+		Delta = Look * -move;
+	//Strafe
+	if (Input->GetAction(ACT_STRIF_LEFT))
+		Delta = Right * -move;
+	if (Input->GetAction(ACT_STRIF_RIGHT))
+		Delta = Right * move;
+	//fly
+	if (Input->GetAction(ACT_ASCEND))
+		Delta = Up * move;
+	if (Input->GetAction(ACT_DESCEND))
+		Delta = Up * -move;
+	//Yaw
+	if (Input->GetAction(ACT_TRUN_LEFT))
+		DRotation.RotationNormal(Up, -angle);
+	if (Input->GetAction(ACT_TURN_RIGHT))
+		DRotation.RotationNormal(Up, angle);
+	//Pitch
+	if (Input->GetAction(ACT_TURN_DOWN))
+		DRotation.RotationNormal(Right, angle);
+	if (Input->GetAction(ACT_TURN_UP))
+		DRotation.RotationNormal(Right, -angle);
+	//Roll
+	if (Input->GetAction(ACT_ROLL_LEFT))
+		DRotation.RotationNormal(Look, angle);
+	if (Input->GetAction(ACT_ROLL_RIGHT))
+		DRotation.RotationNormal(Look, -angle);
+	translation = translation + Delta;
+	rotation = rotation * DRotation;
+	MainCamera->SetTranslation(translation);
+	MainCamera->SetRotation(rotation);
 }

@@ -13,6 +13,9 @@ RenderingCamera::RenderingCamera()
 	Look = Vector3(0, 0, 1) * Orientation;
 	Up = Vector3(0, 1, 0) * Orientation;
 	Right = Vector3(1, 0, 0) * Orientation;
+	ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
+	Matrix4x4::Inverse(ViewMatrix, &InvertView);
+	ViewProjection = ViewMatrix * Projection;
 }
 
 
@@ -32,6 +35,30 @@ void RenderingCamera::FromLight(Vector3& Position_, Quaternion& Orientation_, Ma
 	ViewProjection = ViewMatrix * Projection;
 }
 
+void RenderingCamera::CheckStatus() {
+	Look = Vector3(0, 0, 1) * Orientation;
+	Up = Vector3(0, 1, 0) * Orientation;
+	Right = Vector3(1, 0, 0) * Orientation;
+	ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
+	Matrix4x4::Inverse(ViewMatrix, &InvertView);
+	ViewProjection = ViewMatrix * Projection;
+}
+
+void RenderingCamera::SetTransform(Vector3& Transform) {
+	Position = Transform;
+	CheckStatus();
+}
+
+void RenderingCamera::SetRotation(Quaternion& Rotation) {
+	Orientation = Rotation;
+	CheckStatus();
+}
+
+void RenderingCamera::SetProjection(Matrix4x4& Projection_) {
+	Projection = Projection;
+	CheckStatus();
+}
+
 Frustum& RenderingCamera::GetFrustum() {
 	frustum = Frustum::CreateFromProjection(Position, Orientation, Projection);
 	//frustum = Frustum::CreateFromProjection(Projection);
@@ -39,10 +66,10 @@ Frustum& RenderingCamera::GetFrustum() {
 }
 
 void RenderingCamera::Update(int ms) {
-	TestMove(ms);
-	ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
-	Matrix4x4::Inverse(ViewMatrix, &InvertView);
-	ViewProjection = ViewMatrix * Projection;
+	//TestMove(ms);
+	//ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
+	//Matrix4x4::Inverse(ViewMatrix, &InvertView);
+	//ViewProjection = ViewMatrix * Projection;
 }
 
 int RenderingCamera::Walk(int TimeDelt)

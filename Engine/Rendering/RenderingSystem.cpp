@@ -73,7 +73,7 @@ int RenderingSystem::Update(int ms) {
 	if (!MainCamera) {
 		return -1;
 	}
-	MainCamera->Update(ms);
+	// MainCamera->Update(ms);
 	// rendercontrol takes over the rendering process
 	Control->Execute();
 	return 0;

@@ -28,6 +28,7 @@ private:
 	int Roll(int TimeDelt);
 	int FreeMove(int TimeDelt);
 	int KeyMove(int TimeDelt);
+	void CheckStatus();
 
 protected:
 	Vector3 Position;
@@ -51,5 +52,8 @@ public:
 	Matrix4x4& GetInvertView() { return InvertView; }
 	Vector3& GetViewPoint() { return Position; }
 	void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
+	void SetTransform(Vector3& Transform);
+	void SetRotation(Quaternion& Rotation);
+	void SetProjection(Matrix4x4& Projection);
 };
 #endif

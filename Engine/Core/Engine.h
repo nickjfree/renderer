@@ -24,6 +24,8 @@ public:
 	virtual int InitSubsystems();
 	// Update
 	int Update(int ms);
+	// handle message
+	int OnMessage(int msg, DWORD lParam, DWORD wParam);
 	// Shutdown
 	int Shutdown();
 };

@@ -1,14 +1,20 @@
 <?xml version="1.0"?>
 <shaders>
   <shader name="Basic">
-    <technique name="Light-Pre">
-      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+    <technique name="GBuffering">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\basic-pre.vs"></vs>
         <ps url="Shaders\shaders\basic-pre.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
-      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
         <vs url="Shaders\shaders\basic.vs"></vs>
         <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
@@ -16,7 +22,7 @@
   </shader>
 
   <shader name="BasicNoCull">
-    <technique name="Light-Pre">
+    <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">
         <vs url="Shaders\shaders\basic-pre.vs"></vs>
         <ps url="Shaders\shaders\basic-pre.ps"></ps>
@@ -28,10 +34,16 @@
         <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
     </technique>
+   <technique name="Shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="NoCull" blend="Blend" rtformat="ShadowMap">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
   </shader>
 
   <shader name="BasicPostObject">
-      <technique name="Light-Pre">
+      <technique name="GBuffering">
         <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
           <vs url="Shaders\shaders\basic-pre.vs"></vs>
           <ps url="Shaders\shaders\basic-pre.ps"></ps>
@@ -43,6 +55,12 @@
           <ps url="Shaders\shaders\basic.ps"></ps>
         </pass>
       </technique>
+     <technique name="Shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
    </shader>
 
   <shader name="PointLight">

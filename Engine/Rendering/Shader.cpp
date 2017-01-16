@@ -203,7 +203,10 @@ int Shader::OnCreateComplete(Variant& Parameter) {
 			}
 			for (int i = 0; i < pass.TextureUnits.Size(); i++) {
 				TextureUnit& tu = pass.TextureUnits[i];
-				//printf("texture unit %s, slot %d\n", (char*)tu.Name, tu.Slot);
+				Variant * texture = rendercontext->GetResource(tu.Name);
+				if (texture) {
+					printf("texture unit %s, slot %d, id %d\n", (char*)tu.Name, tu.Slot, texture->as<int>());
+				}
 			}
 			//printf("Depth %d, Rasterizer %d Blend %d\n", pass.DepthStencil, pass.Rasterizer, pass.Blend);
 		}

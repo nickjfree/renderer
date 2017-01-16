@@ -1,29 +1,48 @@
-#ifndef __D3D11_RENDER__
-#define __D3D11_RENDER__
+#ifndef __D3D12_RENDER__
+#define __D3D12_RENDER__
 
 /*
 	Direct3D11 Renderinterface
 */
 #include "Rendering\Renderinterface.h"
 #include "windows.h"
-#include "d3d11.h"
+#include <d3d12.h>
+#include <dxgi1_4.h>
+#include <Objbase.h>
 #include "Container\LinearBuffer.h"
 #include "Structs.h"
 
-namespace D3D11API {
+namespace D3D12API {
 
-#define MAX_SRV_SLOT 128
-#define MAX_RTV_SLOT 32
 
-	class D3D11Render : public RenderInterface
+	class D3D12Render : public RenderInterface
 	{
 	private:
 		HWND hWnd;
-		// d3d11 device and context
-		ID3D11Device *  Device;
-		ID3D11DeviceContext * DeviceContext;
-		IDXGISwapChain * SwapChain;
+
+		static const UINT FrameCount = 2;
+		// D3D12 device and somte other interfaces
+		ID3D12Device *  Device;
+		IDXGIAdapter * pAdapter;
+		IDXGIAdapter3 * pAdapter3;
+		IDXGISwapChain3 * SwapChain;
 		D3D_FEATURE_LEVEL  FeatureLevel;
+		ID3D12Resource * RenderTargets[FrameCount];
+		ID3D12CommandAllocator * CommandAllocator;
+		ID3D12CommandQueue * CommandQueue;
+		ID3D12DescriptorHeap * RtvHeap;
+		ID3D12PipelineState * PipelineState;
+		ID3D12GraphicsCommandList * CommandList;
+		UINT RtvDescriptorSize;
+
+		// Synchronization objects.
+		UINT FrameIndex;
+		HANDLE FenceEvent;
+		ID3D12Fence * Fence;
+		UINT64 FenceValue;
+
+
+
 		// main render target width and height
 		int Width;
 		int Height;
@@ -35,21 +54,17 @@ namespace D3D11API {
 		LinearBuffer<D3DConstant, 128> Constants;
 		LinearBuffer<D3DRenderState, 128> RenderState;
 		// current status
-		ID3D11RenderTargetView * Targets[8];
+//		ID3D12RenderTargetView * Targets[8];
 		int CurrentTargets;
-		ID3D11DepthStencilView * Depth;
-		// state tracking
-		int SRV_Binding[128];
-		int DSV_Binding;
-		int RTV_Binding[32];
+//		ID3D12DepthStencilView * Depth;
 	public:
-		D3D11Render();
-		~D3D11Render();
+		D3D12Render();
+		~D3D12Render();
 	private:
 		// create windows
 		HWND CreateRenderWindow(void);
-		// create d3d11
-		void InitD3D11();
+		// create D3D12
+		void InitD3D12();
 		// init short operations
 		void InitShortOperation();
 
@@ -57,9 +72,10 @@ namespace D3D11API {
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size);
 
 		void CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& Texture, void * ddsData, int Size);
-
-		// clear resource binding status
-		void UnbindTexture(int Id);
+		// helpers
+		void GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
+		// wait
+		void WaitForPreviousFrame();
 	public:
 		virtual int Initialize(int Widthm, int Height);
 

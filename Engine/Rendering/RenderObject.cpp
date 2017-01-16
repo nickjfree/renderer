@@ -43,8 +43,10 @@ int RenderObject::GetRenderMesh(int Stage, int Lod) {
 int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){
 	if (Stage == R_STAGE_PREPASSS) {
 		Stage = 0;
-	} else if (Stage == R_STAGE_SHADING || Stage == R_STAGE_SHADOW) {
+	} else if (Stage == R_STAGE_SHADING ) {
 		Stage = 1;
+	} else if (Stage == R_STAGE_SHADOW) {
+		Stage = 2;
 	}
 	Matrix4x4 Transform = GetWorldMatrix();
 	Matrix4x4 Tmp;

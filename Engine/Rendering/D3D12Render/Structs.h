@@ -1,27 +1,12 @@
 #include "d3d11.h"
 
-namespace D3D11API {
-
-	/*
-		resource tracking
-	*/
-	typedef struct D3DResourceStatus{
-		int BoundSlot;
-		enum {
-			STATUS_NONE = 0,
-			STATUS_SRV = 1,
-			STATUS_RTV = 2,
-			STATUS_DSV = 3,
-		};
-		int BoundStatus;
-	}D3DResourceStatus;
+namespace D3D12API {
 
 	/*
 	Texture2D
 	*/
 	typedef struct D3DTexture {
 		ID3D11Resource * Texture;
-		D3DResourceStatus Status;
 		ID3D11ShaderResourceView * Resource;
 		union {
 			ID3D11RenderTargetView * Target;

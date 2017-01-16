@@ -7,17 +7,23 @@
 #include "RenderContext.h"
 #include "RenderControl.h"
 
-#define RENDER_D3D11
-
 #ifdef RENDER_D3D11
 #include "D3D11Render\D3D11Render.h"
 
 using D3D11API::D3D11Render;
 
 typedef D3D11Render RenderImp;
-#else
-typedef RenderInterface RenderImp;
 #endif
+
+#ifdef RENDER_D3D12
+#include "D3D12Render\D3D12Render.h"
+using D3D12API::D3D12Render;
+typedef D3D12Render RenderImp;
+#endif
+
+//#else
+//typedef RenderInterface RenderImp;
+//#endif
 
 #include "RenderingCamera.h"
 #include "Spatial.h"

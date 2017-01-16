@@ -300,6 +300,7 @@ int PostpassStage::ToneMapping(BatchCompiler * Compiler) {
 int PostpassStage::HDR(BatchCompiler * Compiler) {
 	int Compiled = 0;
 	if (HDRShader) {
+		//Compiled += Compiler->SetDepthBuffer(-1);
 		Compiled += ScaleBy4(Compiler);
 		Compiled += CalcAvgLum(Compiler);
 		Compiled += CalcAdaptLum(Compiler);
@@ -319,14 +320,14 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	RenderView * renderview = RenderView::Create();
 	// setup render view
 	renderview->Camera = Camera;
-	renderview->Depth = 0;
+	renderview->Depth = -1;
 	renderview->Type = R_STAGE_POST;
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
 	// set render target
 	renderview->TargetCount = 1;
 	renderview->Targets[0] = PingPong[1];
-	renderview->Depth = Context->GetRenderTarget(String("Depth"));
+	//renderview->Depth = Context->GetRenderTarget(String("Depth"));
 	renderview->ClearDepth = 0;
 	BatchCompiler * Compiler = renderview->Compiler;
 	char * Buffer = (char*)renderview->CommandBuffer;

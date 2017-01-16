@@ -10,6 +10,9 @@ using namespace DirectX;
 D3D11Render::D3D11Render() :CurrentTargets(0), Depth(0)
 {
 	memset(Targets, 0, sizeof(void*)* 8);
+	memset(SRV_Binding, -1, MAX_SRV_SLOT * sizeof(int));
+	memset(RTV_Binding, -1, MAX_RTV_SLOT * sizeof(int));
+	DSV_Binding = -1;
 }
 
 
@@ -36,7 +39,7 @@ HWND D3D11Render::CreateRenderWindow()
 	wcex.lpszClassName = L"H3DRender";
 	wcex.hIconSm = NULL;
 	RegisterClassEx(&wcex);
-	RenderWindow = CreateWindowEx(0, L"H3DRender", L"H3DRender", WS_OVERLAPPEDWINDOW, 0, 0, 1366, 768, NULL, NULL, NULL, NULL);
+	RenderWindow = CreateWindowEx(0, L"H3DRender", L"H3DRender", WS_OVERLAPPEDWINDOW, 0, 0, 1920, 1080, NULL, NULL, NULL, NULL);
 	// show this window
 	ShowWindow(RenderWindow, SW_SHOW);
 	UpdateWindow(RenderWindow);
@@ -59,7 +62,7 @@ void D3D11Render::InitD3D11(){
 	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	SwapChainDesc.BufferCount = 1;
 	SwapChainDesc.OutputWindow = hWnd;
-	SwapChainDesc.Windowed = true;
+	SwapChainDesc.Windowed = 1;
 	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	//nVidia PerHUD
@@ -78,7 +81,7 @@ void D3D11Render::InitD3D11(){
 	//DWORD ret = D3D11CreateDeviceAndSwapChain(pAdapter,D3D_DRIVER_TYPE_REFERENCE,0,/*D3D10_CREATE_DEVICE_DEBUG*/D3D11_CREATE_DEVICE_SINGLETHREADED,
 	//	NULL,0,D3D11_SDK_VERSION,&SwapChainDesc,&m_SwapChain,&m_Device,&m_FeatureLevel,&m_DeviceContext);
 	// Create Device and Swap Chain
-	DWORD ret = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0,/*D3D10_CREATE_DEVICE_DEBUG*/0,/*D3D11_CREATE_DEVICE_SINGLETHREADED*/
+	DWORD ret = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0,D3D11_CREATE_DEVICE_DEBUG,/*D3D11_CREATE_DEVICE_SINGLETHREADED*/
 		NULL, 0, D3D11_SDK_VERSION, &SwapChainDesc, &SwapChain, &Device, &FeatureLevel, &DeviceContext);
 	printf("D3DDeivce %x, DeviceContex %x\n", Device, DeviceContext);
 	// the following code shold change to : adding a textureid 0 to textures
@@ -456,19 +459,54 @@ void D3D11Render::SetViewPort(float tlx, float tly, float width, float height, f
 	DeviceContext->RSSetViewports(1, &viewport);
 }
 
+void D3D11Render::UnbindTexture(int Id) {
+	D3DTexture& Texture = Textures[Id];
+	D3DResourceStatus &Status = Texture.Status;
+	Status.BoundStatus = D3DResourceStatus::STATUS_NONE;
+}
+
 
 void D3D11Render::SetDepthStencil(int Depth) {
+	ID3D11ShaderResourceView * Views[1] = {0};
 	if (Depth >= 0) {
 		D3DTexture& Texture = Textures[Depth];
+		D3DResourceStatus &Status = Texture.Status;
+		if (Status.BoundStatus == D3DResourceStatus::STATUS_SRV) {
+			DeviceContext->VSSetShaderResources(Status.BoundSlot, 1, Views);
+			DeviceContext->GSSetShaderResources(Status.BoundSlot, 1, Views);
+			DeviceContext->PSSetShaderResources(Status.BoundSlot, 1, Views);
+		}
 		this->Depth = Texture.Depth;
 		DeviceContext->OMSetRenderTargets(0, 0, Texture.Depth);
+		Status.BoundStatus = D3DResourceStatus::STATUS_DSV;
+		if (DSV_Binding != -1 && DSV_Binding != Depth) {
+			UnbindTexture(DSV_Binding);
+		}
 	}
+	else {
+		DeviceContext->OMSetRenderTargets(0, 0, NULL);
+		this->Depth = NULL;
+	}
+	DSV_Binding = Depth;
 }
 
 void D3D11Render::SetRenderTargets(int Count, int * Targets) {
+	ID3D11ShaderResourceView * Views[1] = { 0 };
 	for (int i = 0; i < Count; i++) {
 		D3DTexture& Texture = Textures[Targets[i]];
+		D3DResourceStatus &Status = Texture.Status;
+		if (Status.BoundStatus == D3DResourceStatus::STATUS_SRV) {
+			DeviceContext->VSSetShaderResources(Status.BoundSlot, 1, Views);
+			DeviceContext->GSSetShaderResources(Status.BoundSlot, 1, Views);
+			DeviceContext->PSSetShaderResources(Status.BoundSlot, 1, Views);
+		}
+		Status.BoundStatus = D3DResourceStatus::STATUS_RTV;
+		Status.BoundSlot = i;
 		this->Targets[i] = Texture.Target;
+		if (RTV_Binding[i] != -1 && RTV_Binding[i] != Targets[i]) {
+			UnbindTexture(RTV_Binding[i]);
+		}
+		RTV_Binding[i] = Targets[i];
 	}
 	CurrentTargets = Count;
 	DeviceContext->OMSetRenderTargets(Count, this->Targets, Depth);
@@ -478,7 +516,21 @@ void D3D11Render::SetTexture(int StartSlot, int * Texture, int Count) {
 	ID3D11ShaderResourceView * Views[32];
 	for (int i = 0; i < Count; i++) {
 		D3DTexture& texture = Textures[Texture[i]];
+		D3DResourceStatus &Status = texture.Status;
+		if (Status.BoundStatus == D3DResourceStatus::STATUS_RTV) {
+			Targets[Status.BoundSlot] = 0;
+			DeviceContext->OMSetRenderTargets(CurrentTargets, Targets, Depth);
+		} else if (Status.BoundStatus == D3DResourceStatus::STATUS_DSV) {
+			DeviceContext->OMSetRenderTargets(0, 0, 0);
+		}
+		int BountSlot = StartSlot + i;
+		Status.BoundStatus = D3DResourceStatus::STATUS_SRV;
+		Status.BoundSlot = BountSlot;
 		Views[i] = texture.Resource;
+		if (SRV_Binding[BountSlot] != -1 && SRV_Binding[BountSlot] != Texture[i]) {
+			UnbindTexture(SRV_Binding[BountSlot]);
+		}
+		SRV_Binding[BountSlot] = Texture[i];
 	}
 	//printf("%d %d\n", StartSlot, Texture[0]);
 	DeviceContext->VSSetShaderResources(StartSlot, Count, Views);

@@ -24,7 +24,7 @@ HWND D3D11Render::CreateRenderWindow()
 {
 	HWND RenderWindow = NULL;
 	WNDCLASSEX wcex;
-
+	RECT rc = { 0, 0, Width, Height};
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -39,22 +39,26 @@ HWND D3D11Render::CreateRenderWindow()
 	wcex.lpszClassName = L"H3DRender";
 	wcex.hIconSm = NULL;
 	RegisterClassEx(&wcex);
-	RenderWindow = CreateWindowEx(0, L"H3DRender", L"H3DRender", WS_OVERLAPPEDWINDOW, 0, 0, 1920, 1080, NULL, NULL, NULL, NULL);
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+	RenderWindow = CreateWindow(L"H3DRender", L"H3DRender - D3D11", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
 	// show this window
 	ShowWindow(RenderWindow, SW_SHOW);
 	UpdateWindow(RenderWindow);
+	GetClientRect(RenderWindow, &rc);
+	Width = rc.right - rc.left;
+	Height = rc.bottom - rc.top;
 	return RenderWindow;
 }
 
 void D3D11Render::InitD3D11(){
 	//init SwapChainDesc
-	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
+	DXGI_SWAP_CHAIN_DESC SwapChainDesc = {};
 	ZeroMemory(&SwapChainDesc, sizeof(SwapChainDesc));
 	SwapChainDesc.BufferDesc.Width = Width;
 	SwapChainDesc.BufferDesc.Height = Height;
 	SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-	SwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	SwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	SwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	SwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 	SwapChainDesc.SampleDesc.Count = 1;
@@ -230,7 +234,10 @@ void D3D11Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 		srDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srDesc.Texture2D.MostDetailedMip = 0;
 		srDesc.Texture2D.MipLevels = 1;
-		Device->CreateShaderResourceView(texture.Texture, &srDesc, &texture.Resource);
+		if (desc.Format != FORMAT_D24_UNORM_S8_UINT) {
+			Device->CreateShaderResourceView(texture.Texture, &srDesc, &texture.Resource);
+		}
+
 		if (Desc->BindFlag & R_BIND_FLAG::BIND_RENDER_TARGET) {
 			D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
 			rtDesc.Format = desc.Format;

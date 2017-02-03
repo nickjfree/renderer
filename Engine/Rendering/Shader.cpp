@@ -225,19 +225,19 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
 	/*
 		shader reflection to get contant buffer info and input signature info
 	*/
-	ID3D11ShaderReflection * Reflector;
-	D3DReflect(Shader, Size, IID_ID3D11ShaderReflection, (void **)&Reflector);
+	ID3D12ShaderReflection * Reflector;
+	D3DReflect(Shader, Size, IID_ID3D12ShaderReflection, (void **)&Reflector);
 	// get shader desc
-	D3D11_SHADER_DESC desc;
+	D3D12_SHADER_DESC desc;
 	Reflector->GetDesc(&desc);
 	// build input signature if it is a vertex shader
-	if (D3D11_SHVER_GET_TYPE(desc.Version) == D3D11_SHVER_VERTEX_SHADER) {
+	if (D3D11_SHVER_GET_TYPE(desc.Version) == D3D12_SHVER_VERTEX_SHADER) {
 		// build the inputlayout
 		R_INPUT_ELEMENT Elements[32];  // 32 is enough for now
 		int Offset = 0;
 		memset(Elements, 0, sizeof(R_INPUT_ELEMENT) * 32);
 		for (int i = 0; i < desc.InputParameters; i++) {
-			D3D11_SIGNATURE_PARAMETER_DESC input_desc;
+			D3D12_SIGNATURE_PARAMETER_DESC input_desc;
 			Reflector->GetInputParameterDesc(i, &input_desc);
 			R_INPUT_ELEMENT * Element = &Elements[i];
 			Element->Semantic = (char*)input_desc.SemanticName;
@@ -253,11 +253,11 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
 
 	// get constant buffers
 	for (int i = 0; i < desc.ConstantBuffers; i++) {
-		D3D11_SHADER_BUFFER_DESC Description;
-		ID3D11ShaderReflectionConstantBuffer* ConstBuffer = Reflector->GetConstantBufferByIndex(i);
+		D3D12_SHADER_BUFFER_DESC Description;
+		ID3D12ShaderReflectionConstantBuffer* ConstBuffer = Reflector->GetConstantBufferByIndex(i);
 		ConstBuffer->GetDesc(&Description);
 		// get constant buffer bind
-		D3D11_SHADER_INPUT_BIND_DESC bind_desc;
+		D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 		Reflector->GetResourceBindingDescByName(Description.Name, &bind_desc);
 		// store constant buffer info
 		ConstantBuffer cb;
@@ -266,11 +266,11 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
 		cb.Slot = bind_desc.BindPoint;
 		RenderPass->Constants.PushBack(cb);
 		for (int j = 0; j < Description.Variables; j++)  {   // Get the variable description and store it   
-			ID3D11ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
-			D3D11_SHADER_VARIABLE_DESC var_desc;   
+			ID3D12ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
+			D3D12_SHADER_VARIABLE_DESC var_desc;   
 			Variable->GetDesc( &var_desc );     
-			ID3D11ShaderReflectionType* pType = Variable->GetType();   
-			D3D11_SHADER_TYPE_DESC type_desc;
+			ID3D12ShaderReflectionType* pType = Variable->GetType();   
+			D3D12_SHADER_TYPE_DESC type_desc;
 			pType->GetDesc( &type_desc );
 			// store shader parameter info
 			ShaderParameter sp;
@@ -285,7 +285,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
 	// get textures
 	for (int i = 0; i < desc.BoundResources; i++) {
 		// get constant buffer bind
-		D3D11_SHADER_INPUT_BIND_DESC bind_desc;
+		D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 		Reflector->GetResourceBindingDesc(i, &bind_desc);
 		if (bind_desc.Type == D3D_SIT_TEXTURE) {
 			// store constant buffer info

@@ -1,27 +1,31 @@
 #include "D3D12Render.h"
 #include "stdio.h"
-#include "DDSTextureLoader.h"
 #include "DirectxMath.h"
+#include "DDSTextureLoader12.h"
+
 
 
 using namespace D3D12API;
 using namespace DirectX;
 
-D3D12Render::D3D12Render() :CurrentTargets(0)
+D3D12Render * D3D12Render::thisRender = NULL;
+
+D3D12Render::D3D12Render() :CurrentTargets(0), CurrentConstHeap(0)
 {
 //	memset(Targets, 0, sizeof(void*)* 8);
+	thisRender = this;
 }
 
 
-D3D12Render::~D3D12Render()
-{
+D3D12Render::~D3D12Render() {
 }
+
 
 HWND D3D12Render::CreateRenderWindow()
 {
 	HWND RenderWindow = NULL;
 	WNDCLASSEX wcex;
-
+	RECT rc = { 0, 0, Width, Height };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -36,10 +40,14 @@ HWND D3D12Render::CreateRenderWindow()
 	wcex.lpszClassName = L"H3DRender";
 	wcex.hIconSm = NULL;
 	RegisterClassEx(&wcex);
-	RenderWindow = CreateWindowEx(0, L"H3DRender", L"H3DRender - D3D12", WS_OVERLAPPEDWINDOW, 0, 0, 1366, 768, NULL, NULL, NULL, NULL);
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+	RenderWindow = CreateWindow(L"H3DRender", L"H3DRender - D3D12", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
 	// show this window
 	ShowWindow(RenderWindow, SW_SHOW);
 	UpdateWindow(RenderWindow);
+	GetClientRect(RenderWindow, &rc);
+	Width = rc.right - rc.left;
+	Height = rc.bottom - rc.top;
 	return RenderWindow;
 }
 
@@ -100,15 +108,10 @@ void D3D12Render::InitD3D12(){
 		printf("Failed to create D3D12Device\n");
 		return;
 	}
-	// Describe and create the command queue.
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-	if (FAILED(Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&CommandQueue)))) {
-		printf("Failed to create CommandQueue\n");
-		return;
-	}
+	// create all command queues.
+	InitQueues();
+	// get graphic queue
+	CommandQueueTest = CommandQueues[D3D12_COMMAND_LIST_TYPE_DIRECT]->Get();
 
 	// Describe and create the swap chain.
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -122,7 +125,7 @@ void D3D12Render::InitD3D12(){
 
 	IDXGISwapChain1 * swapChain;
 	if (FAILED(pFactory->CreateSwapChainForHwnd(
-		CommandQueue,		// Swap chain needs the queue so that it can force a flush on it.
+		CommandQueueTest,		// Swap chain needs the queue so that it can force a flush on it.
 		hWnd,
 		&swapChainDesc,
 		NULL,
@@ -180,6 +183,18 @@ void D3D12Render::InitD3D12(){
 	}
 }
 
+
+void D3D12Render::InitQueues() {
+	// create 3 command queues engine
+	CommandQueues[D3D12_COMMAND_LIST_TYPE_DIRECT] = new CommandQueue(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	CommandQueues[D3D12_COMMAND_LIST_TYPE_BUNDLE] = 0;
+	CommandQueues[D3D12_COMMAND_LIST_TYPE_COMPUTE] = new CommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	CommandQueues[D3D12_COMMAND_LIST_TYPE_COPY] =  new CommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COPY);
+}
+
+
+
+
 int D3D12Render::Initialize(int Width_, int Height_) {
 	// Create window 
 	Width = Width_;
@@ -228,10 +243,51 @@ void D3D12Render::InitShortOperation() {
 }
 
 void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size) {
+	printf("%s\n", __func__);
+	std::vector<D3D12_SUBRESOURCE_DATA > subresources;
+	HRESULT result = LoadDDSTextureFromMemory(Device, (uint8_t*)ddsData, Size, &Texture.Texture[0], subresources);
+	ID3D12Resource * TexResource = Texture.Texture[0];
+
+	// command context
+	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	Context->InitializeTexture(TexResource, subresources);
+	Context->Finish(1);
 }
 
 void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture, void * RawData, int Size) {
 
+	D3D12_RESOURCE_DESC textureDesc = {};
+	textureDesc.Format = (DXGI_FORMAT)Desc->Format;
+	textureDesc.Width = Desc->Width;
+	textureDesc.Height = Desc->Height;
+	textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	textureDesc.DepthOrArraySize = 1;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureDesc.MipLevels = Desc->MipLevels;
+	if (RawData) {
+		printf("D3d12 no suport for rawdata %s", __func__);
+		return;
+	}
+	// try create comitted resource
+	int Num = 1;
+	texture.MultiFrame = false;
+	if (Desc->BindFlag & BIND_DEPTH_STENCIL || Desc->BindFlag & BIND_RENDER_TARGET) {
+		// create multi rt  and ds for each frame
+		Num = NUM_FRAMES;
+		texture.MultiFrame = true;
+	}
+	for (int i = 0; i < Num; i++) {
+		Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&textureDesc,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&texture.Texture[i]));
+		texture.State[i].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
+	}
 }
 
 int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag) {
@@ -251,20 +307,48 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 
 
 int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int INum, R_FORMAT IndexFormat) {
-
-	return 0;
+	D3DGeometry Geometry = {};
+	// create vertex buffer
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(VBSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&Geometry.VertexResource));
+	// create index buffer
+	Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(INum * sizeof(WORD)),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&Geometry.IndexResource));
+	Geometry.VBSize = VertexSize;
+	Geometry.INum = INum;
+	Geometry.VSize = VBSize;
+	// copy resource
+	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	Context->InitializeVetexBuffer(Geometry.VertexResource, VBuffer, VBSize);
+	Context->InitializeIndexBuffer(Geometry.IndexResource, IBuffer, INum * sizeof(WORD));
+	Context->Finish(1);
+	// Add to linear buffer
+	int Id = Geometries.AddItem(Geometry);
+	return Id;
 }
 
 int D3D12Render::CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size) {
-
 	return 0;
 }
 
 int D3D12Render::CreateConstantBuffer(unsigned int Size) {
-
-	return 0;
+	D3DConstant Constant = {};
+	Constant.Buffer = new char[Size];
+	Constant.Slot = -1;
+	Constant.Size = Size;
+	int Id = Constants.AddItem(Constant);
+	return Id;
 }
-
 
 int D3D12Render::CreateVertexShader(void * ByteCode, unsigned int Size, int flag) {
 
@@ -356,8 +440,25 @@ void D3D12Render::SetPixelShader(int Id) {
 }
 
 void D3D12Render::SetConstant(int Slot, int Buffer, void * CPUData, unsigned int Size) {
-
+	D3DConstant& Constant = Constants.GetItem(Buffer);
+	void * Data = NULL;
+	if (CurrentConstHeap) {
+		Data = CurrentConstHeap->SubAlloc(Size);
+		if (!Data) {
+			UsedConstHeaps.PushBack(CurrentConstHeap);
+			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+			Data = CurrentConstHeap->SubAlloc(Size);
+		}
+	} 	else {
+		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+		Data = CurrentConstHeap->SubAlloc(Size);
+	}
+	assert(Data);
+	memcpy(Data, CPUData, Size);
+	// bind to signature
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = CurrentConstHeap->GetGpuAddress(Data);
 }
+
 
 void D3D12Render::ClearDepth(float depth, float stencil) {
 	//DeviceContext->ClearDepthStencilView(Depth, D3D12_CLEAR_DEPTH | D3D12_CLEAR_STENCIL, 1, 0);
@@ -397,14 +498,21 @@ void D3D12Render::Present() {
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	CommandList->ResourceBarrier(1, &barrier);
-
 	CommandList->Close();
-
 	ID3D12CommandList* ppCommandLists[] = {CommandList};
-	CommandQueue->ExecuteCommandLists(1, ppCommandLists);
-
+	// test
+	CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	UINT64 FenceValue = Queue->ExecuteCommandList(1, ppCommandLists);
+	// retire all used heaps
+	if (CurrentConstHeap) {
+		UsedConstHeaps.PushBack(CurrentConstHeap);
+		CurrentConstHeap = 0;
+	}
+	for (int i = 0; i < UsedConstHeaps.Size(); i++) {
+		UsedConstHeaps[i]->Retire(FenceValue);
+	}
+	UsedConstHeaps.Empty();
 	SwapChain->Present(1, 0);
-
 	WaitForPreviousFrame();
 }
 
@@ -413,10 +521,9 @@ void D3D12Render::WaitForPreviousFrame() {
 	// This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
 	// sample illustrates how to use fences for efficient resource usage and to
 	// maximize GPU utilization.
-
 	// Signal and increment the fence value.
 	const UINT64 fence = FenceValue;
-	CommandQueue->Signal(Fence, fence);
+	CommandQueueTest->Signal(Fence, fence);
 	FenceValue++;
 
 	// Wait until the previous frame is finished.
@@ -429,7 +536,6 @@ void D3D12Render::WaitForPreviousFrame() {
 }
 
 void D3D12Render::Draw(int Id) {
-
 }
 
 void D3D12Render::Quad() {

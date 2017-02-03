@@ -1,25 +1,42 @@
+#ifndef __D3D12_STRUCT__
+#define __D3D12_STRUCT__
+
+
 #include "d3d11.h"
+#include "d3d12.h"
 
 namespace D3D12API {
 
+#define NUM_FRAMES 2
+#define MAX_THREAD 8
+	
+	/* resource state */
+	typedef struct D3DResourceState {
+		D3D12_RESOURCE_STATES CurrentState;
+	} D3DResourceState;
+	
 	/*
 	Texture2D
 	*/
 	typedef struct D3DTexture {
-		ID3D11Resource * Texture;
-		ID3D11ShaderResourceView * Resource;
+		// multi frame flag
+		int MultiFrame;
+		ID3D12Resource * Texture[NUM_FRAMES];
+		D3D12_CPU_DESCRIPTOR_HANDLE Resource[NUM_FRAMES];
 		union {
-			ID3D11RenderTargetView * Target;
-			ID3D11DepthStencilView * Depth;
+			D3D12_CPU_DESCRIPTOR_HANDLE Target[NUM_FRAMES];
+			D3D12_CPU_DESCRIPTOR_HANDLE Depth[NUM_FRAMES];
 		};
+		D3DResourceState State[NUM_FRAMES];
 	}D3DTexture;
+
 
 	/*
 		Geometry
 	*/
 	typedef struct D3DGeometry {
-		ID3D11Buffer * Vertex;
-		ID3D11Buffer * Index;
+		ID3D12Resource * VertexResource;
+		ID3D12Resource * IndexResource;
 		unsigned int VSize;
 		unsigned int INum;
 		unsigned int VBSize;
@@ -46,9 +63,9 @@ namespace D3D12API {
 
 	/* constant buffers */
 	typedef struct D3DConstant {
-		union {
-			ID3D11Buffer * Buffer;
-		};
+		int Size;
+		int Slot;
+		void * Buffer;
 	}D3DConstant;
 
 	/* render state */
@@ -67,3 +84,5 @@ namespace D3D12API {
 		float u, v;
 	}BasicVertex;
 }
+
+#endif

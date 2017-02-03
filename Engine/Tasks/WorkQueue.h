@@ -9,6 +9,7 @@
 #include "Container\Vector.h"
 #include "Task.h"
 #include "Mutex.h"
+#include "ThreadLocal.h"
 
 class WorkerThread;
 
@@ -27,6 +28,8 @@ private:
 	Mutex Finish;
 	// worker threads
 	Vector<WorkerThread*> Workers;
+	// thread local
+	ThreadLocal * tls;
 private:
 	void HandleComplete(int Limit=500);
 public:

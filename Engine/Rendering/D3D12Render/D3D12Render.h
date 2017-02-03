@@ -7,20 +7,28 @@
 #include "Rendering\Renderinterface.h"
 #include "windows.h"
 #include <d3d12.h>
+#include "d3dx12.h"
 #include <dxgi1_4.h>
 #include <Objbase.h>
 #include "Container\LinearBuffer.h"
 #include "Structs.h"
+#include "CommandQueue.h"
+#include "CommandContext.h"
+#include "Heap.h"
+
+
 
 namespace D3D12API {
+	
 
 
 	class D3D12Render : public RenderInterface
 	{
 	private:
+		static D3D12Render * thisRender;
 		HWND hWnd;
 
-		static const UINT FrameCount = 2;
+		static const UINT FrameCount = NUM_FRAMES;
 		// D3D12 device and somte other interfaces
 		ID3D12Device *  Device;
 		IDXGIAdapter * pAdapter;
@@ -29,7 +37,7 @@ namespace D3D12API {
 		D3D_FEATURE_LEVEL  FeatureLevel;
 		ID3D12Resource * RenderTargets[FrameCount];
 		ID3D12CommandAllocator * CommandAllocator;
-		ID3D12CommandQueue * CommandQueue;
+		ID3D12CommandQueue * CommandQueueTest;
 		ID3D12DescriptorHeap * RtvHeap;
 		ID3D12PipelineState * PipelineState;
 		ID3D12GraphicsCommandList * CommandList;
@@ -40,7 +48,8 @@ namespace D3D12API {
 		HANDLE FenceEvent;
 		ID3D12Fence * Fence;
 		UINT64 FenceValue;
-
+		// command queues
+		CommandQueue * CommandQueues[4];
 
 
 		// main render target width and height
@@ -53,6 +62,10 @@ namespace D3D12API {
 		LinearBuffer<D3DRenderShader, 512> Shaders;
 		LinearBuffer<D3DConstant, 128> Constants;
 		LinearBuffer<D3DRenderState, 128> RenderState;
+		// constant buffer heaps
+		Vector<Heap*> UsedConstHeaps;
+		// current heaps
+		Heap * CurrentConstHeap;
 		// current status
 //		ID3D12RenderTargetView * Targets[8];
 		int CurrentTargets;
@@ -67,6 +80,8 @@ namespace D3D12API {
 		void InitD3D12();
 		// init short operations
 		void InitShortOperation();
+		// create queues
+		void InitQueues();
 
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size);
@@ -76,6 +91,10 @@ namespace D3D12API {
 		void GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
 		// wait
 		void WaitForPreviousFrame();
+	public:
+		static D3D12Render * GetRender() { return thisRender; }
+		// get queue
+		CommandQueue * GetQueue(D3D12_COMMAND_LIST_TYPE type) { return CommandQueues[type]; };
 	public:
 		virtual int Initialize(int Widthm, int Height);
 

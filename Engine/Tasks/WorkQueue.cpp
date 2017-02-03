@@ -1,5 +1,6 @@
 #include "WorkQueue.h"
 #include "WorkerThread.h"
+#include "ThreadLocal.h"
 
 
 WorkQueue::WorkQueue(Context * context) : System(context)
@@ -52,10 +53,13 @@ Task * WorkQueue::GetFinishTask() {
 }
 
 int WorkQueue::Initialize() {
+	// init thread index for main thread
+	tls = new ThreadLocal();
+	ThreadLocal::SetThreadLocal(0);
 	// start threads
 	int cores = 2;
 	for (int i = 0; i < cores; i++) {
-		WorkerThread * Thread = new WorkerThread(this, i);
+		WorkerThread * Thread = new WorkerThread(this, i+1);
 		Workers.PushBack(Thread);
 		Thread->Start();
 	}

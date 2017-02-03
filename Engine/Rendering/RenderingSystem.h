@@ -33,14 +33,13 @@ typedef D3D12Render RenderImp;
 // renderqueue imp
 #include "RenderQueue.h"
 #include "RenderProcesser.h"
-
 #include "Tasks\OsEvent.h"
+
 /*
 	Rendering system. implement with H3D rendering engine
 */
 
-class RenderingSystem : public System
-{
+class RenderingSystem : public System {
 	BASEOBJECT(System);
 	OBJECT(RenderingSystem);
 private:

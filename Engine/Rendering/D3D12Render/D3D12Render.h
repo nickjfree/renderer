@@ -15,12 +15,14 @@
 #include "CommandQueue.h"
 #include "CommandContext.h"
 #include "Heap.h"
+#include "DescriptorHeap.h"
 
 
 
 namespace D3D12API {
 	
-
+#define MAX_TEXTURE_SIZE  8192
+#define MAX_GEOMETRY_SIZE 4096
 
 	class D3D12Render : public RenderInterface
 	{
@@ -36,18 +38,11 @@ namespace D3D12API {
 		IDXGISwapChain3 * SwapChain;
 		D3D_FEATURE_LEVEL  FeatureLevel;
 		ID3D12Resource * RenderTargets[FrameCount];
-		ID3D12CommandAllocator * CommandAllocator;
-		ID3D12CommandQueue * CommandQueueTest;
 		ID3D12DescriptorHeap * RtvHeap;
 		ID3D12PipelineState * PipelineState;
-		ID3D12GraphicsCommandList * CommandList;
 		UINT RtvDescriptorSize;
-
 		// Synchronization objects.
 		UINT FrameIndex;
-		HANDLE FenceEvent;
-		ID3D12Fence * Fence;
-		UINT64 FenceValue;
 		// command queues
 		CommandQueue * CommandQueues[4];
 
@@ -66,6 +61,14 @@ namespace D3D12API {
 		Vector<Heap*> UsedConstHeaps;
 		// current heaps
 		Heap * CurrentConstHeap;
+		// resource descriptor heaps
+		Vector<DescriptorHeap *> CpuSRVHeaps;
+		// TRV Heaps
+		Vector<DescriptorHeap *> GpuRTVHeaps;
+		// Sampler Heaps
+		Vector<DescriptorHeap *> GpuSamplerHeaps;
+		// Used SRVHeaps
+		Vector<DescriptorHeap *> UsedGpuSRVHeaps;
 		// current status
 //		ID3D12RenderTargetView * Targets[8];
 		int CurrentTargets;
@@ -82,6 +85,8 @@ namespace D3D12API {
 		void InitShortOperation();
 		// create queues
 		void InitQueues();
+		// init decriptor heaps
+		void InitDescriptorHeaps();
 
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size);

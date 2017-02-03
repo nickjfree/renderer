@@ -68,7 +68,7 @@ void CommandContext::Reset() {
 	CommandList->Reset(CommandAllocator, NULL);
 }
 
-void CommandContext::Finish(bool WaitForFence) {
+UINT64 CommandContext::Finish(bool WaitForFence) {
 	D3D12Render * Render = D3D12Render::GetRender();
 	CommandQueue * Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	CommandList->Close();
@@ -80,9 +80,10 @@ void CommandContext::Finish(bool WaitForFence) {
 	// put context to retired set
 	CommandContext * Context = this;
 	Retired[Type].Insert(this);
+	return FenceValue;
 }
 
-void CommandContext::Flush(bool WaitForFence) {
+UINT64 CommandContext::Flush(bool WaitForFence) {
 	D3D12Render * Render = D3D12Render::GetRender();
 	CommandQueue * Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ID3D12CommandList * pCommandList[1] = { CommandList };
@@ -91,6 +92,7 @@ void CommandContext::Flush(bool WaitForFence) {
 	if (WaitForFence) {
 		Queue->Wait(FenceValue);
 	}
+	return FenceValue;
 }
 
 
@@ -161,4 +163,8 @@ void CommandContext::InitializeIndexBuffer(ID3D12Resource * DestResource, void *
 	// resource barrier
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
+}
+
+ID3D12CommandList * CommandContext::GetCommandList() {
+	return CommandList;
 }

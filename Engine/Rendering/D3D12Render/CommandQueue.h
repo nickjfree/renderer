@@ -31,6 +31,8 @@ namespace D3D12API {
 		ID3D12CommandQueue * Get() { return CmdQueue; }
 		// wait for fence
 		void Wait(UINT64 FenceValue);
+		// idle gpu for a thread
+		void IdleGpu();
 		// excute command list
 		UINT64 ExecuteCommandList(int Num, ID3D12CommandList ** CommandLists);
 		// is fence complete

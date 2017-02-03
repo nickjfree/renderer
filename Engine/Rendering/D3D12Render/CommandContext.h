@@ -46,9 +46,9 @@ class CommandContext {
 		// reset command list
 		void Reset();
 		// flush command list
-		void Flush(bool WaitForFence);
+		UINT64 Flush(bool WaitForFence);
 		// finish command list and retire
-		void Finish(bool WaitForFence);
+		UINT64 Finish(bool WaitForFence);
 		// set descriptorheaps. typicaly. 2 frame buffers, 2-3 descriptor heaps
 		void SetDescriptorHeaps(ID3D12DescriptorHeap * Heaps);
 		// get commandlist
@@ -59,6 +59,8 @@ class CommandContext {
 		void InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size);
 		// init buffers
 		void InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size);
+		// get commandlist
+		ID3D12CommandList * GetCommandList();
 	};
 
 }

@@ -3,6 +3,7 @@
 
 #include <d3d12.h>
 #include "d3dx12.h"
+#include "DescriptorHeap.h"
 
 /*
 	RootSignature
@@ -53,6 +54,9 @@ namespace D3D12API {
 		void SetConstantBuffer(int slot, D3D12_CONSTANT_BUFFER_VIEW_DESC * ConstBufferView);
 		// set sampler
 		void SetSampler(int slot, D3D12_CPU_DESCRIPTOR_HANDLE handle);
+		// flush descriptors, constant bindings
+		void Flush(DescriptorHeap * descHeap);
+
 	};
 
 }

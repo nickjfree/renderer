@@ -17,7 +17,7 @@ CommandQueue::CommandQueue(ID3D12Device * Device_, D3D12_COMMAND_LIST_TYPE Type)
 	// create fences, event, init fenvevalue
 	for (int i = 0; i < MAX_THREAD; i++) {
 		Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
-		FenceValue = 1;
+		FenceValue = 0;
 		// event
 		FenceEvent[i] = CreateEvent(0, 0, 0, 0);
 	}
@@ -31,6 +31,18 @@ void CommandQueue::Wait(UINT64 FenceValue_) {
 	int Index = (int)ThreadLocal::GetThreadLocal();
 	// fencevalue is the fencevalue to wait for
 	UINT64 FenceToWait = FenceValue_;
+	Fence->SetEventOnCompletion(FenceToWait, FenceEvent[Index]);
+	WaitForSingleObject(FenceEvent[Index], -1);
+}
+
+void CommandQueue::IdleGpu() {
+	int Index = (int)ThreadLocal::GetThreadLocal();
+	// fencevalue is the fencevalue to wait for
+	QueueLock.Acquire();
+	UINT64 CurrentFence = InterlockedIncrement(&FenceValue);
+	CmdQueue->Signal(Fence, CurrentFence);
+	QueueLock.Release();
+	UINT64 FenceToWait = CurrentFence;
 	Fence->SetEventOnCompletion(FenceToWait, FenceEvent[Index]);
 	WaitForSingleObject(FenceEvent[Index], -1);
 }

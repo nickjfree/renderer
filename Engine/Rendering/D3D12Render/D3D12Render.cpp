@@ -110,9 +110,9 @@ void D3D12Render::InitD3D12(){
 	}
 	// create all command queues.
 	InitQueues();
+	InitDescriptorHeaps();
 	// get graphic queue
-	CommandQueueTest = CommandQueues[D3D12_COMMAND_LIST_TYPE_DIRECT]->Get();
-
+	ID3D12CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->Get();
 	// Describe and create the swap chain.
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
 	swapChainDesc.BufferCount = FrameCount;
@@ -125,7 +125,7 @@ void D3D12Render::InitD3D12(){
 
 	IDXGISwapChain1 * swapChain;
 	if (FAILED(pFactory->CreateSwapChainForHwnd(
-		CommandQueueTest,		// Swap chain needs the queue so that it can force a flush on it.
+		Queue,		// Swap chain needs the queue so that it can force a flush on it.
 		hWnd,
 		&swapChainDesc,
 		NULL,
@@ -162,25 +162,6 @@ void D3D12Render::InitD3D12(){
 		Device->CreateRenderTargetView(RenderTargets[n], nullptr, rtvHandle);
 		rtvHandle.ptr += RtvDescriptorSize;
 	}
-	// create command allocator
-	Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&CommandAllocator));
-	// test init
-	// Create the command list.
-	Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, CommandAllocator, nullptr, IID_PPV_ARGS(&CommandList));
-
-	// Command lists are created in the recording state, but there is nothing
-	// to record yet. The main loop expects it to be closed, so close it now.
-	CommandList->Close();
-
-	// Create synchronization objects.
-	Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&Fence));
-	FenceValue = 1;
-
-	// Create an event handle to use for frame synchronization.
-	FenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-	if (FenceEvent == nullptr) {
-		printf("Create event failed %d\n", GetLastError());
-	}
 }
 
 
@@ -192,8 +173,13 @@ void D3D12Render::InitQueues() {
 	CommandQueues[D3D12_COMMAND_LIST_TYPE_COPY] =  new CommandQueue(Device, D3D12_COMMAND_LIST_TYPE_COPY);
 }
 
-
-
+void D3D12Render::InitDescriptorHeaps() {
+	int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE;
+	while (HeapNum--) {
+		DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+		CpuSRVHeaps.PushBack(Heap);
+	}
+}
 
 int D3D12Render::Initialize(int Width_, int Height_) {
 	// Create window 
@@ -469,14 +455,8 @@ void D3D12Render::ClearRenderTarget(){
 }
 
 void D3D12Render::Present() {
-//	SwapChain->Present(1, 0);
-	CommandAllocator->Reset();
-
-	// However, when ExecuteCommandList() is called on a particular command 
-	// list, that command list can then be reset at any time and must be before 
-	// re-recording.
-	CommandList->Reset(CommandAllocator, PipelineState);
-
+	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	ID3D12GraphicsCommandList * commandlist = Context->GetGraphicsCommandList();
 	// Indicate that the back buffer will be used as a render target.
 	D3D12_RESOURCE_BARRIER barrier = {};
 	barrier.Transition.pResource = RenderTargets[FrameIndex];
@@ -485,24 +465,21 @@ void D3D12Render::Present() {
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
-	CommandList->ResourceBarrier(1, &barrier);
+	commandlist->ResourceBarrier(1, &barrier);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = RtvHeap->GetCPUDescriptorHandleForHeapStart()/*, m_rameIndex, m_rtvDescriptorSize)*/;
 	rtvHandle.ptr += FrameIndex * RtvDescriptorSize;
 
 	// Record commands.
 	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	CommandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandlist->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 	// Indicate that the back buffer will now be used to present.
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	CommandList->ResourceBarrier(1, &barrier);
-	CommandList->Close();
-	ID3D12CommandList* ppCommandLists[] = {CommandList};
-	// test
-	CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	UINT64 FenceValue = Queue->ExecuteCommandList(1, ppCommandLists);
+	commandlist->ResourceBarrier(1, &barrier);
+	
+	UINT64 FenceValue = Context->Finish(1);
 	// retire all used heaps
 	if (CurrentConstHeap) {
 		UsedConstHeaps.PushBack(CurrentConstHeap);
@@ -517,21 +494,8 @@ void D3D12Render::Present() {
 }
 
 void D3D12Render::WaitForPreviousFrame() {
-	// WAITING FOR THE FRAME TO COMPLETE BEFORE CONTINUING IS NOT BEST PRACTICE.
-	// This is code implemented as such for simplicity. The D3D12HelloFrameBuffering
-	// sample illustrates how to use fences for efficient resource usage and to
-	// maximize GPU utilization.
-	// Signal and increment the fence value.
-	const UINT64 fence = FenceValue;
-	CommandQueueTest->Signal(Fence, fence);
-	FenceValue++;
-
-	// Wait until the previous frame is finished.
-	if (Fence->GetCompletedValue() < fence)
-	{
-		Fence->SetEventOnCompletion(fence, FenceEvent);
-		WaitForSingleObject(FenceEvent, INFINITE);
-	}
+	CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	Queue->IdleGpu();
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
 }
 

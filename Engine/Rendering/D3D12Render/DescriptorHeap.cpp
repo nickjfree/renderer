@@ -33,16 +33,16 @@ DescriptorHeap::~DescriptorHeap() {
 DescriptorHeap * DescriptorHeap::Alloc(ID3D12Device * Device, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flag) {
 	D3D12Render * Render = D3D12Render::GetRender();
 	CommandQueue * Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	List<DescriptorHeap> & retired = CpuRetired[type];
+	List<DescriptorHeap> * retired = &CpuRetired[type];
 	if (flag == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE) {
-		retired = GpuRetired[type];
+		retired = &GpuRetired[type];
 	}
 	DescriptorHeap * heap = NULL;
 	List<DescriptorHeap>::Iterator Iter;
-	for (Iter = retired.Begin(); Iter != retired.End(); Iter++) {
+	for (Iter = retired->Begin(); Iter != retired->End(); Iter++) {
 		heap = *Iter;
 		if (Queue->FenceComplete(heap->FenceValue)) {
-			retired.Remove(Iter);
+			retired->Remove(Iter);
 			return heap;
 		}
 	}

@@ -174,11 +174,23 @@ void D3D12Render::InitQueues() {
 }
 
 void D3D12Render::InitDescriptorHeaps() {
-	int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE;
-	while (HeapNum--) {
-		DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
-		CpuSRVHeaps.PushBack(Heap);
+	for (int i = 0; i < NUM_FRAMES; i++) {
+		// create cpu srv heaps
+		int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE;
+		while (HeapNum--) {
+			DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+			CpuSRVHeaps[i].PushBack(Heap);
+		}
+		// create render target heaps
+		DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+		CpuRTVHeaps[i].PushBack(Heap);
+		// create depth stencil heaps
+		Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+		CpuDSVHeaps[i].PushBack(Heap);
 	}
+	// create sampler heaps
+	DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	GpuSamplerHeaps.PushBack(Heap);
 }
 
 int D3D12Render::Initialize(int Width_, int Height_) {
@@ -228,12 +240,12 @@ void D3D12Render::InitShortOperation() {
 	int Id = CreateGeometry(VBuffer, sizeof(BasicVertex)* 4, sizeof(BasicVertex), IBuffer, 6, R_FORMAT::FORMAT_R16_UNORM);
 }
 
-void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size) {
+void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube) {
 	printf("%s\n", __func__);
 	std::vector<D3D12_SUBRESOURCE_DATA > subresources;
-	HRESULT result = LoadDDSTextureFromMemory(Device, (uint8_t*)ddsData, Size, &Texture.Texture[0], subresources);
+	HRESULT result = LoadDDSTextureFromMemory(Device, (uint8_t*)ddsData, Size, &Texture.Texture[0], subresources, 0, NULL, isCube);
 	ID3D12Resource * TexResource = Texture.Texture[0];
-
+		
 	// command context
 	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	Context->InitializeTexture(TexResource, subresources);
@@ -259,20 +271,27 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 	// try create comitted resource
 	int Num = 1;
 	texture.MultiFrame = false;
-	if (Desc->BindFlag & BIND_DEPTH_STENCIL || Desc->BindFlag & BIND_RENDER_TARGET) {
+	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COPY_DEST;
+	if (Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		// create multi rt  and ds for each frame
 		Num = NUM_FRAMES;
 		texture.MultiFrame = true;
+		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	} else if (Desc->BindFlag & BIND_RENDER_TARGET) {
+		Num = NUM_FRAMES;
+		texture.MultiFrame = true;
+		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		state = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	}
 	for (int i = 0; i < Num; i++) {
 		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&textureDesc,
-			D3D12_RESOURCE_STATE_COPY_DEST,
+			state,
 			nullptr,
 			IID_PPV_ARGS(&texture.Texture[i]));
-		texture.State[i].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
+		texture.State[i].CurrentState = state;
 	}
 }
 
@@ -282,12 +301,73 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 	*/
 	printf("create Texture2D\n");
 	D3DTexture texture = {};
+	bool isCube;
 	if (Desc) {
 		CreateTexture2DRaw(Desc, texture, RawData, Size);
 	} else if (!Desc) {
-		CreateTextureDDS(texture, RawData, Size);
+		CreateTextureDDS(texture, RawData, Size, &isCube);
 	}
 	int Id = Textures.AddItem(texture);
+	//create descriptors in cpu descriptor heaps
+	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
+	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
+	D3D12_CPU_DESCRIPTOR_HANDLE handle;
+	D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
+	vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	int NumFrames = 1;
+	if (Desc && Desc->BindFlag & BIND_RENDER_TARGET) {
+		NumFrames = NUM_FRAMES;
+		D3D12_RENDER_TARGET_VIEW_DESC rtDesc = {};
+		rtDesc.Format = (DXGI_FORMAT)Desc->Format;
+		rtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		rtDesc.Texture2D.MipSlice = 0;
+		vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		vdesc.Texture2D.MipLevels = 1;
+		vdesc.Format = (DXGI_FORMAT)Desc->Format;
+		if (Desc->Format == FORMAT_R32_TYPELESS) {
+			vdesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
+		}
+		for (int i = 0; i < NumFrames; i++) {
+			handle = CpuRTVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+			Device->CreateRenderTargetView(texture.Texture[0], &rtDesc, handle);
+		}
+	} else if (Desc && Desc->BindFlag & BIND_DEPTH_STENCIL) {
+		NumFrames = NUM_FRAMES;
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsDesc = {};
+		dsDesc.Format = (DXGI_FORMAT)Desc->Format;
+		if (Desc->Format == FORMAT_R32_TYPELESS) {
+			vdesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
+			dsDesc.Format = (DXGI_FORMAT)FORMAT_D32_FLOAT;
+		}
+		vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		vdesc.Texture2D.MipLevels = 1;
+		dsDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsDesc.Texture2D.MipSlice = 0;
+		for (int i = 0; i < NumFrames; i++) {
+			handle = CpuDSVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+			Device->CreateDepthStencilView(texture.Texture[0], &dsDesc, handle);
+		}
+	} else if (!Desc) {
+		// commen textures, only use frame 0 heaps
+		NumFrames = 1;
+		D3D12_RESOURCE_DESC resDesc = texture.Texture[0]->GetDesc();
+		vdesc.Format = (DXGI_FORMAT)resDesc.Format;
+		if (isCube) {
+			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			vdesc.TextureCube.MipLevels = resDesc.MipLevels;
+		} else {
+			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			vdesc.Texture2D.MipLevels = resDesc.MipLevels;
+		}
+	}
+	// create srvs
+	for (int i = 0; i < NumFrames; i++) {
+		handle = CpuSRVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+		// filter out d24s8 format
+		if (vdesc.Format) {
+			Device->CreateShaderResourceView(texture.Texture[0], &vdesc, handle);
+		}
+	}
 	return Id;
 }
 
@@ -337,45 +417,113 @@ int D3D12Render::CreateConstantBuffer(unsigned int Size) {
 }
 
 int D3D12Render::CreateVertexShader(void * ByteCode, unsigned int Size, int flag) {
-
-	return 0;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 int D3D12Render::CreateGeometryShader(void * ByteCode, unsigned int Size, int flag) {
-	return 2;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 int D3D12Render::CreateHullShader(void * ByteCode, unsigned int Size, int flag) {
-	return 3;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 int D3D12Render::CreateDomainShader(void * ByteCode, unsigned int Size, int flag) {
-	return 4;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 int D3D12Render::CreatePixelShader(void * ByteCode, unsigned int Size, int flag) {
-
-	return 0;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 int D3D12Render::CreateComputeShader(void * ByteCode, unsigned int Size, int flag) {
-	return 0;
+	D3DRenderShader Shader = {};
+	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.ByteCode.BytecodeLength = Size;
+	int id = Shaders.AddItem(Shader);
+	return id;
 }
 
 
 int D3D12Render::CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc) {
+	D3DRenderState State = {};
+	// back face
+	State.Depth.BackFace.StencilDepthFailOp = (D3D12_STENCIL_OP)Desc->DepthFailBack;
+	State.Depth.BackFace.StencilFailOp = (D3D12_STENCIL_OP)Desc->StencilFailBack;
+	State.Depth.BackFace.StencilFunc = (D3D12_COMPARISON_FUNC)Desc->StencilFuncBack;
+	State.Depth.BackFace.StencilPassOp = (D3D12_STENCIL_OP)Desc->StencilPassBack;
+	// front face
+	State.Depth.FrontFace.StencilDepthFailOp = (D3D12_STENCIL_OP)Desc->DepthFailFront;
+	State.Depth.FrontFace.StencilFailOp = (D3D12_STENCIL_OP)Desc->StencilFailFront;
+	State.Depth.FrontFace.StencilFunc = (D3D12_COMPARISON_FUNC)Desc->StencilFuncFront;
+	State.Depth.FrontFace.StencilPassOp = (D3D12_STENCIL_OP)Desc->StencilPassFront;
+	// depth
+	State.Depth.DepthEnable = Desc->ZTestEnable;
+	State.Depth.DepthFunc = (D3D12_COMPARISON_FUNC)Desc->DepthFunc;
+	State.Depth.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	// stencil
+	State.Depth.StencilEnable = Desc->StencilEnable;
+	State.Depth.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	State.Depth.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
 
-	return 0;
+	State.StencilRef = Desc->StencilRef;
+	int id = RenderState.AddItem(State);
+	return id;
 }
 
 int D3D12Render::CreateBlendStatus(R_BLEND_STATUS* Desc) {
-
-	return 0;
+	D3DRenderState State = {};
+	State.Blend.AlphaToCoverageEnable = FALSE;
+	State.Blend.IndependentBlendEnable = FALSE;
+	State.Blend.RenderTarget[0].BlendEnable = Desc->Enable;
+	State.Blend.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)Desc->BlendOp;
+	State.Blend.RenderTarget[0].BlendOpAlpha = (D3D12_BLEND_OP)Desc->BlendOpAlpha;
+	State.Blend.RenderTarget[0].DestBlend = (D3D12_BLEND)Desc->DestBlend;
+	State.Blend.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)Desc->DestBlendAlpha;
+	State.Blend.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	State.Blend.RenderTarget[0].LogicOpEnable = FALSE;
+	State.Blend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	State.Blend.RenderTarget[0].SrcBlend = (D3D12_BLEND)Desc->SrcBlend;
+	State.Blend.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)Desc->SrcBlendAlpha;
+	int id = RenderState.AddItem(State);
+	return id;
 }
 
 int D3D12Render::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc) {
-
-	return 0;
+	D3DRenderState State = {};
+	State.Raster.AntialiasedLineEnable = Desc->AntialiasedLineEnable;
+	State.Raster.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+	State.Raster.CullMode = (D3D12_CULL_MODE)Desc->CullMode;
+	State.Raster.DepthBias = Desc->DepthBias;
+	State.Raster.DepthBiasClamp = Desc->DepthBiasClamp;
+	State.Raster.DepthClipEnable = Desc->DepthClipEnable;
+	State.Raster.FillMode = (D3D12_FILL_MODE)Desc->FillMode;
+	State.Raster.ForcedSampleCount = 0;
+	State.Raster.FrontCounterClockwise = Desc->FrontCounterClockwise;
+	State.Raster.MultisampleEnable = Desc->MultisampleEnable;
+	State.Raster.SlopeScaledDepthBias = Desc->SlopeScaledDepthBias;
+	int id = RenderState.AddItem(State);
+	return id;
 }
 
 

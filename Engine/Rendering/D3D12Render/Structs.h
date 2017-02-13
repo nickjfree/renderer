@@ -4,6 +4,7 @@
 
 #include "d3d11.h"
 #include "d3d12.h"
+#include "Rendering\RenderInterface.h"
 
 namespace D3D12API {
 
@@ -51,13 +52,7 @@ namespace D3D12API {
 
 	/* shaders */
 	typedef struct D3DRenderShader {
-		union {
-			ID3D11VertexShader * VS;
-			ID3D11GeometryShader * GS;
-			ID3D11HullShader * HS;
-			ID3D11DomainShader * DS;
-			ID3D11PixelShader * PS;
-		};
+		D3D12_SHADER_BYTECODE ByteCode;
 	}D3DRenderShader;
 
 
@@ -71,9 +66,9 @@ namespace D3D12API {
 	/* render state */
 	typedef struct D3DRenderState {
 		union {
-			ID3D11DepthStencilState * Depth;
-			ID3D11RasterizerState * Raster;
-			ID3D11BlendState * Blend;
+			D3D12_DEPTH_STENCIL_DESC Depth;
+			D3D12_RASTERIZER_DESC Raster;
+			D3D12_BLEND_DESC Blend;
 		};
 		unsigned char StencilRef;
 	}D3DRenderState;

@@ -1,6 +1,6 @@
 #include "Heap.h"
 #include "D3D12Render.h"
-
+#include <assert.h>
 
 using namespace D3D12API;
 
@@ -21,6 +21,7 @@ Heap::~Heap() {
 }
 
 void Heap::Init(ID3D12Device * Device_, int MaxSize_, int Type_) {
+	assert(Type_ == HeapType::CPU);
 	D3D12_HEAP_TYPE HeapType;
 	Device = Device_;
 	Type = Type_;

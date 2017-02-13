@@ -62,9 +62,11 @@ namespace D3D12API {
 		// current heaps
 		Heap * CurrentConstHeap;
 		// resource descriptor heaps
-		Vector<DescriptorHeap *> CpuSRVHeaps;
+		Vector<DescriptorHeap *> CpuSRVHeaps[NUM_FRAMES];
 		// TRV Heaps
-		Vector<DescriptorHeap *> GpuRTVHeaps;
+		Vector<DescriptorHeap *> CpuRTVHeaps[NUM_FRAMES];
+		// DSV Heaps
+		Vector<DescriptorHeap *> CpuDSVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap *> GpuSamplerHeaps;
 		// Used SRVHeaps
@@ -89,7 +91,7 @@ namespace D3D12API {
 		void InitDescriptorHeaps();
 
 		// create texture dds
-		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size);
+		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube);
 
 		void CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& Texture, void * ddsData, int Size);
 		// helpers

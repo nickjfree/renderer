@@ -23,6 +23,10 @@ namespace D3D12API {
 		// multi frame flag
 		int MultiFrame;
 		ID3D12Resource * Texture[NUM_FRAMES];
+		union  {
+			DXGI_FORMAT DSVFormat;
+			DXGI_FORMAT RTVFormat;
+		};
 		D3D12_CPU_DESCRIPTOR_HANDLE Resource[NUM_FRAMES];
 		union {
 			D3D12_CPU_DESCRIPTOR_HANDLE Target[NUM_FRAMES];
@@ -47,7 +51,8 @@ namespace D3D12API {
 		layout
 	*/
 	typedef struct D3DInoutLayout {
-		ID3D11InputLayout * Layout;
+		D3D12_INPUT_LAYOUT_DESC Layout;
+		D3D12_INPUT_ELEMENT_DESC Element[32];
 	}D3DInputLayout;
 
 	/* shaders */

@@ -324,12 +324,13 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		vdesc.Texture2D.MipLevels = 1;
 		vdesc.Format = (DXGI_FORMAT)Desc->Format;
+		texture.RTVFormat = rtDesc.Format;
 		if (Desc->Format == FORMAT_R32_TYPELESS) {
 			vdesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
 		}
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuRTVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
-			Device->CreateRenderTargetView(texture.Texture[0], &rtDesc, handle);
+			Device->CreateRenderTargetView(texture.Texture[i], &rtDesc, handle);
 		}
 	} else if (Desc && Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		NumFrames = NUM_FRAMES;
@@ -343,9 +344,10 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		vdesc.Texture2D.MipLevels = 1;
 		dsDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		dsDesc.Texture2D.MipSlice = 0;
+		texture.DSVFormat = dsDesc.Format;
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuDSVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
-			Device->CreateDepthStencilView(texture.Texture[0], &dsDesc, handle);
+			Device->CreateDepthStencilView(texture.Texture[i], &dsDesc, handle);
 		}
 	} else if (!Desc) {
 		// commen textures, only use frame 0 heaps
@@ -404,7 +406,25 @@ int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned in
 }
 
 int D3D12Render::CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size) {
-	return 0;
+	D3DInputLayout InputLayout = {};
+	for (int i = 0; i < Count; i++) {
+		D3D12_INPUT_ELEMENT_DESC& desc = InputLayout.Element[i];
+		desc.AlignedByteOffset = Element[i].Offset;
+		desc.Format = (DXGI_FORMAT)Element[i].Format;
+		desc.InputSlot = Element[i].Slot;
+		if (Element[i].Type == R_INSTANCE) {
+			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+			desc.InstanceDataStepRate = 0;
+		} else {
+			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+			desc.InstanceDataStepRate = 0;
+		}
+		desc.SemanticIndex = Element[i].SemanticIndex;
+		desc.SemanticName = Element[i].Semantic;
+	}
+	InputLayout.Layout.NumElements = Count;
+	int id = InputLayouts.AddItem(InputLayout);
+	return id;
 }
 
 int D3D12Render::CreateConstantBuffer(unsigned int Size) {
@@ -530,6 +550,10 @@ int D3D12Render::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc) {
 void D3D12Render::SetBlendStatus(int Blend) {
 	if (Blend >= 0) {
 		D3DRenderState& State = RenderState[Blend];
+		if (CurrentPSO.Blend != Blend) {
+			CurrentPSO.Dirty = 1;
+			CurrentPSO.Blend = Blend;
+		}
 	}
 
 }
@@ -537,11 +561,21 @@ void D3D12Render::SetBlendStatus(int Blend) {
 void D3D12Render::SetDepthStencilStatus(int DepthStencil) {
 	if (DepthStencil >= 0) {
 		D3DRenderState& State = RenderState[DepthStencil];
+		if (CurrentPSO.Depth != DepthStencil) {
+			CurrentPSO.Dirty = 1;
+			CurrentPSO.Depth = DepthStencil;
+		}
+
 	}
 }
 // rasterizer
 void D3D12Render::SetRasterizerStatus(int Rasterizer) {
-
+	if (Rasterizer >= 0) {
+		if (CurrentPSO.Rasterizer != Rasterizer) {
+			CurrentPSO.Dirty = 1;
+			CurrentPSO.Rasterizer = Rasterizer;
+		}
+	}
 }
 
 // viewport
@@ -551,11 +585,22 @@ void D3D12Render::SetViewPort(float tlx, float tly, float width, float height, f
 
 
 void D3D12Render::SetDepthStencil(int Depth) {
-
+	D3DTexture& texture = Textures.GetItem(Depth);
+	if (CurrentPSO.DSVFormat != texture.DSVFormat) {
+		CurrentPSO.Dirty = 1;
+		CurrentPSO.DSVFormat = texture.DSVFormat;
+	}
 }
 
 void D3D12Render::SetRenderTargets(int Count, int * Targets) {
-
+	CurrentPSO.NumRTV = Count;
+	for (int i = 0; i < Count; i++) {
+		D3DTexture& texture = Textures.GetItem(Targets[i]);
+		if (CurrentPSO.RTVFormat[i] != texture.RTVFormat) {
+			CurrentPSO.RTVFormat[i] = texture.RTVFormat;
+			CurrentPSO.Dirty = 1;
+		}
+	}
 }
 
 void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
@@ -563,14 +608,24 @@ void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
 }
 
 void D3D12Render::SetInputLayout(int Id) {
-
+	if (CurrentPSO.InputLayout != Id) {
+		CurrentPSO.Dirty = 1;
+		CurrentPSO.InputLayout = Id;
+	}
 }
 
 void D3D12Render::SetVertexShader(int Id) {
+	if (CurrentPSO.VS != Id) {
+		CurrentPSO.Dirty = 1;
+		CurrentPSO.VS = Id;
+	}
 }
 
 void D3D12Render::SetPixelShader(int Id) {
-
+	if (CurrentPSO.PS != Id) {
+		CurrentPSO.Dirty = 1;
+		CurrentPSO.PS = Id;
+	}
 }
 
 void D3D12Render::SetConstant(int Slot, int Buffer, void * CPUData, unsigned int Size) {
@@ -647,9 +702,44 @@ void D3D12Render::WaitForPreviousFrame() {
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
 }
 
+ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
+	ID3D12PipelineState * PSO = NULL;
+	PSOTable.Set(cache, PSO);
+	return NULL;
+}
+
+void D3D12Render::FlushPSO() {
+	if (CurrentPSO.Dirty) {
+		HashMap<PSOCache, ID3D12PipelineState *>::Iterator Iter;
+		Iter = PSOTable.Find(CurrentPSO);
+		ID3D12PipelineState * PSO;
+		if (Iter == PSOTable.End()) {
+			// create new pso
+			PSO = CreatePSO(CurrentPSO);
+		}
+		else {
+			PSO = *Iter;
+		}
+		// set pso
+		// context->cmd_list->set_pso()
+		printf("set pso vs %d ps %d, depth %d, raster %d, blend %d, layout %d, target num %d\n",
+			CurrentPSO.VS,
+			CurrentPSO.PS,
+			CurrentPSO.Depth,
+			CurrentPSO.Rasterizer,
+			CurrentPSO.Blend,
+			CurrentPSO.InputLayout,
+			CurrentPSO.NumRTV);
+	}
+	CurrentPSO.Dirty = 0;
+}
+
 void D3D12Render::Draw(int Id) {
+	FlushPSO();
+	printf("draw\n");
 }
 
 void D3D12Render::Quad() {
-
+	FlushPSO();
+	printf("Quad\n");
 }

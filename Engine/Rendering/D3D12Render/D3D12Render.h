@@ -11,11 +11,13 @@
 #include <dxgi1_4.h>
 #include <Objbase.h>
 #include "Container\LinearBuffer.h"
+#include "Container\HashMap.h"
 #include "Structs.h"
 #include "CommandQueue.h"
 #include "CommandContext.h"
 #include "Heap.h"
 #include "DescriptorHeap.h"
+#include "PSOCache.h"
 
 
 
@@ -45,8 +47,6 @@ namespace D3D12API {
 		UINT FrameIndex;
 		// command queues
 		CommandQueue * CommandQueues[4];
-
-
 		// main render target width and height
 		int Width;
 		int Height;
@@ -72,9 +72,11 @@ namespace D3D12API {
 		// Used SRVHeaps
 		Vector<DescriptorHeap *> UsedGpuSRVHeaps;
 		// current status
-//		ID3D12RenderTargetView * Targets[8];
 		int CurrentTargets;
-//		ID3D12DepthStencilView * Depth;
+		// PSO Table
+		HashMap<PSOCache, ID3D12PipelineState *> PSOTable;
+		// current PSO
+		PSOCache CurrentPSO;
 	public:
 		D3D12Render();
 		~D3D12Render();
@@ -98,6 +100,10 @@ namespace D3D12API {
 		void GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
 		// wait
 		void WaitForPreviousFrame();
+		// create pso
+		ID3D12PipelineState * CreatePSO(PSOCache& cache);
+		// apply pso
+		void FlushPSO();
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue

@@ -17,7 +17,7 @@ public:
 		public:
 			KeyValue() {};
 			~KeyValue() {};
-			unsigned int  Key;
+			K Key;
 			KeyValue * Next, * Prev;
 			V Value;
 	};
@@ -59,7 +59,7 @@ public:
 	HashMap() {
 		for (int i = 0; i < HashSize; i++) {
 			Entry[i].Next = Entry[i].Prev = &Entry[i];
-			Entry[i].Key = -1;
+			Entry[i].Key = K();
 		}
 		Mask = HashSize - 1;
 	}
@@ -73,13 +73,13 @@ public:
 		int Index = Key & Mask;
 		KeyValue * head= &Entry[Index];
 		KeyValue * kv = head->Next;
-		while (kv != head && kv->Key != Key) {
+		while (kv != head && kv->Key != k) {
 			kv = kv->Next;
 		}
 		if (kv == head) {
 			kv = (KeyValue*)Alloc.Alloc();
 			kv = new (kv) KeyValue;
-			kv->Key = Key;
+			kv->Key = k;
 			Insert(Index, kv);
 		}
 		return kv->Value;
@@ -89,7 +89,7 @@ public:
 		unsigned int Index = Key & Mask;
 		KeyValue * head = &Entry[Index];
 		KeyValue * kv = head->Next;
-		while (kv != head && kv->Key != Key) {
+		while (kv != head && kv->Key != k) {
 			kv = kv->Next;
 		}
 		Iterator Iter;

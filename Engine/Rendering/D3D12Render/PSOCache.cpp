@@ -1,6 +1,8 @@
 #include "PSOCache.h"
 
 
+using namespace D3D12API;
+
 PSOCache::PSOCache(): hash(-1), VS(-1), PS(-1), GS(-1), DS(-1), HS(-1), InputLayout(-1), NumRTV(0), 
 Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0) {
 	memset(RTVFormat, -1, sizeof(DXGI_FORMAT) * 8);
@@ -26,10 +28,10 @@ PSOCache::operator int() {
 		hash = (hash << 5) + Rasterizer;
 		hash = (hash << 5) + Blend;
 	}
-	return 0;
+	return hash;
 }
 
-bool PSOCache::operator=(PSOCache& rh) {
+bool PSOCache::operator==(PSOCache& rh) {
 	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
 		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {

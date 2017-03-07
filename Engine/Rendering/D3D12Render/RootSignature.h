@@ -11,8 +11,7 @@
 
 namespace D3D12API {
 
-#define MAX_DESC_TABLE_SIZE 8
-
+#define MAX_DESC_TABLE_SIZE 16
 	// descriptor table cache
 	typedef struct DescriptorTable {
 		int RootSlot;
@@ -20,34 +19,43 @@ namespace D3D12API {
 		int Used;
 		int ResourceId[MAX_DESC_TABLE_SIZE];
 		D3D12_CPU_DESCRIPTOR_HANDLE Handles[MAX_DESC_TABLE_SIZE];
-	};
+	} DescriptorTable;
 	
 	// texture slot info
 	typedef struct DescTableSlot {
-		DescriptorTable * Table;
+		int RootSlot;
 		int Offset;
 	}DescTable;
 
 	// constant buffer slot. Const buffers only use root parameters.
-	typedef struct RootParamSlot {
+	typedef struct RootDescriptorSlot {
 		int RootSlot;
-	} RootParam;
+	} RootDescriptorSlot;
 
 
 	class RootSignature {
 
-	public:
+	private:
+		// rootsig
+		ID3D12RootSignature * RootSig;
 		// texture slot
 		DescTableSlot Textures[64];
 		// sampler slot
 		DescTableSlot Samplers[16];
 		// constant slot
-		RootParamSlot Constants[32];
-	
+		RootDescriptorSlot Constants[32];
+		// cached tables 
+		DescriptorTable DescTables[4];
+	private:
+		ID3D12Device * Device;
+		// init root signature
+		void InitRootSignature();
+
 	public:
 		RootSignature(ID3D12Device * Device);
 		virtual ~RootSignature();
-		
+		// get root signature
+		ID3D12RootSignature * Get() { return RootSig; }
 		// set texture
 		void SetTexture(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE handle);
 		// set constant
@@ -55,8 +63,7 @@ namespace D3D12API {
 		// set sampler
 		void SetSampler(int slot, D3D12_CPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		void Flush(DescriptorHeap * descHeap);
-
+		void Flush(ID3D12CommandList * CommandList, DescriptorHeap * descHeap);
 	};
 
 }

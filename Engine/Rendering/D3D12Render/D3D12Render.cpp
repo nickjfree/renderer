@@ -10,10 +10,11 @@ using namespace DirectX;
 
 D3D12Render * D3D12Render::thisRender = NULL;
 
-D3D12Render::D3D12Render() :CurrentTargets(0), CurrentConstHeap(0)
+D3D12Render::D3D12Render() : CurrentConstHeap(0)
 {
 //	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
+	memset(CurrentTargets, -1, 8 * sizeof(int));
 }
 
 
@@ -81,7 +82,7 @@ void D3D12Render::GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** pp
 }
 
 
-void D3D12Render::InitD3D12(){
+void D3D12Render::InitD3D12() {
 	//init SwapChainDesc
 
 #if defined(_DEBUG)
@@ -97,7 +98,7 @@ void D3D12Render::InitD3D12(){
 	IDXGIFactory4* pFactory = NULL;
 	DXGI_QUERY_VIDEO_MEMORY_INFO videoMemoryInfo;
 	// Create a DXGIFactory object.
-	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pFactory)))){
+	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pFactory)))) {
 		return;
 	}
 	pFactory->EnumAdapters(0, &pAdapter);
@@ -111,6 +112,7 @@ void D3D12Render::InitD3D12(){
 	// create all command queues.
 	InitQueues();
 	InitDescriptorHeaps();
+	InitRootSignature();
 	// get graphic queue
 	ID3D12CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->Get();
 	// Describe and create the swap chain.
@@ -162,8 +164,26 @@ void D3D12Render::InitD3D12(){
 		Device->CreateRenderTargetView(RenderTargets[n], nullptr, rtvHandle);
 		rtvHandle.ptr += RtvDescriptorSize;
 	}
-}
 
+	// create resource 0 as backbuffer
+	D3DTexture NewTexture = {};
+	int Id = Textures.AddItem(NewTexture);
+	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
+	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
+	D3DTexture& texture = Textures.GetItem(Id);
+	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texture.MultiFrame = 1;
+	for (UINT n = 0; n < NUM_FRAMES; n++) {
+		SwapChain->GetBuffer(n, IID_PPV_ARGS(&RenderTargets[n]));
+		rtvHandle = CpuRTVHeaps[n][HeapIndex]->GetCpuHandle(HeapSlot);
+		Device->CreateRenderTargetView(RenderTargets[n], nullptr, rtvHandle);
+		texture.Target[n] = rtvHandle;
+		texture.Texture[n] = RenderTargets[n];
+		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
+	}
+	// init current commandcontext
+	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+}
 
 void D3D12Render::InitQueues() {
 	// create 3 command queues engine
@@ -191,6 +211,10 @@ void D3D12Render::InitDescriptorHeaps() {
 	// create sampler heaps
 	DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	GpuSamplerHeaps.PushBack(Heap);
+}
+
+void D3D12Render::InitRootSignature() {
+	RootSig = new RootSignature(Device);
 }
 
 int D3D12Render::Initialize(int Width_, int Height_) {
@@ -250,6 +274,7 @@ void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size
 	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	Context->InitializeTexture(TexResource, subresources);
 	Context->Finish(1);
+	Texture.State[0].CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 }
 
 void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture, void * RawData, int Size) {
@@ -301,13 +326,13 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 	*/
 	printf("create Texture2D\n");
 	D3DTexture texture = {};
+	int Id = Textures.AddItem(texture);
 	bool isCube;
 	if (Desc) {
 		CreateTexture2DRaw(Desc, texture, RawData, Size);
 	} else if (!Desc) {
 		CreateTextureDDS(texture, RawData, Size, &isCube);
 	}
-	int Id = Textures.AddItem(texture);
 	//create descriptors in cpu descriptor heaps
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
@@ -330,6 +355,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		}
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuRTVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+			texture.Target[i] = handle;
 			Device->CreateRenderTargetView(texture.Texture[i], &rtDesc, handle);
 		}
 	} else if (Desc && Desc->BindFlag & BIND_DEPTH_STENCIL) {
@@ -347,6 +373,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		texture.DSVFormat = dsDesc.Format;
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuDSVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+			texture.Depth[i] = handle;
 			Device->CreateDepthStencilView(texture.Texture[i], &dsDesc, handle);
 		}
 	} else if (!Desc) {
@@ -368,8 +395,10 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		// filter out d24s8 format
 		if (vdesc.Format) {
 			Device->CreateShaderResourceView(texture.Texture[0], &vdesc, handle);
+			texture.Resource[i] = handle;
 		}
 	}
+	Textures[Id] = texture;
 	return Id;
 }
 
@@ -406,7 +435,9 @@ int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned in
 }
 
 int D3D12Render::CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size) {
-	D3DInputLayout InputLayout = {};
+	D3DInputLayout NewInputLayout = {};
+	int id = InputLayouts.AddItem(NewInputLayout);
+	D3DInputLayout& InputLayout = InputLayouts.GetItem(id);
 	for (int i = 0; i < Count; i++) {
 		D3D12_INPUT_ELEMENT_DESC& desc = InputLayout.Element[i];
 		desc.AlignedByteOffset = Element[i].Offset;
@@ -420,10 +451,11 @@ int D3D12Render::CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * 
 			desc.InstanceDataStepRate = 0;
 		}
 		desc.SemanticIndex = Element[i].SemanticIndex;
-		desc.SemanticName = Element[i].Semantic;
+		strcpy_s(InputLayout.Names[i], Element[i].Semantic);
+		desc.SemanticName = InputLayout.Names[i];
 	}
 	InputLayout.Layout.NumElements = Count;
-	int id = InputLayouts.AddItem(InputLayout);
+	InputLayout.Layout.pInputElementDescs = InputLayout.Element;
 	return id;
 }
 
@@ -438,7 +470,9 @@ int D3D12Render::CreateConstantBuffer(unsigned int Size) {
 
 int D3D12Render::CreateVertexShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -446,7 +480,9 @@ int D3D12Render::CreateVertexShader(void * ByteCode, unsigned int Size, int flag
 
 int D3D12Render::CreateGeometryShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -454,7 +490,9 @@ int D3D12Render::CreateGeometryShader(void * ByteCode, unsigned int Size, int fl
 
 int D3D12Render::CreateHullShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -462,7 +500,9 @@ int D3D12Render::CreateHullShader(void * ByteCode, unsigned int Size, int flag) 
 
 int D3D12Render::CreateDomainShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -470,7 +510,9 @@ int D3D12Render::CreateDomainShader(void * ByteCode, unsigned int Size, int flag
 
 int D3D12Render::CreatePixelShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -478,7 +520,9 @@ int D3D12Render::CreatePixelShader(void * ByteCode, unsigned int Size, int flag)
 
 int D3D12Render::CreateComputeShader(void * ByteCode, unsigned int Size, int flag) {
 	D3DRenderShader Shader = {};
-	Shader.ByteCode.pShaderBytecode = ByteCode;
+	Shader.RawCode = new char[Size];
+	memcpy(Shader.RawCode, ByteCode, Size);
+	Shader.ByteCode.pShaderBytecode = Shader.RawCode;
 	Shader.ByteCode.BytecodeLength = Size;
 	int id = Shaders.AddItem(Shader);
 	return id;
@@ -594,17 +638,52 @@ void D3D12Render::SetDepthStencil(int Depth) {
 
 void D3D12Render::SetRenderTargets(int Count, int * Targets) {
 	CurrentPSO.NumRTV = Count;
+	NumTargets = Count;
 	for (int i = 0; i < Count; i++) {
+		CurrentTargets[i] = Targets[i];
 		D3DTexture& texture = Textures.GetItem(Targets[i]);
 		if (CurrentPSO.RTVFormat[i] != texture.RTVFormat) {
 			CurrentPSO.RTVFormat[i] = texture.RTVFormat;
 			CurrentPSO.Dirty = 1;
 		}
+		this->Targets[i] = texture.Target[FrameIndex];
+		// translate state
+		int ResourceIndex = 0;
+		if (texture.MultiFrame) {
+			ResourceIndex = FrameIndex;
+		}
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[ResourceIndex];
+		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
+		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
+		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		if (OldState != NewState) {
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+			ResourceBarriers.PushBack(Barrier);
+			texture.State[ResourceIndex].CurrentState = NewState;
+		}
 	}
 }
 
 void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
-
+//	&CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+	for (int i = 0; i < Count; i++) {
+		int Slot = StartSlot + i;
+		int Id = Texture[i];
+		D3DTexture& texture = Textures.GetItem(Id);
+		int ResourceIndex = 0;
+		if (texture.MultiFrame) {
+			ResourceIndex = FrameIndex;
+		}
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[ResourceIndex];
+		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
+		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
+		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		if (OldState != NewState) {
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+			ResourceBarriers.PushBack(Barrier);
+			texture.State[ResourceIndex].CurrentState = NewState;
+		}
+	}
 }
 
 void D3D12Render::SetInputLayout(int Id) {
@@ -654,34 +733,32 @@ void D3D12Render::ClearDepth(float depth, float stencil) {
 }
 
 void D3D12Render::ClearRenderTarget(){
-	
+	FlushResourceBarriers();
+	ID3D12GraphicsCommandList * commandList = CurrentCommandContext->GetGraphicsCommandList();
+	for (int i = 0; i < NumTargets; i++) {
+		const float clearColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+		commandList->ClearRenderTargetView(Targets[i], clearColor, 0, 0);
+	}
 }
 
 void D3D12Render::Present() {
-	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	ID3D12GraphicsCommandList * commandlist = Context->GetGraphicsCommandList();
-	// Indicate that the back buffer will be used as a render target.
+	if (!NumTargets || CurrentTargets[0]) {
+		return;
+	}
+	CommandContext * Context = CurrentCommandContext;
+	ID3D12GraphicsCommandList * commandlist = CurrentCommandContext->GetGraphicsCommandList();
+	// flush resource barriers
+	FlushResourceBarriers();
+	// Indicate that the back buffer will be used as present.
 	D3D12_RESOURCE_BARRIER barrier = {};
-	barrier.Transition.pResource = RenderTargets[FrameIndex];
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-	commandlist->ResourceBarrier(1, &barrier);
-
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = RtvHeap->GetCPUDescriptorHandleForHeapStart()/*, m_rameIndex, m_rtvDescriptorSize)*/;
-	rtvHandle.ptr += FrameIndex * RtvDescriptorSize;
-
-	// Record commands.
-	const float clearColor[] = { 0.0f, 0.2f, 0.4f, 1.0f };
-	commandlist->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
 	// Indicate that the back buffer will now be used to present.
+	barrier.Transition.pResource = RenderTargets[FrameIndex];
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	commandlist->ResourceBarrier(1, &barrier);
-	
+	D3DTexture& texture = Textures.GetItem(0);
+	texture.State[FrameIndex].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
+
 	UINT64 FenceValue = Context->Finish(1);
 	// retire all used heaps
 	if (CurrentConstHeap) {
@@ -693,6 +770,8 @@ void D3D12Render::Present() {
 	}
 	UsedConstHeaps.Empty();
 	SwapChain->Present(1, 0);
+	// change current command context
+	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	WaitForPreviousFrame();
 }
 
@@ -703,9 +782,56 @@ void D3D12Render::WaitForPreviousFrame() {
 }
 
 ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
+	static int i = 0;
+	i++;
+	printf("create %d pos\n", i);
 	ID3D12PipelineState * PSO = NULL;
+	// set a lot pso descriptions
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc = {};
+	Desc.pRootSignature = RootSig->Get();
+	// we only use ps and vs
+	if (cache.VS != -1) {
+		Desc.VS = Shaders.GetItem(cache.VS).ByteCode;
+	} 
+	if (cache.PS != -1) {
+		Desc.PS = Shaders.GetItem(cache.PS).ByteCode;
+	}
+	if (cache.Blend != -1) {
+		Desc.BlendState = RenderState.GetItem(cache.Blend).Blend;
+	}
+	Desc.SampleMask = 0xffffffff;
+	if (cache.Rasterizer != -1) {
+		Desc.RasterizerState = RenderState.GetItem(cache.Rasterizer).Raster;
+	}
+	if (cache.Depth != -1) {
+		Desc.DepthStencilState = RenderState.GetItem(cache.Depth).Depth;
+	}
+	if (cache.InputLayout != -1) {
+		Desc.InputLayout = InputLayouts.GetItem(cache.InputLayout).Layout;
+	}
+	Desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	Desc.NumRenderTargets = cache.NumRTV;
+	memcpy(Desc.RTVFormats, cache.RTVFormat, cache.NumRTV * sizeof(DXGI_FORMAT));
+	Desc.DSVFormat = cache.DSVFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.NodeMask = 0;
+	Desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// create it
+	HRESULT result = Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&PSO));
 	PSOTable.Set(cache, PSO);
-	return NULL;
+	return PSO;
+}
+
+void D3D12Render::FlushResourceBarriers() {
+	int Count = ResourceBarriers.Size();
+	if (Count) {
+		printf("flush %d barriers\n", Count);
+		// just flush them all
+		CurrentCommandContext->GetGraphicsCommandList()->ResourceBarrier(Count, ResourceBarriers.GetData());
+		ResourceBarriers.Empty();
+	}
 }
 
 void D3D12Render::FlushPSO() {
@@ -716,30 +842,33 @@ void D3D12Render::FlushPSO() {
 		if (Iter == PSOTable.End()) {
 			// create new pso
 			PSO = CreatePSO(CurrentPSO);
+			PSOTable[CurrentPSO] = PSO;
 		}
 		else {
 			PSO = *Iter;
 		}
 		// set pso
 		// context->cmd_list->set_pso()
-		printf("set pso vs %d ps %d, depth %d, raster %d, blend %d, layout %d, target num %d\n",
-			CurrentPSO.VS,
-			CurrentPSO.PS,
-			CurrentPSO.Depth,
-			CurrentPSO.Rasterizer,
-			CurrentPSO.Blend,
-			CurrentPSO.InputLayout,
-			CurrentPSO.NumRTV);
+		//printf("set pso vs %d ps %d, depth %d, raster %d, blend %d, layout %d, target num %d\n",
+		//	CurrentPSO.VS,
+		//	CurrentPSO.PS,
+		//	CurrentPSO.Depth,
+		//	CurrentPSO.Rasterizer,
+		//	CurrentPSO.Blend,
+		//	CurrentPSO.InputLayout,
+		//	CurrentPSO.NumRTV);
 	}
 	CurrentPSO.Dirty = 0;
 }
 
 void D3D12Render::Draw(int Id) {
 	FlushPSO();
-	printf("draw\n");
+	FlushResourceBarriers();
+//	printf("draw\n");
 }
 
 void D3D12Render::Quad() {
 	FlushPSO();
-	printf("Quad\n");
+	FlushResourceBarriers();
+//	printf("Quad\n");
 }

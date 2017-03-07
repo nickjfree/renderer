@@ -18,20 +18,20 @@
 #include "Heap.h"
 #include "DescriptorHeap.h"
 #include "PSOCache.h"
-
+#include "RootSignature.h"
 
 
 namespace D3D12API {
 	
-#define MAX_TEXTURE_SIZE  8192
-#define MAX_GEOMETRY_SIZE 4096
+#define MAX_TEXTURE_SIZE     8192
+#define MAX_GEOMETRY_SIZE    4096
+#define MAX_RESOURCE_BARRIER 2048
 
 	class D3D12Render : public RenderInterface
 	{
 	private:
 		static D3D12Render * thisRender;
 		HWND hWnd;
-
 		static const UINT FrameCount = NUM_FRAMES;
 		// D3D12 device and somte other interfaces
 		ID3D12Device *  Device;
@@ -71,12 +71,23 @@ namespace D3D12API {
 		Vector<DescriptorHeap *> GpuSamplerHeaps;
 		// Used SRVHeaps
 		Vector<DescriptorHeap *> UsedGpuSRVHeaps;
-		// current status
-		int CurrentTargets;
 		// PSO Table
 		HashMap<PSOCache, ID3D12PipelineState *> PSOTable;
+		// Root Signature
+		RootSignature * RootSig;
 		// current PSO
 		PSOCache CurrentPSO;
+		// resource barriar list
+		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
+		// current command context
+		CommandContext * CurrentCommandContext;
+		// current targets.
+		D3D12_CPU_DESCRIPTOR_HANDLE Targets[8];
+		int NumTargets;
+		int CurrentTargets[8];
+		// current depth
+		D3D12_CPU_DESCRIPTOR_HANDLE Depth;
+
 	public:
 		D3D12Render();
 		~D3D12Render();
@@ -91,7 +102,8 @@ namespace D3D12API {
 		void InitQueues();
 		// init decriptor heaps
 		void InitDescriptorHeaps();
-
+		// init Root Signature
+		void InitRootSignature();
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube);
 
@@ -104,6 +116,8 @@ namespace D3D12API {
 		ID3D12PipelineState * CreatePSO(PSOCache& cache);
 		// apply pso
 		void FlushPSO();
+		// flush barriers
+		void FlushResourceBarriers();
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue

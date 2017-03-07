@@ -62,6 +62,9 @@ public:
 		Iter.ptr = &Data[ItemSize];
 		return Iter;
 	};
+	T * GetData() {
+		return Data;
+	}
 };
 
 

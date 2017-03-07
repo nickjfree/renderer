@@ -54,6 +54,9 @@ String& String::operator=(String& rh) {
 }
 
 String& String::operator=(char * buff) {
+	if (!buff) {
+		return *this;
+	}
 	Length = strlen(buff);
 	if (Length < SHORSTR_LENGTH) {
 		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);

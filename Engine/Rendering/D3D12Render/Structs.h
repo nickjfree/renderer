@@ -53,11 +53,13 @@ namespace D3D12API {
 	typedef struct D3DInoutLayout {
 		D3D12_INPUT_LAYOUT_DESC Layout;
 		D3D12_INPUT_ELEMENT_DESC Element[32];
+		char Names[32][32];
 	}D3DInputLayout;
 
 	/* shaders */
 	typedef struct D3DRenderShader {
 		D3D12_SHADER_BYTECODE ByteCode;
+		void * RawCode;
 	}D3DRenderShader;
 
 

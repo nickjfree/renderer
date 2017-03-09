@@ -49,12 +49,14 @@ namespace D3D12API {
 		static DescriptorHeap * Alloc(ID3D12Device * Device, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flag);
 		// retire at FenceValue
 		void Retire(UINT64 FenceValue);
+		// get heap
+		ID3D12DescriptorHeap * Get() { return Heap; }
 		// get cpu handle
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(int slot);
 		// get GPU handle
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle(int slot);
 		// Stage descriptors, return start dest positions
-		D3D12_GPU_DESCRIPTOR_HANDLE StageDescriptors(D3D12_CPU_DESCRIPTOR_HANDLE * Handles, int Num);
+		D3D12_GPU_DESCRIPTOR_HANDLE StageDescriptors(D3D12_CPU_DESCRIPTOR_HANDLE * Handles, int PadStart, int Num);
 	};
 
 }

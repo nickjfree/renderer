@@ -10,7 +10,7 @@ using namespace DirectX;
 
 D3D12Render * D3D12Render::thisRender = NULL;
 
-D3D12Render::D3D12Render() : CurrentConstHeap(0)
+D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0)
 {
 //	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
@@ -112,6 +112,7 @@ void D3D12Render::InitD3D12() {
 	// create all command queues.
 	InitQueues();
 	InitDescriptorHeaps();
+	InitSamplers();
 	InitRootSignature();
 	// get graphic queue
 	ID3D12CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->Get();
@@ -182,7 +183,7 @@ void D3D12Render::InitD3D12() {
 		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 	}
 	// init current commandcontext
-	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	SwapCommandContext();
 }
 
 void D3D12Render::InitQueues() {
@@ -211,10 +212,38 @@ void D3D12Render::InitDescriptorHeaps() {
 	// create sampler heaps
 	DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	GpuSamplerHeaps.PushBack(Heap);
+	// create null heaps
+	NullHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 }
 
 void D3D12Render::InitRootSignature() {
-	RootSig = new RootSignature(Device);
+	RootSig = new RootSignature(Device, NullHeap->GetCpuHandle(0));
+}
+
+void D3D12Render::InitSamplers() {
+	D3D12_SAMPLER_DESC sampDesc = {};
+	// anisotropic sampler
+	sampDesc.Filter = D3D12_FILTER_ANISOTROPIC;// D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxAnisotropy = 16;
+	sampDesc.MaxLOD = D3D12_FLOAT32_MAX;
+	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(0));
+	// bilinear sampler
+	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(1));
+	// point sampler
+	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(2));
 }
 
 int D3D12Render::Initialize(int Width_, int Height_) {
@@ -297,16 +326,32 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 	int Num = 1;
 	texture.MultiFrame = false;
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COPY_DEST;
+	D3D12_CLEAR_VALUE clear = {};
+	clear.Format = (DXGI_FORMAT)Desc->Format;
 	if (Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		// create multi rt  and ds for each frame
 		Num = NUM_FRAMES;
 		texture.MultiFrame = true;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		// clearvalue
+		clear.DepthStencil.Depth = 1;
+		clear.DepthStencil.Stencil = 0;
+		if (clear.Format == FORMAT_R32_TYPELESS) {
+			clear.Format = (DXGI_FORMAT)FORMAT_D32_FLOAT;
+		}
 	} else if (Desc->BindFlag & BIND_RENDER_TARGET) {
 		Num = NUM_FRAMES;
 		texture.MultiFrame = true;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		state = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		// clearvalue
+		if (clear.Format == FORMAT_R32_TYPELESS) {
+			clear.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
+		}
+		clear.Color[0] = 0.0f;
+		clear.Color[1] = 0.0f;
+		clear.Color[2] = 0.0f;
+		clear.Color[3] = 0.0f;
 	}
 	for (int i = 0; i < Num; i++) {
 		Device->CreateCommittedResource(
@@ -314,7 +359,7 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 			D3D12_HEAP_FLAG_NONE,
 			&textureDesc,
 			state,
-			nullptr,
+			&clear,
 			IID_PPV_ARGS(&texture.Texture[i]));
 		texture.State[i].CurrentState = state;
 	}
@@ -629,11 +674,28 @@ void D3D12Render::SetViewPort(float tlx, float tly, float width, float height, f
 
 
 void D3D12Render::SetDepthStencil(int Depth) {
+	if (Depth == -1) {
+		return;
+	}
 	D3DTexture& texture = Textures.GetItem(Depth);
 	if (CurrentPSO.DSVFormat != texture.DSVFormat) {
 		CurrentPSO.Dirty = 1;
 		CurrentPSO.DSVFormat = texture.DSVFormat;
 	}
+	int ResourceIndex = 0;
+	if (texture.MultiFrame) {
+		ResourceIndex = FrameIndex;
+	}
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Depth[ResourceIndex];
+	D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
+	ID3D12Resource * Resource = texture.Texture[ResourceIndex];
+	D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
+	if (OldState != NewState) {
+		CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+		ResourceBarriers.PushBack(Barrier);
+		texture.State[ResourceIndex].CurrentState = NewState;
+	}
+	this->Depth = handle;
 }
 
 void D3D12Render::SetRenderTargets(int Count, int * Targets) {
@@ -678,7 +740,9 @@ void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
 		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
 		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
 		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-		if (OldState != NewState) {
+		// bind to root signature
+		bool dirty = RootSig->SetTexture(Slot, Id, handle);
+		if (dirty && OldState != NewState) {
 			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
 			ResourceBarriers.PushBack(Barrier);
 			texture.State[ResourceIndex].CurrentState = NewState;
@@ -725,18 +789,23 @@ void D3D12Render::SetConstant(int Slot, int Buffer, void * CPUData, unsigned int
 	memcpy(Data, CPUData, Size);
 	// bind to signature
 	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = CurrentConstHeap->GetGpuAddress(Data);
+	D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
+	desc.BufferLocation = GpuAddr;
+	desc.SizeInBytes = Size;
+	bool Dirty = RootSig->SetConstantBuffer(Slot, &desc);
 }
 
 
 void D3D12Render::ClearDepth(float depth, float stencil) {
-	//DeviceContext->ClearDepthStencilView(Depth, D3D12_CLEAR_DEPTH | D3D12_CLEAR_STENCIL, 1, 0);
+	FlushResourceBarriers();
+	CurrentCommandContext->GetGraphicsCommandList()->ClearDepthStencilView(Depth, D3D12_CLEAR_FLAG_DEPTH| D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 }
 
 void D3D12Render::ClearRenderTarget(){
 	FlushResourceBarriers();
 	ID3D12GraphicsCommandList * commandList = CurrentCommandContext->GetGraphicsCommandList();
 	for (int i = 0; i < NumTargets; i++) {
-		const float clearColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+		const float clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 		commandList->ClearRenderTargetView(Targets[i], clearColor, 0, 0);
 	}
 }
@@ -760,7 +829,7 @@ void D3D12Render::Present() {
 	texture.State[FrameIndex].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 
 	UINT64 FenceValue = Context->Finish(1);
-	// retire all used heaps
+	// retire all used constan heaps
 	if (CurrentConstHeap) {
 		UsedConstHeaps.PushBack(CurrentConstHeap);
 		CurrentConstHeap = 0;
@@ -769,9 +838,18 @@ void D3D12Render::Present() {
 		UsedConstHeaps[i]->Retire(FenceValue);
 	}
 	UsedConstHeaps.Empty();
+	// retire all gpu srv heaps
+	if (CurrentSRVHeap) {
+		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
+		CurrentSRVHeap = 0;
+	}
+	for (int i = 0; i < UsedGpuSRVHeaps.Size(); i++) {
+		UsedGpuSRVHeaps[i]->Retire(FenceValue);
+	}
+	UsedGpuSRVHeaps.Empty();
 	SwapChain->Present(1, 0);
-	// change current command context
-	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	// change current command context and set rootsignature
+	SwapCommandContext();
 	WaitForPreviousFrame();
 }
 
@@ -784,7 +862,7 @@ void D3D12Render::WaitForPreviousFrame() {
 ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
 	static int i = 0;
 	i++;
-	printf("create %d pos\n", i);
+	printf("create %d pso\n", i);
 	ID3D12PipelineState * PSO = NULL;
 	// set a lot pso descriptions
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc = {};
@@ -824,10 +902,44 @@ ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
 	return PSO;
 }
 
+void D3D12Render::SwapCommandContext() {
+	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	cmdList->SetGraphicsRootSignature(RootSig->Get());
+}
+
+
+void D3D12Render::FlushRootSignature() {
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	ID3D12DescriptorHeap * Heaps[2];
+	Heaps[1] = GpuSamplerHeaps[0]->Get();
+	int HeapChanged = 0;
+	if (!CurrentSRVHeap) {
+		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		Heaps[0] = CurrentSRVHeap->Get();
+		HeapChanged = 1;
+		cmdList->SetDescriptorHeaps(2, Heaps);
+		// set sampler descriptor table
+		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+	}
+	
+	if (!RootSig->Flush(cmdList, CurrentSRVHeap)) {
+		// need new heaps
+		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
+		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		HeapChanged = 1;
+		Heaps[0] = CurrentSRVHeap->Get();
+		cmdList->SetDescriptorHeaps(2, Heaps);
+		// set sampler descriptor table
+		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+		RootSig->Flush(cmdList, CurrentSRVHeap);
+	}
+}
+
 void D3D12Render::FlushResourceBarriers() {
 	int Count = ResourceBarriers.Size();
 	if (Count) {
-		printf("flush %d barriers\n", Count);
+//		printf("flush %d barriers\n", Count);
 		// just flush them all
 		CurrentCommandContext->GetGraphicsCommandList()->ResourceBarrier(Count, ResourceBarriers.GetData());
 		ResourceBarriers.Empty();
@@ -843,32 +955,27 @@ void D3D12Render::FlushPSO() {
 			// create new pso
 			PSO = CreatePSO(CurrentPSO);
 			PSOTable[CurrentPSO] = PSO;
-		}
-		else {
+		} else {
 			PSO = *Iter;
 		}
 		// set pso
-		// context->cmd_list->set_pso()
-		//printf("set pso vs %d ps %d, depth %d, raster %d, blend %d, layout %d, target num %d\n",
-		//	CurrentPSO.VS,
-		//	CurrentPSO.PS,
-		//	CurrentPSO.Depth,
-		//	CurrentPSO.Rasterizer,
-		//	CurrentPSO.Blend,
-		//	CurrentPSO.InputLayout,
-		//	CurrentPSO.NumRTV);
+		CurrentCommandContext->GetGraphicsCommandList()->SetPipelineState(PSO);
 	}
 	CurrentPSO.Dirty = 0;
 }
 
 void D3D12Render::Draw(int Id) {
-	FlushPSO();
 	FlushResourceBarriers();
-//	printf("draw\n");
+	FlushRootSignature();
+	FlushPSO();
+
+	printf("draw\n");
 }
 
 void D3D12Render::Quad() {
-	FlushPSO();
 	FlushResourceBarriers();
-//	printf("Quad\n");
+	FlushRootSignature();
+	FlushPSO();
+
+	printf("Quad\n");
 }

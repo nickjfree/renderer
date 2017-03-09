@@ -14,6 +14,7 @@ namespace D3D12API {
 	/* resource state */
 	typedef struct D3DResourceState {
 		D3D12_RESOURCE_STATES CurrentState;
+		int BindSlot;
 	} D3DResourceState;
 	
 	/*

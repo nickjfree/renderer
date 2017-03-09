@@ -69,8 +69,12 @@ namespace D3D12API {
 		Vector<DescriptorHeap *> CpuDSVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap *> GpuSamplerHeaps;
+		// null descriptor Heaps
+		DescriptorHeap * NullHeap;
 		// Used SRVHeaps
 		Vector<DescriptorHeap *> UsedGpuSRVHeaps;
+		// current SRV heap
+		DescriptorHeap * CurrentSRVHeap;
 		// PSO Table
 		HashMap<PSOCache, ID3D12PipelineState *> PSOTable;
 		// Root Signature
@@ -104,9 +108,11 @@ namespace D3D12API {
 		void InitDescriptorHeaps();
 		// init Root Signature
 		void InitRootSignature();
+		// init samplers
+		void InitSamplers();
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube);
-
+		// create raw textures
 		void CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& Texture, void * ddsData, int Size);
 		// helpers
 		void GetHardwareAdapter(IDXGIFactory2* pFactory, IDXGIAdapter1** ppAdapter);
@@ -114,10 +120,14 @@ namespace D3D12API {
 		void WaitForPreviousFrame();
 		// create pso
 		ID3D12PipelineState * CreatePSO(PSOCache& cache);
+		// nswap command context
+		void SwapCommandContext();
 		// apply pso
 		void FlushPSO();
 		// flush barriers
 		void FlushResourceBarriers();
+		// flush rootsig
+		void FlushRootSignature();
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue

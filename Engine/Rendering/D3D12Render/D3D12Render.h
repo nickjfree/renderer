@@ -91,7 +91,17 @@ namespace D3D12API {
 		int CurrentTargets[8];
 		// current depth
 		D3D12_CPU_DESCRIPTOR_HANDLE Depth;
-
+		// targets dirt
+		int TargetDirty;
+		// quad geometry id
+		int QuadId;
+		// null textureid
+		int NullId;
+		// viewport size
+		int ViewPortWidth;
+		int ViewPortHeight;
+		// previous frame's fence value
+		UINT64 PrevFenceValue[NUM_FRAMES];
 	public:
 		D3D12Render();
 		~D3D12Render();
@@ -110,6 +120,8 @@ namespace D3D12API {
 		void InitRootSignature();
 		// init samplers
 		void InitSamplers();
+		// init null texture
+		void InitNullTexture();
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube);
 		// create raw textures
@@ -128,12 +140,14 @@ namespace D3D12API {
 		void FlushResourceBarriers();
 		// flush rootsig
 		void FlushRootSignature();
+		// flush rendertargets
+		void FlushRenderTargets();
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue
 		CommandQueue * GetQueue(D3D12_COMMAND_LIST_TYPE type) { return CommandQueues[type]; };
 	public:
-		virtual int Initialize(int Widthm, int Height);
+		virtual int Initialize(int Width, int Height);
 
 		virtual int  CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag);
 		// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default

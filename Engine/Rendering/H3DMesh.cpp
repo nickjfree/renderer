@@ -45,7 +45,7 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 
 int H3DMesh::OnLoadComplete(Variant& Data) {
 	// create geometry in GPU
-	id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, FORMAT_R16_FLOAT);
+	id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, FORMAT_R16_UINT);
 	// calc AABB 
 	float minx = 0,miny = 0,minz = 0;
 	float maxx = 0,maxy = 0,maxz = 0;

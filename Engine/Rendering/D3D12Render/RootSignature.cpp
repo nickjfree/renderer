@@ -107,7 +107,7 @@ void RootSignature::InitMapping() {
 void RootSignature::InitCache(D3D12_CPU_DESCRIPTOR_HANDLE NullHandle) {
 	for (int i = 0; i < 4; i++) {
 		DescriptorTable& DescTable = DescTables[i];
-		DescTable.Dirty = 0;
+		DescTable.Dirty = 1;
 		DescTable.RootSlot = i + 4;
 		DescTable.Start = MAX_DESC_TABLE_SIZE;
 		DescTable.End = -1;
@@ -162,7 +162,7 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
 		int Num = DescTable.TableSize - Start;
 		int Slot = DescTable.RootSlot;
 		if (DescTable.Dirty) {
-			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles + Start, Start, Num);
+			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
 			if (!handle.ptr) {
 				// need new descripterheap
 				return false;
@@ -170,15 +170,15 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
 				CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
 			}
 			// debug
-			printf("set texture table %d:", DescTable.RootSlot);
-			for (int i = 0; i < DescTable.TableSize; i++) {
-				printf("%d,", DescTable.ResourceId[i]);
-			}
-			printf("\n");
+			//printf("set texture table %d:", DescTable.RootSlot);
+			//for (int i = 0; i < DescTable.TableSize; i++) {
+			//	printf("%d,", DescTable.ResourceId[i]);
+			//}
+			//printf("\n");
 			// refresh cache
-			DescTable.Dirty = 0;
+			DescTable.Dirty = 1;
 			DescTable.RootSlot = i + 4;
-			DescTable.Start = MAX_DESC_TABLE_SIZE;
+			DescTable.Start = DescTable.TableSize;
 			DescTable.End = -1;
 			for (int n = 0; n < DescTable.TableSize; n++) {
 				DescTable.ResourceId[n] = -1;

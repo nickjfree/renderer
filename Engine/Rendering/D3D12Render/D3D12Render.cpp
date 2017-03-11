@@ -15,6 +15,9 @@ D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0)
 //	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
 	memset(CurrentTargets, -1, 8 * sizeof(int));
+	for (int i = 0; i < NUM_FRAMES; i++) {
+		PrevFenceValue[i] = 0;
+	}
 }
 
 
@@ -105,7 +108,7 @@ void D3D12Render::InitD3D12() {
 	pAdapter->QueryInterface(IID_PPV_ARGS(&pAdapter3));
 	pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &videoMemoryInfo);
 	// create device
-	if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&Device)))) {
+	if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&Device)))) {
 		printf("Failed to create D3D12Device\n");
 		return;
 	}
@@ -113,12 +116,11 @@ void D3D12Render::InitD3D12() {
 	InitQueues();
 	InitDescriptorHeaps();
 	InitSamplers();
-	InitRootSignature();
 	// get graphic queue
 	ID3D12CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->Get();
 	// Describe and create the swap chain.
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
-	swapChainDesc.BufferCount = FrameCount;
+	swapChainDesc.BufferCount = 2;
 	swapChainDesc.Width = Width;
 	swapChainDesc.Height = Height;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -182,6 +184,9 @@ void D3D12Render::InitD3D12() {
 		texture.Texture[n] = RenderTargets[n];
 		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 	}
+	// init rootsigature
+	InitNullTexture();
+	InitRootSignature();
 	// init current commandcontext
 	SwapCommandContext();
 }
@@ -217,7 +222,9 @@ void D3D12Render::InitDescriptorHeaps() {
 }
 
 void D3D12Render::InitRootSignature() {
-	RootSig = new RootSignature(Device, NullHeap->GetCpuHandle(0));
+	D3DTexture& texture = Textures.GetItem(NullId);
+	D3D12_CPU_DESCRIPTOR_HANDLE nullHandle = texture.Resource[0];
+	RootSig = new RootSignature(Device, nullHandle);
 }
 
 void D3D12Render::InitSamplers() {
@@ -246,10 +253,35 @@ void D3D12Render::InitSamplers() {
 	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(2));
 }
 
+void D3D12Render::InitNullTexture() {
+	R_TEXTURE2D_DESC desc = {};
+	desc.Width = 16;
+	desc.Height = 16;
+	desc.ArraySize = 1;
+	desc.CPUAccess = (R_CPU_ACCESS)0;
+	desc.BindFlag = (R_BIND_FLAG)(BIND_SHADER_RESOURCE|BIND_RENDER_TARGET);
+	desc.MipLevels = 1;
+	desc.Usage = DEFAULT;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.SampleDesc.Count = 1;
+	NullId = CreateTexture2D(&desc, NULL, 0, 0);
+	// change state
+	D3DTexture& texture = Textures.GetItem(NullId);
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[0];
+	D3D12_RESOURCE_STATES OldState = texture.State[0].CurrentState;
+	ID3D12Resource * Resource = texture.Texture[0];
+	D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+	CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+	ResourceBarriers.PushBack(Barrier);
+	texture.State[0].CurrentState = NewState;
+}
+
 int D3D12Render::Initialize(int Width_, int Height_) {
 	// Create window 
 	Width = Width_;
 	Height = Height_;
+	ViewPortWidth = Width_;
+	ViewPortHeight = Height_;
 	hWnd = CreateRenderWindow();
 	InitD3D12();
 	InitShortOperation();
@@ -290,7 +322,8 @@ void D3D12Render::InitShortOperation() {
 	IBuffer[3] = 2;
 	IBuffer[4] = 1;
 	IBuffer[5] = 3;
-	int Id = CreateGeometry(VBuffer, sizeof(BasicVertex)* 4, sizeof(BasicVertex), IBuffer, 6, R_FORMAT::FORMAT_R16_UNORM);
+	// set QuadId for later use
+	QuadId = CreateGeometry(VBuffer, sizeof(BasicVertex)* 4, sizeof(BasicVertex), IBuffer, 6, R_FORMAT::FORMAT_R16_UINT);
 }
 
 void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube) {
@@ -474,6 +507,14 @@ int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned in
 	Context->InitializeVetexBuffer(Geometry.VertexResource, VBuffer, VBSize);
 	Context->InitializeIndexBuffer(Geometry.IndexResource, IBuffer, INum * sizeof(WORD));
 	Context->Finish(1);
+	// create views
+	Geometry.VBV.BufferLocation = Geometry.VertexResource->GetGPUVirtualAddress();
+	Geometry.VBV.SizeInBytes = VBSize;
+	Geometry.VBV.StrideInBytes = VertexSize;
+
+	Geometry.IBV.BufferLocation = Geometry.IndexResource->GetGPUVirtualAddress();
+	Geometry.IBV.Format = (DXGI_FORMAT)IndexFormat;
+	Geometry.IBV.SizeInBytes = INum * sizeof(WORD);
 	// Add to linear buffer
 	int Id = Geometries.AddItem(Geometry);
 	return Id;
@@ -589,7 +630,7 @@ int D3D12Render::CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc) {
 	// depth
 	State.Depth.DepthEnable = Desc->ZTestEnable;
 	State.Depth.DepthFunc = (D3D12_COMPARISON_FUNC)Desc->DepthFunc;
-	State.Depth.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	State.Depth.DepthWriteMask = (D3D12_DEPTH_WRITE_MASK)Desc->ZWriteEnable;
 	// stencil
 	State.Depth.StencilEnable = Desc->StencilEnable;
 	State.Depth.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
@@ -611,7 +652,7 @@ int D3D12Render::CreateBlendStatus(R_BLEND_STATUS* Desc) {
 	State.Blend.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)Desc->DestBlendAlpha;
 	State.Blend.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
 	State.Blend.RenderTarget[0].LogicOpEnable = FALSE;
-	State.Blend.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	State.Blend.RenderTarget[0].RenderTargetWriteMask = Desc->Mask;;
 	State.Blend.RenderTarget[0].SrcBlend = (D3D12_BLEND)Desc->SrcBlend;
 	State.Blend.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)Desc->SrcBlendAlpha;
 	int id = RenderState.AddItem(State);
@@ -648,13 +689,15 @@ void D3D12Render::SetBlendStatus(int Blend) {
 }
 // depth and stencil
 void D3D12Render::SetDepthStencilStatus(int DepthStencil) {
+//	printf("Set depth srencil %d\n", DepthStencil);
 	if (DepthStencil >= 0) {
 		D3DRenderState& State = RenderState[DepthStencil];
 		if (CurrentPSO.Depth != DepthStencil) {
 			CurrentPSO.Dirty = 1;
 			CurrentPSO.Depth = DepthStencil;
 		}
-
+		// set stencilref
+		CurrentCommandContext->GetGraphicsCommandList()->OMSetStencilRef(State.StencilRef);
 	}
 }
 // rasterizer
@@ -669,7 +712,24 @@ void D3D12Render::SetRasterizerStatus(int Rasterizer) {
 
 // viewport
 void D3D12Render::SetViewPort(float tlx, float tly, float width, float height, float minz, float maxz) {
-
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	D3D12_VIEWPORT viewport;
+	viewport.MinDepth = minz;
+	viewport.MaxDepth = maxz;
+	viewport.TopLeftX = tlx;
+	viewport.TopLeftY = tly;
+	viewport.Width = width;
+	viewport.Height = height;
+	cmdList->RSSetViewports(1, &viewport);
+	// setScissorRects
+	D3D12_RECT rect = {};
+	rect.left = 0;
+	rect.right = width;
+	rect.top = 0;
+	rect.bottom = height;
+	cmdList->RSSetScissorRects(1, &rect);
+	ViewPortWidth = width;
+	ViewPortHeight = height;
 }
 
 
@@ -696,9 +756,11 @@ void D3D12Render::SetDepthStencil(int Depth) {
 		texture.State[ResourceIndex].CurrentState = NewState;
 	}
 	this->Depth = handle;
+	TargetDirty = 1;
 }
 
 void D3D12Render::SetRenderTargets(int Count, int * Targets) {
+//	printf("set rendertarget %d %d\n", Count, Targets[0]);
 	CurrentPSO.NumRTV = Count;
 	NumTargets = Count;
 	for (int i = 0; i < Count; i++) {
@@ -724,6 +786,7 @@ void D3D12Render::SetRenderTargets(int Count, int * Targets) {
 			texture.State[ResourceIndex].CurrentState = NewState;
 		}
 	}
+	TargetDirty = 1;
 }
 
 void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
@@ -848,21 +911,27 @@ void D3D12Render::Present() {
 	}
 	UsedGpuSRVHeaps.Empty();
 	SwapChain->Present(1, 0);
+	// save this FenceValue for later waiting
+	PrevFenceValue[FrameIndex] = FenceValue;
 	// change current command context and set rootsignature
 	SwapCommandContext();
 	WaitForPreviousFrame();
 }
 
 void D3D12Render::WaitForPreviousFrame() {
+	// ring buffer command submiting. without idling the GPU
 	CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
-	Queue->IdleGpu();
+//	Queue->IdleGpu();
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
+	UINT FenceToWait = PrevFenceValue[FrameIndex];
+	// wait for prev frame
+	Queue->Wait(FenceToWait);
 }
 
 ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
 	static int i = 0;
 	i++;
-	printf("create %d pso\n", i);
+//	printf("create %d pso\n", i);
 	ID3D12PipelineState * PSO = NULL;
 	// set a lot pso descriptions
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc = {};
@@ -906,6 +975,14 @@ void D3D12Render::SwapCommandContext() {
 	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	cmdList->SetGraphicsRootSignature(RootSig->Get());
+	// set primitive topology to triangleist
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// clear targets and depth
+	NumTargets = 0;
+	TargetDirty = 0;
+	// reset viewport
+	SetViewPort(0, 0, ViewPortWidth, ViewPortHeight, 0, 1);
 }
 
 
@@ -947,6 +1024,7 @@ void D3D12Render::FlushResourceBarriers() {
 }
 
 void D3D12Render::FlushPSO() {
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	if (CurrentPSO.Dirty) {
 		HashMap<PSOCache, ID3D12PipelineState *>::Iterator Iter;
 		Iter = PSOTable.Find(CurrentPSO);
@@ -959,23 +1037,44 @@ void D3D12Render::FlushPSO() {
 			PSO = *Iter;
 		}
 		// set pso
-		CurrentCommandContext->GetGraphicsCommandList()->SetPipelineState(PSO);
+		cmdList->SetPipelineState(PSO);
+	
 	}
-	CurrentPSO.Dirty = 0;
+	CurrentPSO.Dirty = 0;	
+}
+
+void D3D12Render::FlushRenderTargets() {
+	// set targets and depthstencil
+	if (TargetDirty) {
+		ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+		cmdList->OMSetRenderTargets(NumTargets, Targets, 0, &Depth);
+		TargetDirty = 0;
+	}
 }
 
 void D3D12Render::Draw(int Id) {
 	FlushResourceBarriers();
 	FlushRootSignature();
 	FlushPSO();
-
-	printf("draw\n");
+	FlushRenderTargets();
+	// draw
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	D3DGeometry &Geometry = Geometries.GetItem(Id);
+	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
+	cmdList->IASetIndexBuffer(&Geometry.IBV);
+	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
+//	printf("draw %d\n", Geometry.INum);
 }
 
 void D3D12Render::Quad() {
 	FlushResourceBarriers();
 	FlushRootSignature();
 	FlushPSO();
-
-	printf("Quad\n");
+	FlushRenderTargets();
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	D3DGeometry &Geometry = Geometries.GetItem(QuadId);
+	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
+	cmdList->IASetIndexBuffer(&Geometry.IBV);
+	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
+//	printf("Quad\n");
 }

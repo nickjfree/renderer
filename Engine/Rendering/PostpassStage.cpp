@@ -2,7 +2,7 @@
 
 
 
-PostpassStage::PostpassStage(RenderContext * Context): RenderStage(Context), ssaoMaterial(0), HDRShader(0) {
+PostpassStage::PostpassStage(RenderContext * Context): RenderStage(Context), ssaoMaterial(0), HDRShader(0), Frames(0) {
 	Initiallize();
 }
 
@@ -222,9 +222,11 @@ int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 
 int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 	// swap adaptlum
-	int t = AdaptLum[0];
-	AdaptLum[0] = AdaptLum[1];
-	AdaptLum[1] = t;
+	if (Frames % 2) {
+		int t = AdaptLum[0];
+		AdaptLum[0] = AdaptLum[1];
+		AdaptLum[1] = t;
+	}
 	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
 	Parameter["gPostBuffer"].as<int>() = LumScaleArray[AvgIter-1];
 	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[1];
@@ -234,6 +236,7 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 	HDRShader->Compile(Compiler, 2, 0, Parameter, Parameter, Context);
 	Compiler->SetViewport(0, 0, 1, 1, 0, 1);
 	Compiler->Quad();
+	Frames++;
 	return 0;
 }
 

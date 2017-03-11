@@ -43,6 +43,8 @@ namespace D3D12API {
 	typedef struct D3DGeometry {
 		ID3D12Resource * VertexResource;
 		ID3D12Resource * IndexResource;
+		D3D12_VERTEX_BUFFER_VIEW VBV;
+		D3D12_INDEX_BUFFER_VIEW IBV;
 		unsigned int VSize;
 		unsigned int INum;
 		unsigned int VBSize;

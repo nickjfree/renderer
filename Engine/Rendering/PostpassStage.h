@@ -33,6 +33,8 @@ private:
 	int Star;
 	// current time
 	unsigned int Time;
+	// frame num
+	int Frames;
 	Shader * HDRShader;
 private:
 	void CreatePingPongBuffer();

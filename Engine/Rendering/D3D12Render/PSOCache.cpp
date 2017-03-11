@@ -41,3 +41,14 @@ bool PSOCache::operator==(PSOCache& rh) {
 	}
 	return false;
 }
+
+bool PSOCache::operator!=(PSOCache& rh) {
+	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
+		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat) {
+			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
+				return false;
+			}
+		}
+	}
+	return true;
+}

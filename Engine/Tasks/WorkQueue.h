@@ -9,6 +9,7 @@
 #include "Container\Vector.h"
 #include "Task.h"
 #include "Mutex.h"
+#include "Semaphore.h"
 #include "ThreadLocal.h"
 
 class WorkerThread;
@@ -26,6 +27,8 @@ private:
 	Mutex Pending;
 	// finish queue mute
 	Mutex Finish;
+	// samephore
+	Semaphore * Tasks;
 	// worker threads
 	Vector<WorkerThread*> Workers;
 	// thread local

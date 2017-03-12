@@ -3,9 +3,12 @@
 USING_ALLOCATER(OsEvent);
 USING_RECYCLE(OsEvent);
 
-OsEvent::OsEvent()
-{
+OsEvent::OsEvent() {
 	hEvent = CreateEventA(0, 1, 0, 0);
+}
+
+OsEvent::OsEvent(bool manual) {
+	hEvent = CreateEventA(0, manual, 0, 0);
 }
 
 OsEvent::~OsEvent()

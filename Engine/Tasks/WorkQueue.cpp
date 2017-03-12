@@ -3,19 +3,20 @@
 #include "ThreadLocal.h"
 
 
-WorkQueue::WorkQueue(Context * context) : System(context)
-{
+WorkQueue::WorkQueue(Context * context) : System(context) {
+	Tasks = new Semaphore(100000);
 }
 
 
-WorkQueue::~WorkQueue()
-{
+WorkQueue::~WorkQueue() {
+	delete Tasks;
 }
 
 // add task to queue
 int WorkQueue::QueueTask(Task * task) {
 	Pending.Acquire();
 	task->TaskList.InsertAfter(&PendingTasks);
+	Tasks->Release();
 	Pending.Release();
 	return 0;
 }
@@ -30,11 +31,15 @@ int WorkQueue::CompleteTask(Task * task) {
 
 Task * WorkQueue::GetPendingTask() {
 	Task * task = NULL;
+	Tasks->Acquire();
 	Pending.Acquire();
 	LinkList<Task>::Iterator Iter = PendingTasks.Last();
 	if (Iter != PendingTasks.End()) {
 		task = *Iter;
 		task->TaskList.Remove();
+	} else {
+		// the queue is empty
+
 	}
 	Pending.Release();
 	return task;
@@ -57,7 +62,7 @@ int WorkQueue::Initialize() {
 	tls = new ThreadLocal();
 	ThreadLocal::SetThreadLocal(0);
 	// start threads
-	int cores = 2;
+	int cores = 4;
 	for (int i = 0; i < cores; i++) {
 		WorkerThread * Thread = new WorkerThread(this, i+1);
 		Workers.PushBack(Thread);

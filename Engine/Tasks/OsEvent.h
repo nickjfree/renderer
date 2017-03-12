@@ -21,6 +21,7 @@ private:
 	HANDLE hEvent;
 public:
 	OsEvent();
+	OsEvent(bool manual);
 	~OsEvent();
 	void Pulse();
 	void Set();

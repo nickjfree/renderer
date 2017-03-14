@@ -10,7 +10,7 @@ using namespace DirectX;
 
 D3D12Render * D3D12Render::thisRender = NULL;
 
-D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0)
+D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlushed(0)
 {
 //	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
@@ -1000,7 +1000,7 @@ void D3D12Render::FlushRootSignature() {
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 	}
 	
-	if (!RootSig->Flush(cmdList, CurrentSRVHeap)) {
+	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed)) {
 		// need new heaps
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
 		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
@@ -1009,18 +1009,22 @@ void D3D12Render::FlushRootSignature() {
 		cmdList->SetDescriptorHeaps(2, Heaps);
 		// set sampler descriptor table
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-		RootSig->Flush(cmdList, CurrentSRVHeap);
+		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed);
 	}
+	// clear barrierflushed
+	BarrierFlushed = 0;
 }
 
-void D3D12Render::FlushResourceBarriers() {
+int D3D12Render::FlushResourceBarriers() {
 	int Count = ResourceBarriers.Size();
 	if (Count) {
 //		printf("flush %d barriers\n", Count);
 		// just flush them all
 		CurrentCommandContext->GetGraphicsCommandList()->ResourceBarrier(Count, ResourceBarriers.GetData());
 		ResourceBarriers.Empty();
+		BarrierFlushed = 1;
 	}
+	return Count;
 }
 
 void D3D12Render::FlushPSO() {

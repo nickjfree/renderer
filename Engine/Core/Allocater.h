@@ -37,7 +37,7 @@ void * Allocater<T, align>::Alloc()
 template <class T, int align = 16>
 void Allocater<T, align>::Free(void * ptr)
 {
-	int id = *((char*)ptr - sizeof(int));
+	int id = *(int*)((char*)ptr - sizeof(int));
 	m_ObjectContainer->ReleaseOne(id);
 }
 

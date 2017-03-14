@@ -102,6 +102,8 @@ namespace D3D12API {
 		int ViewPortHeight;
 		// previous frame's fence value
 		UINT64 PrevFenceValue[NUM_FRAMES];
+		// barrier flushed
+		bool BarrierFlushed;
 	public:
 		D3D12Render();
 		~D3D12Render();
@@ -137,7 +139,7 @@ namespace D3D12API {
 		// apply pso
 		void FlushPSO();
 		// flush barriers
-		void FlushResourceBarriers();
+		int FlushResourceBarriers();
 		// flush rootsig
 		void FlushRootSignature();
 		// flush rendertargets

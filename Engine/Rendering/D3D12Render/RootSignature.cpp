@@ -120,6 +120,8 @@ void RootSignature::InitCache(D3D12_CPU_DESCRIPTOR_HANDLE NullHandle) {
 	DescTables[1].TableSize = 5;
 	DescTables[2].TableSize = 7;
 	DescTables[3].TableSize = 3;
+
+	TotalTableSize = 21;
 }
 
 // set texture
@@ -127,6 +129,7 @@ bool RootSignature::SetTexture(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE han
 	DescTableSlot TableSlot = Textures[slot];
 	DescriptorTable& DescTable = DescTables[TableSlot.CacheSlot];
 	int Offset = TableSlot.Offset;
+	DescTable.Fresh[Offset] = 1;
 	if (DescTable.ResourceId[Offset] != id) {
 		DescTable.Dirty = 1;
 		DescTable.ResourceId[Offset] = id;
@@ -153,15 +156,35 @@ bool RootSignature::SetSamplerTable(ID3D12GraphicsCommandList * CommandList, D3D
 }
 
 // flush descriptors, constant bindings
-bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap) {
+bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap, bool BarrierFlushed) {
 	// flush texture bindings
+	// get total need size
+	int TotalTableSize = 0;
+	for (int i = 0; i < 3; i++) {
+		DescriptorTable &DescTable = DescTables[i];
+		if (DescTable.Dirty || BarrierFlushed) {
+			TotalTableSize += DescTable.TableSize;
+		}
+	}
+	if (!descHeap->HasSpace(TotalTableSize)) {
+		return false;
+	}
 	for (int i = 0; i < 3; i++) {
 		DescriptorTable &DescTable = DescTables[i];
 		int Start = DescTable.Start;
 //		int Num = DescTable.End +1 - Start;
 		int Num = DescTable.TableSize - Start;
 		int Slot = DescTable.RootSlot;
-		if (DescTable.Dirty) {
+		if (DescTable.Dirty || BarrierFlushed) {
+			if (BarrierFlushed) {
+				// unbind rendertarget textures
+				for (int n = 0; n < DescTable.TableSize; n++) {
+					if (!DescTable.Fresh[n]) {
+						DescTable.ResourceId[n] = -1;
+						DescTable.Handles[n] = NullHandle;
+					}
+				}
+			}
 			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
 			if (!handle.ptr) {
 				// need new descripterheap
@@ -176,13 +199,12 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
 			//}
 			//printf("\n");
 			// refresh cache
-			DescTable.Dirty = 1;
+			DescTable.Dirty = 0;
 			DescTable.RootSlot = i + 4;
 			DescTable.Start = DescTable.TableSize;
 			DescTable.End = -1;
 			for (int n = 0; n < DescTable.TableSize; n++) {
-				DescTable.ResourceId[n] = -1;
-				DescTable.Handles[n] = NullHandle;
+				DescTable.Fresh[n] = 0;
 			}
 		}
 	} 

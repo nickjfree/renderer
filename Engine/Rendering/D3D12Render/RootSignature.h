@@ -21,6 +21,7 @@ namespace D3D12API {
 		int TableSize;
 		int ResourceId[MAX_DESC_TABLE_SIZE];
 		D3D12_CPU_DESCRIPTOR_HANDLE Handles[MAX_DESC_TABLE_SIZE];
+		int Fresh[MAX_DESC_TABLE_SIZE];
 	} DescriptorTable;
 	
 	// texture slot info
@@ -54,6 +55,8 @@ namespace D3D12API {
 		DescriptorTable DescTables[4];
 		// null handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullHandle;
+		// table size
+		int TotalTableSize;
 	private:
 		ID3D12Device * Device;
 		// init root signature
@@ -75,7 +78,7 @@ namespace D3D12API {
 		// set sampler
 		bool SetSamplerTable(ID3D12GraphicsCommandList * CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		bool Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap);
+		bool Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap, bool BarrierFlushed);
 	};
 
 }

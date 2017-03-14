@@ -64,7 +64,7 @@ int TestGen(char * File) {
 	LightEntry light = {};
 	ObjectEntry object = {};
 	
-	Num = 6;
+	Num = 6+10000;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	Quaternion rot = Quaternion();
@@ -148,6 +148,25 @@ int TestGen(char * File) {
 	// write qianzhihe
 	WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
 	WriteFile(hFile, &render, sizeof(render), &write, 0);
+
+	int i = 0;
+	while (i++ < 10000) {
+		strcpy_s(object.Name, "qianzhihe");
+		object.NumComponents = 1;
+		object.Position = Vector3(0+(i/100)*10, 5, 0+(i%100)*10);
+		//	Quaternion rot = Quaternion();
+		rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
+		object.Rotation = rot;
+		object.Rotation = Quaternion();
+		object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
+		object.Scale = Vector3(1, 1, 1);
+		render.MaterialIndex = 3;
+		render.ModelIndex = 3;
+		strcpy_s(render.Info.TypeName, "Renderer");
+		// write qianzhihe
+		WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
+		WriteFile(hFile, &render, sizeof(render), &write, 0);
+	}
 
 	// envirremont light
 	strcpy_s(object.Name, "LightProb");

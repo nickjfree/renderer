@@ -57,6 +57,8 @@ namespace D3D12API {
 		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle(int slot);
 		// Stage descriptors, return start dest positions
 		D3D12_GPU_DESCRIPTOR_HANDLE StageDescriptors(D3D12_CPU_DESCRIPTOR_HANDLE * Handles, int PadStart, int Num);
+		// HasSpace
+		bool HasSpace(int Size) { return Current + Size < MAX_DESCRIPTOR_SIZE; }
 	};
 
 }

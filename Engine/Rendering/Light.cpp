@@ -33,7 +33,7 @@ int Light::OnAttach(GameObject * GameObj) {
 	// Notify partition
 	Event * Evt = Event::Create();
 	Evt->EventId = 300;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
+	Evt->EventParam[String("RenderObject")].as<RenderObject*>() = renderLight;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position

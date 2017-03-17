@@ -66,6 +66,15 @@ typedef struct Pass{
 	Vector<TextureUnit> TextureUnits;
 }Pass;
 
+/*
+instancing data
+*/
+typedef struct InstanceElement {
+	String Name;
+	int Offset;
+	int Size;
+
+}InstanceElement;
 
 /*
 	technique 
@@ -73,10 +82,14 @@ typedef struct Pass{
 typedef struct Technique{
 	// pass count
 	int PassCount;
+	// instance
+	bool Instance;
 	// technique name
 	String Name;
 	// max pass 2
 	Pass * RenderPass[2];
+	// instance elemnt
+	Vector<InstanceElement> InstanceElements;
 }Technique;
 
 
@@ -98,10 +111,9 @@ private:
 	void * RawXML;
 	// parsed xml
 	xml_document<> * xml_doc;
-
 private:
 	// read shader constant use reflection
-	int ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size);
+	int ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, Vector<InstanceElement>& InstanceElements);
 
 	// get variant from dict
 	Variant* GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext * Context);
@@ -110,10 +122,12 @@ public:
 	~Shader();
 	int Apply(int Stage, char * buffer, Dict& Parameter);
 	Deserializer virtual AsyncLoad();
+	bool IsInstance(int Stage);
 	virtual int OnSerialize(Deserializer& deserializer);
 	virtual int OnLoadComplete(Variant& Parameter);
 	virtual int OnCreateComplete(Variant& Parameter);
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext * Context);
+	virtual int MakeInstance(BatchCompiler * Compiler, int Stage, Dict& ObjectParameter, void * Buffer);
 };
 
 

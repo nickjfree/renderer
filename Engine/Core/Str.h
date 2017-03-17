@@ -26,6 +26,8 @@ public:
 	StringHash(char * buff);
 	StringHash(StringHash& rh) { value = rh.value; };
 	inline operator int();
+	bool inline operator ==(StringHash& rh);
+	bool inline operator !=(StringHash& rh);
 	inline operator unsigned int();
 	virtual ~StringHash();
 };
@@ -49,10 +51,14 @@ public:
 	String& operator=(String& rh);
 	String& operator=(char * rh);
 	operator int();
+	operator unsigned int();
 	operator char * ();
 	bool operator == (char * buff);
+	bool operator == (String& rh);
 	bool operator != (char * buff);
+	bool operator != (String& rh);
 	int Split(char delimiter, String * Result, int Count);
+	unsigned int Len() { return Length; }
  	virtual ~String();
 };
 

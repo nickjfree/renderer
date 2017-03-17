@@ -43,8 +43,10 @@ private:
 public:
 	Vector() : Data(0), ItemSize(0), Capacity(0), Resized(0) {};
 	virtual ~Vector() { Clear(); };
+	Vector(Vector&);
 	int Size() { return ItemSize; };
 	T& operator [](int Index);
+	void operator = (Vector&);
 	int PushBack(T& Item);
 	T& PopBack();
 	void Empty() {
@@ -72,7 +74,10 @@ template <class T>
 int Vector<T>::Resize(int NewSize) {
 	if (NewSize > Capacity) {
 		T * newData = new T[NewSize];
-		memcpy(newData, Data, sizeof(T)* ItemSize);
+		for (int i = 0; i < ItemSize; i++) {
+			newData[i] = Data[i];
+		}
+		//memcpy(newData, Data, sizeof(T)* ItemSize);
 		delete[] Data;
 		Data = newData;
 		Capacity = NewSize;
@@ -118,6 +123,29 @@ void Vector<T>::Append() {
 		}
  		Resize(Capacity * 2);
 	}
+}
+
+template <class T>
+Vector<T>::Vector(Vector<T>& rh) {
+	ItemSize = rh.ItemSize;
+	Capacity = rh.Capacity;
+	Resized = rh.Resized;
+	Data = new T[ItemSize];
+	for (int i = 0; i < ItemSize; i++) {
+		Data[i] = rh.Data[i];
+	}
+}
+
+template <class T>
+void Vector<T>::operator=(Vector<T>& rh) {
+	ItemSize = rh.ItemSize;
+	Capacity = rh.Capacity;
+	Resized = rh.Resized;
+	Data = new T[ItemSize];
+	for (int i = 0; i < ItemSize; i++) {
+		Data[i] = rh.Data[i];
+	}
+//	memcpy(Data, rh.Data, sizeof(T)* ItemSize);
 }
 
 #endif

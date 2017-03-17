@@ -6,6 +6,8 @@
 #include "../Container/Dict.h"
 #include "../Container/Vector.h"
 #include "../Container/RecyclePool.h"
+#include "Core\Str.h"
+
 
 
 #define MAX_EVENT_PARAM 4
@@ -24,7 +26,7 @@ public:
 public:
 	Event();
 	virtual ~Event();
-	Variant& operator[] (char * buff);
+	Variant& operator[] (String& buff);
 };
 
 /*

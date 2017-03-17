@@ -1,6 +1,7 @@
 #include "ScriptingSystem.h"
 #include "ConsoleTask.h"
 #include "Tasks\WorkQueue.h"
+#include "Core\StringTable.h"
 
 
 ScriptingSystem::ScriptingSystem(Context * context): System(context) {
@@ -30,7 +31,7 @@ int ScriptingSystem::Initialize() {
 
 int ScriptingSystem::HandleEvent(Event *Evt) {
 	if (Evt->EventId == 400) {
-		Level * level = Evt->EventParam["Level"].as<Level*>();
+		Level * level = Evt->EventParam[hash_string::Level].as<Level*>();
 		OnLevelLoaded(level);
 	}
 	return 0;

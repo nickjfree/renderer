@@ -531,7 +531,7 @@ int D3D12Render::CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * 
 		desc.InputSlot = Element[i].Slot;
 		if (Element[i].Type == R_INSTANCE) {
 			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-			desc.InstanceDataStepRate = 0;
+			desc.InstanceDataStepRate = 1;
 		} else {
 			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 			desc.InstanceDataStepRate = 0;
@@ -925,7 +925,11 @@ void D3D12Render::WaitForPreviousFrame() {
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
 	UINT FenceToWait = PrevFenceValue[FrameIndex];
 	// wait for prev frame
+	static DWORD s;
 	Queue->Wait(FenceToWait);
+	DWORD e = GetTickCount();
+	printf("%d\n", e - s);
+	s = e;
 }
 
 ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
@@ -1068,6 +1072,43 @@ void D3D12Render::Draw(int Id) {
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
 	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
 //	printf("draw %d\n", Geometry.INum);
+}
+
+void D3D12Render::DrawInstance(int Id, void * InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum) {
+	FlushResourceBarriers();
+	FlushRootSignature();
+	FlushPSO();
+	FlushRenderTargets();
+
+	unsigned int Size = BufferSize * InstanceNum;
+	void * Data;
+	if (CurrentConstHeap) {
+		Data = CurrentConstHeap->SubAlloc(Size);
+		if (!Data) {
+			UsedConstHeaps.PushBack(CurrentConstHeap);
+			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+			Data = CurrentConstHeap->SubAlloc(Size);
+		}
+	}
+	else {
+		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+		Data = CurrentConstHeap->SubAlloc(Size);
+	}
+	assert(Data);
+	memcpy(Data, InstanceBuffer, Size);
+	// bind to signature
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = CurrentConstHeap->GetGpuAddress(Data);
+	D3D12_VERTEX_BUFFER_VIEW InstanceDesc[2];
+	InstanceDesc[1].BufferLocation = GpuAddr;
+	InstanceDesc[1].SizeInBytes = Size;
+	InstanceDesc[1].StrideInBytes = BufferSize;
+
+	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	D3DGeometry &Geometry = Geometries.GetItem(Id);
+	InstanceDesc[0] = Geometry.VBV;
+	cmdList->IASetVertexBuffers(0, 2, InstanceDesc);
+	cmdList->IASetIndexBuffer(&Geometry.IBV);
+	cmdList->DrawIndexedInstanced(Geometry.INum, InstanceNum, 0, 0, 0);
 }
 
 void D3D12Render::Quad() {

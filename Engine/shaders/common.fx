@@ -16,16 +16,23 @@ Texture2D gNormalMap1 : register(t5);
 Texture2D gNormalMap2 : register(t6);
 Texture2D gNormalMap3 : register(t7);
 Texture2D gSpecularMap0 : register(t8);
+
 // defferd shading GBuffer
 Texture2D gDepthBuffer : register(t9);
 Texture2D gNormalBuffer: register(t10);
 Texture2D gDiffuseBuffer: register(t11);
 Texture2D gSpecularBuffer: register(t12);
 Texture2D gLightBuffer : register(t13);
+
+
+// misc textures
+
+
+// pingpong buffers
 Texture2D gPostBuffer : register(t14); 
 Texture2D gFinalBuffer: register(t15);
-Texture2D gShadowMap: register(t16);
 
+Texture2D gShadowMap: register(t16);
 // image based light
 TextureCube  gLightProbe		   : register(t17);
 Texture2D	 gLUT                  : register(t18);
@@ -33,72 +40,52 @@ TextureCube  gLdCube               : register(t19);
 TextureCube  gLightProbeIrradiance : register(t20);
 
 
-cbuffer MatrixBuffer : register(b0)
+
+cbuffer PerObject: register(b0)
 {
+	// object
 	float4x4 gWorldViewProjection;
 	float4x4 gWorldInvertProjection;
 	float4x4 gWorldViewMatrix;
-	float4x4 gProjectionMatrix;
-	float4x4 gInvertViewMaxtrix;
-	float4   gViewPoint;
-}
-
-cbuffer LightViewBuffer : register(b1)
-{
+	// shadow map constant
 	float4x4  gLightViewProjection;
 	float4x4  gLightView;
 	float4x4  gLightProjection;
+	// lighting
+	float4 gLightPosition;
+	float4 gLightColor;
+	float4 gRadiusIntensity;
+	float4 gLightDirection;
 }
 
-cbuffer SkinningBuffer : register(b2)
+
+cbuffer PerFrame: register(b1) 
+{
+	// per frame
+	float4x4 gProjectionMatrix;
+	float4x4 gInvertViewMaxtrix;
+	float4   gViewPoint;
+
+	int  gTimeElapse;
+	int  gAbsoluteTime;
+	float2 pad;
+	// post pass 
+	float4   gSampleOffsets[4];
+	float4   gSampleWeights[4];
+}
+
+cbuffer Animation: register(b2)
 {
 	// animation use 128 constants buffer,bone transform,update for each object draw
 	float4x4  gSkinMatrix[128];
 }
 
-cbuffer SampleBuffer: register(b3)
-{
-	float4   gSampleOffsets[4];
-	float4   gSampleWeights[4];
-}
-
-cbuffer Time: register(b4)
-{
-	// time elaps since previous frame
-	int  gTimeElapse;
-	int  gAbsoluteTime;
-	float2 pad;
-}
-
-cbuffer Light: register(b5)
-{
-	float4 gLightPosition;
-	float4 gLightColor;
-	float4 gRadiusIntensity;
-	float4 gLightDirection;
-};
-
-cbuffer Options: register(b6)
+cbuffer Misc : register(b3)
 {
 	float4 gScreenSize;
-};
-
-
-
+}
 
 //float3 gLightDirection;
-
-
-
-// bonematrix instancing use a texture which contains transform matrix for each frams,no need to update each object,but better not too big
-Texture2D gBoneMatrix;
-// shadow map for 8 lights,now only first is used and not implemented
-Texture2D gShadowMaps[8];
-// shader resourceview for each shadown map texture
-cbuffer ShadowViewMatrixBuffer
-{
-	float4x4  gShadowViews[8];
-}
 
 
 static const float fov = tan(0.15 * 3.141592654);

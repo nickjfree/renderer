@@ -133,6 +133,12 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 			Technique Tech;
 			Tech.PassCount = 0;
 			Tech.Name = tech->first_attribute("name")->value();
+			xml_attribute<> * attr = tech->first_attribute("instance");
+			if (attr && String("yes") == attr->value()) {
+				Tech.Instance = true;
+			} else {
+				Tech.Instance = false;
+			}
 			xml_node<> * pass = tech->first_node();
 			while (pass) {
 				Pass * RenderPass = new Pass();
@@ -171,7 +177,7 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 						RenderPass->PS = renderinterface->CreatePixelShader(Binary, Size, 0);
 					}
 					// reflect shader constant and textures
-					ReflectShader(RenderPass, Binary, Size);
+					ReflectShader(RenderPass, Binary, Size, Tech.InstanceElements);
 					shader = shader->next_sibling();
 				}
 				Tech.RenderPass[Tech.PassCount++] = RenderPass;
@@ -221,7 +227,7 @@ int Shader::OnLoadComplete(Variant& Parameter) {
 	return 0;
 }
 
-int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
+int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, Vector<InstanceElement>& InstanceElements) {
 	/*
 		shader reflection to get contant buffer info and input signature info
 	*/
@@ -236,16 +242,43 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size) {
 		R_INPUT_ELEMENT Elements[32];  // 32 is enough for now
 		int Offset = 0;
 		memset(Elements, 0, sizeof(R_INPUT_ELEMENT) * 32);
+		InstanceElement instance = {};
+		instance.Offset = 0;
+		instance.Size = 0;
+		int Instance = 0;
 		for (int i = 0; i < desc.InputParameters; i++) {
 			D3D12_SIGNATURE_PARAMETER_DESC input_desc;
 			Reflector->GetInputParameterDesc(i, &input_desc);
 			R_INPUT_ELEMENT * Element = &Elements[i];
 			Element->Semantic = (char*)input_desc.SemanticName;
 			Element->SemanticIndex = input_desc.SemanticIndex;
-			Element->Slot = input_desc.Stream;
+			if (!memcmp(Element->Semantic, "Instance", 8)) {
+				// instance stream
+				Element->Slot = 1;
+				Element->Type = R_INSTANCE;
+				if (!Instance) {
+					Offset = 0;
+				}
+				Instance = 1;
+				if (instance.Name == Element->Semantic) {
+					instance.Size += GetOffset(input_desc.Mask);
+				} else {
+					if (instance.Name.Len()) {
+						InstanceElements.PushBack(instance);
+					}
+					instance.Offset = instance.Size;
+					instance.Size = GetOffset(input_desc.Mask);
+					instance.Name = Element->Semantic;
+				}
+			} else {
+				Element->Slot = input_desc.Stream;
+			}
 			Element->Offset = Offset;
 			Element->Format = GetFormat(input_desc.Mask, input_desc.ComponentType);
 			Offset += GetOffset(input_desc.Mask);
+		}
+		if (instance.Name.Len()) {
+			InstanceElements.PushBack(instance);
 		}
 		// create input layout
 		RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, desc.InputParameters, Shader, Size);
@@ -363,4 +396,22 @@ int Shader::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Material
 		}
 	}
 	return Compiled;
+}
+
+bool Shader::IsInstance(int Stage) {
+	Technique * tech = &Techs[Stage];
+	return tech->Instance;
+}
+
+int Shader::MakeInstance(BatchCompiler * Compiler, int Stage, Dict& ObjectParameter, void * Buffer) {
+	Vector<InstanceElement>::Iterator Iter;
+	int Ret = 0;
+	Vector<InstanceElement>& InstanceElements = Techs[Stage].InstanceElements;
+	for (Iter = InstanceElements.Begin(); Iter != InstanceElements.End(); Iter++) {
+		InstanceElement& element = *Iter;
+		Variant * data = &ObjectParameter[element.Name];
+		memcpy((char*)Buffer + element.Offset, data, element.Size);
+		Ret += element.Size;
+	}
+	return Ret;
 }

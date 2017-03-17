@@ -2,6 +2,7 @@
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
 #include "H3DMesh.h"
+#include "Core\StringTable.h"
 
 
 USING_ALLOCATER(MeshRenderer);
@@ -25,7 +26,7 @@ int MeshRenderer::OnAttach(GameObject * GameObj) {
 	// Notify partition
 	Event * Evt = Event::Create();
 	Evt->EventId = 300;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderObject;
+	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position
@@ -37,7 +38,7 @@ int MeshRenderer::OnAttach(GameObject * GameObj) {
 int MeshRenderer::HandleEvent(Event * Ev) {
 	// test code for now
 	if (Ev->EventId == 200) {
-		Model * model = Ev->EventParam["model"].as<Model*>();
+		Model * model = Ev->EventParam[hash_string::model].as<Model*>();
 		renderObject->SetModel(model);
 	}
 	return 0;

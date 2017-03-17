@@ -15,6 +15,17 @@ struct VS_Input
     float3 Tangent  : TANGENT;
 };
 
+struct VS_Input_Instance
+{
+    float3 PosL  : POSITION;
+    float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD;
+    float  InstanceID : TEXCOORD1;
+    float4 Tangent  : TANGENT;
+    float4x4 InstanceWVP: InstanceWVP; 
+    float4x4 InstanceWV: InstanceWV;
+};
+
 struct PS_Input
 {
 	float4 PosH : SV_POSITION;
@@ -37,6 +48,16 @@ PS_Input VS(VS_Input input)
 	return output;
 }
 
+PS_Input VS_Instance(VS_Input_Instance input)
+{
+    PS_Input output = (PS_Input)0;
+    // Transform to homogeneous clip space.
+    output.PosH = mul(float4(input.PosL, 1.0f), input.InstanceWVP);
+    output.TexCoord = input.TexCoord;
+    output.Normal = input.Normal;
+    return output;
+}
+
 PS_Output PS(PS_Input input)
 {	
 	PS_Output output = (PS_Output)0;
@@ -47,7 +68,6 @@ PS_Output PS(PS_Input input)
 	float3 color = diffuse.xyz *(light.xyz) + float3(0.1,0.1,0.1);
 	float specular = light.w;
 	output.Color = float4(color + light.xyz * specular, 0);
-//	output.Color = float4(light.xyz,0.1);
 	return output;
 }
 

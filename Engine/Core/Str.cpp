@@ -80,12 +80,30 @@ String::operator int() {
 	return Hash;
 }
 
+String::operator unsigned int() {
+	return Hash;
+}
+
 bool String::operator == (char * buff) {
+	if (!Length) {
+		return false;
+	}
 	return !strcmp(Str, buff);
+}
+
+bool String::operator == (String& rh) {
+	if (!Length) {
+		return false;
+	}
+	return Hash == rh.Hash;
 }
 
 bool String::operator != (char * buff) {
 	return strcmp(Str, buff);
+}
+
+bool String::operator != (String& rh) {
+	return Hash != rh.Hash;
 }
 
 int String::Split(char delimiter, String * Result, int Count) {
@@ -129,6 +147,13 @@ StringHash::operator int()
 	return (int)value;
 };
 
+bool StringHash::operator==(StringHash& rh) {
+	return value == rh.value;
+}
+
+bool StringHash::operator !=(StringHash& rh) {
+	return value != rh.value;
+}
 StringHash::operator unsigned int()
 {
 	return value;

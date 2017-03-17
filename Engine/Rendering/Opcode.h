@@ -43,6 +43,7 @@
 */
 #define OP_RENDER_GEO 0x0f
 #define OP_QUAD       0x17
+#define OP_INSTANCE   0x18
 /*
 	frame ops
 */

@@ -10,8 +10,8 @@ Dict::~Dict()
 {
 }
 
-template <class T>  T& Dict::Get(char * key) {
-	int StringHash = hash(key);
+template <class T>  T& Dict::Get(String& key) {
+	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Items[Index].key != key) {
 		Index = HashIndex_.Next(Index);
@@ -23,8 +23,8 @@ template <class T>  T& Dict::Get(char * key) {
 	return *(T*)&Items[Index].Value;
 }
 
-template <class T>  int Dict::Set(char * key, T& value) {
-	int StringHash = hash(key);
+template <class T>  int Dict::Set(String& key, T& value) {
+	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Items[Index].key != key) {
 		Index = HashIndex_.Next(Index);
@@ -42,8 +42,8 @@ template <class T>  int Dict::Set(char * key, T& value) {
 	return Index;
 }
 
-Variant& Dict::operator[] (char * key) {
-	int StringHash = hash(key);
+Variant& Dict::operator[] (String& key) {
+	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Index != -1 && Items[Index].key != key) {
 		Index = HashIndex_.Next(Index);
@@ -58,3 +58,20 @@ Variant& Dict::operator[] (char * key) {
 	HashIndex_.Add(StringHash, Index);
 	return Items[Index].Value;
 }
+
+//Variant& Dict::operator[] (char* key) {
+//	unsigned int StringHash = (unsigned int)String(key);
+//	int Index = HashIndex_.First(StringHash);
+//	while (Index != -1 && Items[Index].key != key) {
+//		Index = HashIndex_.Next(Index);
+//	}
+//	if (Index != -1) {
+//		return Items[Index].Value;
+//	}
+//	// new key
+//	KeyValue Item = KeyValue();
+//	Item.key = key;
+//	Index = Items.PushBack(Item);
+//	HashIndex_.Add(StringHash, Index);
+//	return Items[Index].Value;
+//}

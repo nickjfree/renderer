@@ -73,6 +73,8 @@ protected:
 	int SetViewport(void * data);
 	// present
 	int Present(void * data);
+	// instance
+	int Instance(void * data);
 public:
 	RenderProcesser(RenderContext * context);
 	~RenderProcesser();

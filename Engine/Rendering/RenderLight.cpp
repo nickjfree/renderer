@@ -1,5 +1,6 @@
 #include "RenderLight.h"
 #include "RenderQueue.h"
+#include "Core\StringTable.h"
 
 
 USING_ALLOCATER(RenderLight);
@@ -17,10 +18,10 @@ RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 
 	Type = Node::LIGHT;
 	LightType = RenderLight::POINT;
 	Matrix4x4 InitMatrix;
-	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
-	Parameter["gLightColor"].as<Vector3>() = Color;
-	Parameter["gScreenSize"].as<Vector2>() = Vector2(1920,1080);
-	Parameter["gLightViewProjection"].as<Matrix4x4>() = InitMatrix;
+	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
+	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(1920,1080);
+	Parameter[hash_string::gLightViewProjection].as<Matrix4x4>() = InitMatrix;
 }
 
 
@@ -34,23 +35,23 @@ void RenderLight::SetLightType(int Type) {
 
 void RenderLight::SetRadius(float r) {
 	Radius = r;
-	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	CullingObj.UniformScale(r);
 }
 // set color
 void RenderLight::SetColor(Vector3& Color_) {
 	Color = Color_;
-	Parameter["gLightColor"].as<Vector3>() = Color;
+	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
 }
 // set intensity
 void RenderLight::SetIntensity(float Intensity_) {
 	Intensity = Intensity_;
-	Parameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
 }
 // set direction
 void RenderLight::SetDirection(Vector3& Direction_) {
 	Direction = Direction_;
-	Parameter["gLightDirection"].as<Vector3>() = Direction;
+	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction;
 }
 // set shdowcast disable/enable
 void RenderLight::SetShadowCast(int Flag) {
@@ -58,7 +59,7 @@ void RenderLight::SetShadowCast(int Flag) {
 }
 
 void RenderLight::SetShadowMap(int id) {
-	Parameter["gShadowMap"].as<int>() = id;
+	Parameter[hash_string::gShadowMap].as<int>() = id;
 }
 
 RenderingCamera * RenderLight::GetLightCamera() {
@@ -69,7 +70,7 @@ RenderingCamera * RenderLight::GetLightCamera() {
 
 
 void RenderLight::UpdateLightView() {
-	Matrix4x4::Tranpose(LightCamera.GetViewProjection(), &Parameter["gLightViewProjection"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(LightCamera.GetViewProjection(), &Parameter[hash_string::gLightViewProjection].as<Matrix4x4>());
 }
 
 int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){
@@ -81,17 +82,17 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	Transform = Scale * Transform;
 	Matrix4x4 Tmp;
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Tmp);
-	Parameter["gWorldViewProjection"].as<Matrix4x4>() = Tmp;
+	Parameter[hash_string::gWorldViewProjection].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Tmp);
-	Parameter["gWorldViewMatrix"].as<Matrix4x4>() = Tmp;
+	Parameter[hash_string::gWorldViewMatrix].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Camera->GetInvertView(), &Tmp);
-	Parameter["gInvertViewMaxtrix"].as<Matrix4x4>() = Tmp;
+	Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>() = Tmp;
 	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
-	Parameter["gProjectionMatrix"].as<Matrix4x4>() = Tmp;
-	Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
+	Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = Tmp;
+	Parameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
 	// light parameters
-	Parameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
-	Parameter["gLightDirection"].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
+	Parameter[hash_string::gLightPosition].as<Vector3>() = Position * Camera->GetViewMatrix();
+	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
 	// light iewprojection
 	UpdateLightView();
 	// process material

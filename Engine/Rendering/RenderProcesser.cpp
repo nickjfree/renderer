@@ -3,7 +3,7 @@
 #include "Opcode.h"
 #include "stdio.h"
 
-
+#define MAX_INSTANCE_NUM 1024
 
 RenderProcesser::RenderProcesser(RenderContext * context_) :context(context_)
 {
@@ -30,6 +30,7 @@ RenderProcesser::RenderProcesser(RenderContext * context_) :context(context_)
 	Cmds[OP_VIEWPORT].cmd = &RenderProcesser::SetViewport;
 	Cmds[OP_PRESENT].cmd = &RenderProcesser::Present;
 	Cmds[OP_QUAD].cmd = &RenderProcesser::RenderQuad;
+	Cmds[OP_INSTANCE].cmd = &RenderProcesser::Instance;
 }
 
 
@@ -79,6 +80,33 @@ int RenderProcesser::RenderGeometry(void * data){
 	// render
 	int Geometry = *(int*)data;
 	Interface->Draw(Geometry);
+	return 1;
+}
+
+int RenderProcesser::Instance(void * data) {
+	//printf("%s\n", __FUNCTION__);
+	ip += sizeof(int) + sizeof(int) + sizeof(int) + 1 ;
+	// render
+	char * p = (char*)data;
+	int Geometry = *(int*)p;
+	p += sizeof(unsigned int);
+	int Size = *(unsigned int *)p;
+	p += sizeof(unsigned int);
+	int Count = *(unsigned int *)p;
+	p += sizeof(unsigned int);
+	void * InstanceData = (void*)p;
+	p += (Size * Count);
+	ip += (Size * Count);
+	// split by MAX_INSTANCE_NUM instance per draw call
+	while ( Count>0 ) {
+		int Num = MAX_INSTANCE_NUM;
+		if (Count < MAX_INSTANCE_NUM) {
+			Num = Count;
+		}
+		Interface->DrawInstance(Geometry, InstanceData, Size, Num);
+		InstanceData = (char*)InstanceData + MAX_INSTANCE_NUM * Size;
+		Count -= MAX_INSTANCE_NUM;
+	}
 	return 1;
 }
 

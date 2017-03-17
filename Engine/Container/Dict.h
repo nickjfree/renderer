@@ -50,9 +50,10 @@ public:
 public:
 	Dict();
 	virtual ~Dict();
-	template <class T>  T& Get(char * key);
-	template <class T>  int Set(char * key, T& value);
-	Variant& operator[] (char * key);
+	template <class T>  T& Get(String& key);
+	template <class T>  int Set(String& key, T& value);
+	Variant& operator[] (String& key);
+//	Variant& operator[] (char * key);
 	// begin, not used
 	Iterator Begin() {
 		Iterator Iter;
@@ -60,9 +61,9 @@ public:
 		return Iter;
 	};
 
-	Iterator Find(char * key) {
+	Iterator Find(String& key) {
 		Iterator Iter;
-		int StringHash = hash(key);
+		unsigned int StringHash = (unsigned int)key;
 		int Index = HashIndex_.First(StringHash);
 		while (Index != -1 && Items[Index].key != key) {
 			Index = HashIndex_.Next(Index);

@@ -22,7 +22,7 @@ int BasicPartition::OnAttach(GameObject * GameObj) {
 int BasicPartition::HandleEvent(Event * Evt) {
 	// test code
 	if (Evt->EventId == 300) {
-		RenderObject * Node = Evt->EventParam["RenderObject"].as<RenderObject*>();
+		RenderObject * Node = Evt->EventParam[String("RenderObject")].as<RenderObject*>();
 		//Tree->AddSenceNode(Node, 0);
 		BasicCulling->Add(Node);
 	}

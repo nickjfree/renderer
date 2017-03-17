@@ -203,7 +203,7 @@ namespace D3D12API {
 		// draw single geometry
 		virtual void Draw(int Geometry);
 		// draw instance geometry
-		virtual void DrawInstance(int Geometry, void * InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum) {};
+		virtual void DrawInstance(int Geometry, void * InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum);
 		// Draw raw data. Slow operation, cause the data must copy to GPU memory first
 		virtual void DrawRaw(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat) {}
 		// draw full screen quad

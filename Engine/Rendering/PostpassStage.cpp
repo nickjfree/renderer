@@ -1,4 +1,5 @@
 #include "PostpassStage.h"
+#include "Core\StringTable.h"
 
 
 
@@ -189,8 +190,8 @@ int PostpassStage::SSAO(BatchCompiler * Compiler) {
 
 int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 	// set offset
-	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
-	Parameter["gPostBuffer"].as<int>() = PingPong[1];
+	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
+	Parameter[hash_string::gPostBuffer].as<int>() = PingPong[1];
 	memcpy_s(Offset, sizeof(Variant), ScaleOffset[0], sizeof(float) * 16);
 	Compiler->SetRenderTargets(1, LumScaleArray);
 	HDRShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
@@ -202,7 +203,7 @@ int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 
 int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 	// set offset
-	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
 	int Width = 1920 / 4.0f;
 	int Height = 1080 / 4.0f;
 	for (int i = 1; i < AvgIter; i++) {
@@ -210,7 +211,7 @@ int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 		Height /= 4;
 		// the previous lumbuffer as gPostBuffer
 		Compiler->SetRenderTargets(1, &LumScaleArray[i]);
-		Parameter["gPostBuffer"].as<int>() = LumScaleArray[i-1];
+		Parameter[hash_string::gPostBuffer].as<int>() = LumScaleArray[i-1];
 		memcpy_s(Offset, sizeof(Variant), &ScaleOffset[i], sizeof(float) * 16);
 		HDRShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
 		// Quad
@@ -227,10 +228,10 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 		AdaptLum[0] = AdaptLum[1];
 		AdaptLum[1] = t;
 	}
-	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
-	Parameter["gPostBuffer"].as<int>() = LumScaleArray[AvgIter-1];
-	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[1];
-	Parameter["gTimeElapse"].as<int>() = GetFrameDelta();
+	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
+	Parameter[hash_string::gPostBuffer].as<int>() = LumScaleArray[AvgIter-1];
+	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[1];
+	Parameter[hash_string::gTimeElapse].as<int>() = GetFrameDelta();
 	Compiler->SetRenderTargets(1, &AdaptLum[0]);
 	memcpy_s(Offset, sizeof(Variant), &ScaleOffset[AvgIter], sizeof(float) * 16);
 	HDRShader->Compile(Compiler, 2, 0, Parameter, Parameter, Context);
@@ -244,15 +245,15 @@ int PostpassStage::BrightPass(BatchCompiler * Compiler){
 	// bright pass to bloom 0
 	int Width = 1920 / 2.0f;
 	int Height = 1080 / 2.0f;
-	Parameter["gPostBuffer"].as<int>() = PingPong[1];
-	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[0];
+	Parameter[hash_string::gPostBuffer].as<int>() = PingPong[1];
+	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[0];
 	Compiler->SetRenderTargets(1, &Bright);
 	HDRShader->Compile(Compiler, 3, 0, Parameter, Parameter, Context);
 	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
 	Compiler->Quad();
 	// downsample to bloom0
-	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
-	Parameter["gPostBuffer"].as<int>() = Bright;
+	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
+	Parameter[hash_string::gPostBuffer].as<int>() = Bright;
 	memcpy_s(Offset, sizeof(Variant), BrightOffset, sizeof(float) * 16);
 	Compiler->SetRenderTargets(1, &Bloom[0]);
 	HDRShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
@@ -265,20 +266,20 @@ int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 	// bright pass
 	int Width = 1920 / 8.0f;
 	int Height = 1080 / 8.0f;
-	float * Weight = Parameter["gSampleWeights"].as<float[16]>();
+	float * Weight = Parameter[hash_string::gSampleWeights].as<float[16]>();
 	memcpy_s(Weight, sizeof(Variant), BloomWeight, sizeof(float) * 16);
 	// horizion bloom0 -> bloom1
-	float * Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
 	memcpy_s(Offset, sizeof(Variant), &BloomOffset[0], sizeof(float) * 16);
-	Parameter["gPostBuffer"].as<int>() = Bloom[0];
+	Parameter[hash_string::gPostBuffer].as<int>() = Bloom[0];
 	Compiler->SetRenderTargets(1, &Bloom[1]);
 	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
 	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
 	Compiler->Quad();
 	// horizion bloom1->bloom2
-	Offset = Parameter["gSampleOffsets"].as<float[16]>();
+	Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
 	memcpy_s(Offset, sizeof(Variant), &BloomOffset[1], sizeof(float) * 16);
-	Parameter["gPostBuffer"].as<int>() = Bloom[1];
+	Parameter[hash_string::gPostBuffer].as<int>() = Bloom[1];
 	Compiler->SetRenderTargets(1, &Bloom[2]);
 	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
 	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
@@ -288,9 +289,9 @@ int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 
 int PostpassStage::ToneMapping(BatchCompiler * Compiler) {
 	int Target = 0;
-	Parameter["gPostBuffer"].as<int>() = PingPong[1];
-	Parameter["gDiffuseMap0"].as<int>() = AdaptLum[0];
-	Parameter["gDiffuseMap1"].as<int>() = Bloom[2];
+	Parameter[hash_string::gPostBuffer].as<int>() = PingPong[1];
+	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[0];
+	Parameter[hash_string::gDiffuseMap1].as<int>() = Bloom[2];
 	Compiler->SetRenderTargets(1, &Target);
 	HDRShader->Compile(Compiler, 5, 0, Parameter, Parameter, Context);
 	// restore viewport

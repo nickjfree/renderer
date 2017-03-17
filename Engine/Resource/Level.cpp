@@ -14,6 +14,7 @@
 #include "Script\Export.h"
 
 #include "Input\InputSystem.h"
+#include "Core\StringTable.h"
 
 
 
@@ -180,7 +181,7 @@ int Level::InitScript() {
 	// send event to scripting subsystem
 	Event * event = Event::Create();
 	event->EventId = 400;
-	event->EventParam["Level"].as<Level *>() = this;
+	event->EventParam[hash_string::Level].as<Level *>() = this;
 	context->BroadCast(event);
 	event->Recycle();
 	return 0;

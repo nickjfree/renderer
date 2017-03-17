@@ -24,6 +24,8 @@ protected:
 	// pre create keys for sorting
 	unsigned int SortKeyHigh;
 	unsigned int SortKeyLow;
+	// InstanceBuffer
+	unsigned char InstanceBuffer[64*4];
 public:
 	RenderObject();
 	virtual ~RenderObject();

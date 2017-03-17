@@ -14,6 +14,6 @@ Event::~Event()
 {
 }
 
-Variant& Event::operator[] (char * buff) {
+Variant& Event::operator[] (String& buff) {
 	return EventParam[buff];
 }

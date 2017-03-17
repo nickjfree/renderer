@@ -35,7 +35,7 @@ int Material::OnSerialize(Deserializer& deserializer){
 			attr = texture->first_attribute("unit");
 			char * Unit = attr->value();
 			texture = texture->next_sibling();
-			Dependencies[url].as<char*>() = Unit;
+			Dependencies[String(url)].as<char*>() = Unit;
 			DepCount++;
 			printf("texture: %s  %s\n", Unit, url);
 		}
@@ -45,7 +45,7 @@ int Material::OnSerialize(Deserializer& deserializer){
 	if (!strcmp(node->name(), "shader")) {
 		xml_attribute<> * attr = node->first_attribute("url");
 		char * url = attr->value();
-		Dependencies[url].as<char*>() = NULL;
+		Dependencies[String(url)].as<char*>() = NULL;
 		DepCount++;
 		printf("shader %s\n", url);
 	}
@@ -76,7 +76,7 @@ int Material::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 	if (resource->ResourceType == R_TEXTURE) {
 		char * texunit = Param.as<char*>();
 		//printf("finish texture %s\n", texunit);
-		Parameters[texunit].as<int>() = resource->GetId();
+		Parameters[String(texunit)].as<int>() = resource->GetId();
 		DepCount--;
 	}
 	if (resource->ResourceType == R_SHADER) {

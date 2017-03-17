@@ -20,8 +20,21 @@ class BatchCompiler
 	DECLAR_ALLOCATER(BatchCompiler);
 private:
 	char ByteCode[BYTECODE_SIZE];
-	// curretn status
+	// curretn instancing status
+	char * PrevInstanceStart;
+	char * PrevInstanceEnd;
+	// states
+	int Instancing;
+	int PrevLayout;
 	int PrevGeometry;
+	int PrevVS;
+	int PrevPS;
+	int PrevGS;
+	int PrevDS;
+	int PrevBlend;
+	int PrevDepthStencil;
+	int PrevRasterizer;
+	int PreTextures[32];
 	// buffer
 	char * CommandBuffer;
 	// buffer pointer
@@ -75,6 +88,8 @@ public:
 	int Present();
 	// quad
 	int Quad();
+	// instance
+	int Instance(int Geometry, void * InstanceData, int Size);
 };
 
 

@@ -13,6 +13,7 @@ ScriptingSystem::~ScriptingSystem() {
 
 
 int ScriptingSystem::Update(int ms) {
+	// loop through all script compoment then call update of each compoment
 	return 0;
 }
 
@@ -93,5 +94,15 @@ void ScriptingSystem::RunDebug(char * script) {
 	}
 	// read another line
 	GetConsoleInput();
+}
+
+void ScriptingSystem::RegisterScript(Script * script) {
+	// load and export
+
+	// then save gameobject id 
+}
+
+void ScriptingSystem::RemoveScript(Script * script) {
+
 }
 

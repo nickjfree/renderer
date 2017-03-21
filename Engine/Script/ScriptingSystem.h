@@ -7,7 +7,8 @@
 #include "Proxy.h"
 #include "Export.h"
 #include "Resource\Level.h"
-
+#include "Container\List.h"
+#include "Script\Script.h"
 
 #define DEBUG_BUFFER_SIZE 1024
 
@@ -19,6 +20,10 @@ class ScriptingSystem : public System {
 private:
 	lua_State * LuaState;
 	char DebugBuffer[DEBUG_BUFFER_SIZE];
+	// lua component list
+	List<Script> Scripts;
+
+
 private:
 	// register classes
 	void InitEnvironment();
@@ -28,6 +33,11 @@ private:
 	void RunDebugConsole();
 	// get console input
 	void GetConsoleInput();
+
+	// register script into lua vm
+	void RegisterScript(Script * script);
+	// remove script
+	void RemoveScript(Script * script);
 public:
 	ScriptingSystem(Context * context);
 	~ScriptingSystem();

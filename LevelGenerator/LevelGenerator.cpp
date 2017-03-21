@@ -64,7 +64,7 @@ int TestGen(char * File) {
 	LightEntry light = {};
 	ObjectEntry object = {};
 	
-	Num = 6+4096;
+	Num = 6+100;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	Quaternion rot = Quaternion();
@@ -150,10 +150,10 @@ int TestGen(char * File) {
 	WriteFile(hFile, &render, sizeof(render), &write, 0);
 
 	int i = 0;
-	while (i++ < 4096) {
+	while (i++ < 100) {
 		strcpy_s(object.Name, "qianzhihe");
 		object.NumComponents = 1;
-		object.Position = Vector3(0+(i/64)*10, 5, 0+(i%64)*10);
+		object.Position = Vector3(0+(i/10)*10, 5, 0+(i%10)*10);
 		//	Quaternion rot = Quaternion();
 		rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
 		object.Rotation = rot;

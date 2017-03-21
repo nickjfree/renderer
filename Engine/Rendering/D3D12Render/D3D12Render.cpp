@@ -108,7 +108,7 @@ void D3D12Render::InitD3D12() {
 	pAdapter->QueryInterface(IID_PPV_ARGS(&pAdapter3));
 	pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &videoMemoryInfo);
 	// create device
-	if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&Device)))) {
+	if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&Device)))) {
 		printf("Failed to create D3D12Device\n");
 		return;
 	}

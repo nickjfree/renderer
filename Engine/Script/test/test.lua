@@ -1,7 +1,10 @@
 print("in scrips")
-_ENV = {}
 local name = qianzhihe:GetName()
 print(name)
+print(qianzhihe.__self)
+qianzhihe:SetName("qianzhihe_stop")
 ADATA:SetName("qianzhihe")
 print(ADATA:GetName())
+print(ADATA.__self)
+Light1:SetName("qianzhihe")
 

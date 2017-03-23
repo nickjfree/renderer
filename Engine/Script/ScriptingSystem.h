@@ -12,6 +12,9 @@
 
 #define DEBUG_BUFFER_SIZE 1024
 
+
+class Script;
+
 class ScriptingSystem : public System {
 
 	BASEOBJECT(System);
@@ -34,10 +37,7 @@ private:
 	// get console input
 	void GetConsoleInput();
 
-	// register script into lua vm
-	void RegisterScript(Script * script);
-	// remove script
-	void RemoveScript(Script * script);
+	
 public:
 	ScriptingSystem(Context * context);
 	~ScriptingSystem();
@@ -48,6 +48,12 @@ public:
 	virtual int HandleEvent(Event * Evt);
 	// exceute debug 
 	void RunDebug(char * script);
+	// ger vm
+	lua_State * GetVM() { return LuaState; }
+	// register script into lua vm
+	void RegisterScript(Script * script);
+	// remove script
+	void RemoveScript(Script * script);
 };
 
 #endif

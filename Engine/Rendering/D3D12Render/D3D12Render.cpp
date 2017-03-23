@@ -928,7 +928,7 @@ void D3D12Render::WaitForPreviousFrame() {
 	static DWORD s;
 	Queue->Wait(FenceToWait);
 	DWORD e = GetTickCount();
-	printf("%d\n", e - s);
+//	printf("%d\n", e - s);
 	s = e;
 }
 

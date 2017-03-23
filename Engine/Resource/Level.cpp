@@ -16,6 +16,8 @@
 #include "Input\InputSystem.h"
 #include "Core\StringTable.h"
 
+#include "Script\Script.h"
+
 
 
 USING_ALLOCATER(Level);
@@ -184,6 +186,16 @@ int Level::InitScript() {
 	event->EventParam[hash_string::Level].as<Level *>() = this;
 	context->BroadCast(event);
 	event->Recycle();
+	// update test
+	Vector<GameObject *>::Iterator Iter;
+	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+		GameObject * Object = *Iter;
+		if (Object->GetName() == "ADATA") {
+			// attach a script component for test 
+			Script * script = new Script(context);
+			Object->AddComponent(script);
+		}
+	}
 	return 0;
 }
 

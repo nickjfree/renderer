@@ -27,7 +27,7 @@ struct MemberFunctor<R(ClassType::*)(), FuncType> {
 		ClassType* object;
 		ParamType<R>::Type ret;
 		LuaStack::Get(L, 1, object);
-		printf("calling funcs\n");
+//		printf("calling funcs\n");
 		ret = (object->*mfp)();
 		//  push return values
 		LuaStack::Push(L, ret);
@@ -42,7 +42,7 @@ struct MemberFunctor<void (ClassType::*)(P1), FuncType> {
 		ClassType* object;
 		LuaStack::Get(L, 2, p1);
 		LuaStack::Get(L, 1, object);
-		printf("calling funcs %s\n", typeid(P1).name());
+//		printf("calling funcs %s\n", typeid(P1).name());
 		(object->*mfp)(p1);
 		//  push return values
 		return 0;
@@ -59,7 +59,7 @@ struct MemberFunctor<R (ClassType::*)(P1), FuncType> {
 		ClassType* object;
 		LuaStack::Get(L, 2, p1);
 		LuaStack::Get(L, 1, object);
-		printf("calling funcs %s\n", typeid(P1).name());
+//		printf("calling funcs %s\n", typeid(P1).name());
 		ret = (object->*mfp)(p1);
 		//  push return values
 		LuaStack::Push(L, ret);

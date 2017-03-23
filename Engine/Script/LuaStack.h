@@ -13,6 +13,10 @@ extern  "C" {
 
 class LuaStack {
 
+private:
+	// object increment id in global weakref table
+	static unsigned int object_id;
+
 public:
 	static void Push(lua_State* vm, unsigned int value) {
 		lua_pushinteger(vm, value);
@@ -44,14 +48,110 @@ public:
 		lua_setfield(vm, -2, "z");
 	}
 
+
+	/*
+		push object to stack.
+		store a weak_ref in global object tables
+	*/
 	template <typename T>
 	static void Push(lua_State* vm, T& value) {
+		int id = value.GetObjectId();
+		lua_getglobal(vm, "objects");
+		if (id == -1) {
+			// allocate a new id and export object
+			id = object_id++;
+			String& Name = value.GetTypeName();
+			// export it
+			lua_newtable(vm);
+			int exists = luaL_newmetatable(vm, Name);
+			lua_setmetatable(vm, -2);
+			// set a userdata to __self field
+			void * user_data = lua_newuserdata(vm, sizeof(void*));
+			*(T **)user_data = &value;
+			lua_setfield(vm, -2, "__self");
+			// set the table to global table
+			lua_seti(vm, -2, id);
+		}
+		// push table "T" on stack, then remove global table
+		lua_geti(vm, -1, id);
+		lua_remove(vm, -2);
+		value.SetObjectId(id);
 		return;
 	}
 
 	template <typename T>
 	static void Push(lua_State* vm, T* value) {
+		int id = value->GetObjectId();
+		lua_getglobal(vm, "objects");
+		if (id == -1) {
+			// allocate a new id and export object
+			id = object_id++;
+			String& Name = value->GetTypeName();
+			// export it
+			lua_newtable(vm);
+			int exists = luaL_newmetatable(vm, Name);
+			lua_setmetatable(vm, -2);
+			// set a userdata to __self field
+			void * user_data = lua_newuserdata(vm, sizeof(void*));
+			*(T **)user_data = value;
+			lua_setfield(vm, -2, "__self");
+			// set the table to global table
+			lua_seti(vm, -2, id);
+		}
+		// push table "T" on stack, then remove global table
+		lua_geti(vm, -1, id);
+		lua_remove(vm, -2);
+		value->SetObjectId(id);
+	}
+
+	//exports
+	template <typename T>
+	static void Export(lua_State* vm, T& value) {
+		int id = value.GetObjectId();
+		lua_getglobal(vm, "objects");
+		if (id == -1) {
+			// allocate a new id and export object
+			id = object_id++;
+			String& Name = value.GetTypeName();
+			// export it
+			lua_newtable(vm);
+			int exists = luaL_newmetatable(vm, Name);
+			lua_setmetatable(vm, -2);
+			// set a userdata to __self field
+			void * user_data = lua_newuserdata(vm, sizeof(void*));
+			*(T **)user_data = &value;
+			lua_setfield(vm, -2, "__self");
+			// set the table to global table
+			lua_seti(vm, -2, id);
+		}
+		// pop global table
+		lua_pop(vm, 1);
+		value.SetObjectId(id);
 		return;
+	}
+
+	template <typename T>
+	static void Export(lua_State* vm, T* value) {
+		int id = value->GetObjectId();
+		lua_getglobal(vm, "objects");
+		if (id == -1) {
+			// allocate a new id and export object
+			id = object_id++;
+			String& Name = value->GetTypeName();
+			// export it
+			lua_newtable(vm);
+			int exists = luaL_newmetatable(vm, Name);
+			lua_setmetatable(vm, -2);
+			// set a userdata to __self field
+			void * user_data = lua_newuserdata(vm, sizeof(void*));
+			*(T **)user_data = value;
+			lua_setfield(vm, -2, "__self");
+			// set the table to global table
+			lua_seti(vm, -2, id);
+		}
+		// pop global table
+		lua_pop(vm, 1);
+		value->SetObjectId(id);
 	}
 
 	//// pops

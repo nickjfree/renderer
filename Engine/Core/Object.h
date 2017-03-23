@@ -24,6 +24,7 @@ public:
 	int AddRef();
 	int DecRef();
 	virtual unsigned int GetObjectId();
+	virtual void SetObjectId(unsigned int);
 };
 
 #endif

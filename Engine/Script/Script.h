@@ -4,6 +4,7 @@
 #include "Scene\GameObject.h"
 #include "Script\LuaStack.h"
 #include "Script\Proxy.h"
+#include "ScriptingSystem.h"
 
 
 /*
@@ -20,8 +21,12 @@
 	5. the table itself is expored as name "self"
 */
 
+class ScriptingSystem;
 
 class Script : public Component {
+	OBJECT(Script);
+	BASEOBJECT(Script);
+	DECLAR_ALLOCATER(Script);
 
 private:
 	// the script path
@@ -32,12 +37,20 @@ private:
 	lua_State * vm;
 	// initialized
 	bool Initialized;
+	// scripting system
+	ScriptingSystem * scriptingsystem;
 public:
 	Script(Context * Context_);
 	virtual ~Script();
 
 	// update
 	int Update(int ms);
+	// test init useing onattach
+	virtual int OnAttach(GameObject * GameObj);
+	// register 
+	void Register();
+	// remove script
+	void Remove();
 
 };
 

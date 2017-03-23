@@ -2,6 +2,7 @@
 #include "ConsoleTask.h"
 #include "Tasks\WorkQueue.h"
 #include "Core\StringTable.h"
+#include "Scene\GameObject.h"
 
 
 ScriptingSystem::ScriptingSystem(Context * context): System(context) {
@@ -14,6 +15,11 @@ ScriptingSystem::~ScriptingSystem() {
 
 int ScriptingSystem::Update(int ms) {
 	// loop through all script compoment then call update of each compoment
+	List<Script>::Iterator Iter;
+	for (Iter = Scripts.Begin(); Iter != Scripts.End(); Iter++) {
+		Script * script = *Iter;
+		script->Update(ms);
+	}
 	return 0;
 }
 
@@ -40,23 +46,7 @@ int ScriptingSystem::HandleEvent(Event *Evt) {
 
 void ScriptingSystem::OnLevelLoaded(Level * level) {
 	printf("Level %x loaded\n", level);
-	Vector<GameObject *> & GameObjects = level->GetGameObjects();
-	Vector<GameObject *>::Iterator Iter;
-	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
-		GameObject * Object = *Iter;
-		unsigned int ObjectId = Object->GetObjectId();
-		// new table as the object
-		lua_newtable(LuaState);
-		int exists = luaL_newmetatable(LuaState, "GameObject");
-		lua_setmetatable(LuaState, -2);
-		// set a userdata to __self field
-		void * user_data = lua_newuserdata(LuaState, sizeof(void*));
-		*(GameObject **)user_data = Object;
-		lua_setfield(LuaState, -2, "__self");
-		// set the table as a global test object
-		lua_setglobal(LuaState, Object->GetName());
-	}
-	// load the scripts
+	// load the initilization scripts
 	int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
 	if (ret) {
 		printf("Couldn't load file: %s\n", lua_tostring(LuaState, -1));
@@ -64,6 +54,15 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
 	if (ret) {
 		printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
+	}
+	// export gameobjects
+	Vector<GameObject *> & GameObjects = level->GetGameObjects();
+	Vector<GameObject *>::Iterator Iter;
+	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+		GameObject * Object = *Iter;
+		LuaStack::Push(LuaState, Object);
+		lua_setglobal(LuaState, Object->GetName());
+//		lua_pop(LuaState, 1);
 	}
 	// run debug console
 	RunDebugConsole();
@@ -97,9 +96,7 @@ void ScriptingSystem::RunDebug(char * script) {
 }
 
 void ScriptingSystem::RegisterScript(Script * script) {
-	// load and export
-
-	// then save gameobject id 
+	Scripts.Insert(script);
 }
 
 void ScriptingSystem::RemoveScript(Script * script) {

@@ -20,6 +20,10 @@ int Object::DecRef() {
 }
 
 unsigned int Object::GetObjectId() {
-	return -1;
+	return ObjectId;
+}
+
+void Object::SetObjectId(unsigned int id) {
+	ObjectId = id;
 }
 

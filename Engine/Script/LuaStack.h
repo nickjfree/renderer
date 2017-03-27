@@ -71,6 +71,8 @@ public:
 			lua_setfield(vm, -2, "__self");
 			// set the table to global table
 			lua_seti(vm, -2, id);
+			// inc refcount
+			value.AddRef();
 		}
 		// push table "T" on stack, then remove global table
 		lua_geti(vm, -1, id);
@@ -97,6 +99,8 @@ public:
 			lua_setfield(vm, -2, "__self");
 			// set the table to global table
 			lua_seti(vm, -2, id);
+			// inc refcount
+			value->AddRef();
 		}
 		// push table "T" on stack, then remove global table
 		lua_geti(vm, -1, id);

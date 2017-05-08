@@ -7,6 +7,8 @@ EXPORT_CLASS(GameObject)
 	EXPORT(GameObject, GetName)
 	EXPORT(GameObject, SetTranslation)
 	EXPORT(GameObject, GetTranslation)
+	EXPORT(GameObject, SetRotation)
+	EXPORT(GameObject, GetRotation)
 END_EXPORT()
 
 

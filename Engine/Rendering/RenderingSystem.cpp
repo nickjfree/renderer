@@ -75,6 +75,7 @@ int RenderingSystem::Update(int ms) {
 	}
 	// MainCamera->Update(ms);
 	// rendercontrol takes over the rendering process
+	//disable rendering
 	Control->Execute();
 	return 0;
 }

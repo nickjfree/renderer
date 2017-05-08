@@ -52,6 +52,9 @@ void Script::Register() {
 	// set _ENV
 	lua_pushvalue(vm, -1);
 	lua_setfield(vm, -2, "gameobject");
+	// set global env to "engine"
+	lua_pushglobaltable(vm);
+	lua_setfield(vm, -2, "engine");
 	lua_setupvalue(vm, -2, 1);
 	// run file
 	lua_pcall(vm, 0, LUA_MULTRET, 0);

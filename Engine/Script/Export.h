@@ -10,6 +10,8 @@ BEGIN_PROXY(GameObject)
 	METHOD(SetName, (void (GameObject::*)(char *))&GameObject::SetName)
 	METHOD(SetTranslation, &GameObject::SetTranslation)
 	METHOD(GetTranslation, &GameObject::GetTranslation)
+	METHOD(SetRotation, &GameObject::SetRotation)
+	METHOD(GetRotation, &GameObject::GetRotation)
 END_PROXY()
 
 

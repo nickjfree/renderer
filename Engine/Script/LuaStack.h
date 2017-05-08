@@ -48,6 +48,17 @@ public:
 		lua_setfield(vm, -2, "z");
 	}
 
+	static void Push(lua_State* vm, Quaternion& value) {
+		lua_newtable(vm);
+		lua_pushnumber(vm, value.x);
+		lua_setfield(vm, -2, "x");
+		lua_pushnumber(vm, value.y);
+		lua_setfield(vm, -2, "y");
+		lua_pushnumber(vm, value.z);
+		lua_setfield(vm, -2, "z");
+		lua_pushnumber(vm, value.w);
+		lua_setfield(vm, -2, "w");
+	}
 
 	/*
 		push object to stack.
@@ -222,6 +233,24 @@ public:
 		lua_getfield(vm, index, "z");
 		z = luaL_checknumber(vm, -1);
 		value = Vector3(x, y, z);
+	}
+
+	static void Get(lua_State* vm, int index, Quaternion& value) {
+		float x, y, z, w;
+		luaL_checktype(vm, index, LUA_TTABLE);
+		lua_getfield(vm, index, "x");
+		x = luaL_checknumber(vm, -1);
+		lua_getfield(vm, index, "y");
+		y = luaL_checknumber(vm, -1);
+		lua_getfield(vm, index, "z");
+		z = luaL_checknumber(vm, -1);
+		lua_getfield(vm, index, "w");
+		w = luaL_checknumber(vm, -1);
+		value = Quaternion();
+		value.x = x;
+		value.y = y;
+		value.z = z;
+		value.w = w;
 	}
 
 	template <typename T>

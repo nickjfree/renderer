@@ -204,23 +204,23 @@ public:
 	// gets
 
 	static void Get(lua_State* vm, int index, unsigned int & value) {
-		value = (unsigned int)lua_tointeger(vm, -1);
+		value = (unsigned int)luaL_checkinteger(vm, index);
 	}
 
 	static void Get(lua_State* vm, int index, int& value) {
-		value = (int)lua_tointeger(vm, -1);
+		value = (int)luaL_checkinteger(vm, index);
 	}
 
 	static void Get(lua_State* vm, int index, char *& value) {
-		value = (char*)lua_tostring(vm, -1);
+		value = (char*)luaL_checkstring(vm, index);
 	}
 
 	static void Get(lua_State* vm, int index, float & value) {
-		value = (float)luaL_checknumber(vm, -1);
+		value = (float)luaL_checknumber(vm, index);
 	}
 
 	static void Get(lua_State* vm, int index, String& value) {
-		value = (char*)lua_tostring(vm, -1);
+		value = (char*)luaL_checkstring(vm, index);
 	}
 
 	static void Get(lua_State* vm, int index, Vector3& value) {
@@ -232,6 +232,7 @@ public:
 		y = luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "z");
 		z = luaL_checknumber(vm, -1);
+		lua_pop(vm, 3);
 		value = Vector3(x, y, z);
 	}
 

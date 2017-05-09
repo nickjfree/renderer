@@ -36,6 +36,8 @@ public:
 	virtual ~EventNode();
 	// register self to other eventnode, and listen for event
 	int SubscribeTo(EventNode * Hub, int EventId);
+	// register self to global eventnode in context
+	virtual int Subscribe(int EventId, String& Callback) { return 1; };
 	// unregister
 	int UnSubscribe(EventNode * Hub, int EventId);
 	// add event handler

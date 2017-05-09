@@ -67,6 +67,28 @@ struct MemberFunctor<R (ClassType::*)(P1), FuncType> {
 	}
 };
 
+
+//R P1 P2
+template <typename ClassType, typename R, typename P1, typename P2, typename FuncType>
+struct MemberFunctor<R(ClassType::*)(P1, P2), FuncType> {
+	static int Call(lua_State * L, FuncType mfp) {
+		ParamType<P1>::Type p1;
+		ParamType<P2>::Type p2;
+		ParamType<R>::Type ret;
+		ClassType* object;
+		LuaStack::Get(L, 3, p2);
+		LuaStack::Get(L, 2, p1);
+		LuaStack::Get(L, 1, object);
+		//		printf("calling funcs %s\n", typeid(P1).name());
+		ret = (object->*mfp)(p1, p2);
+		//  push return values
+		LuaStack::Push(L, ret);
+		return 1;
+	}
+};
+
+
+
 template <typename FuncType>
 int Proxy_Method(lua_State * L, FuncType mfp)
 {

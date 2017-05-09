@@ -311,6 +311,42 @@
     <ClInclude Include="Rendering\D3D12Render\D3D12Render.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\CommandContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\d3dx12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\CommandQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\DDSTextureLoader12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Tasks\ThreadLocal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\Heap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\RootSignature.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\DescriptorHeap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\PSOCache.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Tasks\Semaphore.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\StringTable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Script\Script.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -643,9 +679,47 @@
     <ClCompile Include="Rendering\D3D12Render\D3D12Render.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\CommandContext.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\CommandQueue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\DDSTextureLoader12.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Tasks\ThreadLocal.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\Heap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\RootSignature.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\DescriptorHeap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\PSOCache.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Tasks\Semaphore.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\StringTable.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Script\Script.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Script\LuaStack.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
     <None Include="ClassDiagram1.cd" />
+    <None Include="Script\test\script.lua" />
+    <None Include="Script\test\test.lua" />
   </ItemGroup>
 </Project>

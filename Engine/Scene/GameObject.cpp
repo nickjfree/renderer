@@ -96,3 +96,18 @@ GameObject * GameObject::CreateGameObject(String& Name) {
 GameObject * GameObject::CreateGameObject(char * Name) {
 	return CreateGameObject((String&)String(Name));
 }
+
+int GameObject::Subscribe(int Event, String& Callback) {
+	// we are acctually subscribe script componet as a gameobject in scripting
+	Component * comp = GetComponent(String("Script"));
+	if (comp) {
+		return comp->Subscribe(Event, Callback);
+	}
+	return 1;
+}
+
+int GameObject::SendEvent(int EventId) {
+	Event * evt = Event::Create();
+	evt->EventId = EventId;
+	return context->BroadCast(evt);
+}

@@ -5,7 +5,9 @@
 #include "Script\LuaStack.h"
 #include "Script\Proxy.h"
 #include "ScriptingSystem.h"
-
+#include "Core\Event.h"
+#include "Core\Str.h"
+#include "Container\HashMap.h"
 
 /*
 	Lua scriptfile
@@ -39,10 +41,17 @@ private:
 	bool Initialized;
 	// scripting system
 	ScriptingSystem * scriptingsystem;
+private:
+	// initialize script
+	void Start();
+
 public:
 	Script(Context * Context_);
 	virtual ~Script();
-
+	// handle event
+	virtual int HandleEvent(Event * Evt);
+	// subscript event
+	int Subscribe(int Event, String& Callback);
 	// update
 	int Update(int ms);
 	// test init useing onattach

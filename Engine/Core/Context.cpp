@@ -15,13 +15,13 @@ Context::~Context()
 }
 
 
-int Context::SubscribeFor(System * subsystem, int EventId) {
-	return GlobalEventNode->AddEventHandler(EventId, subsystem);
+int Context::SubscribeFor(EventNode * node, int EventId) {
+	return GlobalEventNode->AddEventHandler(EventId, node);
 }
 
 
-int Context::UnSubscribeFor(System * subsystem, int EventId) {
-	return GlobalEventNode->RemoveEventHandler(EventId, subsystem);
+int Context::UnSubscribeFor(EventNode * node, int EventId) {
+	return GlobalEventNode->RemoveEventHandler(EventId, node);
 }
 
 

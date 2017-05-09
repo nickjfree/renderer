@@ -16,6 +16,11 @@
   Game Event
 */
 
+
+
+#define USER_EVENT 1024
+
+
 class Event
 {
 	DECLAR_ALLOCATER(Event);

@@ -40,9 +40,9 @@ public:
 	// BroadCast
 	int BroadCast(Event * event);
 	// Add eventhandler for system
-	int SubscribeFor(System * subsystem, int EventId);
+	int SubscribeFor(EventNode * node, int EventId);
 	// remove eventhandler
-	int UnSubscribeFor(System * subsystem, int EventId);
+	int UnSubscribeFor(EventNode * node, int EventId);
 
 
 	// subsystem

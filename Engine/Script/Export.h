@@ -12,6 +12,8 @@ BEGIN_PROXY(GameObject)
 	METHOD(GetTranslation, &GameObject::GetTranslation)
 	METHOD(SetRotation, &GameObject::SetRotation)
 	METHOD(GetRotation, &GameObject::GetRotation)
+	METHOD(Subscribe, &GameObject::Subscribe)
+	METHOD(SendEvent, &GameObject::SendEvent)
 END_PROXY()
 
 

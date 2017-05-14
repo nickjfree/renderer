@@ -7,6 +7,7 @@
 #include "Script\Proxy.h"
 #include "Script\ScriptingSystem.h"
 #include "Input\InputSystem.h"
+#include "Physics\PhysicsSystem.h"
 
 
 Engine::Engine()
@@ -37,6 +38,8 @@ int Engine::InitSubsystems() {
 	ScriptingSystem * Script = context->RegisterSubsystem<ScriptingSystem>();
 	// input
 	InputSystem * Input = context->RegisterSubsystem<InputSystem>();
+	// physics
+	PhysicsSystem * Physics = context->RegisterSubsystem<PhysicsSystem>();
 	// more post tasks
 	Render->PreloadingResource();
 	return 0;
@@ -48,11 +51,12 @@ int Engine::Update(int ms) {
 	WorkQueue * Queue = context->GetSubsystem<WorkQueue>();
 	ScriptingSystem * Script = context->GetSubsystem<ScriptingSystem>();
 	InputSystem * Input = context->GetSubsystem<InputSystem>();
+	PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
 	Queue->Update(ms);
 	Level->Update(ms);
-	Render->Update(ms);
+	Physics->Update(ms);
 	Script->Update(ms);
-
+	Render->Update(ms);
 	Input->Update(ms);
 	return 0;
 }

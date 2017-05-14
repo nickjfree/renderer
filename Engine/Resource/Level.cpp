@@ -18,6 +18,7 @@
 
 #include "Script\Script.h"
 
+#include "Physics\PhysicsObject.h"
 
 
 USING_ALLOCATER(Level);
@@ -194,6 +195,10 @@ int Level::InitScript() {
 			// attach a script component for test 
 			Script * script = new Script(context);
 			Object->AddComponent(script);
+		}
+		if (Object->GetName() == "qianzhihe") {
+			PhysicsObject * Physics = new PhysicsObject(context);
+			Object->AddComponent(Physics);
 		}
 	}
 	return 0;

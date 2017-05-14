@@ -1,8 +1,14 @@
 fxc /T vs_5_0 /E VS_LPP_Normal  /Fo basic-pre.vs  LPP.fx
 fxc /T ps_5_0 /E PS_LPP_Normal  /Fo basic-pre.ps  LPP.fx
 
+fxc /T vs_5_0 /E VS_LPP_Normal_Instance  /Fo basic-pre-instance.vs  LPP.fx
+fxc /T ps_5_0 /E PS_LPP_Normal           /Fo basic-pre-instance.ps  LPP.fx
+
 fxc /T vs_5_0 /E VS /Fo basic.vs  normal.fx
 fxc /T ps_5_0 /E PS /Fo basic.ps  normal.fx
+
+fxc /T vs_5_0 /E VS_Instance /Fo basic-instance.vs  normal.fx
+fxc /T ps_5_0 /E PS          /Fo basic-instance.ps  normal.fx
 
 
 fxc /T vs_5_0 /E VS_ScreenQuadLight /Fo pointlight.vs  light.fx

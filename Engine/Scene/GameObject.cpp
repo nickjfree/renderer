@@ -12,8 +12,7 @@ GameObject::GameObject(Context * context_, String& Name) : EventNode(context_)
 }
 
 
-GameObject::~GameObject()
-{
+GameObject::~GameObject() {
 }
 
 
@@ -69,7 +68,6 @@ void GameObject::SetRotation(Quaternion& Rotation_) {
 }
 
 void GameObject::SetTransform(Matrix4x4& Transform) {
-
 }
 
 bool GameObject::AddComponent(Component * component) {

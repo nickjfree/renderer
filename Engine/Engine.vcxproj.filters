@@ -347,6 +347,12 @@
     <ClInclude Include="Script\Script.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Physics\PhysicsSystem.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysicsObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -713,6 +719,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Script\LuaStack.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\PhysicsSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\PhysicsObject.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

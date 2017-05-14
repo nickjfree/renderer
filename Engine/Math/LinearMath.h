@@ -278,6 +278,12 @@ __declspec(align(16)) struct Matrix4x4 {
 		View._44 = 1;
 		return *(Matrix4x4*)&View;
 	}
+
+	inline static Matrix4x4 FormPositionRotation(Vector3& Position, Quaternion& Rotation) {
+		Matrix4x4 Ret;
+		Ret.Tranform(Position, Rotation);
+		return Ret;
+	}
 };
 
 

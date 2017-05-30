@@ -78,6 +78,8 @@ public:
 	Material * GetMaterial(int Index) { return Materials[Index]; };
 	// get all gameobjects
 	Vector<GameObject *> & GetGameObjects() { return GameObjects; };
+	// get scene
+	Scene * GetScene() { return scene; };
 	// test method
 	void Update(int ms);
 };

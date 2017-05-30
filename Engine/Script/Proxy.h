@@ -20,7 +20,7 @@ struct ParamType<T&> {
 };
 
 
-
+//R 
 template <typename ClassType, typename R, typename FuncType>
 struct MemberFunctor<R(ClassType::*)(), FuncType> {
 	static int Call(lua_State * L, FuncType mfp) {
@@ -35,6 +35,7 @@ struct MemberFunctor<R(ClassType::*)(), FuncType> {
 	}
 };
 
+//void P1
 template <typename ClassType, typename P1, typename FuncType>
 struct MemberFunctor<void (ClassType::*)(P1), FuncType> {
 	static int Call(lua_State * L, FuncType mfp) {
@@ -50,7 +51,7 @@ struct MemberFunctor<void (ClassType::*)(P1), FuncType> {
 };
 
 
-
+//R P1
 template <typename ClassType, typename R, typename P1, typename FuncType>
 struct MemberFunctor<R (ClassType::*)(P1), FuncType> {
 	static int Call(lua_State * L, FuncType mfp) {

@@ -70,6 +70,11 @@ void GameObject::SetRotation(Quaternion& Rotation_) {
 void GameObject::SetTransform(Matrix4x4& Transform) {
 }
 
+Component * GameObject::CreateComponent(String& type) {
+	Component * comp = (Component*)context->CreateObject(type);
+	return comp;
+}
+
 bool GameObject::AddComponent(Component * component) {
 	if (GetComponent(component->GetTypeName())) {
 		return false;

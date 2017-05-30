@@ -3,6 +3,7 @@
 #include "Tasks\WorkQueue.h"
 #include "Core\StringTable.h"
 #include "Scene\GameObject.h"
+#include "Scene\Scene.h"
 
 
 ScriptingSystem::ScriptingSystem(Context * context): System(context) {
@@ -27,12 +28,16 @@ void ScriptingSystem::InitEnvironment() {
 	LuaState = luaL_newstate();
 	luaL_openlibs(LuaState);
 	REGISTER_CLASS(LuaState, GameObject);
+	REGISTER_CLASS(LuaState, Scene);
+	REGISTER_CLASS(LuaState, Level);
 }
 
 int ScriptingSystem::Initialize() {
 	InitEnvironment();
 	// subscribe to level load events
 	context->SubscribeFor(this, 400);
+	// register objects
+	context->RegisterObject<Script>();
 	return 0;
 }
 
@@ -64,6 +69,13 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 		lua_setglobal(LuaState, Object->GetName());
 //		lua_pop(LuaState, 1);
 	}
+	//push scene
+	Scene * scene = level->GetScene();
+	LuaStack::Push(LuaState, scene);
+	lua_setglobal(LuaState, "Scene");
+	// push level
+	LuaStack::Push(LuaState, level);
+	lua_setglobal(LuaState, "Level");
 	// run debug console
 	RunDebugConsole();
 	return;

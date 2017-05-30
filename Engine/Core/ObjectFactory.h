@@ -7,6 +7,8 @@
 
 using std::shared_ptr;
 
+class Context;
+
 class ObjectFactory
 {
 public:

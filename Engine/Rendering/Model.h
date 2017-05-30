@@ -10,7 +10,7 @@
 	model component for rendering system
 */
 
-class Model {
+class Model: public Object {
 public:
 	// macros
 	OBJECT(Model);
@@ -22,7 +22,7 @@ public:
 	// reference to mesh resource
 	Mesh * MeshResource[1];
 public:
-	Model();
+	Model(Context * context);
 	virtual ~Model();
 	//set loaded mesh to model
 	int SetMesh(Mesh * mesh, int Lod);

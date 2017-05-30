@@ -2,12 +2,11 @@
 
 USING_ALLOCATER(Model);
 
-Model::Model() {
+Model::Model(Context * context): Object(context) {
 }
 
 
-Model::~Model()
-{
+Model::~Model() {
 }
 
 int Model::SetMesh(Mesh * mesh, int Lod) {

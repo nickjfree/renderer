@@ -35,7 +35,7 @@ Level::~Level()
 int Level::InitModel() {
 	for (int i = 0; i < NumModels; i++) {
 		ModelEntry * Entry = &ModelEntries[i];
-		Model * model = new Model();
+		Model * model = new Model(context);
 		model->SetMesh(GetMesh(Entry->MeshGroup[0]), 0);
 		Models.PushBack(model);
 	}

@@ -49,6 +49,8 @@ public:
 	bool AddComponent(Component * component);
 	// create and add a component with template argument
 	template <class T> 	T* CreateComponent();
+	// create component, but not add it to the gameobject
+	Component * CreateComponent(String& type);
 	// create sub gameobject
 	GameObject * CreateGameObject(String& Name);
 	GameObject * CreateGameObject(char * Name);

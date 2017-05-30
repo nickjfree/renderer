@@ -4,7 +4,7 @@
 
 #include "Container\HashMap.h"
 #include "Core\Str.h"
-//#include "Core\ObjectFactory.h"
+#include "Core\ObjectFactory.h"
 
 
 /*
@@ -16,6 +16,8 @@ class Event;
 class System;
 class ObjectFactory;
 class Object;
+//class ObjectFactoryImp;
+
 
 class Context
 {

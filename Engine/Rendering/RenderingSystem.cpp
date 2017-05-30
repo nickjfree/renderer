@@ -5,6 +5,8 @@
 #include "Tasks\OsEvent.h"
 #include "Resource\ResourceCache.h"
 #include "RenderPreloading.h"
+#include "Rendering\MeshRenderer.h"
+#include "Rendering\Light.h"
 
 
 RenderingSystem::RenderingSystem(Context * context) : System(context), frames(0), MainCamera(0)
@@ -66,6 +68,9 @@ int RenderingSystem::Initialize() {
 	// init renderengine
 	InitLowLevel();
 	InitTopLevel();
+	// register component
+	context->RegisterObject<Renderer>();
+	context->RegisterObject<Light>();
 	return 0;
 }
 

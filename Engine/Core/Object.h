@@ -8,7 +8,7 @@
 
 // typedefine 
 
-
+class Context;
 // Base class of GameObject, Component, SubSystem, eg. with TypeHash, TypeName, and Id
 class Object
 {

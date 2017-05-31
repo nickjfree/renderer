@@ -11,6 +11,7 @@ EXPORT_CLASS(GameObject)
 	EXPORT(GameObject, GetRotation)
 	EXPORT(GameObject, Subscribe)
 	EXPORT(GameObject, SendEvent)
+	EXPORT(GameObject, AddComponent)
 END_EXPORT()
 
 EXPORT_CLASS(Scene)
@@ -24,4 +25,14 @@ EXPORT_CLASS(Level)
 	EXPORT(Level, GetScene)
 END_EXPORT()
 
+EXPORT_CLASS(Model)
+END_EXPORT()
 
+EXPORT_CLASS(MeshRenderer)
+	EXPORT(MeshRenderer, SetModel)
+	EXPORT(MeshRenderer, SetMaterial)
+END_EXPORT()
+
+EXPORT_CLASS(Material)
+	EXPORT(Material, GetUrl)
+END_EXPORT()

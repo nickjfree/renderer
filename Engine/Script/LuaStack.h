@@ -34,6 +34,10 @@ public:
 		lua_pushnumber(vm, value);
 	}
 
+	static void Push(lua_State* vm, bool value) {
+		lua_pushboolean(vm, value);
+	}
+
 	static void Push(lua_State* vm, String& value) {
 		lua_pushstring(vm, value);
 	}
@@ -265,7 +269,7 @@ public:
 	static void Get(lua_State* vm, int index, T* &value) {
 		char * Name = T::GetTypeNameStatic();
 		luaL_checktype(vm, index, LUA_TTABLE);
-		lua_getfield(vm, 1, "__self");
+		lua_getfield(vm, index, "__self");
 		T * data = *(T **)lua_touserdata(vm, -1);
 		value = data;
 	}

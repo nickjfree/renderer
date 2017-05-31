@@ -5,6 +5,8 @@
 
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
+#include "Rendering\Model.h"
+#include "Rendering\MeshRenderer.h"
 
 // proxy Scene
 BEGIN_PROXY(Scene)
@@ -29,7 +31,23 @@ BEGIN_PROXY(GameObject)
 	METHOD(GetRotation, &GameObject::GetRotation)
 	METHOD(Subscribe, &GameObject::Subscribe)
 	METHOD(SendEvent, &GameObject::SendEvent)
+	METHOD(AddComponent, &GameObject::AddComponent)
 END_PROXY()
 
+// Model
+BEGIN_PROXY(Model)
+
+END_PROXY()
+
+// Renderer
+BEGIN_PROXY(MeshRenderer)
+	METHOD(SetMaterial, &MeshRenderer::SetMaterial)
+	METHOD(SetModel, &MeshRenderer::SetModel)
+END_PROXY()
+
+//Matrtial
+BEGIN_PROXY(Material)
+	METHOD(GetUrl, &Material::GetUrl)
+END_PROXY()
 
 #endif 

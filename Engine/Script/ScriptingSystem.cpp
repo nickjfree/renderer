@@ -27,9 +27,13 @@ int ScriptingSystem::Update(int ms) {
 void ScriptingSystem::InitEnvironment() {
 	LuaState = luaL_newstate();
 	luaL_openlibs(LuaState);
+	// export core classes
 	REGISTER_CLASS(LuaState, GameObject);
 	REGISTER_CLASS(LuaState, Scene);
 	REGISTER_CLASS(LuaState, Level);
+	REGISTER_CLASS(LuaState, Model);
+	REGISTER_CLASS(LuaState, Material);
+	REGISTER_CLASS(LuaState, MeshRenderer);
 }
 
 int ScriptingSystem::Initialize() {

@@ -80,6 +80,7 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 	int Geometry = GetRenderMesh(Stage, Lod);
 	if (Geometry != -1) {
 		if (Instance) {
+			unsigned char InstanceBuffer[64 * 4];
 			InstanceSize = shader->MakeInstance(Compiler, Stage, StageParameter, InstanceBuffer);
 			Compiled += Compiler->Instance(Geometry, InstanceBuffer, InstanceSize);
 		} else {

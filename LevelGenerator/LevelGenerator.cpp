@@ -135,7 +135,7 @@ int TestGen(char * File) {
 	// qianzhihe
 	strcpy_s(object.Name, "qianzhihe");
 	object.NumComponents = 1;
-	object.Position = Vector3(0, 5, 0);
+	object.Position = Vector3(0, 0, 0);
 //	Quaternion rot = Quaternion();
 	rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
 	object.Rotation = rot;

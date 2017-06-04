@@ -42,6 +42,11 @@ public:
 		PORTAL = 16,
 		POST
 	};
+
+private:
+	// update culling object
+	void SyncCullingObject();
+
 public:
 	Node();
 	virtual ~Node();

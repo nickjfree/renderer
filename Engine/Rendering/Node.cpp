@@ -52,15 +52,23 @@ int Node::Compile(BatchCompiler * Compiler, int Stage, int Lod){
 	return 0;
 }
 
+void Node::SyncCullingObject() {
+	Vector3 Center = CullingObj.LocalCenter;
+	/*Center = Center * Rotation;
+	Center = Center + Position;*/
+	Center = Center * GetWorldMatrix();
+	CullingObj.Translate(Center);
+}
 
 
 void Node::SetPosition(Vector3& Position_) {
 	Position = Position_; 
-	CullingObj.Translate(Position);
+	SyncCullingObject();
 }
 
 void Node::SetRotation(Quaternion& Rot) {
 	Rotation = Rot; 
+	SyncCullingObject();
 }
 
 Matrix4x4& Node::GetWorldMatrix() {

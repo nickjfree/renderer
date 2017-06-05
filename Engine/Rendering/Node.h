@@ -23,6 +23,13 @@ protected:
 	Vector3 Position;
 	// rotation
 	Quaternion Rotation;
+	// up right look vector
+	Vector3 Up;
+
+	Vector3 Right;
+
+	Vector3 Look;
+
 	// AABB
 	CullingObject CullingObj;
 	// subnode of this node

@@ -60,6 +60,8 @@ public:
 	void Register();
 	// remove script
 	void Remove();
+	// set script
+	void SetScript(String& file) { File = file; };
 
 };
 

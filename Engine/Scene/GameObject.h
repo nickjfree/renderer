@@ -45,6 +45,20 @@ public:
 	void SetRotation(Quaternion& Rotation);
 	// set transform
 	void SetTransform(Matrix4x4& Transform);
+	// move functions
+	void Walk(float Distance);
+	// strife left
+	void Strife(float Distance);
+	// ASCEND
+	void Ascend(float Distance);
+	// pitch
+	void Pitch(float Rad);
+	// yaw
+	void Yaw(float Rad);
+	// roll
+	void Roll(float Rad);
+
+
 	// add component
 	bool AddComponent(Component * component);
 	// create and add a component with template argument
@@ -71,7 +85,8 @@ public:
 	int Subscribe(int Event, String& Callback);
 	// send event
 	int SendEvent(int Event);
-
+	// update
+	int Update(int Delta);
 protected:
 	// name
 	String Name;
@@ -82,6 +97,8 @@ protected:
 	// Local  matrix and Global  matrix transform
 	Matrix4x4 LocalTrans;
 	Matrix4x4 GlobalTrans;
+	// vectors
+	Vector3 Up, Look, Right;
 	// component add to this gameobject
 	Vector<Component *> Components;
 	// parent object
@@ -95,7 +112,7 @@ protected:
 	// listner, listening for the scenenode change event
 	Vector<EventNode *> SceneListeners;
 	// dirty flag, used for recursivelly update transform and rotation
-	bool Diry;
+	bool Dirty;
 	// nitoce transform
 	void NotifyTransform();
 };

@@ -1,10 +1,13 @@
--- test script for the "usb driver" in the scene
-name = "adata"
+-- testing script for main camera
+
+
+name = "main camera"
 id = 1337
-speed = 0.01
+speed = 0.05
 rspeed = 0.1 * (3.1415926 / 180.0)
-position = {x=0, y=1, z =0}
-active = false
+-- position = {x=0, y=1, z =0}
+active = true
+
 
 function on_start()
 	-- subscribe to event id 1025
@@ -13,14 +16,13 @@ function on_start()
 	engine.print("on_start")
 end
 
-
 function on_test()
 	engine.print("on_test")
 	active = not active
 end
 
 function update(ms)
-if (active ~= true)
+	if (active ~= true)
 	then
 		return
 	end

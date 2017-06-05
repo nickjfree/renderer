@@ -56,7 +56,7 @@ int Script::OnAttach(GameObject * GameObj) {
 
 // register 
 void Script::Register() {
-	File = "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua";
+	//File = "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua";
 	int ret = luaL_loadfile(vm, File);
 	if (ret) {
 		printf("Couldn't load script: %s\n", lua_tostring(vm, -1));

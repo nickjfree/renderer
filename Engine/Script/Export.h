@@ -7,6 +7,7 @@
 #include "Scene\Scene.h"
 #include "Rendering\Model.h"
 #include "Rendering\MeshRenderer.h"
+#include "Input\InputSystem.h"
 
 // proxy Scene
 BEGIN_PROXY(Scene)
@@ -32,6 +33,12 @@ BEGIN_PROXY(GameObject)
 	METHOD(Subscribe, &GameObject::Subscribe)
 	METHOD(SendEvent, &GameObject::SendEvent)
 	METHOD(AddComponent, &GameObject::AddComponent)
+	METHOD(Walk, &GameObject::Walk)
+	METHOD(Strife, &GameObject::Strife)
+	METHOD(Ascend, &GameObject::Ascend)
+	METHOD(Pitch, &GameObject::Pitch)
+	METHOD(Yaw, &GameObject::Yaw)
+	METHOD(Roll, &GameObject::Roll)
 END_PROXY()
 
 // Model
@@ -48,6 +55,11 @@ END_PROXY()
 //Matrtial
 BEGIN_PROXY(Material)
 	METHOD(GetUrl, &Material::GetUrl)
+END_PROXY()
+
+// Input
+BEGIN_PROXY(InputSystem)
+	METHOD(GetAction, &InputSystem::GetAction)
 END_PROXY()
 
 #endif 

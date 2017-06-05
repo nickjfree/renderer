@@ -1,12 +1,13 @@
 #include "GameObject.h"
+#include "Scene\Scene.h"
 
 USING_ALLOCATER(GameObject)
 
-GameObject::GameObject(Context * context_) : EventNode(context_)
+GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_)
 {
 }
 
-GameObject::GameObject(Context * context_, String& Name) : EventNode(context_)
+GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_)
 {
 	this->Name = Name;
 }
@@ -59,15 +60,55 @@ void GameObject::NotifyTransform() {
 
 void GameObject::SetTranslation(Vector3& Translation_) {
 	Translate = Translation_;
-	NotifyTransform();
+	Dirty = 1;
+//	NotifyTransform();
 }
 
 void GameObject::SetRotation(Quaternion& Rotation_) {
 	Rotation = Rotation_;
-	NotifyTransform();
+	Dirty = 1;
+//	NotifyTransform();
 }
 
 void GameObject::SetTransform(Matrix4x4& Transform) {
+	Dirty = 1;
+}
+
+void GameObject::Walk(float distance) {
+	Translate = Translate + Look * distance;
+	Dirty = 1;
+}
+
+void GameObject::Strife(float distance) {
+	Translate = Translate + Right * distance;
+	Dirty = 1;
+}
+
+// ASCEND
+void GameObject::Ascend(float distance) {
+	Translate = Translate + Up * distance;
+	Dirty = 1;
+}
+// pitch
+void GameObject::Pitch(float rad) {
+	Quaternion DRotation = Quaternion();
+	DRotation.RotationNormal(Right, rad);
+	Rotation = Rotation * DRotation;
+	Dirty = 1;
+}
+// yaw
+void GameObject::Yaw(float rad) {
+	Quaternion DRotation = Quaternion();
+	DRotation.RotationNormal(Up, rad);
+	Rotation = Rotation * DRotation;
+	Dirty = 1;
+}
+// roll
+void GameObject::Roll(float rad) {
+	Quaternion DRotation = Quaternion();
+	DRotation.RotationNormal(Look, rad);
+	Rotation = Rotation * DRotation;
+	Dirty = 1;
 }
 
 Component * GameObject::CreateComponent(String& type) {
@@ -93,6 +134,8 @@ GameObject * GameObject::CreateGameObject(String& Name) {
 	SubObject->Sibling.InsertAfter(&Children);
 	SubObject->Root = Root;
 	SubObject->Parent = this;
+	// insert to scene
+	Root->AddGameObject(SubObject);
 	return SubObject;
 }
 
@@ -113,4 +156,19 @@ int GameObject::SendEvent(int EventId) {
 	Event * evt = Event::Create();
 	evt->EventId = EventId;
 	return context->BroadCast(evt);
+}
+
+int GameObject::Update(int Delta) {
+	if (Dirty) {
+		Up = Vector3(0, 1, 0) * Rotation;
+		Right = Vector3(1, 0, 0) * Rotation;
+		Look = Vector3(0, 0, 1) * Rotation;
+		Up.Normalize();
+		Look.Normalize();
+		// notity component
+		NotifyTransform();
+		// clear dirty flag
+		Dirty = 0;
+	}
+	return 0;
 }

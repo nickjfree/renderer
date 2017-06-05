@@ -34,6 +34,7 @@ void ScriptingSystem::InitEnvironment() {
 	REGISTER_CLASS(LuaState, Model);
 	REGISTER_CLASS(LuaState, Material);
 	REGISTER_CLASS(LuaState, MeshRenderer);
+	REGISTER_CLASS(LuaState, InputSystem);
 }
 
 int ScriptingSystem::Initialize() {
@@ -76,10 +77,13 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	//push scene
 	Scene * scene = level->GetScene();
 	LuaStack::Push(LuaState, scene);
-	lua_setglobal(LuaState, "Scene");
+	lua_setglobal(LuaState, "ccene");
 	// push level
 	LuaStack::Push(LuaState, level);
-	lua_setglobal(LuaState, "Level");
+	lua_setglobal(LuaState, "level");
+	// push Input
+	LuaStack::Push(LuaState, context->GetSubsystem<InputSystem>());
+	lua_setglobal(LuaState, "input");
 	// run debug console
 	RunDebugConsole();
 	return;

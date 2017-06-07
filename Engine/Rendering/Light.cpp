@@ -37,15 +37,15 @@ int Light::OnAttach(GameObject * GameObj) {
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position
-	renderLight->SetPosition(GameObj->GetTranslation());
-	renderLight->SetRotation(GameObj->GetRotation());
+	renderLight->SetPosition(GameObj->GetWorldTranslation());
+	renderLight->SetRotation(GameObj->GetWorldRotation());
 	return Component::OnAttach(GameObj);
 }
 
 int Light::OnTransform(GameObject * GameObj) {
 	// set init position
-	renderLight->SetPosition(GameObj->GetTranslation());
-	renderLight->SetRotation(GameObj->GetRotation());
+	renderLight->SetPosition(GameObj->GetWorldTranslation());
+	renderLight->SetRotation(GameObj->GetWorldRotation());
 	return 0;
 }
 

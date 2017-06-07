@@ -186,6 +186,8 @@ __declspec(align(16)) struct Quaternion {
 	void RotationAxis(Vector3& Vector, float angle) {
 		quaternion = XMQuaternionRotationAxis(Vector.vector, angle);
 	}
+
+	void FromMatrix(Matrix4x4& m);
 };
 
 

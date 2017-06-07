@@ -77,7 +77,7 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	//push scene
 	Scene * scene = level->GetScene();
 	LuaStack::Push(LuaState, scene);
-	lua_setglobal(LuaState, "ccene");
+	lua_setglobal(LuaState, "scene");
 	// push level
 	LuaStack::Push(LuaState, level);
 	lua_setglobal(LuaState, "level");

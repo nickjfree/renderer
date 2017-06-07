@@ -35,12 +35,16 @@ public:
 	Vector3& GetTranslation();
 	// get rotation as quaternion
 	Quaternion& GetRotation();
+	// global position
+	Vector3& GetWorldTranslation();
+	// global rotation
+	Quaternion& GetWorldRotation();
+
 	// Get componnen by component name hash
 	Component * GetComponent(String& TypeName);
 
 	//set translation
 	void SetTranslation(Vector3& Translation);
-
 	// set rotation
 	void SetRotation(Quaternion& Rotation);
 	// set transform
@@ -96,6 +100,11 @@ protected:
 	Quaternion Rotation;
 	// Local  matrix and Global  matrix transform
 	Matrix4x4 LocalTrans;
+	// global vectors
+	Vector3 GlobalTranslate;
+	// global rotation
+	Quaternion GlobalRotation;
+	//  global transform
 	Matrix4x4 GlobalTrans;
 	// vectors
 	Vector3 Up, Look, Right;
@@ -115,6 +124,10 @@ protected:
 	bool Dirty;
 	// nitoce transform
 	void NotifyTransform();
+	// make dirty
+	void MakeDirty();
+	// make clean
+	void MakeClean();
 };
 
 #endif

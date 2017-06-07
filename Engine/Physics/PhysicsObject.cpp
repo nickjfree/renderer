@@ -17,8 +17,8 @@ PhysicsObject::~PhysicsObject() {
 
 int PhysicsObject::OnAttach(GameObject * GameObj) {
 	// get init position and rotation
-	Vector3 Position = GameObj->GetTranslation();
-	Quaternion Rotation = GameObj->GetRotation();
+	Vector3 Position = GameObj->GetWorldTranslation();
+	Quaternion Rotation = GameObj->GetWorldRotation();
 	btVector3 position = btVector3(Position.x, Position.y, Position.z);
 	btQuaternion quaternion;
 	btQuaternionFloatData data = { Rotation.x,Rotation.y,Rotation.z,Rotation.w,};

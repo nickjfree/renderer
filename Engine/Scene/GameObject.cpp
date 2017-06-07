@@ -3,13 +3,15 @@
 
 USING_ALLOCATER(GameObject)
 
-GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_)
-{
+GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_) {
+	Sibling.Owner = this;
+	Children.Owner = this;
 }
 
-GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_)
-{
+GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_) {
 	this->Name = Name;
+	Sibling.Owner = this;
+	Children.Owner = this;
 }
 
 
@@ -28,6 +30,16 @@ Vector3& GameObject::GetTranslation() {
 // get rotation as quaternion
 Quaternion& GameObject::GetRotation() {
 	return Rotation;
+}
+
+Vector3& GameObject::GetWorldTranslation() {
+	MakeClean();
+	return GlobalTranslate;
+}
+// get rotation as quaternion
+Quaternion& GameObject::GetWorldRotation() {
+	MakeClean();
+	return GlobalRotation;
 }
 
 Component * GameObject::GetComponent(String& TypeName) {
@@ -60,55 +72,55 @@ void GameObject::NotifyTransform() {
 
 void GameObject::SetTranslation(Vector3& Translation_) {
 	Translate = Translation_;
-	Dirty = 1;
+	MakeDirty();
 //	NotifyTransform();
 }
 
 void GameObject::SetRotation(Quaternion& Rotation_) {
 	Rotation = Rotation_;
-	Dirty = 1;
+	MakeDirty();
 //	NotifyTransform();
 }
 
 void GameObject::SetTransform(Matrix4x4& Transform) {
-	Dirty = 1;
+	MakeDirty();
 }
 
 void GameObject::Walk(float distance) {
 	Translate = Translate + Look * distance;
-	Dirty = 1;
+	MakeDirty();
 }
 
 void GameObject::Strife(float distance) {
 	Translate = Translate + Right * distance;
-	Dirty = 1;
+	MakeDirty();
 }
 
 // ASCEND
 void GameObject::Ascend(float distance) {
 	Translate = Translate + Up * distance;
-	Dirty = 1;
+	MakeDirty();
 }
 // pitch
 void GameObject::Pitch(float rad) {
 	Quaternion DRotation = Quaternion();
 	DRotation.RotationNormal(Right, rad);
 	Rotation = Rotation * DRotation;
-	Dirty = 1;
+	MakeDirty();
 }
 // yaw
 void GameObject::Yaw(float rad) {
 	Quaternion DRotation = Quaternion();
 	DRotation.RotationNormal(Up, rad);
 	Rotation = Rotation * DRotation;
-	Dirty = 1;
+	MakeDirty();
 }
 // roll
 void GameObject::Roll(float rad) {
 	Quaternion DRotation = Quaternion();
 	DRotation.RotationNormal(Look, rad);
 	Rotation = Rotation * DRotation;
-	Dirty = 1;
+	MakeDirty();
 }
 
 Component * GameObject::CreateComponent(String& type) {
@@ -134,6 +146,8 @@ GameObject * GameObject::CreateGameObject(String& Name) {
 	SubObject->Sibling.InsertAfter(&Children);
 	SubObject->Root = Root;
 	SubObject->Parent = this;
+	// make sub obejct dirty, so its transfom will inherent the current partent
+	SubObject->MakeDirty();
 	// insert to scene
 	Root->AddGameObject(SubObject);
 	return SubObject;
@@ -159,16 +173,39 @@ int GameObject::SendEvent(int EventId) {
 }
 
 int GameObject::Update(int Delta) {
+	MakeClean();
+	return 0;
+}
+
+void GameObject::MakeDirty() {
+	if (!Dirty) {
+		Dirty = 1;
+		Root;
+		// make all children dirty
+		LinkList<GameObject>::Iterator Iter;
+		for (Iter = Children.Begin(); Iter != Children.End(); Iter++) {
+			GameObject * child = *Iter;
+			child->MakeDirty();
+		}
+	}
+}
+
+void GameObject::MakeClean() {
 	if (Dirty) {
 		Up = Vector3(0, 1, 0) * Rotation;
 		Right = Vector3(1, 0, 0) * Rotation;
 		Look = Vector3(0, 0, 1) * Rotation;
 		Up.Normalize();
 		Look.Normalize();
-		// notity component
-		NotifyTransform();
+		// make world tranform
+		Parent->MakeClean();
+		LocalTrans.Tranform(Translate, Rotation);
+		GlobalTrans = LocalTrans * Parent->GlobalTrans;
+		GlobalTranslate = Vector3(0, 0, 0) * GlobalTrans;
+		GlobalRotation.FromMatrix(GlobalTrans);
 		// clear dirty flag
 		Dirty = 0;
+		// notity component
+		NotifyTransform();
 	}
-	return 0;
 }

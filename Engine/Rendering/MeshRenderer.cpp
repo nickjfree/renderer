@@ -30,8 +30,8 @@ int MeshRenderer::OnAttach(GameObject * GameObj) {
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position
-	renderObject->SetPosition(GameObj->GetTranslation());
-	renderObject->SetRotation(GameObj->GetRotation());
+	renderObject->SetPosition(GameObj->GetWorldTranslation());
+	renderObject->SetRotation(GameObj->GetWorldRotation());
 	return Component::OnAttach(GameObj);
 }
 
@@ -55,7 +55,7 @@ int MeshRenderer::Load(void * Raw, Level * level) {
 
 int MeshRenderer::OnTransform(GameObject * GameObj) {
 	// set init position
-	renderObject->SetPosition(GameObj->GetTranslation());
-	renderObject->SetRotation(GameObj->GetRotation());
+	renderObject->SetPosition(GameObj->GetWorldTranslation());
+	renderObject->SetRotation(GameObj->GetWorldRotation());
 	return 0;
 }

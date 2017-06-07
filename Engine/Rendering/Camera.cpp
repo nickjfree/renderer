@@ -31,7 +31,7 @@ int Camera::HandleEvent(Event * Ev) {
 
 int Camera::OnTransform(GameObject * GameObj) {
 	// set init position
-	RenderCamera->SetTransform(GameObj->GetTranslation());
-	RenderCamera->SetRotation(GameObj->GetRotation());
+	RenderCamera->SetTransform(GameObj->GetWorldTranslation());
+	RenderCamera->SetRotation(GameObj->GetWorldRotation());
 	return 0;
 }

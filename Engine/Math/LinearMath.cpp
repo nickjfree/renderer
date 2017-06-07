@@ -27,3 +27,10 @@ void Matrix4x4::Tranform(Vector3& Position, Quaternion& rotation) {
 	world.r[3] = XMVectorSetW(Position.vector, 1.0f);
 	matrix = world;
 }
+
+
+
+void Quaternion::FromMatrix(Matrix4x4& m) {
+	quaternion = XMQuaternionRotationMatrix(m.matrix);
+}
+

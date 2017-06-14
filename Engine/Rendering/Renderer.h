@@ -2,7 +2,6 @@
 #define __RENDERER__
 
 #include "Scene\Component.h"
-
 /*
 	renderer component
 */

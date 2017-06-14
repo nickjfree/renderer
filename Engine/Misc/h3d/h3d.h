@@ -45,7 +45,7 @@ typedef struct h3d_vertex
 	float nx, ny, nz;
 	float u, v;
 	float parameter;
-	float tx, ty, tz, tw;
+	float tx, ty, tz;
 }h3d_vertex;
 
 //12

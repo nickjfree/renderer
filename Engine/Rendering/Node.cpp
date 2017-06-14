@@ -54,8 +54,8 @@ int Node::Compile(BatchCompiler * Compiler, int Stage, int Lod){
 
 void Node::SyncCullingObject() {
 	Vector3 Center = CullingObj.LocalCenter;
-	/*Center = Center * Rotation;
-	Center = Center + Position;*/
+	//Center = Center * Rotation;
+	//Center = Center + Position;
 	Center = Center * GetWorldMatrix();
 	CullingObj.Translate(Center);
 }

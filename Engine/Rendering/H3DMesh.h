@@ -21,13 +21,10 @@ class H3DMesh : public Mesh
 	OBJECT(H3DMesh);
 	BASEOBJECT(Mesh);
 	LOADEROBJECT(FileMappingLoader);
-public: // for test, use public so meshrenderer can access the entity.  the final version should not be public
-	// mesh data
-	DWORD VBSize;
-	DWORD VTSize;
-	void * VBuffer;
-	DWORD INum;
-	WORD * IBuffer;
+
+private:
+	// compute convexhulls
+	void ComputeConvexHull();
 public:
 	H3DMesh(Context * context);
 	h3d_mesh * GetH3DMesh(h3d_header * Header, int MeshIndex);

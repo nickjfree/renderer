@@ -232,4 +232,8 @@ void Level::Update(int ms) {
 	}
 	// update the scene
 	scene->Update(ms);
+	// debug physics
+	PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
+	//// for debug hack. this shold be done with camera scripts to set debug window view
+	Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
 }

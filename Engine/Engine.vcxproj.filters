@@ -353,6 +353,15 @@
     <ClInclude Include="Physics\PhysicsObject.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Physics\GLDebuger\GLDebugDrawer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\GLDebuger\GLDebugFont.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\GLDebuger\GlutStuff.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -725,6 +734,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Physics\PhysicsObject.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\GLDebuger\GLDebugDrawer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\GLDebuger\GLDebugFont.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

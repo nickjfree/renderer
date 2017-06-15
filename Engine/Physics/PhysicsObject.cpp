@@ -53,5 +53,7 @@ int PhysicsObject::Update(int ms) {
     // set to gameobject
 	Owner->SetRotation(Rotation);
 	Owner->SetTranslation(Position);
+
+
 	return 0;
 }

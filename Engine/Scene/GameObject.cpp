@@ -197,6 +197,7 @@ void GameObject::MakeClean() {
 		Look = Vector3(0, 0, 1) * Rotation;
 		Up.Normalize();
 		Look.Normalize();
+		Right.Normalize();
 		// make world tranform
 		Parent->MakeClean();
 		LocalTrans.Tranform(Translate, Rotation);

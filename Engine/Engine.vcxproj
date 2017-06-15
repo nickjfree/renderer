@@ -119,7 +119,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;RENDER_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;E:\DirectX11\DirectXTK\Inc;E:\bullet3-2.86.1\src;E:\bullet3-2.86.1\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -128,7 +128,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>D3Dcompiler.lib DXGUID.lib d3d11.lib dxgi.lib DirectXTK.lib d3d12.lib BulletCollision_vs2010_debug.lib BulletDynamics_vs2010_debug.lib LinearMath_vs2010_debug.lib HACD_vs2010_debug.lib
+      <AdditionalOptions>D3Dcompiler.lib DXGUID.lib d3d11.lib dxgi.lib DirectXTK.lib d3d12.lib BulletCollision_vs2010_debug.lib BulletDynamics_vs2010_debug.lib LinearMath_vs2010_debug.lib HACD_vs2010_debug.lib OpenGL32.lib 
+Glu32.lib
 
  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>F:\proj\Game11\Game\Debug;E:\DirectX11\DirectXTK\Bin\Desktop_2015\Win32\Debug;E:\bullet3-2.86.1\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -222,7 +223,7 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;E:\DirectX11\DirectXTK\Inc;E:\bullet3-2.86.1\src;E:\bullet3-2.86.1\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -232,7 +233,8 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalOptions>DXGUID.lib d3d11.lib  dxgi.lib D3Dcompiler.lib DirectXTK.lib  d3d12.lib BulletCollision_vs2010_x64_release.lib BulletDynamics_vs2010_x64_release.lib LinearMath_vs2010_x64_release.lib HACD_vs2010_x64_release.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>DXGUID.lib d3d11.lib  dxgi.lib D3Dcompiler.lib DirectXTK.lib  d3d12.lib BulletCollision_vs2010_x64_release.lib BulletDynamics_vs2010_x64_release.lib LinearMath_vs2010_x64_release.lib HACD_vs2010_x64_release.lib OpenGL32.lib 
+Glu32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>F:\proj\Game11\Game\x64\Release;E:\DirectX11\DirectXTK\Bin\Desktop_2015\x64\Release;E:\bullet3-2.86.1\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -269,6 +271,9 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClInclude Include="IO\Deserializer.h" />
     <ClInclude Include="Math\Collision.h" />
     <ClInclude Include="Math\LinearMath.h" />
+    <ClInclude Include="Physics\GLDebuger\GLDebugDrawer.h" />
+    <ClInclude Include="Physics\GLDebuger\GLDebugFont.h" />
+    <ClInclude Include="Physics\GLDebuger\GlutStuff.h" />
     <ClInclude Include="Physics\PhysicsObject.h" />
     <ClInclude Include="Physics\PhysicsSystem.h" />
     <ClInclude Include="Rendering\BasicCullingImp.h" />
@@ -373,6 +378,8 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
     <ClCompile Include="IO\ResourceLoader.cpp" />
     <ClCompile Include="IO\Deserializer.cpp" />
     <ClCompile Include="Math\LinearMath.cpp" />
+    <ClCompile Include="Physics\GLDebuger\GLDebugDrawer.cpp" />
+    <ClCompile Include="Physics\GLDebuger\GLDebugFont.cpp" />
     <ClCompile Include="Physics\PhysicsObject.cpp" />
     <ClCompile Include="Physics\PhysicsSystem.cpp" />
     <ClCompile Include="Rendering\BasicCullingImp.cpp" />

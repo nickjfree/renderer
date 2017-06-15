@@ -12,6 +12,8 @@
 #include "btBulletDynamicsCommon.h"
 //#include "PhysicsObject.h"
 
+#define DEBUG_PHYSICS
+
 class PhysicsObject;
 
 class PhysicsSystem : public System {
@@ -34,9 +36,22 @@ private:
 	// a list to keep track of all the physics objects
 	List<PhysicsObject> Objects;
 
+	// for debug window
+	Vector3 Look, Up, Right, Eye;
+	// debug window handles
+	HWND hWnd;
+	HDC hDC;
+	HGLRC hRC;
+private:
+	// create debug window
+	void CreateDebugWindow();
+	// enable the debug window
+	void EnableDebug(HWND hWnd, HDC * hDC, HGLRC * hRC);
+	// draw debug
+	void DrawDebug();
 public:
 	PhysicsSystem(Context * context);
-
+	// desctructor
 	virtual ~PhysicsSystem();
 	// init
 	virtual int Initialize();
@@ -48,6 +63,8 @@ public:
 	void AddPhysicsObject(PhysicsObject * object);
 	// get btworld
 	inline btDiscreteDynamicsWorld * GetWorld() { return dynamicsWorld; };
+	// set debug view
+	void SetDebugView(Vector3& Look, Vector3& Up, Vector3& Right, Vector3& Eye);
 };
 
 #endif

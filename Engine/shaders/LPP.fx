@@ -91,6 +91,7 @@ PS_Output PS_LPP_Normal(PS_Input input)
 	output.Normal.xy = EncodeNormal(normal);
 	output.Depth.x = input.Depth;
 	output.Diffuse = diffuse;
+	//output.Diffuse = float4(1,1,1,0);
 	output.Specular = float4(0,0,0,0);
 	return output;
 }

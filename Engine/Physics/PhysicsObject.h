@@ -15,7 +15,8 @@ class PhysicsSystem;
 typedef struct CollisionShape {
 	enum ShapeType {
 		BOX = 1,
-		SPHERE = 2
+		SPHERE = 2,
+		COMPOUND = 3,
 	};
 	// the collisionShape type
 	ShapeType Type;
@@ -24,9 +25,11 @@ typedef struct CollisionShape {
 		btBoxShape * Box;
 		btSphereShape * Sphere;
 		btCapsuleShape * Capsule;
+		btCompoundShape * Compound;
 	};
 	CollisionShapes Shapes;
 
+	void CreateFromConvexData(int Clusters, unsigned int * VNum, unsigned int * INum, float ** VBuffer, unsigned int ** IBuffer, Vector3 * Centers);
 } CollisionShape;
 
 
@@ -39,7 +42,7 @@ class PhysicsObject : public Component {
 
 private:
 	// shape
-	CollisionShape Shape;
+	CollisionShape * Shape;
 	// motion state
 	btMotionState * MotionState;
 	// rigidbody
@@ -49,14 +52,28 @@ private:
 	// world
 	btDiscreteDynamicsWorld * World;
 public:
+	enum Type{
+		DYNAMIC = 0,
+		STATIC = 1,
+		KINEMATIC = 2,
+	};
+	// object type
+	int ObjectType;
+public:
 	PhysicsObject(Context * context);
 	virtual ~PhysicsObject();
 	// update
 	virtual int Update(int ms);
 	// onattach
 	virtual int OnAttach(GameObject * GameObj);
-
-
+	// set shape
+	void SetCollisionShape(CollisionShape * Shape_) { Shape = Shape_;}
+	// crate shape from model
+	void CreateShapeFromModel(Model * model);
+	// on transform
+	virtual int OnTransform(GameObject * object);
+	// set type
+	void SetObjectType(PhysicsObject::Type  type);
 };
 
 #endif

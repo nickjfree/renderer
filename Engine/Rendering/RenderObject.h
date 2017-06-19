@@ -33,6 +33,8 @@ public:
 	int SetModel(Model* model);
 	// set material
 	int SetMaterial(Material* material);
+	// get model
+	Model * GetModel() { return model; }
 	// get render mesh
 	virtual int GetRenderMesh(int Stage, int Lod);
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);

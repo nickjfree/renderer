@@ -88,7 +88,7 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	float d = max(max(Extend.x, Extend.y), max(Extend.x, Extend.z));
 	Box = AABB(Center, Vector3(d,d,d));
 	// calc convex hull
-	//ComputeConvexHull();
+	ComputeConvexHull();
 	return 0;
 }
 
@@ -135,11 +135,12 @@ void H3DMesh::ComputeConvexHull() {
 	// Recommended parameters: 2 100 0 0 0 0
 
 	size_t nClusters = 2;
-	double concavity = 100;
+	double concavity = 200;
 	bool invert = false;
-	bool addExtraDistPoints = false;
+	bool addExtraDistPoints = true;
 	bool addNeighboursDistPoints = false;
 	bool addFacesPoints = false;
+	float smallClusterThreshold = 5;
 
 	myHACD.SetNClusters(nClusters);                     // minimum number of clusters
 	myHACD.SetNVerticesPerCH(100);                      // max of 100 vertices per convex-hull
@@ -162,7 +163,7 @@ void H3DMesh::ComputeConvexHull() {
 		size_t nPoints = myHACD.GetNPointsCH(c);
 		size_t nTriangles = myHACD.GetNTrianglesCH(c);
 
-		float* vertices = new float[nPoints * 3];
+		float* vertices = new float[nPoints * 4];
 		unsigned int* triangles = new unsigned int[nTriangles * 3];
 
 		HACD::Vec3<HACD::Real> * pointsCH = new HACD::Vec3<HACD::Real>[nPoints];
@@ -171,12 +172,22 @@ void H3DMesh::ComputeConvexHull() {
 
 		// points
 		for (size_t v = 0; v < nPoints; v++) {
-			vertices[3 * v] = pointsCH[v].X();
-			vertices[3 * v + 1] = pointsCH[v].Y();
-			vertices[3 * v + 2] = pointsCH[v].Z();
+			vertices[4 * v] = pointsCH[v].X();
+			vertices[4 * v + 1] = pointsCH[v].Y();
+			vertices[4 * v + 2] = pointsCH[v].Z();
+			vertices[4 * v + 3] = 0;
 			Center = Center + Vector3(pointsCH[v].X(), pointsCH[v].Y(), pointsCH[v].Z());
 		}
 		Center = Center * (1.0f / nPoints);
+		// shift points with center at (0,0,0)
+		for (size_t v = 0; v < nPoints; v++) {
+			Vector3 vert = Vector3(vertices[4 * v], vertices[4 * v + 1], vertices[4 * v + 2]);
+			vert = vert - Center;
+			vertices[4 * v] = vert.x;
+			vertices[4 * v + 1] = vert.y;
+			vertices[4 * v + 2] = vert.z;
+			vertices[4 * v + 3] = 0;
+		}
 		// triangles
 		for (size_t f = 0; f < nTriangles; f++) {
 			triangles[3 * f] = trianglesCH[f].X();
@@ -192,7 +203,6 @@ void H3DMesh::ComputeConvexHull() {
 		delete[] pointsCH;
 		delete[] trianglesCH;
 	}
-
-
+	NumConvex = nClusters;
 }
 

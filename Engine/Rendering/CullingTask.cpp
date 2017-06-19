@@ -19,7 +19,7 @@ int CullingTask::Work() {
 	BatchCompiler * Compiler = renderview->Compiler;
 	renderview->VisibleObjects.Empty();
 	spatial->Query(frustum, renderview->VisibleObjects, ObjectType);
-	//printf("visible objects %d\n", renderview->VisibleObjects.Size());
+//	printf("visible objects in %d %d\n", ObjectType, renderview->VisibleObjects.Size());
 	int Size = renderview->VisibleObjects.Size();
 	char * Buffer = (char*)renderview->CommandBuffer;
 	Compiler->SetBuffer(Buffer);

@@ -2,7 +2,7 @@
 
 USING_ALLOCATER(Mesh);
 
-Mesh::Mesh(Context * context) : GPUResource(context)
+Mesh::Mesh(Context * context) : GPUResource(context), NumConvex(0)
 {
 }
 

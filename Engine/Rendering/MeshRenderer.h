@@ -51,6 +51,8 @@ public:
 	void SetModel(Model * model) { renderObject->SetModel(model); }
 	// set material
 	void SetMaterial(Material * material) { renderObject->SetMaterial(material); }
+	// get model
+	Model * GetModel() { return renderObject->GetModel(); }
 };
 
 

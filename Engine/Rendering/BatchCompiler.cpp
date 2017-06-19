@@ -277,3 +277,8 @@ int BatchCompiler::Instance(int Geometry, void * InstanceData, int Size) {
 	}
 	return sizeof(char) + sizeof(int) + Size;
 }
+
+
+unsigned int BatchCompiler::GetCommandSize() {
+	return this->Offset - CommandBuffer;
+}

@@ -35,11 +35,13 @@ int RenderView::Compile() {
 
 int RenderView::QueueCommand() {
 	int Stage = Type + Index;
-	if (!Targets[0]) {
+	if (TargetCount && !Targets[0]) {
 		// only backbuffer need present
 		Compiler->Present();
 	}
 	Compiler->EndBuffer();
-	Queue->PushCommand(Stage, CommandBuffer);
+	if (Compiler->GetCommandSize()) {
+		Queue->PushCommand(Stage, CommandBuffer);
+	}
 	return 1;
 }

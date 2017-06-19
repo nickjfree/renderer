@@ -35,6 +35,8 @@ int RenderQueue::Execute(RenderProcesser * Processer) {
 		void * CommandBuffer = CommandBuffers[Stage];
 		if (CommandBuffer) {
 			Processer->Execute(CommandBuffer);
+			// clear command buffer pointer. so old commands won't run again in the next frame 
+			CommandBuffers[Stage] = 0;
 		}
 	}
 	return 0;

@@ -891,7 +891,7 @@ void D3D12Render::Present() {
 	D3DTexture& texture = Textures.GetItem(0);
 	texture.State[FrameIndex].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 
-	UINT64 FenceValue = Context->Finish(1);
+	UINT64 FenceValue = Context->Finish(0);
 	// retire all used constan heaps
 	if (CurrentConstHeap) {
 		UsedConstHeaps.PushBack(CurrentConstHeap);

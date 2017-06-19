@@ -68,6 +68,10 @@ void GameObject::NotifyTransform() {
 	if (component) {
 		component->OnTransform(this);
 	}
+	component = GetComponent(String("PhysicsObject"));
+	if (component) {
+		component->OnTransform(this);
+	}
 }
 
 void GameObject::SetTranslation(Vector3& Translation_) {
@@ -155,6 +159,26 @@ GameObject * GameObject::CreateGameObject(String& Name) {
 
 GameObject * GameObject::CreateGameObject(char * Name) {
 	return CreateGameObject((String&)String(Name));
+}
+
+void GameObject::Attach(GameObject * Sub) {
+	MakeClean();
+	Sub->MakeClean();
+	Matrix4x4 Inv;
+	Matrix4x4 Rel;
+	Matrix4x4::Inverse(GlobalTrans, &Inv);
+	// get relative trans from this to sub
+	Rel = Sub->GetTransform() * Inv;
+	Sub->Translate = Vector3(0, 0, 0) * Rel;
+	Sub->Rotation.FromMatrix(Rel);
+	// switch parent
+	if (Sub->Parent) {
+		Sub->Sibling.Remove();
+	} 
+	Sub->Parent = this;
+	Sub->Sibling.InsertAfter(&Children);
+	// set dirty
+	Sub->MakeDirty();
 }
 
 int GameObject::Subscribe(int Event, String& Callback) {

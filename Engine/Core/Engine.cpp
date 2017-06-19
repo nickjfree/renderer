@@ -58,6 +58,7 @@ int Engine::Update(int ms) {
 	Script->Update(ms);
 	Render->Update(ms);
 	Input->Update(ms);
+//	Sleep(5);
 	return 0;
 }
 

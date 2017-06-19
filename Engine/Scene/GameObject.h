@@ -77,6 +77,8 @@ public:
 	// create sub gameobject
 	GameObject * CreateGameObject(String& Name);
 	GameObject * CreateGameObject(char * Name);
+	// attach subobject
+	void Attach(GameObject * Sub);
 	// Get parent
 	GameObject * GetParent() {
 		return Parent;

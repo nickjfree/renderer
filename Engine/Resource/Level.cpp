@@ -199,15 +199,32 @@ int Level::InitScript() {
 	Vector<GameObject *>::Iterator Iter;
 	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
 		GameObject * Object = *Iter;
-		if (Object->GetName() == "ADATA") {
+		if (Object->GetName() == "Lumia") {
 			// attach a script component for test 
 			Script * script = new Script(context);
 			script->SetScript(String("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua"));
 			Object->AddComponent(script);
 		}
-		if (Object->GetName() == "qianzhihe") {
+		if (Object->GetName() == "qianzhihe" || Object->GetName() == "ADATA") {
 			PhysicsObject * Physics = new PhysicsObject(context);
+			// creat convext hulls for collision shape
+			MeshRenderer * render = (MeshRenderer * )Object->GetComponent(String("Renderer"));
+			Model * model = render->GetModel();
+			Physics->CreateShapeFromModel(model);
 			Object->AddComponent(Physics);
+		}
+		if (Object->GetName() == "Lumia") {
+			PhysicsObject * Physics = new PhysicsObject(context);
+			// creat convext hulls for collision shape
+			MeshRenderer * render = (MeshRenderer *)Object->GetComponent(String("Renderer"));
+			Model * model = render->GetModel();
+			Physics->CreateShapeFromModel(model);
+			Physics->SetObjectType(PhysicsObject::KINEMATIC);
+			Object->AddComponent(Physics);
+		}
+		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {
+			// global light should follow camera
+			MainCamera->Attach(Object);
 		}
 	}
 	return 0;

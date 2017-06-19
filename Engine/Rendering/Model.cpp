@@ -2,7 +2,7 @@
 
 USING_ALLOCATER(Model);
 
-Model::Model(Context * context): Object(context) {
+Model::Model(Context * context): Object(context), UserData(0) {
 }
 
 

@@ -90,6 +90,8 @@ public:
 	int Quad();
 	// instance
 	int Instance(int Geometry, void * InstanceData, int Size);
+	// Get cmd size
+	unsigned int GetCommandSize();
 };
 
 

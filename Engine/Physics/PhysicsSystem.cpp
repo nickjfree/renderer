@@ -5,6 +5,10 @@
 #include <gl\GLU.h>
 
 
+
+USING_ALLOCATER(PhysicsSystem);
+
+
 PhysicsSystem::PhysicsSystem(Context * context) : System(context) {
 }
 
@@ -35,7 +39,7 @@ void PhysicsSystem::CreateDebugWindow() {
 		L"Physics Debuging", L"Physics Debuging",
 		WS_CAPTION | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
 		//		0, 0, 640, 480,
-		0, 0, 1024, 768,
+		0, 0, 640, 480,
 		NULL, NULL, NULL, NULL);
 	// enable OpenGL for the window
 	EnableDebug(hWnd, &hDC, &hRC);
@@ -67,19 +71,24 @@ void PhysicsSystem::EnableDebug(HWND hWnd, HDC * hDC, HGLRC * hRC) {
 	// create and enable the render context (RC)
 	*hRC = wglCreateContext(*hDC);
 	wglMakeCurrent(*hDC, *hRC);
+	// configs
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void PhysicsSystem::DrawDebug() {
 	glClearColor(.7f, 0.7f, 0.7f, 1.f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// update camera
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float aspect = 1024 / 768.0f;
+	float aspect = 640 / 480.0f;
 	glFrustum(-aspect, aspect, -1.0, 1.0, 1.0, 10000.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	Vector3 Ref = Eye + Look;
+	// make it left handed
+	glScalef(1.0f, 1.0f, -1.0f);
+	Vector3 Ref = Eye + Look * -1.0f;
 	gluLookAt(Eye.x, Eye.y, Eye.z,
 		Ref.x, Ref.y, Ref.z,
 		Up.x, Up.y, Up.z);

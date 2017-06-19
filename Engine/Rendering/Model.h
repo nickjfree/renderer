@@ -16,6 +16,11 @@ public:
 	OBJECT(Model);
 	BASEOBJECT(Model);
 	DECLAR_ALLOCATER(Model);
+
+private:
+	// pointer for store user data
+	void * UserData;
+
 public:
 	// mesh name for easy display
 	char * MeshName;
@@ -26,6 +31,12 @@ public:
 	virtual ~Model();
 	//set loaded mesh to model
 	int SetMesh(Mesh * mesh, int Lod);
+	// get Mesg
+	Mesh * GetMesh(int Lod) { return MeshResource[Lod]; }
+	// set UserDara
+	void SetUserData(void * pointer) { UserData = pointer; }
+	// get UserData
+	void * GetUserData() { return UserData; };
 
 };
 

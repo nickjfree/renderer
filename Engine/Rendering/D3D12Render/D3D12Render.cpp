@@ -334,8 +334,10 @@ void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size
 		
 	// command context
 	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	Context->InitializeTexture(TexResource, subresources);
+	ID3D12Resource * UploadHeap;
+	Context->InitializeTexture(TexResource, subresources, &UploadHeap);
 	Context->Finish(1);
+	UploadHeap->Release();
 	Texture.State[0].CurrentState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 }
 
@@ -504,9 +506,12 @@ int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned in
 	Geometry.VSize = VBSize;
 	// copy resource
 	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	Context->InitializeVetexBuffer(Geometry.VertexResource, VBuffer, VBSize);
-	Context->InitializeIndexBuffer(Geometry.IndexResource, IBuffer, INum * sizeof(WORD));
+	ID3D12Resource * UploadHeapV, * UploadHeapI;
+	Context->InitializeVetexBuffer(Geometry.VertexResource, VBuffer, VBSize,&UploadHeapV);
+	Context->InitializeIndexBuffer(Geometry.IndexResource, IBuffer, INum * sizeof(WORD), &UploadHeapI);
 	Context->Finish(1);
+	UploadHeapV->Release();
+	UploadHeapI->Release();
 	// create views
 	Geometry.VBV.BufferLocation = Geometry.VertexResource->GetGPUVirtualAddress();
 	Geometry.VBV.SizeInBytes = VBSize;

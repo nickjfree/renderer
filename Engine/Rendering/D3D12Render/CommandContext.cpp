@@ -96,7 +96,7 @@ UINT64 CommandContext::Flush(bool WaitForFence) {
 }
 
 
-void CommandContext::InitializeTexture(ID3D12Resource * DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources) {
+void CommandContext::InitializeTexture(ID3D12Resource * DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources, ID3D12Resource ** Upload) {
 
 	const UINT64 uploadBufferSize = GetRequiredIntermediateSize(DestResource, 0, static_cast<UINT>(subresources.size()));
 
@@ -115,9 +115,11 @@ void CommandContext::InitializeTexture(ID3D12Resource * DestResource, std::vecto
     // resource barrier
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+	// return upload heap
+	*Upload = uploadHeap;
 }
 
-void CommandContext::InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size) {
+void CommandContext::InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload) {
 	const UINT64 uploadBufferSize = GetRequiredIntermediateSize(DestResource, 0, 1);
 
 	// Create the GPU upload buffer.
@@ -139,9 +141,11 @@ void CommandContext::InitializeVetexBuffer(ID3D12Resource * DestResource, void *
 	// resource barrier
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	// return temp upload head
+	*Upload = uploadHeap;
 }
 
-void CommandContext::InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size) {
+void CommandContext::InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload) {
 	const UINT64 uploadBufferSize = GetRequiredIntermediateSize(DestResource, 0, 1);
 
 	// Create the GPU upload buffer.
@@ -163,6 +167,8 @@ void CommandContext::InitializeIndexBuffer(ID3D12Resource * DestResource, void *
 	// resource barrier
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
+	// return upload heap
+	*Upload = uploadHeap;
 }
 
 ID3D12CommandList * CommandContext::GetCommandList() {

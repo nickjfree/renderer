@@ -54,11 +54,11 @@ class CommandContext {
 		// get commandlist
 		ID3D12GraphicsCommandList  * GetGraphicsCommandList() { return CommandList; }
 		// init texture
-		void InitializeTexture(ID3D12Resource * DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources);
+		void InitializeTexture(ID3D12Resource * DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources, ID3D12Resource ** Upload);
 		// init buffers
-		void InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size);
+		void InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload);
 		// init buffers
-		void InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size);
+		void InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload);
 		// get commandlist
 		ID3D12CommandList * GetCommandList();
 	};

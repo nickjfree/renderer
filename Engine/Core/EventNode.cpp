@@ -6,18 +6,15 @@ USING_ALLOCATER(EventRegistry);
 
 
 
-EventNode::EventNode(Context * context_) :Object(context_)
-{
+EventNode::EventNode(Context * context_) :Object(context_) {
 }
 
 
-EventNode::~EventNode()
-{
+EventNode::~EventNode() {
 }
 
 
-int EventNode::SubscribeTo(EventNode * Hub, int EventId) 
-{
+int EventNode::SubscribeTo(EventNode * Hub, int EventId) {
 	Hub->AddEventHandler(EventId, this);
 	EventRegistry * Item = new EventRegistry();
 	// insert to publishers
@@ -32,8 +29,7 @@ int EventNode::Subscribe(int Event, String& Callback) {
 	return context->SubscribeFor(this, Event);
 }
 
-int EventNode::UnSubscribe(EventNode * Hub, int EventId) 
-{
+int EventNode::UnSubscribe(EventNode * Hub, int EventId) {
 	Hub->RemoveEventHandler(EventId, this);
 	// remove from publishers
 	LinkList<EventRegistry>::Iterator Iter;
@@ -49,8 +45,7 @@ int EventNode::UnSubscribe(EventNode * Hub, int EventId)
 }
 
 
-int EventNode::AddEventHandler(int EventId, EventNode* Handler)
-{
+int EventNode::AddEventHandler(int EventId, EventNode* Handler) {
 	// just put hanlder to certain Channel Map
 	if (!Handler) {
 		return -1;
@@ -65,8 +60,7 @@ int EventNode::AddEventHandler(int EventId, EventNode* Handler)
 	return 0;
 }
 
-int EventNode::RemoveEventHandler(int EventId, EventNode* Handler)
-{
+int EventNode::RemoveEventHandler(int EventId, EventNode* Handler) {
 	if (!Handler) {
 		return -1;
 	}
@@ -100,15 +94,13 @@ int EventNode::RemoveEventHandler(int EventId, EventNode* Handler)
 
 
 
-int EventNode::SendEvent(EventNode * Receiver, Event * Evt)
-{
+int EventNode::SendEvent(EventNode * Receiver, Event * Evt) {
 	// just handle this event with receiver for SendEvent
 	return Receiver->HandleEvent(Evt);
 }
 
 // Handler event
-int EventNode::HandleEvent(Event * Evt)
-{
+int EventNode::HandleEvent(Event * Evt) {
 	// print test
 	int Result = -1;
 	HashMap<int, List<EventNode>>::Iterator Iter = EventChannel.Find(Evt->EventId);

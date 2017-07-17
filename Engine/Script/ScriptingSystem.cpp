@@ -68,12 +68,12 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	// export gameobjects
 	Vector<GameObject *> & GameObjects = level->GetGameObjects();
 	Vector<GameObject *>::Iterator Iter;
-	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
-		GameObject * Object = *Iter;
-		LuaStack::Push(LuaState, Object);
-		lua_setglobal(LuaState, Object->GetName());
-//		lua_pop(LuaState, 1);
-	}
+//	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+//		GameObject * Object = *Iter;
+//		LuaStack::Push(LuaState, Object);
+//		lua_setglobal(LuaState, Object->GetName());
+////		lua_pop(LuaState, 1);
+//	}
 	//push scene
 	Scene * scene = level->GetScene();
 	LuaStack::Push(LuaState, scene);
@@ -120,6 +120,6 @@ void ScriptingSystem::RegisterScript(Script * script) {
 }
 
 void ScriptingSystem::RemoveScript(Script * script) {
-
+	Scripts.Remove(script);
 }
 

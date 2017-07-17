@@ -19,6 +19,7 @@ EXPORT_CLASS(GameObject)
 	EXPORT(GameObject, Pitch)
 	EXPORT(GameObject, Yaw)
 	EXPORT(GameObject, Roll)
+	EXPORT(GameObject, Destroy)
 END_EXPORT()
 
 EXPORT_CLASS(Scene)

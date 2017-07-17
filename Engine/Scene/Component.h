@@ -32,6 +32,8 @@ public:
 	virtual int OnAttach(GameObject * GameObj);
 	// on transform
 	virtual int OnTransform(GameObject * GameObj);
+	// on gameobejct destory
+	virtual int OnDestroy(GameObject * GameObj);
 	// load from raw filedata and level interface
 	virtual int Load(void * Raw, Level * level);
 };

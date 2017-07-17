@@ -51,6 +51,8 @@ private:
 	PhysicsSystem * Physics;
 	// world
 	btDiscreteDynamicsWorld * World;
+	// center
+	Vector3 CenterOffset;
 public:
 	enum Type{
 		DYNAMIC = 0,

@@ -41,9 +41,12 @@ private:
 	bool Initialized;
 	// scripting system
 	ScriptingSystem * scriptingsystem;
+	// subscribed events
+	Vector<int> Subscribed;
 private:
 	// initialize script
 	void Start();
+	// clenup subscripbed events
 
 public:
 	Script(Context * Context_);
@@ -62,6 +65,8 @@ public:
 	void Remove();
 	// set script
 	void SetScript(String& file) { File = file; };
+	// on destroy
+	virtual int OnDestroy(GameObject * GameObj);
 
 };
 

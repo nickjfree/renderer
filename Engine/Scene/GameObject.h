@@ -66,10 +66,10 @@ public:
 	void Yaw(float Rad);
 	// roll
 	void Roll(float Rad);
-
-
 	// add component
 	bool AddComponent(Component * component);
+	// destory
+	void Destroy();
 	// create and add a component with template argument
 	template <class T> 	T* CreateComponent();
 	// create component, but not add it to the gameobject
@@ -129,6 +129,8 @@ protected:
 	Vector<EventNode *> SceneListeners;
 	// dirty flag, used for recursivelly update transform and rotation
 	bool Dirty;
+	// destroyed
+	bool Destroyed;
 	// nitoce transform
 	void NotifyTransform();
 	// make dirty

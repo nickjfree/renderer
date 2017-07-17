@@ -38,4 +38,8 @@ int Component::Load(void * Raw, Level * level) {
 int Component::OnTransform(GameObject * GameObj) {
 	return 0;
 }
+
+int Component::OnDestroy(GameObject * GameObj) {
+	return 0;
+}
 	

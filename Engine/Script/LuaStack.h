@@ -140,6 +140,11 @@ public:
 			void * user_data = lua_newuserdata(vm, sizeof(void*));
 			*(T **)user_data = &value;
 			lua_setfield(vm, -2, "__self");
+			// set table to entities
+			lua_getglobal(vm, "entities");
+			lua_pushvalue(vm, -2);
+			lua_seti(vm, -2, id);
+			lua_pop(vm, 1);
 			// set the table to global table
 			lua_seti(vm, -2, id);
 		}
@@ -165,6 +170,11 @@ public:
 			void * user_data = lua_newuserdata(vm, sizeof(void*));
 			*(T **)user_data = value;
 			lua_setfield(vm, -2, "__self");
+			// set table to entities
+			lua_getglobal(vm, "entities");
+			lua_pushvalue(vm, -2);
+			lua_seti(vm, -2, id);
+			lua_pop(vm, 1);
 			// set the table to global table
 			lua_seti(vm, -2, id);
 		}

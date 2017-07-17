@@ -40,6 +40,7 @@ BEGIN_PROXY(GameObject)
 	METHOD(Pitch, &GameObject::Pitch)
 	METHOD(Yaw, &GameObject::Yaw)
 	METHOD(Roll, &GameObject::Roll)
+	METHOD(Destroy, &GameObject::Destroy)
 END_PROXY()
 
 // Model

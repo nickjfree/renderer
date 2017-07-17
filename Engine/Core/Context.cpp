@@ -16,12 +16,12 @@ Context::~Context()
 
 
 int Context::SubscribeFor(EventNode * node, int EventId) {
-	return GlobalEventNode->AddEventHandler(EventId, node);
+	return node->SubscribeTo(GlobalEventNode, EventId);
 }
 
 
 int Context::UnSubscribeFor(EventNode * node, int EventId) {
-	return GlobalEventNode->RemoveEventHandler(EventId, node);
+	return node->UnSubscribe(GlobalEventNode, EventId);
 }
 
 

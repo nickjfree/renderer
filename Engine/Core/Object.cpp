@@ -15,7 +15,11 @@ int Object::AddRef() {
 }
 
 int Object::DecRef() {
-	InterlockedDecrement(&RefCount);
+	unsigned int ret = InterlockedDecrement(&RefCount);
+	if (ret == 0) {
+		// time to free the object
+		delete this;
+	}
 	return RefCount;
 }
 

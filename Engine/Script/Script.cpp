@@ -11,10 +11,14 @@ Script::Script(Context * Context_): Component(Context_) {
 }
 
 Script::~Script() {
+	printf("destroyed\n");
 }
 
 void Script::Start() {
 	// run on_start in gameobject's _ENV
+	if (ObjectId == -1) {
+		return;
+	}
 	lua_getglobal(vm, "objects");
 	lua_geti(vm, -1, ObjectId);
 	lua_getfield(vm, -1, "on_start");
@@ -30,6 +34,9 @@ void Script::Start() {
 
 int Script::Update(int ms) {
 	// run update in gameobject's _ENV
+	if (ObjectId == -1) {
+		return 1;
+	}
 	lua_getglobal(vm, "objects");
 	lua_geti(vm, -1, ObjectId);
 	lua_getfield(vm, -1, "update");
@@ -85,11 +92,14 @@ void Script::Register() {
 }
 // remove script
 void Script::Remove() {
-
+	scriptingsystem->RemoveScript(this);
 }
 
 int Script::Subscribe(int Event, String& Callback) {
-	context->SubscribeFor(this, Event);
+	if (ObjectId == -1) {
+		return 1;
+	}
+	Component::Subscribe(Event, Callback);
 	// set event to function mapping in gameobject's event_table
 	// get gameobhect
 	lua_getglobal(vm, "objects");
@@ -105,6 +115,9 @@ int Script::Subscribe(int Event, String& Callback) {
 
 //handle event
 int Script::HandleEvent(Event * Evt) {
+	if (ObjectId == -1) {
+		return 1;
+	}
 	// user event is larger than USER_EVENT
 	GameObject * object = this->Owner;
 	if (Evt->EventId > USER_EVENT) {
@@ -124,5 +137,29 @@ int Script::HandleEvent(Event * Evt) {
 		// balance the stack
 		lua_pop(vm, 3);
 	}
+	return 0;
+}
+
+int Script::OnDestroy(GameObject * GameObj) {
+	if (ObjectId == -1) {
+		return 1;
+	}
+	// get gameobject table
+	lua_getglobal(vm, "entities");
+	lua_geti(vm, -1, ObjectId);
+	// set obj's metatable to a default special table to disable operations on this object
+	lua_getglobal(vm, "destroyed_mt");
+	lua_setmetatable(vm, -2);
+	lua_pop(vm, 1);
+	lua_pushnil(vm);
+	lua_seti(vm, -2, ObjectId);
+	// balance the stack
+	lua_pop(vm, 1);
+	// reset objectid
+	ObjectId = -1;
+	// remove from script list
+	Remove();
+	// disable event
+	DisableEvent();
 	return 0;
 }

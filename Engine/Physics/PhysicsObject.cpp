@@ -110,12 +110,18 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
 		if (Clusters) {
 			Shape = new CollisionShape();
 			btCompoundShape * Compound = new btCompoundShape();
+			// get the compund object center
+			for (int i = 0; i < Clusters; i++) {
+				CenterOffset = CenterOffset + ConvexHulls[i].Center;
+			}
+			CenterOffset = CenterOffset * (1.0f / Clusters);
 			for (int i = 0; i < Clusters; i++) {
 				btConvexHullShape * Convex = new btConvexHullShape(ConvexHulls[i].VBuffer, ConvexHulls[i].VNum);
 				//Convex->setMargin(0.0001);
 				btTransform trans;
 				trans.setIdentity();
 				Vector3 & Center = ConvexHulls[i].Center;
+				Vector3 LocalCenter = Center - CenterOffset;
 				btVector3 c = btVector3(Center.x, Center.y, Center.z);
 				trans.setOrigin(c);
 				Compound->addChildShape(trans, Convex);

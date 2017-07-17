@@ -3,12 +3,12 @@
 
 USING_ALLOCATER(GameObject)
 
-GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_) {
+GameObject::GameObject(Context * context_) : Dirty(0), Destroyed(0), EventNode(context_) {
 	Sibling.Owner = this;
 	Children.Owner = this;
 }
 
-GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_) {
+GameObject::GameObject(Context * context_, String& Name) : Dirty(0), Destroyed(0), EventNode(context_) {
 	this->Name = Name;
 	Sibling.Owner = this;
 	Children.Owner = this;
@@ -159,6 +159,16 @@ GameObject * GameObject::CreateGameObject(String& Name) {
 
 GameObject * GameObject::CreateGameObject(char * Name) {
 	return CreateGameObject((String&)String(Name));
+}
+
+void GameObject::Destroy() {
+	Vector<Component *>::Iterator Iter;
+	Component *Comp;
+	for (Iter = Components.Begin(); Iter != Components.End(); Iter++) {
+		Comp = (*Iter);
+		Comp->OnDestroy(this);
+	}
+	Destroyed = true;
 }
 
 void GameObject::Attach(GameObject * Sub) {

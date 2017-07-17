@@ -20,6 +20,19 @@ struct ParamType<T&> {
 };
 
 
+// void ()
+template <typename ClassType, typename FuncType>
+struct MemberFunctor<void (ClassType::*)(), FuncType> {
+	static int Call(lua_State * L, FuncType mfp) {
+		ClassType* object;
+		LuaStack::Get(L, 1, object);
+		//		printf("calling funcs\n");
+		(object->*mfp)();
+		return 0;
+	}
+};
+
+
 //R 
 template <typename ClassType, typename R, typename FuncType>
 struct MemberFunctor<R(ClassType::*)(), FuncType> {

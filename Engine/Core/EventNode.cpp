@@ -42,6 +42,7 @@ int EventNode::UnSubscribe(EventNode * Hub, int EventId)
 		Iter++;
 		if (Item->EventId == EventId && Item->Node == Hub) {
 			Item->Link.Remove();
+			delete Item;
 		}
 	}
 	return 0;
@@ -91,6 +92,7 @@ int EventNode::RemoveEventHandler(int EventId, EventNode* Handler)
 		IterSub++;
 		if (Item->EventId == EventId && Item->Node == Handler) {
 			Item->Link.Remove();
+			delete Item;
 		}
 	}
 	return -1;

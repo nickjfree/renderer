@@ -23,6 +23,7 @@ namespace D3D12API {
 	typedef struct D3DTexture {
 		// multi frame flag
 		int MultiFrame;
+		int MultiResource;
 		ID3D12Resource * Texture[NUM_FRAMES];
 		union  {
 			DXGI_FORMAT DSVFormat;

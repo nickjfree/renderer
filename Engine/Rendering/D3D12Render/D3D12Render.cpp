@@ -176,6 +176,7 @@ void D3D12Render::InitD3D12() {
 	D3DTexture& texture = Textures.GetItem(Id);
 	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	texture.MultiFrame = 1;
+	texture.MultiResource = 1;
 	for (UINT n = 0; n < NUM_FRAMES; n++) {
 		SwapChain->GetBuffer(n, IID_PPV_ARGS(&RenderTargets[n]));
 		rtvHandle = CpuRTVHeaps[n][HeapIndex]->GetCpuHandle(HeapSlot);
@@ -360,12 +361,13 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 	// try create comitted resource
 	int Num = 1;
 	texture.MultiFrame = false;
+	texture.MultiResource = false;
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COPY_DEST;
 	D3D12_CLEAR_VALUE clear = {};
 	clear.Format = (DXGI_FORMAT)Desc->Format;
 	if (Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		// create multi rt  and ds for each frame
-		Num = NUM_FRAMES;
+		// Num = NUM_FRAMES;
 		texture.MultiFrame = true;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 		// clearvalue
@@ -375,7 +377,7 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 			clear.Format = (DXGI_FORMAT)FORMAT_D32_FLOAT;
 		}
 	} else if (Desc->BindFlag & BIND_RENDER_TARGET) {
-		Num = NUM_FRAMES;
+		// Num = NUM_FRAMES;
 		texture.MultiFrame = true;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		state = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -436,7 +438,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuRTVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
 			texture.Target[i] = handle;
-			Device->CreateRenderTargetView(texture.Texture[i], &rtDesc, handle);
+			Device->CreateRenderTargetView(texture.Texture[0], &rtDesc, handle);
 		}
 	} else if (Desc && Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		NumFrames = NUM_FRAMES;
@@ -454,7 +456,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 		for (int i = 0; i < NumFrames; i++) {
 			handle = CpuDSVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
 			texture.Depth[i] = handle;
-			Device->CreateDepthStencilView(texture.Texture[i], &dsDesc, handle);
+			Device->CreateDepthStencilView(texture.Texture[0], &dsDesc, handle);
 		}
 	} else if (!Desc) {
 		// commen textures, only use frame 0 heaps
@@ -748,10 +750,14 @@ void D3D12Render::SetDepthStencil(int Depth) {
 		CurrentPSO.DSVFormat = texture.DSVFormat;
 	}
 	int ResourceIndex = 0;
+	int HandleIndex = 0;
 	if (texture.MultiFrame) {
+		HandleIndex = FrameIndex;
+	}
+	if (texture.MultiResource) {
 		ResourceIndex = FrameIndex;
 	}
-	D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Depth[ResourceIndex];
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Depth[HandleIndex];
 	D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
 	ID3D12Resource * Resource = texture.Texture[ResourceIndex];
 	D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
@@ -778,10 +784,14 @@ void D3D12Render::SetRenderTargets(int Count, int * Targets) {
 		this->Targets[i] = texture.Target[FrameIndex];
 		// translate state
 		int ResourceIndex = 0;
+		int HandleIndex = 0;
 		if (texture.MultiFrame) {
+			HandleIndex = FrameIndex;
+		}
+		if (texture.MultiResource) {
 			ResourceIndex = FrameIndex;
 		}
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[ResourceIndex];
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
 		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
 		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
 		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -801,10 +811,14 @@ void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
 		int Id = Texture[i];
 		D3DTexture& texture = Textures.GetItem(Id);
 		int ResourceIndex = 0;
+		int HandleIndex = 0;
 		if (texture.MultiFrame) {
+			HandleIndex = FrameIndex;
+		}
+		if (texture.MultiResource) {
 			ResourceIndex = FrameIndex;
 		}
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[ResourceIndex];
+		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
 		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
 		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
 		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;

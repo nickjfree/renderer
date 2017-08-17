@@ -223,11 +223,11 @@ int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 
 int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 	// swap adaptlum
-	if (Frames % 2) {
-		int t = AdaptLum[0];
-		AdaptLum[0] = AdaptLum[1];
-		AdaptLum[1] = t;
-	}
+//	if (Frames % 2) {
+	int t = AdaptLum[0];
+	AdaptLum[0] = AdaptLum[1];
+	AdaptLum[1] = t;
+//	}
 	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
 	Parameter[hash_string::gPostBuffer].as<int>() = LumScaleArray[AvgIter-1];
 	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[1];

@@ -7,7 +7,7 @@ RenderingCamera::RenderingCamera()
 {
 	float pi = 3.141592654f;
 	Position = Vector3(5, 4, -20);
-	Projection = Matrix4x4::PerspectiveFovLH(0.3f*pi, 1920/1080.0f,1,1000);
+	Projection = Matrix4x4::PerspectiveFovLH(0.3f*pi, 3840/2160.0f,1,1000);
 	MoveSpeed = 0.05f;
 	RotationSpeed = 0.1f;
 	Look = Vector3(0, 0, 1) * Orientation;

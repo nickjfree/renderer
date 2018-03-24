@@ -5,6 +5,7 @@
 #include "Math\Collision.h"
 #include "Core\Allocater.h"
 #include "Core\Shortcuts.h"
+#include "Rendering\Node.h"
 
 /*
 	RenderingCamera. Main Camera, shadow casting light camera, reflection camera and more.

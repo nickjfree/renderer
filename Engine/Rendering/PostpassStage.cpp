@@ -32,8 +32,8 @@ void PostpassStage::InitPostSchema() {
 
 void PostpassStage::CreatePingPongBuffer() {
 	R_TEXTURE2D_DESC desc = {};
-	desc.Width = 1920;
-	desc.Height = 1080;
+	desc.Width = Context->FrameWidth;
+	desc.Height = Context->FrameHeight;
 	desc.ArraySize = 1;
 	desc.CPUAccess = (R_CPU_ACCESS)0;
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
@@ -50,14 +50,14 @@ void PostpassStage::CreatePingPongBuffer() {
 	Context->RegisterRenderTarget(String("gFinalBuffer"), PingPong[1]);
 
 	Variant ScreenSize;
-	ScreenSize.as<Vector2>() = Vector2(1920, 1080);
+	ScreenSize.as<Vector2>() = Vector2(Context->FrameWidth, Context->FrameHeight);
 	Context->SetResource(String("gScreenSize"), ScreenSize);
 }
 
 void PostpassStage::InitSampleOffset() {
 	// SampleOffset for downsample image by 1/4. with bilinear sampler
-	int Width = 1920;
-	int Height = 1080;
+	int Width = Context->FrameWidth;
+	int Height = Context->FrameHeight;
 	for (int i = 0; i < MAX_HDR_LUM; i++) {
 		int Index = 0;
 		float tux = 1.0f / Width;
@@ -76,8 +76,8 @@ void PostpassStage::InitSampleOffset() {
 		Height /= 4;
 	}
 	// bright pass offset
-	float tux = 2.0f / 1920;
-	float tuy = 2.0f / 1080;
+	float tux = 2.0f / Context->FrameWidth;
+	float tuy = 2.0f / Context->FrameHeight;
 	int Index = 0;
 	for (int x = 0; x < 4; x += 2) {
 		for (int y = 0; y < 4; y += 2) {
@@ -87,8 +87,8 @@ void PostpassStage::InitSampleOffset() {
 		}
 	}
 	// bloom gauss bloom offset
-	tux = 8.0f / 1920;
-	tuy = 8.0f / 1080;
+	tux = 8.0f / Context->FrameWidth;
+	tuy = 8.0f / Context->FrameHeight;
 	memset(BloomOffset, 0, sizeof(float) * 32);
 	memset(BloomWeight, 0, sizeof(float) * 16);
 	// horizion
@@ -103,8 +103,8 @@ void PostpassStage::InitSampleOffset() {
 }
 
 void PostpassStage::CreateHDRBuffer() {
-	int Width = 1920;
-	int Height = 1080;
+	int Width = Context->FrameWidth;
+	int Height = Context->FrameHeight;
 	R_TEXTURE2D_DESC desc = {};
 	desc.Width = Width/4;
 	desc.Height = Height/4;
@@ -127,12 +127,14 @@ void PostpassStage::CreateHDRBuffer() {
 		desc.Width = width;
 		desc.Height = height;
 		desc.Format = FORMAT_R16_FLOAT;
-		if (width==1 && height==1) {
+		if (width < 4 && height < 4) {
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 			AdaptLum[0] = LumScaleArray[i];
 			LumScaleArray[i+1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 			AdaptLum[1] = LumScaleArray[i + 1];
 			AvgIter = i;
+			LumBufferWidth = width;
+			LumBufferHeight = height;
 			break;
 		} else {
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
@@ -196,7 +198,7 @@ int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, LumScaleArray);
 	HDRShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
 	// Quad
-	Compiler->SetViewport(0, 0, 1920 / 4.0f, 1080 / 4.0f, 0, 1);
+	Compiler->SetViewport(0, 0, Context->FrameWidth / 4.0f, Context->FrameHeight / 4.0f, 0, 1);
 	Compiler->Quad();
 	return 0;
 }
@@ -204,8 +206,8 @@ int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 	// set offset
 	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
-	int Width = 1920 / 4.0f;
-	int Height = 1080 / 4.0f;
+	int Width = Context->FrameWidth / 4.0f;
+	int Height = Context->FrameHeight / 4.0f;
 	for (int i = 1; i < AvgIter; i++) {
 		Width /= 4;
 		Height /= 4;
@@ -235,7 +237,7 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, &AdaptLum[0]);
 	memcpy_s(Offset, sizeof(Variant), &ScaleOffset[AvgIter], sizeof(float) * 16);
 	HDRShader->Compile(Compiler, 2, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, 1, 1, 0, 1);
+	Compiler->SetViewport(0, 0, LumBufferWidth, LumBufferHeight, 0, 1);
 	Compiler->Quad();
 	Frames++;
 	return 0;
@@ -243,8 +245,8 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 
 int PostpassStage::BrightPass(BatchCompiler * Compiler){
 	// bright pass to bloom 0
-	int Width = 1920 / 2.0f;
-	int Height = 1080 / 2.0f;
+	int Width = Context->FrameWidth / 2.0f;
+	int Height = Context->FrameHeight / 2.0f;
 	Parameter[hash_string::gPostBuffer].as<int>() = PingPong[1];
 	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[0];
 	Compiler->SetRenderTargets(1, &Bright);
@@ -264,8 +266,8 @@ int PostpassStage::BrightPass(BatchCompiler * Compiler){
 
 int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 	// bright pass
-	int Width = 1920 / 8.0f;
-	int Height = 1080 / 8.0f;
+	int Width = Context->FrameWidth / 8.0f;
+	int Height = Context->FrameHeight / 8.0f;
 	float * Weight = Parameter[hash_string::gSampleWeights].as<float[16]>();
 	memcpy_s(Weight, sizeof(Variant), BloomWeight, sizeof(float) * 16);
 	// horizion bloom0 -> bloom1
@@ -295,7 +297,7 @@ int PostpassStage::ToneMapping(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, &Target);
 	HDRShader->Compile(Compiler, 5, 0, Parameter, Parameter, Context);
 	// restore viewport
-	Compiler->SetViewport(0, 0, 1920, 1080, 0, 1);
+	Compiler->SetViewport(0, 0, Context->FrameWidth, Context->FrameHeight, 0, 1);
 	Compiler->Quad();
 	Compiler->Present();
 	return 0;

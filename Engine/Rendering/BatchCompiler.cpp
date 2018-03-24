@@ -97,6 +97,9 @@ int BatchCompiler::SetPixelShader(int Shader) {
 }
 
 int BatchCompiler::SetTexture(int Slot, int Texture) {
+	if (Texture == 0) {
+		printf("fuck\n");
+	}
 	*Offset++ = OP_TEXTURE;
 	*(unsigned char *)Offset++ = Slot;
 	*(int *)Offset = Texture;

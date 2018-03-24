@@ -28,7 +28,7 @@ int CullingTask::Work() {
 	renderview->Compile();
 	for (int i = 0; i < Size; i++) {
 		RenderObject * obj = (RenderObject*)renderview->VisibleObjects[i];
-		Compiled += obj->Compile(Compiler, renderview->Type, 0, renderview->Parameters, renderview->Camera, NULL);
+		Compiled += obj->Compile(Compiler, renderview->Type, 0, renderview->Parameters, renderview->Camera, Context);
 		if (Compiled >= COMMANDBUFFER_SIZE) {
 			printf("warning: commandbuffer overflow\n");
 			break;

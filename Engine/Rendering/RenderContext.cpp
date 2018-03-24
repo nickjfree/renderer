@@ -5,6 +5,8 @@ RenderContext::RenderContext(RenderInterface * Interface_)
 {
 	Interface = Interface_;
 	memset(Constants, 0, sizeof(void*)* MAX_CONSTANT);
+	FrameWidth = FRAMEBUFFER_WIDTH;
+	FrameHeight = FRAMEBUFFER_HEIGHT;
 }
 
 

@@ -14,8 +14,8 @@ PrepassStage::~PrepassStage()
 
 void PrepassStage::CreateGBuffer() {
 	R_TEXTURE2D_DESC desc = {};
-	desc.Width = 1920;
-	desc.Height = 1080;
+	desc.Width = Context->FrameWidth;
+	desc.Height = Context->FrameHeight;
 	desc.ArraySize = 1;
 	desc.CPUAccess = (R_CPU_ACCESS)0;
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
@@ -163,6 +163,7 @@ void PrepassStage::PrePass(RenderingCamera * Camera, Spatial * spatial, RenderQu
 		CullingTask * task = CullingTask::Create();
 		task->renderview = renderview;
 		task->spatial = spatial;
+		task->Context = Context;
 		task->ObjectType = Node::RENDEROBJECT;
 		Queue->QueueTask(task);
 	}
@@ -187,6 +188,7 @@ void PrepassStage::LigthingPass(RenderingCamera * Camera, Spatial * spatial, Ren
 		CullingTask * task = CullingTask::Create();
 		task->renderview = renderview;
 		task->spatial = spatial;
+		task->Context = Context;
 		task->ObjectType = Node::LIGHT;
 		Queue->QueueTask(task);
 	}
@@ -211,6 +213,7 @@ void PrepassStage::ShadingPass(RenderingCamera * Camera, Spatial * spatial, Rend
 		CullingTask * task = CullingTask::Create();
 		task->renderview = renderview;
 		task->spatial = spatial;
+		task->Context = Context;
 		task->ObjectType = Node::RENDEROBJECT;
 		Queue->QueueTask(task);
 	}

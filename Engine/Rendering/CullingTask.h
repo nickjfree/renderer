@@ -25,6 +25,8 @@ public:
 	int ObjectType;
 	// event
 	OsEvent * Event;
+	// render context
+	RenderContext * Context;
 public:
 	CullingTask();
 	~CullingTask();

@@ -45,13 +45,15 @@ HWND D3D12Render::CreateRenderWindow()
 	wcex.hIconSm = NULL;
 	RegisterClassEx(&wcex);
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-	RenderWindow = CreateWindow(L"H3DRender", L"H3DRender - D3D12", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
+	wchar_t title[1024];
+	swprintf(title,1024, L"H3DRender -D3D12 (%d,%d)", Width, Height);
+	RenderWindow = CreateWindow(L"H3DRender", title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
 	// show this window
 	ShowWindow(RenderWindow, SW_SHOW);
 	UpdateWindow(RenderWindow);
 	GetClientRect(RenderWindow, &rc);
-	Width = rc.right - rc.left;
-	Height = rc.bottom - rc.top;
+	//Width = rc.right - rc.left;
+	//Height = rc.bottom - rc.top;
 	return RenderWindow;
 }
 

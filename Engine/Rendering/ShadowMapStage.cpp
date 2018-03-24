@@ -14,8 +14,8 @@ ShadowMapStage::~ShadowMapStage() {
 
 void ShadowMapStage::CreateShadowMaps() {
 	R_TEXTURE2D_DESC desc = {};
-	desc.Width = 1920;
-	desc.Height = 1080;
+	desc.Width = Context->FrameWidth;
+	desc.Height = Context->FrameHeight;
 	desc.ArraySize = 1;
 	desc.CPUAccess = (R_CPU_ACCESS)0;
 	desc.BindFlag = (R_BIND_FLAG)(BIND_DEPTH_STENCIL | BIND_SHADER_RESOURCE);
@@ -63,6 +63,7 @@ int ShadowMapStage::ShadowPass(RenderingCamera * Camera, Spatial * spatial, Rend
 			task->renderview = renderview;
 			task->spatial = spatial;
 			task->ObjectType = Node::RENDEROBJECT;
+			task->Context = Context;
 			Queue->QueueTask(task);
 		}
 		Events.PushBack(renderview->Event);

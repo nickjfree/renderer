@@ -35,6 +35,8 @@ typedef struct ShaderParameterDesc {
 
 
 #define MAX_CONSTANT  128
+#define FRAMEBUFFER_WIDTH  3840
+#define FRAMEBUFFER_HEIGHT 2160
 
 
 class RenderContext
@@ -50,6 +52,11 @@ private:
 	HashMap<String, int> RenderTarget;
 	// parameter dict, name to resource mapping
 	Dict Parameters;
+public:
+
+	// frambufferszie
+	int FrameWidth;
+	int FrameHeight;
 public:
 	RenderContext(RenderInterface * Interface);
 	~RenderContext();

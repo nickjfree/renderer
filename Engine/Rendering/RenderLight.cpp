@@ -20,7 +20,7 @@ RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 
 	Matrix4x4 InitMatrix;
 	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
-	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(1920,1080);
+	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(0,0);
 	Parameter[hash_string::gLightViewProjection].as<Matrix4x4>() = InitMatrix;
 }
 
@@ -93,6 +93,7 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	// light parameters
 	Parameter[hash_string::gLightPosition].as<Vector3>() = Position * Camera->GetViewMatrix();
 	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
+	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(Context->FrameWidth, Context->FrameHeight);
 	// light iewprojection
 	UpdateLightView();
 	// process material

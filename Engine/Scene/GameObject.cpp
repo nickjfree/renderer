@@ -87,6 +87,8 @@ void GameObject::SetRotation(Quaternion& Rotation_) {
 }
 
 void GameObject::SetTransform(Matrix4x4& Transform) {
+	Rotation.FromMatrix(Transform);
+	Translate = Vector3(0, 0, 0) * Transform;
 	MakeDirty();
 }
 

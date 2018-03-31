@@ -86,13 +86,14 @@ __declspec(align(16)) struct Vector3 {
 		};
 	};
 
-	Vector3():x(0), y(0), z(0) {
+	Vector3():x(0), y(0), z(0), w(0) {
 	}
 
 	Vector3(float x_, float y_, float z_) {
 		x = x_;
 		y = y_;
 		z = z_;
+		w = 0;
 	}
 
 	Vector3 operator + (Vector3& rh) {

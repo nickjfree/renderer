@@ -53,6 +53,8 @@ private:
 	btDiscreteDynamicsWorld * World;
 	// center
 	Vector3 CenterOffset;
+	// invers transform of center offset
+	Matrix4x4 InvertCenter;
 public:
 	enum Type{
 		DYNAMIC = 0,

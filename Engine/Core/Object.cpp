@@ -2,7 +2,7 @@
 #include <Windows.h>
 
 
-Object::Object(Context * context_) :RefCount(0), context(context_), ObjectId(-1) {
+Object::Object(Context * context_) :RefCount(1), context(context_), ObjectId(-1) {
 }
 
 

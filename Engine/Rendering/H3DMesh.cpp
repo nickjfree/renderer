@@ -88,7 +88,9 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	float d = max(max(Extend.x, Extend.y), max(Extend.x, Extend.z));
 	Box = AABB(Center, Vector3(d,d,d));
 	// calc convex hull
+#ifndef _DEBUG
 	ComputeConvexHull();
+#endif 
 	return 0;
 }
 

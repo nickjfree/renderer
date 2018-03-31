@@ -10,8 +10,7 @@ RenderContext::RenderContext(RenderInterface * Interface_)
 }
 
 
-RenderContext::~RenderContext()
-{
+RenderContext::~RenderContext() {
 }
 
 int RenderContext::RegisterConstant(String& Name, int Slot, unsigned int Size) {

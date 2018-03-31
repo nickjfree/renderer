@@ -2,6 +2,7 @@
 #define __LUA_PROXY__
 
 #include "LuaStack.h"
+#include "../Core/Object.h"
 #include <typeinfo.h>
 
 template <typename T, typename FuncType = T>
@@ -121,6 +122,17 @@ int Proxy_Method(lua_State * L, FuncType mfp)
 				lua_pushvalue(L, -1); \
 				lua_setfield(L, -1, "__index"); \
 				lua_setglobal(L, #class_name); \
+			} \
+			\
+			static int Collect(lua_State * L) { \
+				luaL_checktype(L , 1, LUA_TTABLE); \
+			    lua_getfield(L, 1, "__self"); \
+				Object * obj = *(Object **)lua_touserdata(L, -1); \
+				if (obj->GetObjectId() != -1) { \
+					obj->SetObjectId(-1); \
+					obj->DecRef(); \
+				} \
+				return 0; \
 			}
 
 
@@ -129,6 +141,7 @@ int Proxy_Method(lua_State * L, FuncType mfp)
 	static int method_name (lua_State * L) {  \
 		return Proxy_Method(L, member_func); \
 	}
+
 
 
 #define END_PROXY()   };
@@ -141,6 +154,8 @@ int Proxy_Method(lua_State * L, FuncType mfp)
 #define EXPORT(class_name, function_name) \
 	{#function_name, &Proxy_##class_name::##function_name},
 
+#define GC(class_name) \
+	{"__gc", &Proxy_##class_name::Collect},
 
 #define END_EXPORT() {NULL, NULL}};
 

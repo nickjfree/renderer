@@ -21,6 +21,27 @@
     </technique>
   </shader>
 
+  <shader name="Instance">
+    <technique name="GBuffering_Instance" instance="yes">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\basic-pre-instance.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre-instance.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading" instance="yes">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\basic-instance.vs"></vs>
+        <ps url="Shaders\shaders\basic-instance.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow_Instance" instance="yes">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\basic-instance.vs"></vs>
+        <ps url="Shaders\shaders\basic-instance.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="BasicNoCull">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">

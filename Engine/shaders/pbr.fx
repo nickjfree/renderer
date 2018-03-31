@@ -7,8 +7,8 @@
 
 #define  PI  3.141592657
 #define  IBL_LD_MIPMAPS 6
-#define  SMOOTHNESS 0.5
-#define  F0 float3(0.04, 0.04, 0.04)
+#define  SMOOTHNESS 0.3
+// #define  F0 float3(0.5, 0.5, 0.0f)
 #define  F90 1
 #define  METALLIC 0
 
@@ -169,6 +169,7 @@ PS_Output PS_PointLightShadow(PS_Input input)
 			float d = distance(gLightPosition, Position.xyz);
 			float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
 			float roughness = pow(1 - 0.7*SMOOTHNESS, 6);
+			float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
 			float3 f0 = lerp(F0, albedo.rgb, METALLIC);
 			float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz);
 			float3 an = gLightColor * intensity * saturate(1 - d / radius);
@@ -197,10 +198,11 @@ PS_Output PS_DirectionLight(PS_Input input)
 	V = normalize(V);
 	float3 H = normalize(L + V);
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
+	float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
 	float roughness = pow(1 - 0.7*SMOOTHNESS, 6);
 	float3 f0 = lerp(F0, albedo.rgb, METALLIC);
 	float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz);
-	output.Light = float4(color * saturate(dot(Normal, L)), 0) * intensity;
+	output.Light = float4(color * gLightColor * saturate(dot(Normal, L)), 0) * intensity;
 //	output.Light = saturate(dot(Normal, L));
 	return output;
 }
@@ -262,7 +264,8 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 
 	float3 irradiance = gLightProbeIrradiance.Sample(gSamBilinear, WorldNormal).rgb;
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-	
+	float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
+
 	float3 f0 = lerp(F0, albedo.rgb, METALLIC);
 	
 	float3 diffuse = (f0 * DFGterms.x + F90 * DFGterms.y) * albedo.xyz;

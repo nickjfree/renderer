@@ -5,5 +5,5 @@
     <texture unit="gNormalMap0" name="usbdrive_normal" url="Texture\textures\flat2.dds\0">usbdrive_normal</texture>
   </textures> 
   
-  <shader name="Basic" url="Shader\shaders\BasicNoCull\0"></shader>
+  <shader name="Basic" url="Shader\shaders\Instance\0"></shader>
 </material>

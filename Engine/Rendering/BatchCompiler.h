@@ -13,7 +13,8 @@
 /*
 	compilter, compile render batchs to byte code whitch excuted by renderprocesser
 */
-# define BYTECODE_SIZE 2048
+#define BYTECODE_SIZE 2048
+#define MAX_CONSTANT_BUFFER 128 * 16 * 4
 
 class BatchCompiler
 {

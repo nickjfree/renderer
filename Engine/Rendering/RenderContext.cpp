@@ -24,6 +24,7 @@ int RenderContext::RegisterConstant(String& Name, int Slot, unsigned int Size) {
 		Constant->CPUData = CPUData;
 		Constant->Size = Size;
 		Constant->Slot = Slot;
+		Constant->Dirty = 0;
 		Constant->Name = Name;
 		// create this constant buffer
 		Constant->Id = Interface->CreateConstantBuffer(Size);
@@ -42,7 +43,10 @@ int RenderContext::SetParameter(int Slot, void * CPUData, unsigned int Offset, u
 		ConstantDesc * Constant = Constants[Slot];
 		if (Constant) {
 			void * Dest = Constant->CPUData;
-			memcpy((char*)Dest + Offset, CPUData, Size);
+			if (memcmp((char*)Dest + Offset, CPUData, Size)) {
+				memcpy((char*)Dest + Offset, CPUData, Size);
+				Constant->Dirty = 1;
+			}
 		}
 	}
 	return 0;
@@ -51,12 +55,13 @@ int RenderContext::SetParameter(int Slot, void * CPUData, unsigned int Offset, u
 int RenderContext::UpdateConstant(int Slot) {
 	if (Slot >= 0) {
 		ConstantDesc * Constant = Constants[Slot];
-		if (Constant) {
+		if (Constant && Constant->Dirty) {
 			int Id = Constant->Id;
 			int Slot = Constant->Slot;
 			int Size = Constant->Size;
 			void * Data = Constant->CPUData;
 			Interface->SetConstant(Slot, Id, Data, Size);
+			Constant->Dirty = 0;
 		}
 	}
 	return 0;

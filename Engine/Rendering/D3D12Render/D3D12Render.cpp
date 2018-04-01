@@ -865,7 +865,7 @@ void D3D12Render::SetConstant(int Slot, int Buffer, void * CPUData, unsigned int
 			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
 			Data = CurrentConstHeap->SubAlloc(Size);
 		}
-	} 	else {
+	} else {
 		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
 		Data = CurrentConstHeap->SubAlloc(Size);
 	}

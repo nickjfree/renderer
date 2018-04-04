@@ -20,8 +20,8 @@ int TestGen(char * File) {
 	int Num = 4;
 	Header.NumEntries = Num;
 	char * meshes[4] = {
-		"Mesh\\Unit.pack\\adata121\\0", 
 		"Mesh\\Unit.pack\\plane2\\0", 
+		"Mesh\\Unit.pack\\sks04\\0", 
 		"Mesh\\Unit.pack\\sphere\\0", 
 		"Mesh\\Unit.pack\\sneak\\0" 
 	};
@@ -32,15 +32,26 @@ int TestGen(char * File) {
 		WriteFile(hFile, &mesh, sizeof(mesh), &write, 0);
 	}
 	// write material 
-	char * materials[5] = { 
+	char * materials[14] = { 
+		"Material\\Materials\\sneak.xml\\0",
+		"Material\\Materials\\sneak1.xml\\0",
+		"Material\\Materials\\sneak2.xml\\0",
+		"Material\\Materials\\sneak3.xml\\0",
+		"Material\\Materials\\sneak4.xml\\0",
+		"Material\\Materials\\sneak5.xml\\0",
+		"Material\\Materials\\sneak6.xml\\0",
+		"Material\\Materials\\sneak7.xml\\0",
+		"Material\\Materials\\sneak8.xml\\0",
+		"Material\\Materials\\sneak9.xml\\0",
+
+
 		"Material\\Materials\\lightprobe.xml\\0", 
-		"Material\\Materials\\sneak.xml\\0", 
-		"Material\\Materials\\usbdrive.xml\\0", 
 		"Material\\Materials\\cylinder.xml\\0", 
-		"Material\\Materials\\light.xml\\0"
+		"Material\\Materials\\sks.xml\\0", 
+		"Material\\Materials\\light.xml\\0",
 	};
 	MatrialEntry material = {};
-	Num = 5;
+	Num = 14;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	while (Num--) {
@@ -51,7 +62,7 @@ int TestGen(char * File) {
 	Num = 4;
 	Header.NumEntries = Num;
 	ModelEntry model = {};
-	char * models[4] = { "qianzhihe", "sphere", "cylinder", "usbdrive",};
+	char * models[4] = { "sneak", "sphere", "sks", "usbdrive",};
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	while (Num--) {
 		memset(model.MeshGroup, 0, sizeof(int)* 8);
@@ -142,7 +153,7 @@ int TestGen(char * File) {
 	object.Rotation = Quaternion();
 	object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
-	render.MaterialIndex = 3;
+	render.MaterialIndex = 4;
 	render.ModelIndex = 3;
 	strcpy_s(render.Info.TypeName, "Renderer");
 	// write qianzhihe
@@ -160,7 +171,7 @@ int TestGen(char * File) {
 		object.Rotation = Quaternion();
 		object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
 		object.Scale = Vector3(1, 1, 1);
-		render.MaterialIndex = 3;
+		render.MaterialIndex = 4 + (i % 10);
 		render.ModelIndex = 3;
 		strcpy_s(render.Info.TypeName, "Renderer");
 		// write qianzhihe
@@ -174,7 +185,7 @@ int TestGen(char * File) {
 	object.Position = Vector3(0, 1, 3);
 	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
 	object.Scale = Vector3(1, 1, 1);
-	light.MaterialIndex = 4;
+	light.MaterialIndex = 3;
 	light.ModelIndex = 2;
 	light.Color = Vector3(1, 1, 1);
 	light.Intensity = 3.14;

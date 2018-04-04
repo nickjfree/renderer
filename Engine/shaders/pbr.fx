@@ -7,10 +7,10 @@
 
 #define  PI  3.141592657
 #define  IBL_LD_MIPMAPS 6
-#define  SMOOTHNESS 0.3
-// #define  F0 float3(0.5, 0.5, 0.0f)
+//#define  SMOOTHNESS 0.3
+// #define  F0 float3(0.5, 0.5, 0.5f)
 #define  F90 1
-#define  METALLIC 0
+//#define  METALLIC 0
 
 struct VS_Input
 {
@@ -103,7 +103,7 @@ float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughn
 
 
 
-float4 Calc_PointLight(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness, float3 albedo) {
+float4 Calc_PointLight(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness, float3 albedo, float metallic) {
 
 	float NdotV = abs(dot(N, V)) + 1e-5f;
 	// avoid artifact 
@@ -122,7 +122,7 @@ float4 Calc_PointLight(float3 N, float3 V, float3 L, float3 f0, float f90, float
 	float Fd = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, roughness) / PI;
 	//Fd = 1 / PI;
 //	return float4(lerp(albedo * Fd, Fr, Metalic), 0);
-	Fd = saturate((1 - METALLIC) * Fd);
+	Fd = saturate((1 - metallic) * Fd);
 	return float4(albedo * Fd + Fr, 0);
 //	return float4(0 * Fd + Fr, 0);
 }
@@ -168,10 +168,13 @@ PS_Output PS_PointLightShadow(PS_Input input)
 			float3 H = normalize(L + V);
 			float d = distance(gLightPosition, Position.xyz);
 			float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-			float roughness = pow(1 - 0.7*SMOOTHNESS, 6);
-			float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
-			float3 f0 = lerp(F0, albedo.rgb, METALLIC);
-			float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz);
+			float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
+			float smoothness = rm.y;
+			float3 F0 = float3(rm.x, rm.x, rm.x);
+			float metallic = rm.z;
+			float roughness = pow(1 - 0.7 * smoothness, 6);
+			float3 f0 = lerp(F0, albedo.rgb, rm.z);
+			float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
 			float3 an = gLightColor * intensity * saturate(1 - d / radius);
 			output.Light = float4(color * an * saturate(dot(Normal, L)), 0);
 			return output;
@@ -198,10 +201,14 @@ PS_Output PS_DirectionLight(PS_Input input)
 	V = normalize(V);
 	float3 H = normalize(L + V);
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-	float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
-	float roughness = pow(1 - 0.7*SMOOTHNESS, 6);
-	float3 f0 = lerp(F0, albedo.rgb, METALLIC);
-	float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz);
+	// float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
+	float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
+	float smoothness = rm.y;
+	float3 F0 = float3(rm.x, rm.x, rm.x);
+	float metallic = rm.z;
+	float roughness = pow(1 - 0.7* smoothness, 6);
+	float3 f0 = lerp(F0, albedo.rgb, rm.z);
+	float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
 	output.Light = float4(color * gLightColor * saturate(dot(Normal, L)), 0) * intensity;
 //	output.Light = saturate(dot(Normal, L));
 	return output;
@@ -255,8 +262,11 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 	float NoV = saturate(dot(N, V));
 
 	float4 color;
-
-	float  Roughness = pow(1 - 0.7*SMOOTHNESS, 6);;
+	float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
+	float smoothness = rm.y;
+	float3 F0 = float3(rm.x, rm.x, rm.x);
+	float metallic = rm.z;
+	float  Roughness = pow(1 - 0.7 * smoothness, 6);
 
 	float2 DFGterms = DFGLookup(Roughness, NoV);
 
@@ -264,9 +274,8 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 
 	float3 irradiance = gLightProbeIrradiance.Sample(gSamBilinear, WorldNormal).rgb;
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-	float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
 
-	float3 f0 = lerp(F0, albedo.rgb, METALLIC);
+	float3 f0 = lerp(F0, albedo.rgb, rm.z);
 	
 	float3 diffuse = (f0 * DFGterms.x + F90 * DFGterms.y) * albedo.xyz;
 	float  mipmap = SelectLDMipmap(Roughness);
@@ -274,7 +283,7 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 
 	float3 specular = diffuse * ApproximateSpecularIBL(F0, Roughness, N, V);
 
-	diffuse = saturate((1 - METALLIC) * diffuse);
+	diffuse = saturate((1 - metallic) * diffuse);
 	color.rgb = diffuse * irradiance + specular;
 	color.a = 1;
 

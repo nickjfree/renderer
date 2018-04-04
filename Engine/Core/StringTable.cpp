@@ -21,6 +21,7 @@ MAKE_HASH_STRING(gDiffuseMap1)
 MAKE_HASH_STRING(gDiffuseMap0)
 MAKE_HASH_STRING(gSampleWeights)
 MAKE_HASH_STRING(gTimeElapse)
+MAKE_HASH_STRING(gSpecular)
 
 //event string
 MAKE_HASH_STRING(Level)

@@ -20,16 +20,6 @@ class MeshRenderer : public Renderer {
 private:
 	// render object
 	RenderObject * renderObject;
-	// h3d entity as mesh to render
-	//CEntity * Entity[MAX_LODS];
-	//// h3d marterial
-	//CMaterial * Material[MAX_LODS];
-	//// H3D RenderEngine SceneNode as Renderer
-	//CSceneObject * SceneObject;
-	//// H3D RenderEngine Reference
-	//CRenderEngine * RenderEngine;
-	//// H3D Scene Manager
-	//CSceneManager * SceneManager;
 	// current lod level
 	int Lod;
 private:

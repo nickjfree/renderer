@@ -1,8 +1,7 @@
 #include "RenderContext.h"
 
 
-RenderContext::RenderContext(RenderInterface * Interface_)
-{
+RenderContext::RenderContext(RenderInterface * Interface_) {
 	Interface = Interface_;
 	memset(Constants, 0, sizeof(void*)* MAX_CONSTANT);
 	FrameWidth = FRAMEBUFFER_WIDTH;
@@ -65,6 +64,15 @@ int RenderContext::UpdateConstant(int Slot) {
 		}
 	}
 	return 0;
+}
+
+void RenderContext::EndFrame() {
+	for (int i = 0; i < MAX_CONSTANT; i++) {
+		ConstantDesc * Constant = Constants[i];
+		if (Constant) {
+			Constant->Dirty = 1;
+		}
+	}
 }
 
 int RenderContext::RegisterRenderState(String& Name, int Id) {

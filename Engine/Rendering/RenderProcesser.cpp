@@ -262,5 +262,6 @@ int RenderProcesser::Present(void * data) {
 	//printf("%s\n", __FUNCTION__);
 	ip += 1;
 	Interface->Present();
+	context->EndFrame();
 	return 1;
 }

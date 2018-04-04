@@ -56,6 +56,9 @@ cbuffer PerObject: register(b0)
 	float4 gLightColor;
 	float4 gRadiusIntensity;
 	float4 gLightDirection;
+	// material
+	float gSpecular;
+	float3 pad_1;
 }
 
 

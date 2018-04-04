@@ -31,6 +31,7 @@ public:
 	static String gDiffuseMap0;
 	static String gSampleWeights;
 	static String gTimeElapse;
+	static String gSpecular;
 
 	// event string
 	static String Level;

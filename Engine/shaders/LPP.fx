@@ -86,14 +86,17 @@ PS_Output PS_LPP_Normal(PS_Input input)
 	float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
 	float4 specular = gSpecularMap0.Sample(gSam, input.TexCoord);
 	normal = normal * 2.0 - 1;
+	normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
+	normal.w = 0;
 	normal = normalize(normal);
 	//oColor = (light + 0.1);
-	normal = input.Normal + normal.x * input.Tangent + normal.y * input.BiNormal;
+	normal = input.Normal * normal.z + normal.x * input.Tangent + normal.y * input.BiNormal;
+	normal = normalize(normal);
 	output.Normal.xy = EncodeNormal(normal);
 	output.Depth.x = input.Depth;
 	output.Diffuse = diffuse;
 	//output.Diffuse = float4(1,1,1,0);
-	output.Specular = float4(specular.y, specular.y, specular.y, 0);
+	output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
 	return output;
 }
 

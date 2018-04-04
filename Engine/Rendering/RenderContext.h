@@ -83,6 +83,8 @@ public:
 	int SetResource(String& Name, Variant& resource);
 	// get by name
 	Variant* GetResource(String& Name);
+	// End Frame
+	void EndFrame();
 };
 
 

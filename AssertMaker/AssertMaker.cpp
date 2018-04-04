@@ -121,7 +121,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("sneak.dae");
+	DoTheImportThing("sks_s.fbx");
 	return 0;
 }
 

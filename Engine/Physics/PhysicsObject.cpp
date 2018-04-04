@@ -20,6 +20,8 @@ PhysicsObject::PhysicsObject(Context * context):Component(context), Shape(0), Ob
 	// create a default rigitbody
 	Physics = context->GetSubsystem<PhysicsSystem>();
 	World = Physics->GetWorld();
+	CenterOffset = Vector3(0, 0, 0);
+	InvertCenter.Identity();
 }
 
 
@@ -114,8 +116,10 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
 	for (int i = 0; i < Clusters; i++) {
 		CenterOffset = CenterOffset + ConvexHulls[i].Center;
 	}
-	CenterOffset = CenterOffset * (1.0f / Clusters);
-	InvertCenter.Translate(CenterOffset * -1.0f);
+	if (Clusters) {
+		CenterOffset = CenterOffset * (1.0f / Clusters);
+		InvertCenter.Translate(CenterOffset * -1.0f);
+	}
 	if (!Shape) {
 		if (Clusters) {
 			Shape = new CollisionShape();

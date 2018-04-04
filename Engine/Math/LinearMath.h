@@ -93,7 +93,7 @@ __declspec(align(16)) struct Vector3 {
 		x = x_;
 		y = y_;
 		z = z_;
-		w = 0;
+		w = 1;
 	}
 
 	Vector3 operator + (Vector3& rh) {

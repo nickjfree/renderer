@@ -64,6 +64,7 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
 	StageParameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = Tmp;
 	StageParameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
+	//StageParameter[hash_string::gSpecular].as<float>() = 0.5f;
 	// process matrix
 	// process material
 	int Compiled = 0;

@@ -50,7 +50,21 @@ int Material::OnSerialize(Deserializer& deserializer){
 		printf("shader %s\n", url);
 	}
 	// read shader parameters
+	node = node->next_sibling();
+	if (node && !strcmp(node->name(), "parameters")) {
 
+		xml_node<> * parameter = node->first_node();
+		while (parameter) {
+			// read textures resource
+			xml_attribute<> * attr = parameter->first_attribute("name");
+			char * name = attr->value();
+			attr = parameter->first_attribute("value");
+			float value = atof(attr->value());
+			parameter = parameter->next_sibling();
+			Parameters[String(name)].as<float>() = value;
+			printf("material parameter: %s  %f\n", name, value);
+		}
+	}
 	return 0;
 }
 

@@ -18,6 +18,9 @@ D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlus
 	for (int i = 0; i < NUM_FRAMES; i++) {
 		PrevFenceValue[i] = 0;
 	}
+	// init perfomence conter preq
+	QueryPerformanceFrequency(&Frequency);
+
 }
 
 
@@ -937,6 +940,13 @@ void D3D12Render::Present() {
 	// change current command context and set rootsignature
 	SwapCommandContext();
 	WaitForPreviousFrame();
+	QueryPerformanceCounter(&EndingTime);
+	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+	StartingTime = EndingTime;
+	ElapsedMicroseconds.QuadPart *= 1000000;
+	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+	sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %d", Width, Height, 1000000/ ElapsedMicroseconds.QuadPart);
+	SetWindowTextA(hWnd, WindowTitle);
 }
 
 void D3D12Render::WaitForPreviousFrame() {

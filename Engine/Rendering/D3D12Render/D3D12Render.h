@@ -104,6 +104,11 @@ namespace D3D12API {
 		UINT64 PrevFenceValue[NUM_FRAMES];
 		// barrier flushed
 		bool BarrierFlushed;
+		// windows title
+		char WindowTitle[1024];
+		// perfomence counters
+		LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+		LARGE_INTEGER Frequency;
 	public:
 		D3D12Render();
 		~D3D12Render();

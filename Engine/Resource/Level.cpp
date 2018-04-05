@@ -211,7 +211,7 @@ int Level::InitScript() {
 			MeshRenderer * render = (MeshRenderer * )Object->GetComponent(String("Renderer"));
 			Model * model = render->GetModel();
 			Physics->CreateShapeFromModel(model);
-			Object->AddComponent(Physics);
+			//Object->AddComponent(Physics);
 		}
 		if (Object->GetName() == "Lumia") {
 			PhysicsObject * Physics = new PhysicsObject(context);

@@ -21,7 +21,7 @@ int TestGen(char * File) {
 	Header.NumEntries = Num;
 	char * meshes[4] = {
 		"Mesh\\Unit.pack\\plane2\\0", 
-		"Mesh\\Unit.pack\\sks04\\0", 
+		"Mesh\\Unit.pack\\sks4\\0", 
 		"Mesh\\Unit.pack\\sphere\\0", 
 		"Mesh\\Unit.pack\\sneak\\0" 
 	};
@@ -75,7 +75,7 @@ int TestGen(char * File) {
 	LightEntry light = {};
 	ObjectEntry object = {};
 	
-	Num = 6+100;
+	Num = 6+10000;
 	Header.NumEntries = Num;
 	WriteFile(hFile, &Header, sizeof(Header), &write, 0);
 	Quaternion rot = Quaternion();
@@ -161,10 +161,10 @@ int TestGen(char * File) {
 	WriteFile(hFile, &render, sizeof(render), &write, 0);
 
 	int i = 0;
-	while (i++ < 100) {
+	while (i++ < 10000) {
 		strcpy_s(object.Name, "qianzhihe");
 		object.NumComponents = 1;
-		object.Position = Vector3(0+(i/10)*10, 5, 0+(i%10)*10);
+		object.Position = Vector3(0+(i/100)*10, 5, 0+(i%100)*10);
 		//	Quaternion rot = Quaternion();
 		rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
 		object.Rotation = rot;

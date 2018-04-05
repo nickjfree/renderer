@@ -30,7 +30,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	aiVector3D * texcoord = Mesh->mTextureCoords[0];
 	for (int i = 0; i < Mesh->mNumVertices; i++) {
 		vertex[i].position = Vector3(position[i].x, position[i].y, position[i].z);
-//		printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
+		printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
 		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].z);
 		if (tangent) {
 			vertex[i].tangent = Vector3(tangent[i].x, tangent[i].y, tangent[i].z);
@@ -47,7 +47,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 		unsigned int * indics = Mesh->mFaces[i].mIndices;
 		for (int j = 0; j < Mesh->mFaces[i].mNumIndices; j++) {
 			index[pos + j] = (WORD)indics[j];
-			printf("%d ", indics[j]);
+			//printf("%d ", indics[j]);
 		}
 	}
 	// prepare h3d structure
@@ -121,7 +121,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("sks_s.fbx");
+	DoTheImportThing("sks2.dae");
 	return 0;
 }
 

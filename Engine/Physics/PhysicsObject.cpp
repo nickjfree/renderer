@@ -9,7 +9,6 @@ USING_ALLOCATER(PhysicsObject)
 
 
 void CollisionShape::CreateFromConvexData(int Clusters, unsigned int * VNum, unsigned int * INum, float ** VBuffer, unsigned int ** IBuffer, Vector3 * Centers) {
-
 }
 
 
@@ -137,6 +136,14 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
 			}
 			Shape->Shapes.Compound = Compound;
 			model->SetUserData(Shape);
+		} 
+		else {
+			// use box shape as default shape
+			Shape = new CollisionShape();
+			AABB& aabb = model->GetMesh(0)->GetAABB();
+			Vector3& extent = aabb.InitExtents;
+			Shape->Shapes.Box = new btBoxShape(btVector3(extent.x, extent.y, extent.z));
+			CenterOffset = Vector3(0,0,0);
 		}
 	}
 }

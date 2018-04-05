@@ -88,9 +88,9 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	float d = max(max(Extend.x, Extend.y), max(Extend.x, Extend.z));
 	Box = AABB(Center, Vector3(d,d,d));
 	// calc convex hull
-#ifndef _DEBUG
-	ComputeConvexHull();
-#endif 
+//#ifndef _DEBUG
+//	ComputeConvexHull();
+//#endif 
 	return 0;
 }
 
@@ -137,7 +137,7 @@ void H3DMesh::ComputeConvexHull() {
 	// Recommended parameters: 2 100 0 0 0 0
 
 	size_t nClusters = 2;
-	double concavity = 200;
+	double concavity = 20000;
 	bool invert = false;
 	bool addExtraDistPoints = true;
 	bool addNeighboursDistPoints = false;

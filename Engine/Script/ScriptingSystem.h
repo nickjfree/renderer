@@ -25,8 +25,7 @@ private:
 	char DebugBuffer[DEBUG_BUFFER_SIZE];
 	// lua component list
 	List<Script> Scripts;
-
-
+	Vector<Script*> Destroyed;
 private:
 	// register classes
 	void InitEnvironment();

@@ -19,8 +19,19 @@ int ScriptingSystem::Update(int ms) {
 	List<Script>::Iterator Iter;
 	for (Iter = Scripts.Begin(); Iter != Scripts.End(); Iter++) {
 		Script * script = *Iter;
-		script->Update(ms);
+		if (!script->Destroyed) {
+			script->Update(ms);
+		} else {
+			Destroyed.PushBack(script);
+		}
 	}
+	// handle destroyed scripts
+	int Size = Destroyed.Size();
+	for (int i = 0; i < Size; i++) {
+		Script * script = Destroyed[i];
+		script->Remove();
+	}
+	Destroyed.Empty();
 	return 0;
 }
 
@@ -116,10 +127,12 @@ void ScriptingSystem::RunDebug(char * script) {
 }
 
 void ScriptingSystem::RegisterScript(Script * script) {
+	script->AddRef();
 	Scripts.Insert(script);
 }
 
 void ScriptingSystem::RemoveScript(Script * script) {
 	Scripts.Remove(script);
+	script->DecRef();
 }
 

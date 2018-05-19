@@ -166,8 +166,20 @@ int PhysicsSystem::Update(int ms) {
 	List<PhysicsObject>::Iterator Iter;
 	for (Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
 		PhysicsObject * obj = *Iter;
-		obj->Update(ms);
+		if (!obj->Destroyed) {
+			obj->Update(ms);
+		} else {
+			Destroyed.PushBack(obj);
+		}
 	}
+	// handle destroyed scripts
+	int Size = Destroyed.Size();
+	for (int i = 0; i < Size; i++) {
+		PhysicsObject * obj = Destroyed[i];
+		RemovePhysicsObject(obj);
+	}
+	Destroyed.Empty();
+
 #ifdef DEBUG_PHYSICS
 	// debug
 	DrawDebug();
@@ -180,6 +192,12 @@ int PhysicsSystem::Shutdown() {
 }
 
 void PhysicsSystem::AddPhysicsObject(PhysicsObject * object) {
+	object->AddRef();
 	Objects.Insert(object);
+}
+
+void PhysicsSystem::RemovePhysicsObject(PhysicsObject * object) {
+	Objects.Remove(object);
+	object->DecRef();
 }
 

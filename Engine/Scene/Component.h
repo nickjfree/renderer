@@ -20,6 +20,8 @@ class Component : public EventNode
 protected:
 	GameObject * Owner;
 public:
+	int Destroyed;
+public:
 	Component(Context * context_);
 	virtual ~Component();
 	unsigned int GetStringHash();

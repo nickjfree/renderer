@@ -147,6 +147,8 @@ public:
 			lua_pop(vm, 1);
 			// set the table to global table
 			lua_seti(vm, -2, id);
+			// add ref
+			value.AddRef();
 		}
 		// pop global table
 		lua_pop(vm, 1);
@@ -177,6 +179,8 @@ public:
 			lua_pop(vm, 1);
 			// set the table to global table
 			lua_seti(vm, -2, id);
+			// add ref
+			value->AddRef();
 		}
 		// pop global table
 		lua_pop(vm, 1);

@@ -14,6 +14,8 @@ class Scene : public GameObject
 private:
 	// gameobject container
 	List<GameObject> Objects;
+	// vector for destroyed objects
+	Vector<GameObject*> Destroyed;
 public:
 	Scene(Context * context);
 	virtual ~Scene();

@@ -60,6 +60,7 @@ public:
 	CullingObject& GetCullingObject() { return CullingObj; }
 	int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
 	void AddChild(Node * Child);
+	void Remove(Node * Child);
 	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
 	Matrix4x4& GetWorldMatrix();
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);

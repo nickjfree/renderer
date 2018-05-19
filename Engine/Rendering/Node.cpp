@@ -18,6 +18,10 @@ void Node::AddChild(Node * Child) {
 	Child->Sibling.InsertAfter(&SubNodes);
 }
 
+void Node::Remove(Node * Child) {
+	Child->Sibling.Remove();
+}
+
 
 int Node::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside) {
 	// test if we are the one

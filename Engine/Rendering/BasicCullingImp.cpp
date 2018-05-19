@@ -29,5 +29,6 @@ int BasicCullingImp::Add(RenderObject* RenderObj) {
 }
 //remove
 int BasicCullingImp::Remove(RenderObject* RenderObj) {
+	Root->Remove(RenderObj);
 	return 0;
 }

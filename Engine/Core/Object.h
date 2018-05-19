@@ -25,6 +25,7 @@ public:
 	int DecRef();
 	virtual unsigned int GetObjectId();
 	virtual void SetObjectId(unsigned int);
+	unsigned int GetRef() {return RefCount; };
 };
 
 #endif

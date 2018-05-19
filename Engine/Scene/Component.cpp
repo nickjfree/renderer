@@ -3,7 +3,7 @@
 
 USING_ALLOCATER(Component)
 
-Component::Component(Context * context_) :EventNode(context_)
+Component::Component(Context * context_):EventNode(context_),Destroyed(0)
 {
 }
 
@@ -40,6 +40,8 @@ int Component::OnTransform(GameObject * GameObj) {
 }
 
 int Component::OnDestroy(GameObject * GameObj) {
+	DisableEvent();
+	Destroyed = 1;
 	return 0;
 }
 	

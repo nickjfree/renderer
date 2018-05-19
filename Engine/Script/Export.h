@@ -20,6 +20,7 @@ BEGIN_PROXY(Level)
 	METHOD(GetModel, &Level::GetModel)
 	METHOD(GetMaterial, &Level::GetMaterial)
 	METHOD(GetScene, &Level::GetScene)
+	METHOD(ListModels, &Level::ListModels)
 END_PROXY()
 
 // proxy GameObject
@@ -41,6 +42,7 @@ BEGIN_PROXY(GameObject)
 	METHOD(Yaw, &GameObject::Yaw)
 	METHOD(Roll, &GameObject::Roll)
 	METHOD(Destroy, &GameObject::Destroy)
+	METHOD(GetRef, &GameObject::GetRef)
 END_PROXY()
 
 // Model

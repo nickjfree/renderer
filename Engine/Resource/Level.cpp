@@ -37,6 +37,7 @@ int Level::InitModel() {
 		ModelEntry * Entry = &ModelEntries[i];
 		Model * model = new Model(context);
 		model->SetMesh(GetMesh(Entry->MeshGroup[0]), 0);
+		model->SetName(Entry->Name);
 		Models.PushBack(model);
 	}
 	return 0;
@@ -77,7 +78,8 @@ int Level::InitLevel() {
 	BasicPartition * Tree = new BasicPartition(context);
 	//		Tree->Construct(CRect2D(-100.0f, -100.0f, 100.0f, 100.0f), 10);
 	scene->AddComponent(Tree);
-	Tree->SubscribeTo(scene, 300);
+	Tree->SubscribeTo(scene, EV_NODE_ADD);
+	Tree->SubscribeTo(scene, EV_NODE_REMOVE);
 	return 0;
 }
 
@@ -211,7 +213,7 @@ int Level::InitScript() {
 			MeshRenderer * render = (MeshRenderer * )Object->GetComponent(String("Renderer"));
 			Model * model = render->GetModel();
 			Physics->CreateShapeFromModel(model);
-			//Object->AddComponent(Physics);
+			Object->AddComponent(Physics);
 		}
 		if (Object->GetName() == "Lumia") {
 			PhysicsObject * Physics = new PhysicsObject(context);
@@ -253,4 +255,12 @@ void Level::Update(int ms) {
 	PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
 	//// for debug hack. this shold be done with camera scripts to set debug window view
 	Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
+}
+
+void Level::ListModels() {
+	int Size = Models.Size();
+	for (int i = 0; i < Size; i++) {
+		Model * model = Models[i];
+		printf("%d\t%s\n", i, model->GetName());
+	}
 }

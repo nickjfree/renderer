@@ -20,6 +20,7 @@ typedef struct CollisionShape {
 	};
 	// the collisionShape type
 	ShapeType Type;
+	int Shared;
 	// the shapes
 	union CollisionShapes{
 		btBoxShape * Box;
@@ -71,11 +72,15 @@ public:
 	// onattach
 	virtual int OnAttach(GameObject * GameObj);
 	// set shape
+	virtual void Clear();
+	// set shape
 	void SetCollisionShape(CollisionShape * Shape_) { Shape = Shape_;}
 	// crate shape from model
 	void CreateShapeFromModel(Model * model);
 	// on transform
 	virtual int OnTransform(GameObject * object);
+	// on destroy
+	virtual int OnDestroy(GameObject * GameObj);
 	// set type
 	void SetObjectType(PhysicsObject::Type  type);
 };

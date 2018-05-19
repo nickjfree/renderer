@@ -14,6 +14,15 @@ MeshRenderer::MeshRenderer(Context * context) : Renderer(context) {
 
 
 MeshRenderer::~MeshRenderer() {
+	// Notify partition
+	Scene * scene = Owner->GetScene();
+	Event * Evt = Event::Create();
+	Evt->EventId = EV_NODE_REMOVE;
+	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
+	SendEvent(scene, Evt);
+	Evt->Recycle();
+	// free renderObj
+	delete renderObject;
 }
 
 void MeshRenderer::Init() {
@@ -25,7 +34,7 @@ int MeshRenderer::OnAttach(GameObject * GameObj) {
 	Scene * scene = GameObj->GetScene();
 	// Notify partition
 	Event * Evt = Event::Create();
-	Evt->EventId = 300;
+	Evt->EventId = EV_NODE_ADD;
 	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
 	SendEvent(scene, Evt);
 	Evt->Recycle();

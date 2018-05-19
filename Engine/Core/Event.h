@@ -10,11 +10,22 @@
 
 
 
+/*
+	Event codes	
+*/
+#define EV_NODE_ADD    300
+#define EV_NODE_REMOVE 301
+
+
+
+
+
 #define MAX_EVENT_PARAM 4
 
 /*
   Game Event
 */
+
 
 
 

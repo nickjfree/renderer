@@ -164,12 +164,27 @@ GameObject * GameObject::CreateGameObject(char * Name) {
 }
 
 void GameObject::Destroy() {
+	if (Destroyed) {
+		return;
+	}
 	Vector<Component *>::Iterator Iter;
 	Component *Comp;
 	for (Iter = Components.Begin(); Iter != Components.End(); Iter++) {
 		Comp = (*Iter);
 		Comp->OnDestroy(this);
+		Comp->DecRef();
 	}
+	// give up children to parent
+	Parent;
+
+	LinkList<GameObject>::Iterator ChildrnnIter;
+	while(Children.Begin() != Children.End()) {
+		ChildrnnIter = Children.Begin();
+		GameObject * child = *ChildrnnIter;
+		Parent->Attach(child);
+	}
+	// remove from parent
+	Sibling.Remove();
 	Destroyed = true;
 }
 

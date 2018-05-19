@@ -36,7 +36,8 @@ private:
 	
 	// a list to keep track of all the physics objects
 	List<PhysicsObject> Objects;
-
+	// destroyed objects
+	Vector<PhysicsObject*> Destroyed;
 	// for debug window
 	Vector3 Look, Up, Right, Eye;
 	// debug window handles
@@ -60,8 +61,10 @@ public:
 	virtual int Update(int ms);
 	// shutdown 
 	virtual int Shutdown();
-	// add rigide body
+	// add physics body
 	void AddPhysicsObject(PhysicsObject * object);
+	// remove physics objects
+	void RemovePhysicsObject(PhysicsObject * object);
 	// get btworld
 	inline btDiscreteDynamicsWorld * GetWorld() { return dynamicsWorld; };
 	// set debug view

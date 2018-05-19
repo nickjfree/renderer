@@ -82,6 +82,8 @@ public:
 	Scene * GetScene() { return scene; };
 	// test method
 	void Update(int ms);
+	// list models on console
+	void ListModels();
 };
 
 #endif

@@ -14,3 +14,5 @@ destroyed_mt = {}
 destroyed_mt.__index = function (table, key)
 	error("attemped to operate on destroyed gameobject!!!")
 end
+
+

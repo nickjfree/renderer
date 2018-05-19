@@ -157,9 +157,8 @@ int Script::OnDestroy(GameObject * GameObj) {
 	lua_pop(vm, 1);
 	// reset objectid
 	ObjectId = -1;
-	// remove from script list
-	Remove();
-	// disable event
-	DisableEvent();
+	Component::OnDestroy(GameObj);
+	// dec gameobjects ref count
+	Owner->DecRef();
 	return 0;
 }

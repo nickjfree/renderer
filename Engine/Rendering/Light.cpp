@@ -8,8 +8,15 @@ Light::Light(Context * context) :Component(context)
 }
 
 
-Light::~Light()
-{
+Light::~Light() {
+	Scene * scene = Owner->GetScene();
+	Event * Evt = Event::Create();
+	Evt->EventId = EV_NODE_REMOVE;
+	Evt->EventParam[String("RenderObject")].as<RenderObject*>() = renderLight;
+	SendEvent(scene, Evt);
+	Evt->Recycle();
+	// delete the node
+	delete renderLight;
 }
 
 int Light::Load(void * Raw, Level * level) {
@@ -32,7 +39,7 @@ int Light::OnAttach(GameObject * GameObj) {
 	Scene * scene = GameObj->GetScene();
 	// Notify partition
 	Event * Evt = Event::Create();
-	Evt->EventId = 300;
+	Evt->EventId = EV_NODE_ADD;
 	Evt->EventParam[String("RenderObject")].as<RenderObject*>() = renderLight;
 	SendEvent(scene, Evt);
 	Evt->Recycle();

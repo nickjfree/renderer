@@ -14,17 +14,21 @@ BasicPartition::~BasicPartition()
 }
 
 int BasicPartition::OnAttach(GameObject * GameObj) {
-	// add quad tree to scene
-	//SceneManager->ActiveQuadTree(Tree);
 	return 0;
 }
 
 int BasicPartition::HandleEvent(Event * Evt) {
 	// test code
-	if (Evt->EventId == 300) {
+	if (Evt->EventId == EV_NODE_ADD) {
 		RenderObject * Node = Evt->EventParam[String("RenderObject")].as<RenderObject*>();
 		//Tree->AddSenceNode(Node, 0);
 		BasicCulling->Add(Node);
 	}
+	if (Evt->EventId == EV_NODE_REMOVE) {
+		RenderObject * Node = Evt->EventParam[String("RenderObject")].as<RenderObject*>();
+		//Tree->AddSenceNode(Node, 0);
+		BasicCulling->Remove(Node);
+	}
+	EventNode::HandleEvent(Evt);
 	return 0;
 }

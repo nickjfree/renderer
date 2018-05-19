@@ -19,3 +19,8 @@ int Model::SetMesh(Mesh * mesh, int Lod) {
 	Ev->Recycle();*/
 	return 0;
 }
+
+
+void Model::SetName(char * Name) {
+	strcpy_s(MeshName, Name);
+}

@@ -25,6 +25,7 @@ PhysicsObject::PhysicsObject(Context * context):Component(context), Shape(0), Ob
 
 
 PhysicsObject::~PhysicsObject() {
+	Clear();
 }
 
 int PhysicsObject::OnAttach(GameObject * GameObj) {
@@ -41,6 +42,7 @@ int PhysicsObject::OnAttach(GameObject * GameObj) {
 	if (!Shape) {
 		Shape = new CollisionShape();
 		Shape->Shapes.Box = new btBoxShape(btVector3(2, 2, 2));
+		Shape->Shared = 0;
 	}
 	MotionState = new btDefaultMotionState(transform);
 	btVector3 Inertia;
@@ -146,8 +148,24 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
 			CenterOffset = Vector3(0,0,0);
 		}
 	}
+	// this shape is shared by many physics objects
+	Shape->Shared = 1;
 }
 
 void PhysicsObject::SetObjectType(PhysicsObject::Type type) {
 	ObjectType = type;
+}
+
+void PhysicsObject::Clear() {
+	// clear all resource used by this one
+	if (!Shape->Shared) {
+		delete Shape->Shapes.Compound;
+		delete Shape;
+	}
+}
+
+int PhysicsObject::OnDestroy(GameObject * GameObj) {
+	World->removeRigidBody(rigidBody);
+	Component::OnDestroy(GameObj);
+	return 0;
 }

@@ -125,12 +125,13 @@ protected:
 	LinkList<GameObject> Children;
 	// sibling link to link children together
 	LinkList<GameObject> Sibling;
-	// listner, listening for the scenenode change event
-	Vector<EventNode *> SceneListeners;
 	// dirty flag, used for recursivelly update transform and rotation
 	bool Dirty;
+
+public:
 	// destroyed
 	bool Destroyed;
+protected:
 	// nitoce transform
 	void NotifyTransform();
 	// make dirty

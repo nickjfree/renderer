@@ -152,6 +152,8 @@ int PhysicsSystem::Initialize() {
 		//add the body to the dynamics world
 		dynamicsWorld->addRigidBody(body);
 	}
+	// register PhysicsObject
+	context->RegisterObject<PhysicsObject>();
 	// debug window
 #ifdef DEBUG_PHYSICS
 	CreateDebugWindow();

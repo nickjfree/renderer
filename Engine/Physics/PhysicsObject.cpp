@@ -162,6 +162,8 @@ void PhysicsObject::Clear() {
 		delete Shape->Shapes.Compound;
 		delete Shape;
 	}
+	delete MotionState;
+	delete rigidBody;
 }
 
 int PhysicsObject::OnDestroy(GameObject * GameObj) {

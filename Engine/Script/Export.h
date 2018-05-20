@@ -8,6 +8,7 @@
 #include "Rendering\Model.h"
 #include "Rendering\MeshRenderer.h"
 #include "Input\InputSystem.h"
+#include "Physics\PhysicsObject.h"
 
 // proxy Scene
 BEGIN_PROXY(Scene)
@@ -43,6 +44,7 @@ BEGIN_PROXY(GameObject)
 	METHOD(Roll, &GameObject::Roll)
 	METHOD(Destroy, &GameObject::Destroy)
 	METHOD(GetRef, &GameObject::GetRef)
+	METHOD(GetObjectId, &GameObject::GetObjectId)
 END_PROXY()
 
 // Model
@@ -64,6 +66,12 @@ END_PROXY()
 // Input
 BEGIN_PROXY(InputSystem)
 	METHOD(GetAction, &InputSystem::GetAction)
+END_PROXY()
+
+// Physics
+BEGIN_PROXY(PhysicsObject)
+	METHOD(CreateShapeFromModel, &PhysicsObject::CreateShapeFromModel)
+	METHOD(SetObjectType, (void (PhysicsObject::*)(int))&PhysicsObject::SetObjectType)
 END_PROXY()
 
 #endif 

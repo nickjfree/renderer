@@ -49,6 +49,7 @@ int Script::Update(int ms) {
 		printf("eror pcall: %s\n", lua_tostring(vm, -1));
 	}
 	lua_pop(vm, 2);
+	// printf("%d\n", lua_gettop(vm));
 	return 0;
 }
 

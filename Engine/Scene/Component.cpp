@@ -3,7 +3,7 @@
 
 USING_ALLOCATER(Component)
 
-Component::Component(Context * context_):EventNode(context_),Destroyed(0)
+Component::Component(Context * context_):EventNode(context_)
 {
 }
 

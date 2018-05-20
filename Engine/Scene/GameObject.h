@@ -127,10 +127,6 @@ protected:
 	LinkList<GameObject> Sibling;
 	// dirty flag, used for recursivelly update transform and rotation
 	bool Dirty;
-
-public:
-	// destroyed
-	bool Destroyed;
 protected:
 	// nitoce transform
 	void NotifyTransform();

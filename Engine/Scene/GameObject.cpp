@@ -3,12 +3,12 @@
 
 USING_ALLOCATER(GameObject)
 
-GameObject::GameObject(Context * context_) : Dirty(0), Destroyed(0), EventNode(context_) {
+GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_) {
 	Sibling.Owner = this;
 	Children.Owner = this;
 }
 
-GameObject::GameObject(Context * context_, String& Name) : Dirty(0), Destroyed(0), EventNode(context_) {
+GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_) {
 	this->Name = Name;
 	Sibling.Owner = this;
 	Children.Owner = this;

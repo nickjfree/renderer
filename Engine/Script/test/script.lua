@@ -9,6 +9,7 @@ active = false
 function on_start()
 	-- subscribe to event id 1025
 	gameobject:Subscribe(1025, "on_test")
+	gameobject:Subscribe(1026, "test_create")
 	position = gameobject:GetTranslation()
 	engine.print("on_start")
 end
@@ -19,11 +20,36 @@ function on_test()
 	active = not active
 end
 
+
+
+function test_create()
+	md=engine.level:GetModel(1)
+	mt=engine.level:GetMaterial(1)
+	g = engine.scene:CreateGameObject("test")
+	-- add renderer
+	r = engine.scene:CreateComponent("Renderer")
+	r:SetModel(md)
+	r:SetMaterial(mt)
+	p = gameobject:GetTranslation()
+	g:SetTranslation(p)
+	g:AddComponent(r)
+	-- add physics
+	py = engine.scene:CreateComponent("PhysicsObject")
+	py:CreateShapeFromModel(md)
+	g:AddComponent(py)
+	engine.print(g:GetObjectId())
+	-- g:Destroy()
+	--engine.collectgarbage()	
+end
+
+
+
 function update(ms)
-if (active ~= true)
+	if (active ~= true)
 	then
 		return
 	end
+	--test_create()
     local delta = ms * speed
 	local rad = rspeed * ms
 	-- walk 

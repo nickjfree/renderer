@@ -19,6 +19,8 @@ protected:
 	unsigned int RefCount;
 	unsigned int ObjectId;
 public:
+	int Destroyed;
+public:
 	Object(Context * context_);
 	virtual ~Object();
 	int AddRef();

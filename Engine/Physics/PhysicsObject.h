@@ -83,6 +83,8 @@ public:
 	virtual int OnDestroy(GameObject * GameObj);
 	// set type
 	void SetObjectType(PhysicsObject::Type  type);
+	// set type by int
+	void SetObjectType(int  type) { return SetObjectType(PhysicsObject::Type(type));}
 };
 
 #endif

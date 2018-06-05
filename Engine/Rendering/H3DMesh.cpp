@@ -41,6 +41,7 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 	VBuffer = Vertex;
 	VBSize = VSize;
 	this->INum = INum;
+	VTSize = H3DMesh->VertexSize;
 	IBuffer = Index;
 	// check for out off bound indices
 	for (int i = 0; i < INum; i++) {
@@ -60,10 +61,10 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	// calc AABB 
 	float minx = 0,miny = 0,minz = 0;
 	float maxx = 0,maxy = 0,maxz = 0;
-	h3d_vertex * vertex = (h3d_vertex*)VBuffer;
-	int Count = VBSize / sizeof(h3d_vertex);
+	char * vertex = (char*)VBuffer;
+	int Count = VBSize / VTSize;
 	for (int i = 0; i < Count; i++) {
-		h3d_vertex v = vertex[i];
+		h3d_vertex v = *(h3d_vertex *)(vertex + VTSize * i);
 		if (v.x > maxx) {
 			maxx = v.x;
 		}
@@ -89,7 +90,7 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	Box = AABB(Center, Vector3(d,d,d));
 	// calc convex hull
 #ifndef _DEBUG
-	ComputeConvexHull();
+	//ComputeConvexHull();
 #endif 
 	return 0;
 }
@@ -109,11 +110,12 @@ int H3DMesh::OnCreateComplete(Variant& Data) {
 void H3DMesh::ComputeConvexHull() {
 	std::vector< HACD::Vec3<HACD::Real> > points;
 	std::vector< HACD::Vec3<long> > triangles;
-	int Count = VBSize / sizeof(h3d_vertex);
+	int Count = VBSize / VTSize;
 	
 	h3d_vertex * vertices = (h3d_vertex *)VBuffer;
 	for (int i = 0; i<Count; i++) {
-		HACD::Vec3<HACD::Real> vertex(vertices[i].x, vertices[i].y, vertices[i].z);
+		h3d_vertex * vt = (h3d_vertex*)((char*)vertices + VTSize * i);
+		HACD::Vec3<HACD::Real> vertex(vt->x, vt->y, vt->z);
 		points.push_back(vertex);
 	}
 

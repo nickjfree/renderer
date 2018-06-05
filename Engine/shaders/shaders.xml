@@ -21,23 +21,44 @@
     </technique>
   </shader>
 
+  <shader name="Skinning">
+    <technique name="GBuffering">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\skin-pre.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\skin.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
+        <vs url="Shaders\shaders\skin.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="Instance">
     <technique name="GBuffering_Instance" instance="yes">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\basic-pre-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre-instance.ps"></ps>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading" instance="yes">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
         <vs url="Shaders\shaders\basic-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic-instance.ps"></ps>
+        <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
     </technique>
     <technique name="Shadow_Instance" instance="yes">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\basic-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic-instance.ps"></ps>
+        <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
     </technique>
   </shader>

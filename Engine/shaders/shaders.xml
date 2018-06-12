@@ -25,7 +25,7 @@
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\skin-pre.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <ps url="Shaders\shaders\skin-pre.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">

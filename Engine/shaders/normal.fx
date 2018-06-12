@@ -26,6 +26,16 @@ struct VS_Input_Instance
     float4x4 InstanceWV: InstanceWV;
 };
 
+struct VS_Input_Skinning
+{
+    float3 PosL  : POSITION;
+    float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD;
+    int  Bones : TEXCOORD1;
+    float3 Weight : TEXCOORD2;
+    float3 Tangent  : TANGENT;
+};
+
 struct PS_Input
 {
 	float4 PosH : SV_POSITION;
@@ -47,6 +57,18 @@ PS_Input VS(VS_Input input)
 	output.Normal = input.Normal;
 	return output;
 }
+
+
+PS_Input VS_Skinning(VS_Input input)
+{
+    PS_Input output = (PS_Input)0;
+    // Transform to homogeneous clip space.
+    output.PosH = mul(float4(input.PosL, 1.0f), gWorldViewProjection);
+    output.TexCoord = input.TexCoord;// *float2(1, -1);
+    output.Normal = input.Normal;
+    return output;
+}
+
 
 PS_Input VS_Instance(VS_Input_Instance input)
 {

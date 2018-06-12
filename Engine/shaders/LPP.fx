@@ -26,6 +26,16 @@ struct VS_Input_Instance
     float4x4 InstanceWV: InstanceWV;
 };
 
+struct VS_Input_Skinning
+{
+    float3 PosL  : POSITION;
+    float3 Normal : NORMAL;
+    float2 TexCoord : TEXCOORD;
+    int  Bones : TEXCOORD1;
+    float3 Weight : TEXCOORD2;
+    float3 Tangent  : TANGENT;
+};
+
 struct PS_Input
 {
 	float4 PosH : SV_POSITION;
@@ -79,6 +89,24 @@ PS_Input VS_LPP_Normal_Instance(VS_Input_Instance input)
 	return output;
 }
 
+PS_Input VS_LPP_Normal_Skinning(VS_Input_Skinning input)
+{
+    PS_Input output = (PS_Input)0;
+    output.PosH = mul(float4(input.PosL, 1.0f), gWorldViewProjection);
+    float4 pos = mul(float4(input.PosL,1.0f),gWorldViewMatrix);
+    output.Normal = mul(float4(input.Normal, 0), gWorldViewMatrix);
+    output.Tangent = mul(float4(input.Tangent.xyz, 0),gWorldViewMatrix);
+    output.BiNormal = float4(cross(output.Normal.xyz, output.Tangent.xyz),0);
+    output.BiNormal = normalize(output.BiNormal);
+    output.Normal = normalize(output.Normal);
+    //output.Tangent = normalize(output.Tangent);
+    output.Tangent = float4(input.Bones >> 24, input.Bones >> 16 & 0x000000ff, input.Bones >> 8 & 0x000000ff, input.Bones & 0x000000ff);
+    output.Tangent = output.Tangent/256.0f;
+    output.TexCoord = input.TexCoord;
+    output.Depth = pos.z;
+    return output;
+}
+
 PS_Output PS_LPP_Normal(PS_Input input)
 {	
 	PS_Output output = (PS_Output)0;
@@ -98,6 +126,26 @@ PS_Output PS_LPP_Normal(PS_Input input)
 	//output.Diffuse = float4(1,1,1,0);
 	output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
 	return output;
+}
+
+PS_Output PS_LPP_Normal_Skinning(PS_Input input)
+{   
+    PS_Output output = (PS_Output)0;
+    float4 normal = gNormalMap0.Sample(gSam,input.TexCoord);
+    float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
+    float4 specular = gSpecularMap0.Sample(gSam, input.TexCoord);
+    normal = normal * 2.0 - 1;
+    normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
+    normal.w = 0;
+    normal = normalize(normal);
+    //oColor = (light + 0.1);
+    normal = input.Normal * normal.z + normal.x * input.Tangent + normal.y * input.BiNormal;
+    normal = normalize(normal);
+    output.Normal.xy = EncodeNormal(normal);
+    output.Depth.x = input.Depth;
+    output.Diffuse = input.Tangent;
+    output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
+    return output;
 }
 
 #endif

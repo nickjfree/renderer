@@ -14,6 +14,7 @@
 using namespace ModelSystem::h3d;
 
 
+
 void SaveH3d(aiMesh *Mesh, char* Name)
 {
 	char FileName[256] = {};
@@ -85,6 +86,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	DWORD offset = 0;
 	DWORD write = 0;
 	vertex_skinning * vertex = new vertex_skinning[Mesh->mNumVertices];
+
 	WORD * index = new WORD[Mesh->mNumFaces * 3];
 	// conrt to h3d vertext and index
 	aiVector3D * position = Mesh->mVertices;
@@ -95,6 +97,8 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 		vertex[i].position = Vector3(position[i].x, position[i].y, position[i].z);
 		//printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
 		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].z);
+		vertex[i].bone_id = -1;
+		vertex[i].w[0] = vertex[i].w[1] = vertex[i].w[2] = 0.0f;
 		if (tangent) {
 			vertex[i].tangent = Vector3(tangent[i].x, tangent[i].y, tangent[i].z);
 		}
@@ -102,7 +106,6 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 			vertex[i].u = texcoord[i].x;
 			vertex[i].v = -texcoord[i].y;
 		}
-		vertex[i].bone_id = 0;
 	}
 	// now the index
 	for (int i = 0; i < Mesh->mNumFaces; i++) {
@@ -113,6 +116,53 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 			//printf("%d ", indics[j]);
 		}
 	}
+	// handle bone and weight
+	for (int i = 0; i < Mesh->mNumBones; i++){
+		aiBone * bone = Mesh->mBones[i];
+		for (int j = 0; j < bone->mNumWeights; j++) {
+			aiVertexWeight &weight = bone->mWeights[j];
+			// handle bone info for vertex
+			vertex_skinning &v = vertex[weight.mVertexId];
+			// find bone in this vertex
+			int matched = 0;
+			for (int b = 0; b < 4; b++) {
+				unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
+				if (bone_id == j) {
+					matched = 1;
+					break;
+				}
+			}
+			if (!matched) {
+				// a new bone, so add id to it
+				for (int b = 0; b < 4; b++) {
+					unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
+					if (bone_id == 255) {
+						unsigned mask = ~(0x000000ff << (8 * (b)));
+						v.bone_id = v.bone_id & (i << (b * 8) | mask);
+						if (b != 3) {
+							// it is not the last bone, so set weight
+							v.w[b] = weight.mWeight;
+						} else {
+							printf("vertex bone done: 0x%8x\n", v.bone_id);
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	// fix vertex with less then 4 bones
+	for (int i = 0; i < Mesh->mNumVertices;i++) {
+		vertex_skinning &v = vertex[i];
+		for (int b = 0; b < 4; b++) {
+			unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
+			if (bone_id == 255) {
+				unsigned mask = ~(0x000000ff << (8 * (b)));
+				v.bone_id = v.bone_id & (0 << (b * 8) | mask);
+			}
+		}
+	}
+
 	// prepare h3d structure
 	h3d_header header;
 	h3d_mesh mesh;
@@ -165,12 +215,16 @@ bool DoTheImportThing(const std::string& pFile) {
 	// And have it read the given file with some example postprocessing 
 	// Usually - if speed is not the most important aspect for you - you'll   
 	// propably to request more postprocessing than we do in this example.  
+	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
 	aiScene* scene = (aiScene*)importer.ReadFile(pFile,
 		aiProcess_CalcTangentSpace
 		| aiProcess_Triangulate
-	/*	| aiProcess_JoinIdenticalVertices*/
+		| aiProcess_JoinIdenticalVertices
 		| aiProcess_SortByPType 
 		| aiProcess_MakeLeftHanded
+		| aiProcess_ImproveCacheLocality
+		/*| aiProcess_PreTransformVertices*/
 		/*| aiProcess_FlipWindingOrder*/);
 	// If the import failed, report it  
 	if( !scene)  {

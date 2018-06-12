@@ -86,7 +86,7 @@ int TestGen(char * File) {
 	strcpy_s(object.Name, "Lumia");
 	object.NumComponents = 1;
 	object.Position = Vector3(0, 0, 0);
-	object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
+	object.Rotation = Quaternion();
 	object.Scale = Vector3(1, 1, 1);
 	render.MaterialIndex = 1;
 	render.ModelIndex = 1;

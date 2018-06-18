@@ -31,7 +31,7 @@ struct VS_Input_Skinning
     float3 PosL  : POSITION;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
-    int  Bones : TEXCOORD1;
+    uint  Bones : TEXCOORD1;
     float3 Weight : TEXCOORD2;
     float3 Tangent  : TANGENT;
 };
@@ -92,16 +92,61 @@ PS_Input VS_LPP_Normal_Instance(VS_Input_Instance input)
 PS_Input VS_LPP_Normal_Skinning(VS_Input_Skinning input)
 {
     PS_Input output = (PS_Input)0;
-    output.PosH = mul(float4(input.PosL, 1.0f), gWorldViewProjection);
-    float4 pos = mul(float4(input.PosL,1.0f),gWorldViewMatrix);
-    output.Normal = mul(float4(input.Normal, 0), gWorldViewMatrix);
-    output.Tangent = mul(float4(input.Tangent.xyz, 0),gWorldViewMatrix);
+    // apply matrix
+    uint4 bones = uint4(
+        input.Bones & 0x000000ff,
+        input.Bones >> 8 & 0x000000ff,  
+        input.Bones >> 16 & 0x000000ff,        
+        input.Bones >> 24      
+    );
+    float4 weights = float4(input.Weight.xyz, 0);
+    weights.w = 1.0f - (weights.x + weights.y + weights.z);
+
+
+    // do skinning
+    float4x4 mat0 = gSkinMatrix[bones.x];
+    float4x4 mat1 = gSkinMatrix[bones.y];
+    float4x4 mat2 = gSkinMatrix[bones.z];
+    float4x4 mat3 = gSkinMatrix[bones.w];
+    // float4x4 mat0 = gSkinMatrix[0];
+    // float4x4 mat1 = gSkinMatrix[0];
+    // float4x4 mat2 = gSkinMatrix[0];
+    // float4x4 mat3 = gSkinMatrix[0];
+
+    if(bones.x == 24 || bones.y == 24 || bones.z == 24 || bones.w == 24) {
+        mat0 = gSkinMatrix[24];
+        mat1 = gSkinMatrix[24];
+        mat2 = gSkinMatrix[24];
+        mat3 = gSkinMatrix[24];
+        
+    }
+
+    float4 position = float4(input.PosL, 1.0f);
+    float4 normal = float4(input.Normal, 0.0f);
+    float4 tangent = float4(input.Tangent.xyz, 0);
+
+    weights = float4(weights.x, weights.y, weights.z, weights.w);
+    position = mul(position, mat0) * weights.x + mul(position, mat1) * weights.y 
+        + mul(position, mat2) * weights.z + mul(position, mat3) * weights.w;
+
+    normal = mul(normal, mat0) * weights.x + mul(normal, mat1) * weights.y 
+        + mul(normal, mat2) * weights.z + mul(normal, mat3) * weights.w;
+    normal = normalize(normal);
+
+    tangent = mul(tangent, mat0) * weights.x + mul(tangent, mat1) * weights.y 
+        + mul(tangent, mat2) * weights.z + mul(tangent, mat3) * weights.w;
+    tangent = normalize(tangent);
+
+    output.PosH = mul(position, gWorldViewProjection);
+    float4 pos = mul(position, gWorldViewMatrix);
+    output.Normal = mul(normal, gWorldViewMatrix);
+    output.Tangent = mul(tangent, gWorldViewMatrix);
+
     output.BiNormal = float4(cross(output.Normal.xyz, output.Tangent.xyz),0);
     output.BiNormal = normalize(output.BiNormal);
     output.Normal = normalize(output.Normal);
     //output.Tangent = normalize(output.Tangent);
-    output.Tangent = float4(input.Bones >> 24, input.Bones >> 16 & 0x000000ff, input.Bones >> 8 & 0x000000ff, input.Bones & 0x000000ff);
-    output.Tangent = output.Tangent/256.0f;
+    //output.Tangent = float4(input.Bones >> 24, input.Bones >> 16 & 0x000000ff, input.Bones >> 8 & 0x000000ff, input.Bones & 0x000000ff);
     output.TexCoord = input.TexCoord;
     output.Depth = pos.z;
     return output;
@@ -143,7 +188,7 @@ PS_Output PS_LPP_Normal_Skinning(PS_Input input)
     normal = normalize(normal);
     output.Normal.xy = EncodeNormal(normal);
     output.Depth.x = input.Depth;
-    output.Diffuse = input.Tangent;
+    output.Diffuse = float4(1,1,1,1);
     output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
     return output;
 }

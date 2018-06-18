@@ -24,6 +24,7 @@
 */
 #define OP_SET_CONSTANT 0x09
 #define OP_UP_CONSTANT  0x0a
+#define OP_UP_ARRAY     0x19
 
 /*
 	render stats
@@ -31,6 +32,7 @@
 #define OP_DEPTH_STAT  0x0b
 #define OP_RASTER_STAT 0x0c
 #define OP_BLEND_STAT  0x0d
+
 
 /*
 	textures

@@ -68,3 +68,7 @@ int MeshRenderer::OnTransform(GameObject * GameObj) {
 	renderObject->SetRotation(GameObj->GetWorldRotation());
 	return 0;
 }
+
+void MeshRenderer::SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix) {
+	renderObject->SetMatrixPalette(palette, NumMatrix);
+}

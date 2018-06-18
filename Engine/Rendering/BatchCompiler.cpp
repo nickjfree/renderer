@@ -232,6 +232,16 @@ int BatchCompiler::UpdateConstant(int Slot) {
 	return sizeof(char)+sizeof(char);
 }
 
+int BatchCompiler::UpdateArray(int Slot, int Size, void * Data) {
+	*Offset++ = OP_UP_ARRAY;
+	*(unsigned char *)Offset++ = Slot;
+	*(unsigned int *)Offset = Size;
+	Offset += sizeof(int);
+	*(void**)Offset = Data;
+	Offset += sizeof(void*);
+	return sizeof(char) + sizeof(char) + sizeof(int) + sizeof(void*);
+}
+
 
 int  BatchCompiler::ClearRenderTarget() {
 	*Offset++ = OP_CLEAR_TARGET;

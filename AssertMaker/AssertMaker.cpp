@@ -7,8 +7,12 @@
 #include <assimp/scene.h>           // Output data structure
 #include <assimp/postprocess.h>     // Post processing flags
 
+
+#include "struct.h"
+
 #include "vertextype.h"
 #include "h3d.h"
+
 
 
 using namespace ModelSystem::h3d;
@@ -143,7 +147,6 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 							// it is not the last bone, so set weight
 							v.w[b] = weight.mWeight;
 						} else {
-							printf("vertex bone done: 0x%8x\n", v.bone_id);
 						}
 						break;
 					}
@@ -154,13 +157,26 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	// fix vertex with less then 4 bones
 	for (int i = 0; i < Mesh->mNumVertices;i++) {
 		vertex_skinning &v = vertex[i];
+		printf("bones: ");
+		int bone_count = 0;
 		for (int b = 0; b < 4; b++) {
 			unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
+			printf("%d ", bone_id);
 			if (bone_id == 255) {
 				unsigned mask = ~(0x000000ff << (8 * (b)));
 				v.bone_id = v.bone_id & (0 << (b * 8) | mask);
+			} else {
+				bone_count++;
 			}
 		}
+		if (bone_count < 4) {
+			// normalize	
+			float scale = 1.0f / (v.w[0] + v.w[1] + v.w[2]);
+			v.w[0] *= scale;
+			v.w[1] *= scale;
+			v.w[2] *= scale;
+		}
+		printf(" weight: %f %f %f \n", v.w[0], v.w[1], v.w[2]);
 	}
 
 	// prepare h3d structure
@@ -190,7 +206,22 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	CloseHandle(hFile);
 }
 
-
+aiNode *  FindNode(aiNode * Node, char * name) {
+		if (!strcmp(Node->mName.data, name)) {
+			return Node;
+		} else {
+			// find in children
+			int i = 0;
+			while (i < Node->mNumChildren) {
+				aiNode * retNode = FindNode(Node->mChildren[i], name);
+				if (retNode) {
+					return retNode;
+				}
+				i++;
+			}
+			return NULL;
+		}
+}
 
 void ExtractMeshToH3d(aiScene * scene)
 {
@@ -206,6 +237,87 @@ void ExtractMeshToH3d(aiScene * scene)
 			SaveH3dCharacter(scene->mMeshes[i], (char*)name);
 		}
 	}
+	// save bone data
+	DWORD write;
+	char pad = 0;
+	aiMesh *Mesh = scene->mMeshes[0];
+	BoneInfo * Bones = new BoneInfo[Mesh->mNumBones];
+	HANDLE BoneFile = CreateFileA("bone", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	for (int i = 0; i < Mesh->mNumBones; i++) {
+		aiBone * bone = Mesh->mBones[i];
+		Bones[i].name = bone->mName.data;
+		Bones[i].offsetMatrix = bone->mOffsetMatrix;
+		Bones[i].parent = -1;
+		// find parent id
+		// write parent id
+	}
+	// save parent infos
+	for (int i = 0; i < Mesh->mNumBones; i++) {
+		aiBone * bone = Mesh->mBones[i];
+		Bones[i].name = bone->mName.data;
+		Bones[i].parent = -1;
+		// find node first
+		aiNode * self = FindNode(scene->mRootNode, bone->mName.data);
+		aiNode * ParentNode = self->mParent;
+		// find parent id
+		int p = 0;
+		for (int p = 0; p < Mesh->mNumBones; p++) {
+			if (Mesh->mBones[p]->mName == ParentNode->mName) {
+				Bones[i].parent = p;
+			}
+		}
+		WriteFile(BoneFile, &Bones[i].parent, sizeof(int), &write, NULL);
+		WriteFile(BoneFile, &pad, sizeof(char) * 12, &write, NULL);
+		WriteFile(BoneFile, &Bones[i].offsetMatrix, sizeof(float) * 16, &write, NULL);
+		
+		printf("%d bone: %s %d\n", i, Mesh->mBones[i]->mName.data, Bones[i].parent);
+	}
+
+
+	//WriteFile(BoneFile, &bone->mOffsetMatrix, sizeof(float) * 16, &write, NULL);
+	CloseHandle(BoneFile);
+
+	// save test animation file
+	HANDLE AnimeFile = CreateFileA("anime", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	aiAnimation * animation = scene->mAnimations[0];
+	for (int i = 0; i < animation->mNumChannels; i++) {
+		aiString name = animation->mChannels[i]->mNodeName;
+		int BoneId = -1;
+		for (int p = 0; p < Mesh->mNumBones; p++) {
+			if (Mesh->mBones[p]->mName == name) {
+				BoneId = p;
+			}
+		}
+		// same frame 0 as test frame
+		TestFrame Frame = {};
+		if (BoneId == -1) {
+			printf("node with no bone %s\n", name.data);
+			continue;
+		}
+		int index = 0;
+		if (animation->mChannels[i]->mNumPositionKeys == 39) {
+			index = 1;
+		} else {
+			index = 0;
+		}
+		Frame.BoneId = BoneId;
+		Frame.Translation[0] = animation->mChannels[i]->mPositionKeys[index].mValue.x;
+		Frame.Translation[1] = animation->mChannels[i]->mPositionKeys[index].mValue.y;
+		Frame.Translation[2] = animation->mChannels[i]->mPositionKeys[index].mValue.z;
+		index = 0;
+		if (animation->mChannels[i]->mNumRotationKeys == 39) {
+			index = 1;
+		} else {
+			index = 0;
+		}
+		Frame.Rotation[0] = animation->mChannels[i]->mRotationKeys[index].mValue.x;
+		Frame.Rotation[1] = animation->mChannels[i]->mRotationKeys[index].mValue.y;
+		Frame.Rotation[2] = animation->mChannels[i]->mRotationKeys[index].mValue.z;
+		Frame.Rotation[3] = animation->mChannels[i]->mRotationKeys[index].mValue.w;
+
+		WriteFile(AnimeFile, &Frame, sizeof(Frame), &write, NULL);
+	}
+	CloseHandle(AnimeFile);
 }
 
 
@@ -224,6 +336,7 @@ bool DoTheImportThing(const std::string& pFile) {
 		| aiProcess_SortByPType 
 		| aiProcess_MakeLeftHanded
 		| aiProcess_ImproveCacheLocality
+		| aiProcess_LimitBoneWeights
 		/*| aiProcess_PreTransformVertices*/
 		/*| aiProcess_FlipWindingOrder*/);
 	// If the import failed, report it  

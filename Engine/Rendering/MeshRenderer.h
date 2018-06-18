@@ -43,6 +43,8 @@ public:
 	void SetMaterial(Material * material) { renderObject->SetMaterial(material); }
 	// get model
 	Model * GetModel() { return renderObject->GetModel(); }
+	// get test frame data
+	void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
 };
 
 

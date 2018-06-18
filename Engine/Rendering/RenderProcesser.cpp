@@ -18,6 +18,7 @@ RenderProcesser::RenderProcesser(RenderContext * context_) :context(context_)
 	Cmds[OP_SHADER_PS].cmd = &RenderProcesser::SetPixelShader;
 	Cmds[OP_SET_CONSTANT].cmd = &RenderProcesser::SetShaderParameter;
 	Cmds[OP_UP_CONSTANT].cmd = &RenderProcesser::UpdateConstant;
+	Cmds[OP_UP_ARRAY].cmd = &RenderProcesser::UpdateArray;
 	Cmds[OP_DEPTH_STAT].cmd = &RenderProcesser::SetDepthStencil;
 	Cmds[OP_RASTER_STAT].cmd = &RenderProcesser::SetRasterizer;
 	Cmds[OP_BLEND_STAT].cmd = &RenderProcesser::SetBlend;
@@ -235,6 +236,18 @@ int RenderProcesser::UpdateConstant(void * data){
 	return 1;
 }
 
+int RenderProcesser::UpdateArray(void * data) {
+	char * p = (char*)data;
+	char slot = *(char*)p;
+	p += 1;
+	unsigned int size = *(int*)p;
+	p += sizeof(int);
+	void * parameter = *(void **)p;
+	ip += 1 + 1 + sizeof(int) + sizeof(void*);
+	//context->SetParameter(slot, parameter, offset, size);
+	Interface->SetConstant(slot, 0, parameter, size);
+	return 1;
+}
 
 int RenderProcesser::ClearRenderTarget(void * data) {
 	//printf("%s\n", __FUNCTION__);

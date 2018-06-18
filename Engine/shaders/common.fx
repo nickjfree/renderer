@@ -77,7 +77,7 @@ cbuffer PerFrame: register(b1)
 	float4   gSampleWeights[4];
 }
 
-cbuffer Animation: register(b2)
+cbuffer ArrayAnime: register(b2)
 {
 	// animation use 128 constants buffer,bone transform,update for each object draw
 	float4x4  gSkinMatrix[128];

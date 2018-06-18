@@ -65,6 +65,8 @@ protected:
 	int SetShaderParameter(void * data);
 	// update constant
 	int UpdateConstant(void * data);
+	// update array
+	int UpdateArray(void* data);
 	// clear rendertarget
 	int ClearRenderTarget(void * data);
 	// clear depth stencial

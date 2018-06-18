@@ -81,6 +81,8 @@ public:
 	int SetViewport(float tlx, float tly, float width, float height, float minz, float maxz);
 	// update constant
 	int UpdateConstant(int Slot);
+	// update array
+	int UpdateArray(int Slot, int Size, void * Data);
 	// clear rendertarget
 	int ClearRenderTarget();
 	// clear depth stencial

@@ -32,7 +32,7 @@ public:
 	static String gSampleWeights;
 	static String gTimeElapse;
 	static String gSpecular;
-
+	static String gSkinMatrix;
 	// event string
 	static String Level;
 	static String RenderObject;

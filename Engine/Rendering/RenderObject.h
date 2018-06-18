@@ -26,6 +26,8 @@ protected:
 	unsigned int SortKeyLow;
 	// InstanceBuffer
 	unsigned char InstanceBuffer[64*4];
+	// matrix palette
+	ShaderParameterArray palette;
 public:
 	RenderObject();
 	virtual ~RenderObject();
@@ -38,6 +40,8 @@ public:
 	// get render mesh
 	virtual int GetRenderMesh(int Stage, int Lod);
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
+	// set matrix palette
+	void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
 };
 
 #endif

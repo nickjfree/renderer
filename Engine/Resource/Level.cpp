@@ -84,6 +84,9 @@ int Level::InitLevel() {
 }
 
 int Level::CreateScene() {
+	// for test
+	LoadAnime();
+
 	int Objects = GameObjects.Size();
 	for (int i = 0; i < Objects; i++) {
 		// do nothing now
@@ -223,6 +226,7 @@ int Level::InitScript() {
 			Physics->CreateShapeFromModel(model);
 			Physics->SetObjectType(PhysicsObject::KINEMATIC);
 			Object->AddComponent(Physics);
+			render->SetMatrixPalette(Palette, 52);
 		}
 		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {
 			// global light should follow camera
@@ -262,5 +266,67 @@ void Level::ListModels() {
 	for (int i = 0; i < Size; i++) {
 		Model * model = Models[i];
 		printf("%d\t%s\n", i, model->GetName());
+	}
+}
+
+void Level::LoadAnime() {
+	DWORD len;
+	HANDLE hFile = CreateFileA("bone", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+	ReadFile(hFile, bones, sizeof(BoneInfo) * 52, &len, 0);
+	CloseHandle(hFile);
+	// load 0 frame
+	hFile = CreateFileA("anime", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
+	ReadFile(hFile, Frame, sizeof(TestFrame) * 51, &len, 0);
+	CloseHandle(hFile);
+	// calculate palette
+	TestBone testbones[52];
+	for (int i = 0; i < 52; i++) {
+		Matrix4x4::Tranpose(bones[i].offsetMatrix, &testbones[i].InvertBind);
+		// get trans matrix from anime data
+		Matrix4x4 Mat;
+		Mat.Identity();
+		for (int j = 0; j < 51; j++) {
+			TestFrame &frame = Frame[j];
+			if (frame.BoneId == i) {
+				Vector3 Trans(frame.Translation[0], frame.Translation[1], frame.Translation[2]);
+				Quaternion Rot;
+				Rot.x = frame.Rotation[0];
+				Rot.y = frame.Rotation[1];
+				Rot.z = frame.Rotation[2];
+				Rot.w = frame.Rotation[3];
+				Rot.x = frame.Rotation[0];
+				Mat = Matrix4x4::FormPositionRotation(Trans, Rot);
+			}
+		}
+		testbones[i].Local = Mat;
+		testbones[i].BoneId = i;
+		testbones[i].Parent = bones[i].parent;
+		testbones[i].Updated = 0;
+	}
+
+	for (int i = 0; i < 52; i++) {
+		if (!testbones[i].Updated) {
+			// make sure parent is updated
+			int parent = testbones[i].Parent;
+			testbones[i].Global = testbones[i].Local;
+			while (parent!=-1) {
+				testbones[i].Global = testbones[i].Global * testbones[parent].Local;
+				parent = testbones[parent].Parent;
+			}
+			testbones[i].Updated = 1;
+		}
+	}
+	// print bone global position
+	for (int i = 0; i < 52; i++) {
+		Vector3 pos = Vector3(0, 0, 0) * testbones[i].Global;
+		printf("%d  %f %f %f\n", i, pos.x, pos.y, pos.z);
+	}
+
+	// save palette
+	for (int i = 0; i < 52; i++) {
+		Vector3 pos = Vector3(0, 0, 0) * testbones[i].InvertBind * testbones[i].Global;
+		printf("inv: %d  %f %f %f\n", i, pos.x, pos.y, pos.z);
+		testbones[i].Global = testbones[i].InvertBind * testbones[i].Global;
+		Matrix4x4::Tranpose(testbones[i].Global, &Palette[i]);
 	}
 }

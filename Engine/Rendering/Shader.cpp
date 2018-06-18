@@ -297,6 +297,11 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		cb.Name = (char*)Description.Name;
 		cb.Size = Description.Size;
 		cb.Slot = bind_desc.BindPoint;
+		int IsArray = 0;
+		if (!memcmp(cb.Name, "Array", 5)) {
+			IsArray = 1;
+		}
+		cb.IsArray = IsArray;
 		RenderPass->Constants.PushBack(cb);
 		for (int j = 0; j < Description.Variables; j++)  {   // Get the variable description and store it   
 			ID3D12ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
@@ -312,6 +317,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 			sp.Name = (char*)var_desc.Name;
 			sp.Size = var_desc.Size;
 			sp.Constant = (char*)cb.Name;
+			sp.IsArray = IsArray;
 			RenderPass->Parameters.PushBack(sp);
 		}
 	}
@@ -369,14 +375,21 @@ int Shader::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Material
 				ShaderParameter * parameter = &pass->Parameters[i];
 				Variant * Value = GetParameter(parameter->Name, MaterialParam, ObjectParameter, Context);
 				if (Value) {
-					Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);
+					if (!parameter->IsArray) {
+						Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);
+					} else {
+						ShaderParameterArray &Array = Value->as<ShaderParameterArray>();
+						Compiler->UpdateArray(parameter->Slot, Array.Size, Array.Data);
+					}
 				}
 			}
 			// update constants
 			int Constants = pass->Constants.Size();
 			for (int i = 0; i < Constants; i++) {
 				ConstantBuffer * cons = &pass->Constants[i];
-				Compiled += Compiler->UpdateConstant(cons->Slot);
+				if (!cons->IsArray) {
+					Compiled += Compiler->UpdateConstant(cons->Slot);
+				}
 			}
 			// shaders
 			if (pass->VS != -1)

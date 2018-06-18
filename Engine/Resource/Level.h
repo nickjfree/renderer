@@ -9,6 +9,26 @@
 #include "Container\Vector.h"
 #include "LevelDesc.h"
 
+typedef struct BoneInfo {
+	int parent;
+	Matrix4x4 offsetMatrix;
+}BoneInfo;
+
+typedef struct TestFrame {
+	int BoneId;
+	float Translation[3];
+	float Rotation[4];
+}TestFrame;
+
+typedef struct TestBone {
+	int BoneId;
+	int Parent;
+	int Updated;
+	int pad;
+	Matrix4x4 Local;
+	Matrix4x4 Global;
+	Matrix4x4 InvertBind;
+}TestBone;
 
 class GameObject;
 class Scene;
@@ -52,6 +72,12 @@ private:
 	Material * material;
 	Material * light_material;
 
+	// test data
+	BoneInfo bones[52];
+	// anime info
+	TestFrame Frame[51];
+	// palettle
+	Matrix4x4 Palette[52];
 private:
 	int InitGameObjects();
 	int InitLevel();
@@ -84,6 +110,8 @@ public:
 	void Update(int ms);
 	// list models on console
 	void ListModels();
+	// load test anime
+	void LoadAnime();
 };
 
 #endif

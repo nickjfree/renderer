@@ -64,9 +64,10 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
 	StageParameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = Tmp;
 	StageParameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
-	//StageParameter[hash_string::gSpecular].as<float>() = 0.5f;
-	// process matrix
-	// process material
+	// if has skinning matrix
+	if (palette.Size) {
+		StageParameter[hash_string::gSkinMatrix].as<ShaderParameterArray>() = palette;
+	}
 	int Compiled = 0;
 	int Instance = 0;
 	int InstanceSize = 0;
@@ -89,4 +90,10 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 		}
 	}
 	return Compiled;
+}
+
+
+void RenderObject::SetMatrixPalette(Matrix4x4 * palette_, unsigned int NumMatrix_) {
+	palette.Data = palette_;
+	palette.Size = sizeof(Matrix4x4) * NumMatrix_;
 }

@@ -28,7 +28,18 @@ typedef struct ShaderParameter{
 	unsigned int Slot;
 	// Size
 	unsigned int Size;
+	// int is array
+	int IsArray;
 }ShaderParameter;
+
+/*
+	shader parameter array
+*/
+typedef struct ShaderParameterArray {
+	unsigned int Size;
+	void * Data;
+}ShaderParameterArray;
+
 
 /*
 	constant buffers
@@ -37,6 +48,7 @@ typedef struct ConstantBuffer {
 	String Name;
 	unsigned int Size;
 	unsigned int Slot;
+	int IsArray;
 }ConstantBuffer;
 
 typedef struct TextureUnit {

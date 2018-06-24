@@ -336,7 +336,7 @@ bool DoTheImportThing(const std::string& pFile) {
 		| aiProcess_SortByPType 
 		| aiProcess_MakeLeftHanded
 		| aiProcess_ImproveCacheLocality
-		| aiProcess_LimitBoneWeights
+		/*| aiProcess_LimitBoneWeights*/
 		/*| aiProcess_PreTransformVertices*/
 		/*| aiProcess_FlipWindingOrder*/);
 	// If the import failed, report it  

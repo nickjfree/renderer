@@ -11,6 +11,7 @@ class Scene : public GameObject
 {
 	OBJECT(Scene);
 	BASEOBJECT(GameObject);
+	DECLAR_ALLOCATER(Scene);
 private:
 	// gameobject container
 	List<GameObject> Objects;

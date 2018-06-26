@@ -1,5 +1,6 @@
 #include "Scene.h"
 
+USING_ALLOCATER(Scene);
 
 Scene::Scene(Context * context) : GameObject(context) {
 	Root = this;

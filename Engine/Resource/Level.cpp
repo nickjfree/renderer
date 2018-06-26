@@ -28,8 +28,7 @@ Level::Level(Context * context): Resource(context), Loaded(0) {
 }
 
 
-Level::~Level()
-{
+Level::~Level() {
 }
 
 int Level::InitModel() {

@@ -4,6 +4,7 @@
 #include "Resource.h"
 #include "Rendering\Material.h"
 #include "Rendering\Model.h"
+#include "Animation\Animation.h"
 
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
@@ -46,6 +47,7 @@ private:
 	Vector<Mesh*> Meshs;
 	Vector<Material*> Materials;
 	Vector<Model*> Models;
+	Vector<Animation*> Animations;
 	Vector<GameObject*> GameObjects;
 
 	// test

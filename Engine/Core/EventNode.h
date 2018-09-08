@@ -39,7 +39,7 @@ class EventNode : public Object
 {
 private:
 	// a map from certain event id to Event handlers, EventBus
-	HashMap<int, List<EventNode>> EventChannel;
+	HashMap<int, List<EventNode>>  EventChannel;
 	// keep track of subscribers and publishers
 	LinkList<EventRegistry> Subscribers;
 	LinkList<EventRegistry> Publishers;

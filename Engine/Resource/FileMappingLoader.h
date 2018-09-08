@@ -26,7 +26,7 @@ typedef struct FileMapping
 	HANDLE         hMapping;
 	void *         Data;
 	FileEntry *   Entry;
-	char *         FileName;
+	char          FileName[256];
 }FileMapping;
 
 

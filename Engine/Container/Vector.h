@@ -37,7 +37,6 @@ public:
 			}
 	};
 private:
-	int Resize(int NewSize);
 	void Append();
 	void Clear();
 public:
@@ -45,6 +44,7 @@ public:
 	virtual ~Vector() { Clear(); };
 	Vector(Vector&);
 	int Size() { return ItemSize; };
+	int Resize(int NewSize);
 	T& operator [](int Index);
 	void operator = (Vector&);
 	int PushBack(T& Item);

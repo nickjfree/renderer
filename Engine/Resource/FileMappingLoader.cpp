@@ -16,7 +16,7 @@ void * FileMappingLoader::GetMappingBase(char * FileName)
 	FileMapping * Mapping = NULL;
 	for(int i = 0;i < MAX_PACK_MAPPING;i++)
 	{
-		if(m_Mapping[i].FileName && !strcmp(m_Mapping[i].FileName,FileName) && m_Mapping[i].Ref)
+		if(m_Mapping[i].FileName && !strcmp(m_Mapping[i].FileName, FileName) && m_Mapping[i].Ref)
 		{
 			m_Mapping[i].Ref++;
 			MapMutex.Release();
@@ -29,7 +29,7 @@ void * FileMappingLoader::GetMappingBase(char * FileName)
 		}
 	}	
 	// the file is't mapped
-	Mapping->FileName = FileName;
+	strcpy_s(Mapping->FileName, FileName);
 	Mapping->hFile =  CreateFileA(FileName,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,NULL,NULL);
 	Mapping->hMapping = CreateFileMapping(Mapping->hFile,NULL,PAGE_READONLY,0,0,NULL);
 	if(Mapping->hMapping == INVALID_HANDLE_VALUE)

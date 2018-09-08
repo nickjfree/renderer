@@ -7,10 +7,12 @@ USING_ALLOCATER(EventRegistry);
 
 
 EventNode::EventNode(Context * context_) :Object(context_) {
+	/*EventChannel = new HashMap<int, List<EventNode>>();*/
 }
 
 
 EventNode::~EventNode() {
+	/*delete EventChannel;*/
 }
 
 

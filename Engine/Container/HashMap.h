@@ -3,6 +3,8 @@
 
 
 #include "../Core/Allocater.h"
+#include "../Container/Vector.h"
+
 /*
   HashMap
 */
@@ -37,7 +39,7 @@ public:
 	};
 private:
 	Allocater<KeyValue> Alloc;
-	KeyValue Entry[HashSize];
+	Vector<KeyValue> Entry;
 	int Mask;
 	int Size;
 
@@ -57,6 +59,7 @@ private:
 
 public:
 	HashMap() {
+		Entry.Resize(HashSize);
 		for (int i = 0; i < HashSize; i++) {
 			Entry[i].Next = Entry[i].Prev = &Entry[i];
 			Entry[i].Key = K();

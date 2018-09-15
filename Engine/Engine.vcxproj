@@ -223,7 +223,7 @@ BulletCollision.lib BulletDynamics.lib LinearMath.lib %(AdditionalOptions)</Addi
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;DEBUG_PHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;E:\DirectX11\DirectXTK\Inc;E:\bullet3-2.86.1\src;E:\bullet3-2.86.1\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -239,6 +239,14 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Animation\Animation.h" />
+    <ClInclude Include="Animation\AnimationCache.h" />
+    <ClInclude Include="Animation\AnimationClip.h" />
+    <ClInclude Include="Animation\AnimationStage.h" />
+    <ClInclude Include="Animation\AnimationSystem.h" />
+    <ClInclude Include="Animation\AnimationTrack.h" />
+    <ClInclude Include="Animation\Animator.h" />
+    <ClInclude Include="Animation\Skeleton.h" />
     <ClInclude Include="Container\Dict.h" />
     <ClInclude Include="Container\HashIndex.h" />
     <ClInclude Include="Container\HashMap.h" />
@@ -271,6 +279,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="IO\Deserializer.h" />
     <ClInclude Include="Math\Collision.h" />
     <ClInclude Include="Math\LinearMath.h" />
+    <ClInclude Include="Misc\h3d\h3d.h" />
     <ClInclude Include="Physics\GLDebuger\GLDebugDrawer.h" />
     <ClInclude Include="Physics\GLDebuger\GLDebugFont.h" />
     <ClInclude Include="Physics\GLDebuger\GlutStuff.h" />
@@ -361,6 +370,14 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Tasks\WorkQueue.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Animation\Animation.cpp" />
+    <ClCompile Include="Animation\AnimationCache.cpp" />
+    <ClCompile Include="Animation\AnimationClip.cpp" />
+    <ClCompile Include="Animation\AnimationStage.cpp" />
+    <ClCompile Include="Animation\AnimationSystem.cpp" />
+    <ClCompile Include="Animation\AnimationTrack.cpp" />
+    <ClCompile Include="Animation\Animator.cpp" />
+    <ClCompile Include="Animation\Skeleton.cpp" />
     <ClCompile Include="Container\Dict.cpp" />
     <ClCompile Include="Container\HashIndex.cpp" />
     <ClCompile Include="Core\Context.cpp" />

@@ -108,20 +108,8 @@ PS_Input VS_LPP_Normal_Skinning(VS_Input_Skinning input)
     float4x4 mat1 = gSkinMatrix[bones.y];
     float4x4 mat2 = gSkinMatrix[bones.z];
     float4x4 mat3 = gSkinMatrix[bones.w];
-    // float4x4 mat0 = gSkinMatrix[0];
-    // float4x4 mat1 = gSkinMatrix[0];
-    // float4x4 mat2 = gSkinMatrix[0];
-    // float4x4 mat3 = gSkinMatrix[0];
 
-    if(bones.x == 24 || bones.y == 24 || bones.z == 24 || bones.w == 24) {
-        mat0 = gSkinMatrix[24];
-        mat1 = gSkinMatrix[24];
-        mat2 = gSkinMatrix[24];
-        mat3 = gSkinMatrix[24];
-        
-    }
-
-    float4 position = float4(input.PosL, 1.0f);
+	float4 position = float4(input.PosL, 1.0f);
     float4 normal = float4(input.Normal, 0.0f);
     float4 tangent = float4(input.Tangent.xyz, 0);
 

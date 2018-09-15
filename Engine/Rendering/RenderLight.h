@@ -24,7 +24,7 @@ private:
 	// shadow cast
 	int ShadowCast;
 	// light camera
-	RenderingCamera LightCamera;
+	RenderingCamera * LightCamera;
 	int LightType;
 	enum {
 		POINT,

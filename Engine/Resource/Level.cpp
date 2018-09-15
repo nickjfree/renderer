@@ -17,8 +17,10 @@
 #include "Core\StringTable.h"
 
 #include "Script\Script.h"
-
 #include "Physics\PhysicsObject.h"
+#include "Animation\Animator.h"
+#include "Animation\AnimationClip.h"
+#include "Animation\Skeleton.h"
 
 
 USING_ALLOCATER(Level);
@@ -132,7 +134,7 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	offset += sizeof(LevelHeader);
 	ObjectEntries = (ObjectEntry *)offset;
 	// dependency count
-	DepCount = NumMeshes + NumMaterials;
+	DepCount = NumMeshes + NumMaterials + 1 + 1;  // add 1 skeleton for test
 	return 0;
 }
 
@@ -141,6 +143,8 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	Variant Param;
 	Mesh * empty_mesh = 0;
 	Material * empty_material = 0;
+	Skeleton * empty_skeleton = 0;
+	Animation * empty_animation = 0;
 	// submit resource creation task
 	for (int i = 0; i < NumMeshes; i++) {
 		Param.as<int>() = i;
@@ -153,6 +157,14 @@ int Level::OnCreateComplete(Variant& Parameter) {
 		Materials.PushBack(empty_material); // init material vector to zero
 		Cache->AsyncLoadResource(String(MaterialEntries[i].Url), this, Param);
 	}
+	// for test submiting skeletion loading task
+	Param.as<int>() = 0;
+	Skeletons.PushBack(empty_skeleton);
+	Cache->AsyncLoadResource(String("Skeleton\\skeletons\\human.hsk"), this, Param);
+	// for test submiting animation loading task
+	Param.as<int>() = 0;
+	Animations.PushBack(empty_animation);
+	Cache->AsyncLoadResource(String("Animation\\keyframe\\human.ha"), this, Param);
 	return 0;
 }
 
@@ -167,6 +179,16 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 	if (resource->ResourceType == R_MATERIAL) {
 		printf("finish  material %s\n", (char*)resource->GetUrl());
 		Materials[Index] = (Material*)resource;
+		DepCount--;
+	}
+	if (resource->ResourceType == R_SKELETON) {
+		printf("finish  skeleton %s\n", (char*)resource->GetUrl());
+		Skeletons[Index] = (Skeleton *)resource;
+		DepCount--;
+	}
+	if (resource->ResourceType == R_ANIMATION) {
+		printf("finish  animation %s\n", (char*)resource->GetUrl());
+		Animations[Index] = (Animation*)resource;
 		DepCount--;
 	}
 	if (!DepCount) {
@@ -225,6 +247,13 @@ int Level::InitScript() {
 			Physics->CreateShapeFromModel(model);
 			Physics->SetObjectType(PhysicsObject::KINEMATIC);
 			Object->AddComponent(Physics);
+			// set animation component
+			Animator * animator = new Animator(context);
+			Animation * animetion = GetAnimation(0);
+			Skeleton * skeleton = GetSkeleton(0);
+			animator->SetSkeleton(skeleton);
+			animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 0.1f);
+			Object->AddComponent(animator);
 			render->SetMatrixPalette(Palette, 52);
 		}
 		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {

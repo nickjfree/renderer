@@ -44,7 +44,7 @@ public:
 	virtual ~Vector() { Clear(); };
 	Vector(Vector&);
 	int Size() { return ItemSize; };
-	int Resize(int NewSize);
+	int Resize(int NewSize, int Fill=0);
 	T& operator [](int Index);
 	void operator = (Vector&);
 	int PushBack(T& Item);
@@ -71,7 +71,7 @@ public:
 
 
 template <class T>
-int Vector<T>::Resize(int NewSize) {
+int Vector<T>::Resize(int NewSize, int Fill) {
 	if (NewSize > Capacity) {
 		T * newData = new T[NewSize];
 		for (int i = 0; i < ItemSize; i++) {
@@ -82,6 +82,9 @@ int Vector<T>::Resize(int NewSize) {
 		Data = newData;
 		Capacity = NewSize;
 		Resized++;
+	}
+	if (Fill) {
+		ItemSize = NewSize;
 	}
 	return NewSize;
 }

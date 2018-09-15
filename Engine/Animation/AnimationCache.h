@@ -2,14 +2,14 @@
 #define __ANIMATION_CACH__
 
 #include "Skeleton.h"
-#include "AnimationClip.h"
-
+#include "AnimationTrack.h"
 
 class AnimationCache {
 	
 	DECLAR_ALLOCATER(AnimationCache);
 	DECLAR_RECYCLE(AnimationCache);
-private:
+
+public:
 	// interpolated result
 	Vector<KeyFrame> Result;
 	// previous key frame
@@ -20,6 +20,7 @@ public:
 	AnimationCache();
 	~AnimationCache();
 	// genaration matrix palette
+	void GeneratePalette(Skeleton * skeleton);
 
 };
 

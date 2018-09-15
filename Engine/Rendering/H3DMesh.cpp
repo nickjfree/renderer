@@ -139,7 +139,7 @@ void H3DMesh::ComputeConvexHull() {
 	// Recommended parameters: 2 100 0 0 0 0
 
 	size_t nClusters = 2;
-	double concavity = 20000;
+	double concavity = 200000;
 	bool invert = false;
 	bool addExtraDistPoints = true;
 	bool addNeighboursDistPoints = false;

@@ -11,11 +11,11 @@
 class HashIndex
 {
 private:
+	int * HashEntry;
+	int * IndexEntry;
 	int HashSize;
 	int IndexSize;
 	int HashMask;
-	int * HashEntry;
-	int * IndexEntry;
 public:
 	HashIndex();
 	HashIndex(int HashSize, int IndexSize);

@@ -8,6 +8,7 @@
 #include "Rendering\Texture.h"
 #include "Rendering\Shader.h"
 #include "Resource\Level.h"
+#include "Animation\Skeleton.h"
 
 
 
@@ -130,6 +131,8 @@ int ResourceCache::Initialize() {
 	RegisterResource<Material>();
 	RegisterResource<Texture>();
 	RegisterResource<Shader>();
+	RegisterResource<Skeleton>();
+	RegisterResource<Animation>();
 	// register resource loader
 	RegisterLoader<FileMappingLoader>();
 	RegisterLoader<FileLoader>();

@@ -8,6 +8,7 @@
 #include "Script\ScriptingSystem.h"
 #include "Input\InputSystem.h"
 #include "Physics\PhysicsSystem.h"
+#include "Animation\AnimationSystem.h"
 
 
 Engine::Engine()
@@ -40,6 +41,8 @@ int Engine::InitSubsystems() {
 	InputSystem * Input = context->RegisterSubsystem<InputSystem>();
 	// physics
 	PhysicsSystem * Physics = context->RegisterSubsystem<PhysicsSystem>();
+	// animation
+	AnimationSystem * Anime = context->RegisterSubsystem<AnimationSystem>();
 	// more post tasks
 	Render->PreloadingResource();
 	return 0;
@@ -52,8 +55,10 @@ int Engine::Update(int ms) {
 	ScriptingSystem * Script = context->GetSubsystem<ScriptingSystem>();
 	InputSystem * Input = context->GetSubsystem<InputSystem>();
 	PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
+	AnimationSystem * Anime = context->GetSubsystem<AnimationSystem>();
 	Queue->Update(ms);
 	Level->Update(ms);
+	Anime->Update(ms);
 	Physics->Update(ms);
 	Script->Update(ms);
 	Render->Update(ms);

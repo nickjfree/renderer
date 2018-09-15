@@ -39,6 +39,9 @@ typedef struct h3d_header
 	int    MeshNum;
 }h3d_header;
 
+//12
+
+
 typedef struct h3d_vertex
 {
 	float x, y, z;
@@ -49,6 +52,48 @@ typedef struct h3d_vertex
 }h3d_vertex;
 
 //12
+
+typedef struct hb_header
+{
+	DWORD Magic;
+	DWORD Version;
+	int NumBones;
+}hb_header;
+
+typedef struct hb_bone {
+	unsigned char parent;
+    float m00, m01, m02, m03;
+	float m10, m11, m12, m13;
+	float m20, m21, m22, m23;
+	float m30, m31, m32, m33;
+	char name[32];
+}hb_bone;
+
+typedef struct ha_header
+{
+	DWORD Magic;
+	DWORD Version;
+	int NumFrames;
+	int NumChannels;
+	int NumClips;
+	DWORD OffsetFrames;
+}ha_header;
+
+typedef struct ha_clip
+{
+	int start, end;
+	bool looped;
+	char name[16];
+}ha_clip;
+
+typedef struct ha_frame {
+	unsigned char bone_id;
+	double time;
+	float tx, ty, tz;
+	float rx, ry, rz, rw;
+}ha_frame;
+
+
 
 #pragma pack()
 

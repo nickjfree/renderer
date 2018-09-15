@@ -22,11 +22,14 @@ RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 
 	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
 	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(0,0);
 	Parameter[hash_string::gLightViewProjection].as<Matrix4x4>() = InitMatrix;
+	// lightCamera
+	LightCamera = new RenderingCamera();
 }
 
 
 RenderLight::~RenderLight()
 {
+	delete LightCamera;
 }
 
 void RenderLight::SetLightType(int Type) {
@@ -64,13 +67,13 @@ void RenderLight::SetShadowMap(int id) {
 
 RenderingCamera * RenderLight::GetLightCamera() {
 	Matrix4x4 Projection = Matrix4x4::PerspectiveFovLH(0.25f * 3.1415926f, 1.0f, 1, Radius);
-	LightCamera.FromLight(Position, Rotation, Projection);
-	return &LightCamera;
+	LightCamera->FromLight(Position, Rotation, Projection);
+	return LightCamera;
 }
 
 
 void RenderLight::UpdateLightView() {
-	Matrix4x4::Tranpose(LightCamera.GetViewProjection(), &Parameter[hash_string::gLightViewProjection].as<Matrix4x4>());
+	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &Parameter[hash_string::gLightViewProjection].as<Matrix4x4>());
 }
 
 int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){

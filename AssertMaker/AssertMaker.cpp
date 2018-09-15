@@ -82,7 +82,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	CloseHandle(hFile);
 }
 
-void SaveH3dCharacter(aiMesh *Mesh, char* Name)
+void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 {
 	char FileName[256] = {};
 	sprintf(FileName, "%s_character.h3d", Name);
@@ -123,6 +123,10 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	// handle bone and weight
 	for (int i = 0; i < Mesh->mNumBones; i++){
 		aiBone * bone = Mesh->mBones[i];
+		int bone_index = 0;
+		while (strcmp(Bones[bone_index].name, bone->mName.data)) {
+			bone_index++;
+		}
 		for (int j = 0; j < bone->mNumWeights; j++) {
 			aiVertexWeight &weight = bone->mWeights[j];
 			// handle bone info for vertex
@@ -131,7 +135,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 			int matched = 0;
 			for (int b = 0; b < 4; b++) {
 				unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
-				if (bone_id == j) {
+				if (bone_id == bone_index) {
 					matched = 1;
 					break;
 				}
@@ -142,7 +146,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 					unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
 					if (bone_id == 255) {
 						unsigned mask = ~(0x000000ff << (8 * (b)));
-						v.bone_id = v.bone_id & (i << (b * 8) | mask);
+						v.bone_id = v.bone_id & (bone_index << (b * 8) | mask);
 						if (b != 3) {
 							// it is not the last bone, so set weight
 							v.w[b] = weight.mWeight;
@@ -157,11 +161,11 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	// fix vertex with less then 4 bones
 	for (int i = 0; i < Mesh->mNumVertices;i++) {
 		vertex_skinning &v = vertex[i];
-		printf("bones: ");
+		//printf("bones: ");
 		int bone_count = 0;
 		for (int b = 0; b < 4; b++) {
 			unsigned int bone_id = (v.bone_id >> (b * 8)) & 0x000000ff;
-			printf("%d ", bone_id);
+			//printf("%d ", bone_id);
 			if (bone_id == 255) {
 				unsigned mask = ~(0x000000ff << (8 * (b)));
 				v.bone_id = v.bone_id & (0 << (b * 8) | mask);
@@ -176,14 +180,14 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 			v.w[1] *= scale;
 			v.w[2] *= scale;
 		}
-		printf(" weight: %f %f %f \n", v.w[0], v.w[1], v.w[2]);
+		//printf(" weight: %f %f %f \n", v.w[0], v.w[1], v.w[2]);
 	}
 
 	// prepare h3d structure
 	h3d_header header;
 	h3d_mesh mesh;
 	h3d_bone bone;
-	header.Magic = (DWORD)H3DMAGIC;
+	header.Magic = *(DWORD*)H3DMAGIC;
 	header.MeshNum = 1;
 	header.Version = 0x01;
 	WriteFile(hFile, &header, sizeof(header), &write, NULL);
@@ -206,7 +210,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name)
 	CloseHandle(hFile);
 }
 
-aiNode *  FindNode(aiNode * Node, char * name) {
+aiNode * FindNode(aiNode * Node, char * name) {
 		if (!strcmp(Node->mName.data, name)) {
 			return Node;
 		} else {
@@ -234,7 +238,7 @@ void ExtractMeshToH3d(aiScene * scene)
 			printf("extracting mesh %s\n", name);
 			// save to files
 			//SaveH3d(scene->mMeshes[i], (char*)name);
-			SaveH3dCharacter(scene->mMeshes[i], (char*)name);
+			// SaveH3dCharacter(scene->mMeshes[i], (char*)name);
 		}
 	}
 	// save bone data
@@ -321,6 +325,136 @@ void ExtractMeshToH3d(aiScene * scene)
 }
 
 
+void BFSBones(BoneEntry * entries, aiNode * node, aiMesh * mesh) {
+	// store bones in bfs order into entries
+	
+	// queue
+	NodeData queue[256];
+	int rear = 0;
+	int head = 0;
+	BoneEntry * entry_ptr = entries;
+	int partent = -1;
+	// push root
+	NodeData RootData;
+	RootData.Node = node;
+	RootData.parent = partent;
+	// push queue
+	queue[head++] = RootData;
+	// BFS loop
+	while (rear < head) {
+		NodeData &data = queue[rear++];
+		aiNode * node = data.Node;
+		// check if current node is a bone
+		for (int i = 0; i < mesh->mNumBones; i++) {
+			aiBone * bone = mesh->mBones[i];
+			if (bone->mName == node->mName) {
+				// current node is a bone, save it to entries
+				strcpy_s(entry_ptr->name, bone->mName.data);
+				entry_ptr->offsetMatrix = bone->mOffsetMatrix;
+				entry_ptr->parent = data.parent;
+				partent = entry_ptr - entries;
+				entry_ptr++;
+				break;
+			}
+		}
+		// handle children
+		for (int i = 0; i < node->mNumChildren; i++) {
+			aiNode * child = node->mChildren[i];
+			NodeData ChildData;
+			ChildData.Node = child;
+			ChildData.parent = partent;
+			// push children into queue
+			queue[head++] = ChildData;
+		}
+	}
+}
+
+
+
+void ExtractAnimeMesh(aiScene * scene) {
+	// assume there is only one mesh
+	aiMesh *Mesh = scene->mMeshes[0];
+	// load bones and sort bones:  parent < children
+	BoneEntry * Bones = new BoneEntry[Mesh->mNumBones];
+	BFSBones(Bones, scene->mRootNode, Mesh);
+	// save the bone data
+	hb_header bone_header;
+	bone_header.Magic = *(DWORD*)"HUBO";
+	bone_header.Version = 0x01;
+	bone_header.BoneNum = Mesh->mNumBones;
+	HANDLE hBone = CreateFileA("bone.hsk", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	DWORD write;
+	WriteFile(hBone, &bone_header, sizeof(hb_header), &write, NULL);
+	for (int i = 0; i < Mesh->mNumBones; i++) {
+		BoneEntry &Bone = Bones[i];
+		// show bones
+		printf("bone %s parent: %d\n", Bone.name, Bone.parent);
+		WriteFile(hBone, &Bone, sizeof(BoneEntry), &write, NULL);
+	}
+	CloseHandle(hBone);
+	// process animation data
+	ha_header anime_header;
+	anime_header.Magic = *(DWORD*)"HUAN";
+	anime_header.Version = 0x01;
+	anime_header.NumChannels = 0;
+	anime_header.FrameNum = 0;
+	anime_header.NumClips = 1;
+	anime_header.OffsetFrames = sizeof(ha_header) + sizeof(ha_clip) * anime_header.NumClips;
+	HANDLE hAnime = CreateFileA("anime.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	WriteFile(hAnime, &anime_header, sizeof(ha_header), &write, NULL);
+	// write clips info
+	ha_clip clip;
+	clip.start = 1;
+	clip.end = 38;
+	strcpy_s(clip.name, "walk");
+	clip.looped = 1;
+	WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);
+	// write frames
+	aiAnimation * animation = scene->mAnimations[0];
+	for (int i = 0; i < animation->mNumChannels; i++) {
+		aiString name = animation->mChannels[i]->mNodeName;
+		int BoneId = -1;
+		for (int p = 0; p < Mesh->mNumBones; p++) {
+			if (!strcmp(Bones[p].name, name.data)) {
+				BoneId = p;
+			}
+		}
+		if (BoneId == -1) {
+			printf("node with no bone %s, with frames %d\n", name.data, animation->mChannels[i]->mNumPositionKeys);
+			continue;
+		}
+		// assume each joint has the same amount of key frames
+		anime_header.FrameNum = animation->mChannels[i]->mNumPositionKeys;
+		printf("node frames %d  bone_id %d\n", anime_header.FrameNum, BoneId);
+		anime_header.NumChannels++;
+
+		float time_scale = 1000.0f/animation->mTicksPerSecond;
+
+		for (int index = 0; index < anime_header.FrameNum; index++) {
+			ha_frame frame;
+			frame.time = animation->mChannels[i]->mPositionKeys[index].mTime * time_scale;
+			frame.bone_id = BoneId;
+			frame.tx = animation->mChannels[i]->mPositionKeys[index].mValue.x;
+			frame.ty = animation->mChannels[i]->mPositionKeys[index].mValue.y;
+			frame.tz = animation->mChannels[i]->mPositionKeys[index].mValue.z;
+			frame.rx = animation->mChannels[i]->mRotationKeys[index].mValue.x;
+			frame.ry = animation->mChannels[i]->mRotationKeys[index].mValue.y;
+			frame.rz = animation->mChannels[i]->mRotationKeys[index].mValue.z;
+			frame.rw = animation->mChannels[i]->mRotationKeys[index].mValue.w;
+			WriteFile(hAnime, &frame, sizeof(ha_frame), &write, NULL);
+		}
+	}
+	// rewrite the header
+	SetFilePointer(hAnime, 0, 0, FILE_BEGIN);
+	printf("total channels %d, total bones %d\n", anime_header.NumChannels, Mesh->mNumBones);
+	WriteFile(hAnime, &anime_header, sizeof(ha_header), &write, NULL);
+	CloseHandle(hAnime);
+	// SaveH3dCharacter
+	SaveH3dCharacter(Mesh, "", Bones);
+}
+
+
+
 bool DoTheImportThing(const std::string& pFile) {
 	// Create an instance of the Importer class  
 	Assimp::Importer importer;
@@ -345,7 +479,8 @@ bool DoTheImportThing(const std::string& pFile) {
 		return false;  
 	}  // Now we can access the file's contents.   
 	printf("scene load success\n");
-	ExtractMeshToH3d(scene);
+	//ExtractMeshToH3d(scene);
+	ExtractAnimeMesh(scene);
 	// We're done. Everything will be cleaned up by the importer destructor  
 	return true;
 }

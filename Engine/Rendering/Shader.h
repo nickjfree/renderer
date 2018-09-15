@@ -36,8 +36,8 @@ typedef struct ShaderParameter{
 	shader parameter array
 */
 typedef struct ShaderParameterArray {
-	unsigned int Size;
 	void * Data;
+	unsigned int Size;
 }ShaderParameterArray;
 
 

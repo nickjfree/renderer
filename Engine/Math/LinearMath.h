@@ -86,7 +86,7 @@ __declspec(align(16)) struct Vector3 {
 		};
 	};
 
-	Vector3():x(0), y(0), z(0), w(0) {
+	Vector3():x(0), y(0), z(0), w(1) {
 	}
 
 	Vector3(float x_, float y_, float z_) {
@@ -142,8 +142,11 @@ __declspec(align(16)) struct Vector3 {
 		return XMVectorGetX(XMVector3LengthSq(vector));
 	}
 
-
-
+	inline static Vector3 Lerp(Vector3& lh, Vector3& rh, float a) {
+		Vector3 Result;
+		Result.vector = XMVectorLerp(lh.vector, rh.vector, a);
+		return Result;
+	}
 
 
 	/*
@@ -169,6 +172,13 @@ __declspec(align(16)) struct Quaternion {
 		quaternion = XMQuaternionIdentity();
 	}
 
+	Quaternion(float x, float y, float z, float w) {
+		this->x = x;
+		this->y = y;
+		this->z = z;
+		this->w = w;
+	}
+
 	void RotationYawPitchRoll(float Pitch, float Yaw, float Roll) {
 		quaternion = XMQuaternionRotationRollPitchYaw(Pitch, Yaw, Roll);
 	}
@@ -179,6 +189,13 @@ __declspec(align(16)) struct Quaternion {
 		result.quaternion = XMQuaternionNormalize(result.quaternion);
 		return result;
 	}
+
+	inline static Quaternion Slerp(Quaternion& lh, Quaternion& rh, float a) {
+		Quaternion Result;
+		Result.quaternion = XMQuaternionSlerp(lh.quaternion, rh.quaternion, a);
+		return Result;
+	}
+
 
 	void RotationNormal(Vector3& Normal, float angle) {
 		quaternion = XMQuaternionRotationNormal(Normal.vector, angle);
@@ -197,6 +214,17 @@ __declspec(align(16)) struct Matrix4x4 {
 
 	Matrix4x4() {
 		matrix = XMMatrixIdentity();
+	}
+
+	Matrix4x4(float m00, float m01, float m02, float m03,
+		      float m10, float m11, float m12, float m13,
+			  float m20, float m21, float m22, float m23,
+			  float m30, float m31, float m32, float m33) 
+	{
+		matrix = XMMATRIX(m00, m01, m02, m03,
+						  m10, m11, m12, m13,
+				          m20, m21, m22, m23,
+				          m30, m31, m32, m33);
 	}
 
 	Matrix4x4 operator * (Matrix4x4& rh) {

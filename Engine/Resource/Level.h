@@ -5,6 +5,7 @@
 #include "Rendering\Material.h"
 #include "Rendering\Model.h"
 #include "Animation\Animation.h"
+#include "Animation\Skeleton.h"
 
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
@@ -48,6 +49,8 @@ private:
 	Vector<Material*> Materials;
 	Vector<Model*> Models;
 	Vector<Animation*> Animations;
+	Vector<Skeleton*> Skeletons;
+	// game objects
 	Vector<GameObject*> GameObjects;
 
 	// test
@@ -104,6 +107,10 @@ public:
 	Model * GetModel(int Index) { return Models[Index]; };
 	// get material
 	Material * GetMaterial(int Index) { return Materials[Index]; };
+	// get skeleton
+	Skeleton * GetSkeleton(int Index) { return Skeletons[Index]; };
+	// get animaton
+	Animation * GetAnimation(int Index) { return Animations[Index]; };
 	// get all gameobjects
 	Vector<GameObject *> & GetGameObjects() { return GameObjects; };
 	// get scene

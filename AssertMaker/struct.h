@@ -12,6 +12,19 @@ typedef struct BoneInfo {
 	aiMatrix4x4 offsetMatrix;
 }BoneInfo;
 
+
+typedef struct BoneEntry {
+	unsigned char parent;
+	aiMatrix4x4 offsetMatrix;
+	char name[32];
+}BoneEntry;
+
+typedef struct NodeData {
+	aiNode * Node;
+	int parent;
+}NodeData;
+
+
 typedef struct TestFrame {
 	int BoneId;
 	float Translation[3];

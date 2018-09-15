@@ -4,15 +4,17 @@
 #include "Math\LinearMath.h"
 #include "Container\Vector.h"
 
+class Animation;
+
 /*
 	keyframe of a bone/node
 */
 typedef struct KeyFrame {
-	int BoneId;
-	int Time;
 	Vector3 Translation;
 	Quaternion Rotation;
 	float Scale;
+	int BoneId;
+	float Time;
 }KeyFrame;
 
 
@@ -21,11 +23,16 @@ typedef struct KeyFrame {
 */
 class AnimationTrack {
 
+	friend Animation;
+
 private:
 	Vector<KeyFrame> Frames;
 public:
 	AnimationTrack();
 	~AnimationTrack();
+
+	void Sample(float time, int start, int end, KeyFrame ** left, KeyFrame ** right, float * alpha);
+	
 };
 
 #endif

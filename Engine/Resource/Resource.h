@@ -52,7 +52,8 @@ public:
 		R_SKELETON,
 		R_RENDERTARET,
 		R_TEXTURE,
-		R_SHADER
+		R_SHADER,
+		R_ANIMATION,
 	};
 	enum Status {
 		S_LOADING,
@@ -78,7 +79,7 @@ public:
 	virtual Deserializer AsyncLoad();
 	virtual int OnSerialize(Deserializer& serializer) { return 0; };
 	virtual int OnLoadComplete(Variant& Data) { return 0; };
-	virtual int OnCreateComplete(Variant& Data) { return 0; };
+	virtual int OnCreateComplete(Variant& Data) { NotifyOwner(RM_LOAD, Data); return 0; };
 	virtual int AsyncUnLoad(){ return 0; };
 	virtual int OnDestory(Variant& Data) { return 0; };
 	virtual int OnUnLoadComplete(Variant& Data) { return 0; };

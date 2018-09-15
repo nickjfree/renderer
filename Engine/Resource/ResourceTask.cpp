@@ -15,6 +15,10 @@ ResourceTask::~ResourceTask()
 
 int ResourceTask::Work() {
 	// load file into memorty
+	if (resource) {
+		int a = 100;
+	}
+
 	Deserializer deserializer = resource->AsyncLoad();
 	// serialize
 

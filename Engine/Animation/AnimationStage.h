@@ -18,8 +18,17 @@ private:
 	AnimationClip * Clip;
 	// the animation cache
 	AnimationCache * Cache;
+	// previous position and translation
+	Vector3 RootMotion;
 	// start bone
-	unsigned char StartBone;
+	unsigned char StartBone;	
+public:
+	// motion delta of this frame
+	Vector3 MotonDelta;
+	// root motion rotation
+	Quaternion RootRotation;
+	// weight
+	float Weight;
 	// actived
 	bool Actived;
 public:
@@ -27,7 +36,7 @@ public:
 	~AnimationStage();
 
 	// set clip
-	void SetAnimationClip(AnimationClip * Clip_) { Clip = Clip_; }
+	void SetAnimationClip(AnimationClip * Clip_);
 	//settime
 	void SetTime(float time) { Time = time; }
 	// set scale

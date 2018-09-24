@@ -60,6 +60,6 @@ typedef struct Action {
 	int Started;
 	int Stoped;
 	float Range;   // for joystick and mice
-};
+}Action;
 
 #endif

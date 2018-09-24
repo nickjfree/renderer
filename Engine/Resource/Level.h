@@ -77,12 +77,6 @@ private:
 	Material * material;
 	Material * light_material;
 
-	// test data
-	BoneInfo bones[52];
-	// anime info
-	TestFrame Frame[51];
-	// palettle
-	Matrix4x4 Palette[52];
 private:
 	int InitGameObjects();
 	int InitLevel();
@@ -119,8 +113,6 @@ public:
 	void Update(int ms);
 	// list models on console
 	void ListModels();
-	// load test anime
-	void LoadAnime();
 };
 
 #endif

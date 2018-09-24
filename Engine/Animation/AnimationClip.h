@@ -11,7 +11,7 @@ class AnimationClip {
 
 	friend Animation;
 
-private:
+public:
 	// start frame
 	int StartFrame;
 	// end frame
@@ -20,6 +20,10 @@ private:
 	float TimeOffset;
 	// end time
 	float EndTime;
+	// total translation in position
+	Vector3 Tanslation;
+	// start rootmotion
+	Vector3 RootStart;
 	// animation source data of this clip
 	Animation * Source;
 	// name

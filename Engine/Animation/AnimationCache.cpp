@@ -15,12 +15,19 @@ AnimationCache::~AnimationCache() {
 
 void AnimationCache::GeneratePalette(Skeleton * skeleton) {
 
-	int BoneId, ParentId;
+	int ParentId;
 	int NumBones = skeleton->Bones.Size();
+	// root bone is in place
+	Vector3 Identity;
 	for (int BoneId = 0; BoneId < NumBones; BoneId++) {
 		Vector3& Translation = Result[BoneId].Translation;
 		Quaternion& Rotation = Result[BoneId].Rotation;
-		Palette[BoneId] = Matrix4x4::FormPositionRotation(Translation, Rotation);
+		if (!BoneId) {
+			Palette[BoneId] = Matrix4x4::FormPositionRotation(Identity, Rotation);
+		} else {
+			Palette[BoneId] = Matrix4x4::FormPositionRotation(Translation, Rotation);
+		}
+		
 		ParentId = skeleton->Bones[BoneId].ParentId;
 		if (ParentId != -1) {
 			// update base on parent

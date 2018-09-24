@@ -77,15 +77,7 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
 	if (ret) {
 		printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
 	}
-	// export gameobjects
-	Vector<GameObject *> & GameObjects = level->GetGameObjects();
-	Vector<GameObject *>::Iterator Iter;
-//	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
-//		GameObject * Object = *Iter;
-//		LuaStack::Push(LuaState, Object);
-//		lua_setglobal(LuaState, Object->GetName());
-////		lua_pop(LuaState, 1);
-//	}
+
 	//push scene
 	Scene * scene = level->GetScene();
 	LuaStack::Push(LuaState, scene);

@@ -9,13 +9,14 @@
 
 
 #include "struct.h"
-
-#include "vertextype.h"
-#include "h3d.h"
+#include <Windows.h>
 
 
+#include "Misc\h3d\h3d.h"
+#include "Math\LinearMath.h"
 
-using namespace ModelSystem::h3d;
+
+using namespace h3d;
 
 
 
@@ -26,7 +27,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	HANDLE hFile = CreateFileA(FileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
 	DWORD offset = 0;
 	DWORD write = 0;
-	vertex_dynamic_instancing * vertex = new vertex_dynamic_instancing[Mesh->mNumVertices];
+	h3d_vertex * vertex = new h3d_vertex[Mesh->mNumVertices];
 	WORD * index = new WORD[Mesh->mNumFaces * 3];
 	// conrt to h3d vertext and index
 	aiVector3D * position = Mesh->mVertices;
@@ -34,17 +35,26 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	aiVector3D * tangent = Mesh->mTangents;
 	aiVector3D * texcoord = Mesh->mTextureCoords[0];
 	for (int i = 0; i < Mesh->mNumVertices; i++) {
-		vertex[i].position = Vector3(position[i].x, position[i].y, position[i].z);
+		vertex[i].x = position[i].x;
+		vertex[i].y = position[i].y;
+		vertex[i].z = position[i].z;
 		printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
-		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].z);
+		
+		vertex[i].nx = normal[i].x;
+		vertex[i].ny = normal[i].y;
+		vertex[i].nz = normal[i].z;
+
+
 		if (tangent) {
-			vertex[i].tangent = Vector3(tangent[i].x, tangent[i].y, tangent[i].z);
+			vertex[i].tx = tangent[i].x;
+			vertex[i].ty = tangent[i].y;
+			vertex[i].tz = tangent[i].z;
 		}
 		if (texcoord) {
 			vertex[i].u = texcoord[i].x;
 			vertex[i].v = -texcoord[i].y;
 		}
-		vertex[i].instance_id = 0;
+		vertex[i].parameter = 0;
 	}
 	// now the index
 	for (int i = 0; i < Mesh->mNumFaces; i++) {
@@ -66,7 +76,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
 	offset = sizeof(header)+sizeof(mesh)+sizeof(bone);
 	// write mesh header
 	mesh.VertexNum = Mesh->mNumVertices;
-	mesh.VertexSize = sizeof(vertex_dynamic_instancing);
+	mesh.VertexSize = sizeof(h3d_vertex);
 	mesh.IndexSize = sizeof(WORD);
 	mesh.IndexNum = Mesh->mNumFaces * 3;
 	mesh.OffsetVertex = offset;
@@ -89,7 +99,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 	HANDLE hFile = CreateFileA(FileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
 	DWORD offset = 0;
 	DWORD write = 0;
-	vertex_skinning * vertex = new vertex_skinning[Mesh->mNumVertices];
+	h3d_vertex_skinning * vertex = new h3d_vertex_skinning[Mesh->mNumVertices];
 
 	WORD * index = new WORD[Mesh->mNumFaces * 3];
 	// conrt to h3d vertext and index
@@ -98,13 +108,21 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 	aiVector3D * tangent = Mesh->mTangents;
 	aiVector3D * texcoord = Mesh->mTextureCoords[0];
 	for (int i = 0; i < Mesh->mNumVertices; i++) {
-		vertex[i].position = Vector3(position[i].x, position[i].y, position[i].z);
-		//printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
-		vertex[i].normal = Vector3(normal[i].x, normal[i].y, normal[i].z);
+		// position
+		vertex[i].x = position[i].x;
+		vertex[i].y = position[i].y;
+		vertex[i].z = position[i].z;
+		// normal
+		vertex[i].nx = normal[i].x;
+		vertex[i].ny = normal[i].y;
+		vertex[i].nz = normal[i].z;
+
 		vertex[i].bone_id = -1;
 		vertex[i].w[0] = vertex[i].w[1] = vertex[i].w[2] = 0.0f;
 		if (tangent) {
-			vertex[i].tangent = Vector3(tangent[i].x, tangent[i].y, tangent[i].z);
+			vertex[i].tx = tangent[i].x;
+			vertex[i].ty = tangent[i].y;
+			vertex[i].tz = tangent[i].z;
 		}
 		if (texcoord) {
 			vertex[i].u = texcoord[i].x;
@@ -130,7 +148,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 		for (int j = 0; j < bone->mNumWeights; j++) {
 			aiVertexWeight &weight = bone->mWeights[j];
 			// handle bone info for vertex
-			vertex_skinning &v = vertex[weight.mVertexId];
+			h3d_vertex_skinning &v = vertex[weight.mVertexId];
 			// find bone in this vertex
 			int matched = 0;
 			for (int b = 0; b < 4; b++) {
@@ -160,7 +178,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 	}
 	// fix vertex with less then 4 bones
 	for (int i = 0; i < Mesh->mNumVertices;i++) {
-		vertex_skinning &v = vertex[i];
+		h3d_vertex_skinning &v = vertex[i];
 		//printf("bones: ");
 		int bone_count = 0;
 		for (int b = 0; b < 4; b++) {
@@ -194,7 +212,7 @@ void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
 	offset = sizeof(header) + sizeof(mesh) + sizeof(bone);
 	// write mesh header
 	mesh.VertexNum = Mesh->mNumVertices;
-	mesh.VertexSize = sizeof(vertex_skinning);
+	mesh.VertexSize = sizeof(h3d_vertex_skinning);
 	mesh.IndexSize = sizeof(WORD);
 	mesh.IndexNum = Mesh->mNumFaces * 3;
 	mesh.OffsetVertex = offset;
@@ -381,7 +399,7 @@ void ExtractAnimeMesh(aiScene * scene) {
 	hb_header bone_header;
 	bone_header.Magic = *(DWORD*)"HUBO";
 	bone_header.Version = 0x01;
-	bone_header.BoneNum = Mesh->mNumBones;
+	bone_header.NumBones = Mesh->mNumBones;
 	HANDLE hBone = CreateFileA("bone.hsk", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
 	DWORD write;
 	WriteFile(hBone, &bone_header, sizeof(hb_header), &write, NULL);
@@ -393,14 +411,15 @@ void ExtractAnimeMesh(aiScene * scene) {
 	}
 	CloseHandle(hBone);
 	// process animation data
+
 	ha_header anime_header;
 	anime_header.Magic = *(DWORD*)"HUAN";
 	anime_header.Version = 0x01;
 	anime_header.NumChannels = 0;
-	anime_header.FrameNum = 0;
+	anime_header.NumFrames = 0;
 	anime_header.NumClips = 1;
 	anime_header.OffsetFrames = sizeof(ha_header) + sizeof(ha_clip) * anime_header.NumClips;
-	HANDLE hAnime = CreateFileA("anime.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	HANDLE hAnime = CreateFileA("human.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
 	WriteFile(hAnime, &anime_header, sizeof(ha_header), &write, NULL);
 	// write clips info
 	ha_clip clip;
@@ -411,32 +430,94 @@ void ExtractAnimeMesh(aiScene * scene) {
 	WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);
 	// write frames
 	aiAnimation * animation = scene->mAnimations[0];
+	// root bone is special because the fucking fbx importer is a mess
+	ha_frame root_frame;
+	int TransChannel = 0;
 	for (int i = 0; i < animation->mNumChannels; i++) {
 		aiString name = animation->mChannels[i]->mNodeName;
 		int BoneId = -1;
+		int Trans = 1;
 		for (int p = 0; p < Mesh->mNumBones; p++) {
 			if (!strcmp(Bones[p].name, name.data)) {
 				BoneId = p;
 			}
 		}
 		if (BoneId == -1) {
+			ha_frame frame;
 			printf("node with no bone %s, with frames %d\n", name.data, animation->mChannels[i]->mNumPositionKeys);
+			if (!strcmp(name.data, "mixamorig:Hips_$AssimpFbx$_Translation")) {
+				// fbx special pretranslation
+				BoneId = 0;
+				Trans = 1;
+				for (int n = 0; n < animation->mChannels[i]->mNumPositionKeys; n++) {
+					printf("%f, %f, %f\n", animation->mChannels[i]->mPositionKeys[n].mValue.x,
+						animation->mChannels[i]->mPositionKeys[n].mValue.y,
+						animation->mChannels[i]->mPositionKeys[n].mValue.z);
+				}
+			} else if (!strcmp(name.data, "mixamorig:Hips_$AssimpFbx$_Rotation")) {
+				// fbx special rotation
+				BoneId = 0;
+				Trans = 0;
+				for (int n = 0; n < animation->mChannels[i]->mNumRotationKeys; n++) {
+					printf("%f, %f, %f, %f\n", animation->mChannels[i]->mRotationKeys[n].mValue.x,
+						animation->mChannels[i]->mRotationKeys[n].mValue.y,
+						animation->mChannels[i]->mRotationKeys[n].mValue.z,
+						animation->mChannels[i]->mRotationKeys[n].mValue.w);
+				}
+			} else {
+				continue;
+			}
+		}
+		float time_scale = 1000.0f / animation->mTicksPerSecond;
+
+		// root bone is special because the fucking fbx importer is a mess
+		if (BoneId == 0) {
+			if (Trans) {
+				anime_header.NumFrames = animation->mChannels[i]->mNumPositionKeys;
+				TransChannel = i;
+			}
+			else if (!Trans) {
+				anime_header.NumChannels++;
+				for (int index = 0; index < anime_header.NumFrames; index++) {
+					root_frame.time = animation->mChannels[TransChannel]->mPositionKeys[index].mTime * time_scale;
+					root_frame.bone_id = BoneId;
+					root_frame.tx = animation->mChannels[TransChannel]->mPositionKeys[index].mValue.x;
+					root_frame.ty = animation->mChannels[TransChannel]->mPositionKeys[index].mValue.y;
+					root_frame.tz = animation->mChannels[TransChannel]->mPositionKeys[index].mValue.z;
+					// fix rotation
+					Quaternion Fix;
+					Fix.RotationAxis(Vector3(1, 0, 0), XM_PIDIV2);
+					Quaternion Value = Quaternion(animation->mChannels[i]->mRotationKeys[index].mValue.x,
+						animation->mChannels[i]->mRotationKeys[index].mValue.y,
+						animation->mChannels[i]->mRotationKeys[index].mValue.z,
+						animation->mChannels[i]->mRotationKeys[index].mValue.w);
+					Value = Value * Fix;
+					
+					root_frame.rx = Value.x;
+					root_frame.ry = Value.y;
+					root_frame.rz = Value.z;
+					root_frame.rw = Value.w;
+
+					WriteFile(hAnime, &root_frame, sizeof(ha_frame), &write, NULL);
+				}
+			}
+
 			continue;
 		}
-		// assume each joint has the same amount of key frames
-		anime_header.FrameNum = animation->mChannels[i]->mNumPositionKeys;
-		printf("node frames %d  bone_id %d\n", anime_header.FrameNum, BoneId);
+
+		// normal keyframes assume each joint has the same amount of key frames
+		anime_header.NumFrames = animation->mChannels[i]->mNumPositionKeys;
+		printf("node frames %d  bone_id %d\n", anime_header.NumFrames, BoneId);
 		anime_header.NumChannels++;
 
-		float time_scale = 1000.0f/animation->mTicksPerSecond;
-
-		for (int index = 0; index < anime_header.FrameNum; index++) {
+		for (int index = 0; index < anime_header.NumFrames; index++) {
 			ha_frame frame;
 			frame.time = animation->mChannels[i]->mPositionKeys[index].mTime * time_scale;
 			frame.bone_id = BoneId;
 			frame.tx = animation->mChannels[i]->mPositionKeys[index].mValue.x;
 			frame.ty = animation->mChannels[i]->mPositionKeys[index].mValue.y;
 			frame.tz = animation->mChannels[i]->mPositionKeys[index].mValue.z;
+
 			frame.rx = animation->mChannels[i]->mRotationKeys[index].mValue.x;
 			frame.ry = animation->mChannels[i]->mRotationKeys[index].mValue.y;
 			frame.rz = animation->mChannels[i]->mRotationKeys[index].mValue.z;

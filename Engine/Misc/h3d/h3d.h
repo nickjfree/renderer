@@ -53,6 +53,17 @@ typedef struct h3d_vertex
 
 //12
 
+typedef struct h3d_vertex_skinning
+{
+	float x, y, z;
+	float nx, ny, nz;
+	float u, v;
+	unsigned int bone_id;
+	float  w[3];            
+	float tx, ty, tz;
+}h3d_vertex_skinning;
+
+//
 typedef struct hb_header
 {
 	DWORD Magic;

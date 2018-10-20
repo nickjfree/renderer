@@ -34,6 +34,10 @@ int RenderObject::SetMaterial(Material * material_) {
 	return 0;
 }
 
+void RenderObject::SetTransparent() {
+    Type = Node::TRANS;
+}
+
 int RenderObject::GetRenderMesh(int Stage, int Lod) {
 	// ignore stage
 	Mesh * mesh = model->MeshResource[Lod];
@@ -50,7 +54,9 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 		Stage = 1;
 	} else if (Stage == R_STAGE_SHADOW) {
 		Stage = 2;
-	}
+	} else if (Stage == R_STAGE_OIT) {
+        Stage = 3;
+    }
 	Matrix4x4 Transform = GetWorldMatrix();
 	Matrix4x4 Tmp;
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Tmp);
@@ -72,6 +78,7 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 	int Instance = 0;
 	int InstanceSize = 0;
 	Shader * shader = 0;
+	//int a = 100 / (int)shader;
 	if (material) {
 		Compiled += material->Compile(Compiler, Stage, Lod);
 		// process shader

@@ -237,6 +237,12 @@ int Level::InitScript() {
 			Physics->CreateShapeFromModel(model);
 			Object->AddComponent(Physics);
 		}
+        if (Object->GetName() == "ADATA") {
+            PhysicsObject * Physics = new PhysicsObject(context);
+            // creat convext hulls for collision shape
+            MeshRenderer * render = (MeshRenderer *)Object->GetComponent(String("Renderer"));
+            render->SetTransparente();
+        }
 		if (Object->GetName() == "Lumia") {
 			PhysicsObject * Physics = new PhysicsObject(context);
 			// creat convext hulls for collision shape

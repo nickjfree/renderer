@@ -72,3 +72,7 @@ int MeshRenderer::OnTransform(GameObject * GameObj) {
 void MeshRenderer::SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix) {
 	renderObject->SetMatrixPalette(palette, NumMatrix);
 }
+
+void MeshRenderer::SetTransparente() {
+    renderObject->SetTransparent();
+}

@@ -68,6 +68,12 @@ PS_Output PS(PS_Input input)
 	float4 Color = gPostBuffer.Sample(gSam, input.TexCoord);
 	float4 Normal = GetNormal(uv);
 	float3 Position = GetPosition(uv);
+
+	if (length(Position) < 0.001) {
+		output.Color = Color;
+		return output;
+	}
+
 	float2 Noise = GetRandom(uv);
 	float ao = 0;
 	float radius = 0.1f;

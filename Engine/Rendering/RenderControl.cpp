@@ -68,7 +68,7 @@ void RenderControl::StartCamera(RenderingCamera * Camera) {
 
 int RenderControl::AddCamera(RenderingCamera * Camera){
 	float pi = 3.141592654f;
-	Matrix4x4 Projection = Matrix4x4::PerspectiveFovLH(0.3f*pi, 3840 / 2160.0f, 1, 1000);
+	Matrix4x4 Projection = Matrix4x4::PerspectiveFovLH(0.3f*pi, (float)FRAMEBUFFER_WIDTH / FRAMEBUFFER_HEIGHT, 1, 1000);
 	Camera->SetProjection(Projection);
 	Cameras.PushBack(Camera);
 	return 0;

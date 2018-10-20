@@ -53,6 +53,7 @@ public:
 	template <class T>  T& Get(String& key);
 	template <class T>  int Set(String& key, T& value);
 	Variant& operator[] (String& key);
+	void Clear() { HashIndex_.Reset(); Items.Resize(0, 1); };
 //	Variant& operator[] (char * key);
 	// begin, not used
 	Iterator Begin() {

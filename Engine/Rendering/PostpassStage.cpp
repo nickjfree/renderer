@@ -330,8 +330,10 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	renderview->Type = R_STAGE_POST;
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
+	//renderview->Parameters.Clear();
 	// set render target
 	renderview->TargetCount = 1;
+    renderview->ClearTargets = 1;
 	renderview->Targets[0] = PingPong[1];
 	//renderview->Depth = Context->GetRenderTarget(String("Depth"));
 	renderview->ClearDepth = 0;
@@ -339,7 +341,11 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	char * Buffer = (char*)renderview->CommandBuffer;
 	Compiler->SetBuffer(Buffer);
 	renderview->Compile();
+    // do SSAO
 	SSAO(Compiler);
+    // do OIT final pass
+    
+    // do tone mapping and bloom
 	HDR(Compiler);
 	// submit to queue
 	renderview->QueueCommand();

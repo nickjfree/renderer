@@ -32,6 +32,8 @@ public:
 	int Targets[RENDER_MAX_TARGET];
 	// clear depth
 	int ClearDepth;
+    // clear terget
+    int ClearTargets;
 	// depth
 	int Depth;
 	// type

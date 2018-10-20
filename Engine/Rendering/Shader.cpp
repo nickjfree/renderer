@@ -237,7 +237,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 	D3D12_SHADER_DESC desc;
 	Reflector->GetDesc(&desc);
 	// build input signature if it is a vertex shader
-	if (D3D11_SHVER_GET_TYPE(desc.Version) == D3D12_SHVER_VERTEX_SHADER) {
+	if (D3D12_SHVER_GET_TYPE(desc.Version) == D3D12_SHVER_VERTEX_SHADER) {
 		// build the inputlayout
 		R_INPUT_ELEMENT Elements[32];  // 32 is enough for now
 		int Offset = 0;

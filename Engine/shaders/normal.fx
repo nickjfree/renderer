@@ -59,13 +59,36 @@ PS_Input VS(VS_Input input)
 }
 
 
-PS_Input VS_Skinning(VS_Input input)
+PS_Input VS_Skinning(VS_Input_Skinning input)
 {
     PS_Input output = (PS_Input)0;
-    // Transform to homogeneous clip space.
-    output.PosH = mul(float4(input.PosL, 1.0f), gWorldViewProjection);
-    output.TexCoord = input.TexCoord;// *float2(1, -1);
+    // apply matrix
+    uint4 bones = uint4(
+        input.Bones & 0x000000ff,
+        input.Bones >> 8 & 0x000000ff,  
+        input.Bones >> 16 & 0x000000ff,        
+        input.Bones >> 24      
+    );
+    float4 weights = float4(input.Weight.xyz, 0);
+    weights.w = 1.0f - (weights.x + weights.y + weights.z);
+
+
+    // do skinning
+    float4x4 mat0 = gSkinMatrix[bones.x];
+    float4x4 mat1 = gSkinMatrix[bones.y];
+    float4x4 mat2 = gSkinMatrix[bones.z];
+    float4x4 mat3 = gSkinMatrix[bones.w];
+
+    float4 position = float4(input.PosL, 1.0f);
+
+    weights = float4(weights.x, weights.y, weights.z, weights.w);
+
+    position = mul(position, mat0) * weights.x + mul(position, mat1) * weights.y 
+        + mul(position, mat2) * weights.z + mul(position, mat3) * weights.w;
+
+    output.PosH = mul(position, gWorldViewProjection);
     output.Normal = input.Normal;
+    output.TexCoord = input.TexCoord;
     return output;
 }
 

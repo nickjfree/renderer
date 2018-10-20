@@ -53,6 +53,7 @@ int ShadowMapStage::ShadowPass(RenderingCamera * Camera, Spatial * spatial, Rend
 		renderview->Type = R_STAGE_SHADOW;
 		renderview->Index = TargetsUsed++;
 		renderview->Queue = renderQueue;
+		//renderview->Parameters.Clear();
 		// set render target
 		renderview->TargetCount = 0;
 		renderview->ClearDepth = 1;

@@ -47,6 +47,7 @@ public:
 		LIGHT = 4,
 		REFLECT = 8,
 		PORTAL = 16,
+        TRANS = 32,
 		POST
 	};
 

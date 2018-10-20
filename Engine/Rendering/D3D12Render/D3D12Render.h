@@ -67,6 +67,8 @@ namespace D3D12API {
 		Vector<DescriptorHeap *> CpuRTVHeaps[NUM_FRAMES];
 		// DSV Heaps
 		Vector<DescriptorHeap *> CpuDSVHeaps[NUM_FRAMES];
+        // UAV Heaps
+        Vector<DescriptorHeap *> CpuUAVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap *> GpuSamplerHeaps;
 		// null descriptor Heaps

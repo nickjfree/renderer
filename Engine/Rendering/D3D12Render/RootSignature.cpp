@@ -37,19 +37,21 @@ void RootSignature::InitRootSignature() {
 		table  t14-t20
 		table  s0-s2
 	*/
-	CD3DX12_ROOT_PARAMETER1 RP[8];
+	CD3DX12_ROOT_PARAMETER1 RP[16];
 	// constant buffer
 	RP[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0
 	RP[1].InitAsConstantBufferView(1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
 	RP[2].InitAsConstantBufferView(2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b2
 	RP[3].InitAsConstantBufferView(3, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b3
+	RP[4].InitAsConstantBufferView(4, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b4
+	RP[5].InitAsConstantBufferView(5, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b5
 	// tables
-	RP[4].InitAsDescriptorTable(1, &DescRange[0]);
-	RP[5].InitAsDescriptorTable(1, &DescRange[1]);
-	RP[6].InitAsDescriptorTable(1, &DescRange[2]);
-	RP[7].InitAsDescriptorTable(1, &DescRange[3]);
+	RP[6].InitAsDescriptorTable(1, &DescRange[0]);
+	RP[7].InitAsDescriptorTable(1, &DescRange[1]);
+	RP[8].InitAsDescriptorTable(1, &DescRange[2]);
+	RP[9].InitAsDescriptorTable(1, &DescRange[3]);
 
-	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC RootSig(8, RP, 0, 0, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC RootSig(10, RP, 0, 0, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 	ID3DBlob * pSerializedRootSig;
 	ID3DBlob * pError;
 	HRESULT result = D3D12SerializeVersionedRootSignature(&RootSig, &pSerializedRootSig, &pError);
@@ -68,7 +70,7 @@ void RootSignature::InitMapping() {
 	while (i <= 8) {
 		Textures[i].CacheSlot = 0;
 		Textures[i].Offset = offset++;
-		Textures[i].RootSlot = 4;
+		Textures[i].RootSlot = 6;
 		i++;
 	}
 
@@ -76,14 +78,14 @@ void RootSignature::InitMapping() {
 	while (i <= 13) {
 		Textures[i].CacheSlot = 1;
 		Textures[i].Offset = offset++;
-		Textures[i].RootSlot = 5;
+		Textures[i].RootSlot = 7;
 		i++;
 	}
 	offset = 0;
 	while (i <= 20) {
 		Textures[i].CacheSlot = 2;
 		Textures[i].Offset = offset++;
-		Textures[i].RootSlot = 6;
+		Textures[i].RootSlot = 8;
 		i++;
 	}
 	// samplers
@@ -92,12 +94,12 @@ void RootSignature::InitMapping() {
 	while (i <= 2) {
 		Samplers[i].CacheSlot = 0;
 		Samplers[i].Offset = offset++;
-		Samplers[i].RootSlot = 7;
+		Samplers[i].RootSlot = 9;
 		i++;
 	}
 	// constant
 	i = 0;
-	while (i <= 3) {
+	while (i <= 6) {
 		Constants[i].RootSlot = i;
 		Constants[i].Dirty = 0;
 		i++;
@@ -108,7 +110,7 @@ void RootSignature::InitCache(D3D12_CPU_DESCRIPTOR_HANDLE NullHandle) {
 	for (int i = 0; i < 4; i++) {
 		DescriptorTable& DescTable = DescTables[i];
 		DescTable.Dirty = 1;
-		DescTable.RootSlot = i + 4;
+		DescTable.RootSlot = i + 6;
 		DescTable.Start = MAX_DESC_TABLE_SIZE;
 		DescTable.End = -1;
 		for (int n = 0; n < MAX_DESC_TABLE_SIZE; n++) {
@@ -200,7 +202,7 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
 			//printf("\n");
 			// refresh cache
 			DescTable.Dirty = 0;
-			DescTable.RootSlot = i + 4;
+			//DescTable.RootSlot = i + 4;
 			DescTable.Start = DescTable.TableSize;
 			DescTable.End = -1;
 			for (int n = 0; n < DescTable.TableSize; n++) {

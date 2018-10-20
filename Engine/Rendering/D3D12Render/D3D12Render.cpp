@@ -212,6 +212,8 @@ void D3D12Render::InitDescriptorHeaps() {
 		while (HeapNum--) {
 			DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 			CpuSRVHeaps[i].PushBack(Heap);
+            Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+            CpuUAVHeaps[i].PushBack(Heap);
 		}
 		// create render target heaps
 		DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -425,6 +427,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
 	D3D12_CPU_DESCRIPTOR_HANDLE handle;
 	D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
+    D3D12_UNORDERED_ACCESS_VIEW_DESC udesc = {};
 	vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	int NumFrames = 1;
 	if (Desc && Desc->BindFlag & BIND_RENDER_TARGET) {
@@ -485,6 +488,19 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 			texture.Resource[i] = handle;
 		}
 	}
+    // create uavs
+    if (Desc && Desc->BindFlag & BIND_UNORDERED_ACCESS) {
+        udesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        udesc.Format = (DXGI_FORMAT)Desc->Format;
+        for (int i = 0; i < NumFrames; i++) {
+            handle = CpuUAVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+            // filter out d24s8 format
+            if (vdesc.Format) {
+                Device->CreateUnorderedAccessView(texture.Texture[0], NULL, &udesc, handle);
+                texture.UAV[i] = handle;
+            }
+        }
+    }
 	Textures[Id] = texture;
 	return Id;
 }
@@ -781,30 +797,30 @@ void D3D12Render::SetRenderTargets(int Count, int * Targets) {
 	NumTargets = Count;
 	for (int i = 0; i < Count; i++) {
 		CurrentTargets[i] = Targets[i];
-		D3DTexture& texture = Textures.GetItem(Targets[i]);
-		if (CurrentPSO.RTVFormat[i] != texture.RTVFormat) {
-			CurrentPSO.RTVFormat[i] = texture.RTVFormat;
-			CurrentPSO.Dirty = 1;
-		}
-		this->Targets[i] = texture.Target[FrameIndex];
-		// translate state
-		int ResourceIndex = 0;
-		int HandleIndex = 0;
-		if (texture.MultiFrame) {
-			HandleIndex = FrameIndex;
-		}
-		if (texture.MultiResource) {
-			ResourceIndex = FrameIndex;
-		}
-		D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
-		D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
-		ID3D12Resource * Resource = texture.Texture[ResourceIndex];
-		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		if (OldState != NewState) {
-			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
-			ResourceBarriers.PushBack(Barrier);
-			texture.State[ResourceIndex].CurrentState = NewState;
-		}
+        D3DTexture& texture = Textures.GetItem(Targets[i]);
+        if (CurrentPSO.RTVFormat[i] != texture.RTVFormat) {
+            CurrentPSO.RTVFormat[i] = texture.RTVFormat;
+            CurrentPSO.Dirty = 1;
+        }
+        this->Targets[i] = texture.Target[FrameIndex];
+        // translate state
+        int ResourceIndex = 0;
+        int HandleIndex = 0;
+        if (texture.MultiFrame) {
+            HandleIndex = FrameIndex;
+        }
+        if (texture.MultiResource) {
+            ResourceIndex = FrameIndex;
+        }
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
+        D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
+        ID3D12Resource * Resource = texture.Texture[ResourceIndex];
+        D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        if (OldState != NewState) {
+            CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+            ResourceBarriers.PushBack(Barrier);
+            texture.State[ResourceIndex].CurrentState = NewState;
+        }
 	}
 	TargetDirty = 1;
 }
@@ -945,7 +961,7 @@ void D3D12Render::Present() {
 	StartingTime = EndingTime;
 	ElapsedMicroseconds.QuadPart *= 1000000;
 	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %d", Width, Height, 1000000/ ElapsedMicroseconds.QuadPart);
+	sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %lld", Width, Height, 1000000/ ElapsedMicroseconds.QuadPart);
 	SetWindowTextA(hWnd, WindowTitle);
 }
 
@@ -954,7 +970,7 @@ void D3D12Render::WaitForPreviousFrame() {
 	CommandQueue * Queue = GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 //	Queue->IdleGpu();
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
-	UINT FenceToWait = PrevFenceValue[FrameIndex];
+	UINT64 FenceToWait = PrevFenceValue[FrameIndex];
 	// wait for prev frame
 	static DWORD s;
 	Queue->Wait(FenceToWait);

@@ -35,6 +35,8 @@ public:
 	int SetModel(Model* model);
 	// set material
 	int SetMaterial(Material* material);
+    // set type
+    void SetTransparent();
 	// get model
 	Model * GetModel() { return model; }
 	// get render mesh

@@ -39,6 +39,7 @@ Texture2D	 gLUT                  : register(t18);
 TextureCube  gLdCube               : register(t19);
 TextureCube  gLightProbeIrradiance : register(t20);
 
+RasterizerOrderedTexture2D<float> gTest : register(u0);
 
 
 cbuffer PerObject: register(b0)
@@ -47,6 +48,13 @@ cbuffer PerObject: register(b0)
 	float4x4 gWorldViewProjection;
 	float4x4 gWorldInvertProjection;
 	float4x4 gWorldViewMatrix;
+    // material
+	float gSpecular;
+	float3 pad_1;
+}
+
+cbuffer PerLight: register(b1)
+{
 	// shadow map constant
 	float4x4  gLightViewProjection;
 	float4x4  gLightView;
@@ -56,13 +64,10 @@ cbuffer PerObject: register(b0)
 	float4 gLightColor;
 	float4 gRadiusIntensity;
 	float4 gLightDirection;
-	// material
-	float gSpecular;
-	float3 pad_1;
 }
 
 
-cbuffer PerFrame: register(b1) 
+cbuffer PerFrame: register(b2) 
 {
 	// per frame
 	float4x4 gProjectionMatrix;
@@ -77,13 +82,13 @@ cbuffer PerFrame: register(b1)
 	float4   gSampleWeights[4];
 }
 
-cbuffer ArrayAnime: register(b2)
+cbuffer ArrayAnime: register(b3)
 {
 	// animation use 128 constants buffer,bone transform,update for each object draw
 	float4x4  gSkinMatrix[128];
 }
 
-cbuffer Misc : register(b3)
+cbuffer Misc : register(b4)
 {
 	float4 gScreenSize;
 }

@@ -92,6 +92,21 @@ void PrepassStage::CreateRenderState() {
 	depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
 	depth.StencilRef = 0;
 	DepthStat[2] = Interface->CreateDepthStencilStatus(&depth);
+    // transparent pass depth
+    depth.ZTestEnable = 1;
+    depth.ZWriteEnable = 0;
+    depth.DepthFunc = R_CMP_FUNC::LESS_EQUAL;
+    depth.StencilEnable = 0;
+    depth.StencilFailFront = R_STENCIL_OP::KEEP;
+    depth.DepthFailFront = R_STENCIL_OP::KEEP;
+    depth.StencilPassFront = R_STENCIL_OP::ZERO;
+    depth.StencilFuncFront = R_CMP_FUNC::NOT_EQUAL;
+    depth.StencilFailBack = R_STENCIL_OP::KEEP;
+    depth.DepthFailBack = R_STENCIL_OP::KEEP;
+    depth.StencilPassBack = R_STENCIL_OP::ZERO;
+    depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
+    depth.StencilRef = 0;
+    DepthStat[3] = Interface->CreateDepthStencilStatus(&depth);
 	// culling pass blend state
 	R_BLEND_STATUS blend = {};
 	blend.Enable = 0;
@@ -111,6 +126,15 @@ void PrepassStage::CreateRenderState() {
 	blend.Enable = 0;
 	blend.Mask = R_BLEND_MASK::ENABLE_ALL;
 	BlendStat[2] = Interface->CreateBlendStatus(&blend);
+    // alpha blend
+    blend.Enable = 1;
+    blend.SrcBlend = R_BLEND::BLEND_SRC_ALPHA;
+    blend.DestBlend = R_BLEND::BLEND_INV_SRC_ALPHA;
+    blend.BlendOp = R_BLEND_OP::BLEND_OP_ADD;
+    blend.SrcBlendAlpha = R_BLEND::BLEND_ZERO;
+    blend.DestBlendAlpha = R_BLEND::BLEND_ONE;
+    blend.BlendOpAlpha = R_BLEND_OP::BLEND_OP_ADD;
+    BlendStat[3] = Interface->CreateBlendStatus(&blend);
 	// restar
 	R_RASTERIZER_DESC raster = {};
 	raster.CullMode = R_CULL::NONE;
@@ -124,12 +148,14 @@ void PrepassStage::CreateRenderState() {
 	raster.FrontCounterClockwise = 1;
 	RasterStat[1] = Interface->CreateRasterizerStatus(&raster);
 	// register
-	Context->RegisterRenderState(String("Depth"), DepthStat[2]);
 	Context->RegisterRenderState(String("TwoSideStencil"), DepthStat[0]);
 	Context->RegisterRenderState(String("NoZ"), DepthStat[1]);
+    Context->RegisterRenderState(String("Depth"), DepthStat[2]);
+    Context->RegisterRenderState(String("TransDepth"), DepthStat[3]);
 	Context->RegisterRenderState(String("NoFrame"), BlendStat[0]);
 	Context->RegisterRenderState(String("Additive"), BlendStat[1]);
 	Context->RegisterRenderState(String("Blend"), BlendStat[2]);
+    Context->RegisterRenderState(String("AlphaBlend"), BlendStat[3]);
 	Context->RegisterRenderState(String("NoCull"), RasterStat[0]);
 	Context->RegisterRenderState(String("Rasterizer"), RasterStat[1]);
 }
@@ -156,7 +182,9 @@ void PrepassStage::PrePass(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	renderview->Targets[2] = Targets[3];
 	renderview->Targets[3] = Targets[4];
 	renderview->Depth = Depth;
+	renderview->Parameters.Clear();
 	renderview->ClearDepth = 1;
+    renderview->ClearTargets = 1;
 	// 4. submit to workqueue
 	int count = 1;
 	while (count--) {
@@ -176,9 +204,11 @@ void PrepassStage::LigthingPass(RenderingCamera * Camera, Spatial * spatial, Ren
 	renderview->Camera = Camera;
 	renderview->Depth = Depth;
 	renderview->ClearDepth = 0;
+    renderview->ClearTargets = 1;
 	renderview->Type = R_STAGE_LIGHT;
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
+	//renderview->Parameters.Clear();
 	// set render target
 	renderview->TargetCount = 1;
 	renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer")); // Targets[2];
@@ -202,11 +232,13 @@ void PrepassStage::ShadingPass(RenderingCamera * Camera, Spatial * spatial, Rend
 	renderview->Type = R_STAGE_SHADING;
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
+	renderview->Parameters.Clear();
 	// set render target
 	renderview->TargetCount = 1;
 	renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer"));  // 0;
 	renderview->Depth = Depth;
 	renderview->ClearDepth = 0;
+    renderview->ClearTargets = 1;
 	// 4. submit to workqueue
 	int count = 1;
 	while (count--) {
@@ -220,9 +252,37 @@ void PrepassStage::ShadingPass(RenderingCamera * Camera, Spatial * spatial, Rend
 	Events.PushBack(renderview->Event);
 }
 
+void PrepassStage::OITInitPass(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events) {
+    RenderView * renderview = RenderView::Create();
+    RenderViews.PushBack(renderview);
+    renderview->Camera = Camera;
+    renderview->Type = R_STAGE_OIT;
+    renderview->Index = 0;
+    renderview->Queue = renderQueue;
+    renderview->Parameters.Clear();
+    // set render target
+    renderview->TargetCount = 1;
+    renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer"));  // 0;
+    renderview->Depth = Depth;
+    renderview->ClearDepth = 0;
+    renderview->ClearTargets = 0;
+    // 4. submit to workqueue
+    int count = 1;
+    while (count--) {
+        CullingTask * task = CullingTask::Create();
+        task->renderview = renderview;
+        task->spatial = spatial;
+        task->Context = Context;
+        task->ObjectType = Node::TRANS;
+        Queue->QueueTask(task);
+    }
+    Events.PushBack(renderview->Event);
+}
+
 int PrepassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events) {
 	PrePass(Camera, spatial, renderQueue, Queue, Events);
 	LigthingPass(Camera, spatial, renderQueue, Queue, Events);
+    OITInitPass(Camera, spatial, renderQueue, Queue, Events);
 //	ShadingPass(Camera, spatial, renderQueue, Queue, Events);
 	return 0;
 }

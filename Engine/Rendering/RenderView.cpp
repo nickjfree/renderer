@@ -4,7 +4,7 @@
 USING_ALLOCATER(RenderView);
 USING_RECYCLE(RenderView);
 
-RenderView::RenderView()
+RenderView::RenderView(): ClearTargets(1)
 {
 	CommandBuffer = new char[COMMANDBUFFER_SIZE];
 	Compiler = new BatchCompiler();
@@ -22,10 +22,10 @@ RenderView::~RenderView()
 int RenderView::Compile() {
 	int Compiled = 0;
 	Compiled += Compiler->SetDepthBuffer(Depth);
-	if (TargetCount) {
-		Compiled += Compiler->SetRenderTargets(TargetCount, Targets);
-		Compiled += Compiler->ClearRenderTarget();
-	}
+    Compiled += Compiler->SetRenderTargets(TargetCount, Targets);
+    if (ClearTargets) {
+        Compiled += Compiler->ClearRenderTarget();
+    }
 	if (ClearDepth) {
 		Compiled += Compiler->ClearDepthStencil();
 	}

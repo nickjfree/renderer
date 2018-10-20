@@ -9,8 +9,11 @@
 #define R_STAGE_SHADOW   0x00
 #define R_STAGE_PREPASSS 0x10
 #define R_STAGE_LIGHT    0x11
-#define R_STAGE_SHADING  0x12
-#define R_STAGE_HOC      0x13
+#define R_STAGE_OIT      0x12
+
+#define R_STAGE_SHADING  0x13
+#define R_STAGE_HOC      0x14
+
 #define R_STAGE_POST     0xA0
 
 

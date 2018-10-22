@@ -51,10 +51,30 @@ typedef struct ConstantBuffer {
 	int IsArray;
 }ConstantBuffer;
 
+/*
+    texture unit
+*/
 typedef struct TextureUnit {
 	String Name;
 	unsigned int Slot;
 }TextureUnit;
+
+/*
+    buffers
+*/
+typedef struct BufferUnit {
+    String Name;
+    unsigned int Slot;
+}BufferUnit;
+
+/*
+    RWBuffers, Unordered Access Buffer
+*/
+typedef struct RWBufferUnit {
+    String Name;
+    unsigned int Slot;
+}RWBufferUnit;
+
 
 /*
 	pass
@@ -72,10 +92,14 @@ typedef struct Pass{
 	String Name;
 	// light radius, wind direction, bone matrices eg.
 	Vector<ShaderParameter> Parameters;
-	// constant buffer
+	// constant buffers
 	Vector<ConstantBuffer> Constants;
 	// textures
 	Vector<TextureUnit> TextureUnits;
+    // buffers
+    Vector<BufferUnit> BufferUnits;
+    // rw buffers
+    Vector<RWBufferUnit> RWBufferUnits;
 }Pass;
 
 /*

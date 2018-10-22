@@ -47,12 +47,14 @@ namespace D3D12API {
 		ID3D12RootSignature * RootSig;
 		// texture slot
 		DescTableSlot Textures[64];
+        // uav slot
+        DescTableSlot UAVs[64];
 		// sampler slot
 		DescTableSlot Samplers[16];
 		// constant slot
 		RootDescriptorSlot Constants[32];
 		// cached tables 
-		DescriptorTable DescTables[4];
+		DescriptorTable DescTables[5];
 		// null handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullHandle;
 		// table size
@@ -73,12 +75,14 @@ namespace D3D12API {
 		ID3D12RootSignature * Get() { return RootSig; }
 		// set texture
 		bool SetTexture(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE handle);
+        // set texture
+        bool SetUAV(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE handle);
 		// set constant
 		bool SetConstantBuffer(int slot, D3D12_CONSTANT_BUFFER_VIEW_DESC * ConstBufferView);
 		// set sampler
 		bool SetSamplerTable(ID3D12GraphicsCommandList * CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		bool Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap, bool BarrierFlushed);
+		bool Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHeap * descHeap, bool BarrierFlushed, bool HeapChanged);
 	};
 
 }

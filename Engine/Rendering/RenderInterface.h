@@ -59,8 +59,14 @@ public:
 /*   Context Setup  */
 	// set view port
 	virtual void SetViewPort(float tlx, float tly, float width, float height, float minz, float maxz) {};
-	// set texture to slots
-	virtual void SetTexture(int StartSlot, int * Texture, int Count) {};
+
+    virtual void SetUnorderedAccessTexture(int StartSlot, int * Textures, int Count) {};
+    // set buffer as uav
+    virtual void SetUnorderedAccessBuffer(int StartSlot, int * Buffers, int Count) {};
+    // set texture as srv
+    virtual void SetTexture(int StartSlot, int * Texture, int Count) {};
+    // set buffer as srv
+    virtual void SetBuffer(int StartSlot, int * Buffers, int Count) {};
 	// Set Blend 
 	virtual void SetBlendStatus(int Blend) {}
 	// depth and stencil

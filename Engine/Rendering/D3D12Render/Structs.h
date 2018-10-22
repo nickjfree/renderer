@@ -52,7 +52,21 @@ namespace D3D12API {
 		unsigned int VBSize;
 	}D3DGeometry;
 
-	/*
+    /*
+        Buffer    
+    */
+    typedef struct D3DBuffer {
+        int MultiFrame;
+        int MultiResource;
+        ID3D12Resource * BufferResource[NUM_FRAMES];
+        D3D12_CPU_DESCRIPTOR_HANDLE UAV[NUM_FRAMES];
+        D3D12_CPU_DESCRIPTOR_HANDLE SRV[NUM_FRAMES];
+        D3DResourceState State[NUM_FRAMES];
+        unsigned int Size;
+        unsigned int ByteStride;
+    }D3DBuffer;
+    
+    /*
 		layout
 	*/
 	typedef struct D3DInoutLayout {

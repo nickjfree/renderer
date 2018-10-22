@@ -90,16 +90,19 @@ D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeap::GetGpuHandle(int slot) {
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeap::StageDescriptors(D3D12_CPU_DESCRIPTOR_HANDLE * Handles, int PadStart, int Num) {
 	// must be a shader visible heap
 	assert(Flag == D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-
-	int End = Current + PadStart + Num;
+    // pad some space to the heap start 
+    if (Current == 0) {
+        Current += PadStart;
+    }
+	int End = Current + Num;
 	if (End > Size) {
 		// not enough space
 		return CD3DX12_GPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT());
 	}
 	// there is enough space
 	CD3DX12_GPU_DESCRIPTOR_HANDLE GpuHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(GpuStart, Current, Increment);
-	CD3DX12_CPU_DESCRIPTOR_HANDLE CpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(CpuStart, Current + PadStart, Increment);
-	Current += (PadStart + Num);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE CpuHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(CpuStart, Current, Increment);
+	Current += Num;
 	// copy descriptors
 	UINT DestRangeSize = Num;
 	for (int i = 0; i < Num; i++) {
@@ -107,5 +110,5 @@ D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeap::StageDescriptors(D3D12_CPU_DESCRIPTO
 		SrcStarts[i] = Handles[i];
 	}
 	Device->CopyDescriptors(1, &CpuHandle, &DestRangeSize, Num, SrcStarts, SrcRangeSize, Type);
-	return GpuHandle;
+	return CD3DX12_GPU_DESCRIPTOR_HANDLE(GpuHandle, -PadStart, Increment);
 }

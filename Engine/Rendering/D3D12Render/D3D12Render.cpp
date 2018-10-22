@@ -210,10 +210,18 @@ void D3D12Render::InitDescriptorHeaps() {
 		// create cpu srv heaps
 		int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE;
 		while (HeapNum--) {
+            // texture srv heap
 			DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 			CpuSRVHeaps[i].PushBack(Heap);
+            // texture uav heap
             Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
-            CpuUAVHeaps[i].PushBack(Heap);
+            CpuTextureUAVHeaps[i].PushBack(Heap);
+            // buffer uav heap
+            Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+            CpuBufferUAVHeaps[i].PushBack(Heap);
+            // buffer srv heap
+            Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+            CpuBufferSRVHeaps[i].PushBack(Heap);
 		}
 		// create render target heaps
 		DescriptorHeap * Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -493,7 +501,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
         udesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
         udesc.Format = (DXGI_FORMAT)Desc->Format;
         for (int i = 0; i < NumFrames; i++) {
-            handle = CpuUAVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+            handle = CpuTextureUAVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
             // filter out d24s8 format
             if (vdesc.Format) {
                 Device->CreateUnorderedAccessView(texture.Texture[0], NULL, &udesc, handle);
@@ -503,6 +511,65 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
     }
 	Textures[Id] = texture;
 	return Id;
+}
+
+// create a buffer. and a uav to it
+int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
+    D3DBuffer Buffer = {};
+
+    // no multi resource and multi frame
+    Buffer.MultiFrame = 0;
+    Buffer.MultiResource = 0;
+
+    Device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_RESOURCE_DESC::Buffer(desc->Size),
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        nullptr,
+        IID_PPV_ARGS(&Buffer.BufferResource[0]));
+    // create uav
+    int Id = Buffers.AddItem(Buffer);
+    
+    int HeapSlot = Id;
+    int HeapIndex = 0;
+
+    // create uav for this buffer
+    D3D12_CPU_DESCRIPTOR_HANDLE handle;
+    D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
+    D3D12_UNORDERED_ACCESS_VIEW_DESC udesc = {};
+    int NumFrames = 1;
+    // srv desc
+    vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    vdesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
+    vdesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    
+    vdesc.Buffer.FirstElement = 0;
+    vdesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
+    vdesc.Buffer.StructureByteStride = desc->StructureByteStride;
+    vdesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+
+    // uav desc
+    udesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+    udesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
+    udesc.Buffer.FirstElement = 0;
+    udesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
+    udesc.Buffer.StructureByteStride = desc->StructureByteStride;
+    udesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+
+    for (int i = 0; i < NumFrames; i++) {
+        // srv
+        handle = CpuBufferSRVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+        Device->CreateShaderResourceView(Buffer.BufferResource[i], &vdesc, handle);
+        Buffer.SRV[i] = handle;
+        // uav
+        handle = CpuBufferUAVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
+        Device->CreateUnorderedAccessView(Buffer.BufferResource[i], NULL, &udesc, handle);
+        Buffer.UAV[i] = handle;
+        // store the state
+        Buffer.State[i].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
+    }
+    return Id;
 }
 
 
@@ -825,6 +892,94 @@ void D3D12Render::SetRenderTargets(int Count, int * Targets) {
 	TargetDirty = 1;
 }
 
+void D3D12Render::SetUnorderedAccessBuffer(int StartSlot, int * Buffers_, int Count) {
+    for (int i = 0; i < Count; i++) {
+        int Slot = StartSlot + i;
+        int Id = Buffers_[i];
+        D3DBuffer& Buffer = Buffers.GetItem(Id);
+        int ResourceIndex = 0;
+        int HandleIndex = 0;
+        if (Buffer.MultiFrame) {
+            HandleIndex = FrameIndex;
+        }
+        if (Buffer.MultiResource) {
+            ResourceIndex = FrameIndex;
+        }
+
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = Buffer.UAV[HandleIndex];
+        D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+        D3D12_RESOURCE_STATES OldState = Buffer.State[ResourceIndex].CurrentState;
+        ID3D12Resource * Resource = Buffer.BufferResource[ResourceIndex];
+
+        // bind to root signature
+        bool dirty = RootSig->SetUAV(Slot, Id, handle);
+        
+        if (dirty && OldState != NewState) {
+            CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+            ResourceBarriers.PushBack(Barrier);
+            Buffer.State[ResourceIndex].CurrentState = NewState;
+        }
+    }
+}
+
+void D3D12Render::SetBuffer(int StartSlot, int * Buffers_, int Count) {
+    for (int i = 0; i < Count; i++) {
+        int Slot = StartSlot + i;
+        int Id = Buffers_[i];
+        D3DBuffer& Buffer = Buffers.GetItem(Id);
+        int ResourceIndex = 0;
+        int HandleIndex = 0;
+        if (Buffer.MultiFrame) {
+            HandleIndex = FrameIndex;
+        }
+        if (Buffer.MultiResource) {
+            ResourceIndex = FrameIndex;
+        }
+
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = Buffer.UAV[HandleIndex];
+        D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+        D3D12_RESOURCE_STATES OldState = Buffer.State[ResourceIndex].CurrentState;
+        ID3D12Resource * Resource = Buffer.BufferResource[ResourceIndex];
+
+        // bind to root signature
+        bool dirty = RootSig->SetTexture(Slot, Id, handle);
+
+        if (dirty && OldState != NewState) {
+            CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+            ResourceBarriers.PushBack(Barrier);
+            Buffer.State[ResourceIndex].CurrentState = NewState;
+        }
+    }
+}
+
+void D3D12Render::SetUnorderedAccessTexture(int StartSlot, int * Texture, int Count){
+    for (int i = 0; i < Count; i++) {
+        int Slot = StartSlot + i;
+        int Id = Texture[i];
+        D3DTexture& texture = Textures.GetItem(Id);
+        int ResourceIndex = 0;
+        int HandleIndex = 0;
+        if (texture.MultiFrame) {
+            HandleIndex = FrameIndex;
+        }
+        if (texture.MultiResource) {
+            ResourceIndex = FrameIndex;
+        }
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
+        D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
+        ID3D12Resource * Resource = texture.Texture[ResourceIndex];
+        D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+        // bind to root signature
+        bool dirty = RootSig->SetUAV(Slot, Id, handle);
+
+        if (dirty && OldState != NewState) {
+            CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+            ResourceBarriers.PushBack(Barrier);
+            texture.State[ResourceIndex].CurrentState = NewState;
+        }
+    }
+}
+
 void D3D12Render::SetTexture(int StartSlot, int * Texture, int Count) {
 //	&CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_frameIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 	for (int i = 0; i < Count; i++) {
@@ -1051,7 +1206,7 @@ void D3D12Render::FlushRootSignature() {
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 	}
 	
-	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed)) {
+	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged)) {
 		// need new heaps
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
 		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
@@ -1060,7 +1215,7 @@ void D3D12Render::FlushRootSignature() {
 		cmdList->SetDescriptorHeaps(2, Heaps);
 		// set sampler descriptor table
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed);
+		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged);
 	}
 	// clear barrierflushed
 	BarrierFlushed = 0;

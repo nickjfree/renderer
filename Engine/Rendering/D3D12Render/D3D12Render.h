@@ -51,6 +51,7 @@ namespace D3D12API {
 		int Width;
 		int Height;
 		// managers 
+        LinearBuffer<D3DBuffer, 1024> Buffers;
 		LinearBuffer<D3DTexture, 8192> Textures;
 		LinearBuffer<D3DGeometry, 4096> Geometries;
 		LinearBuffer<D3DInputLayout, 128> InputLayouts;
@@ -67,8 +68,12 @@ namespace D3D12API {
 		Vector<DescriptorHeap *> CpuRTVHeaps[NUM_FRAMES];
 		// DSV Heaps
 		Vector<DescriptorHeap *> CpuDSVHeaps[NUM_FRAMES];
-        // UAV Heaps
-        Vector<DescriptorHeap *> CpuUAVHeaps[NUM_FRAMES];
+        // UAV Heaps for texture
+        Vector<DescriptorHeap *> CpuTextureUAVHeaps[NUM_FRAMES];
+        // UAV Heaps for buffer
+        Vector<DescriptorHeap *> CpuBufferUAVHeaps[NUM_FRAMES];
+        // SRV Heaps for buffer
+        Vector<DescriptorHeap *> CpuBufferSRVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap *> GpuSamplerHeaps;
 		// null descriptor Heaps
@@ -157,11 +162,16 @@ namespace D3D12API {
 		CommandQueue * GetQueue(D3D12_COMMAND_LIST_TYPE type) { return CommandQueues[type]; };
 	public:
 		virtual int Initialize(int Width, int Height);
+        
+        // create buffer
+        virtual int  CreateBuffer(R_BUFFER_DESC* desc);
 
+        // create texture
 		virtual int  CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag);
 		// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
 		virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat);
-		virtual int CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size);
+		       
+        virtual int CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size);
 		virtual int CreateVertexShader(void * ByteCode, unsigned int Size, int flag);
 		virtual int CreateGeometryShader(void * ByteCode, unsigned int Size, int flag);
 		virtual int CreateHullShader(void * ByteCode, unsigned int Size, int flag);
@@ -180,9 +190,16 @@ namespace D3D12API {
 		virtual void SetRenderTargets(int Count, int * Targets);
 
 		virtual void SetDepthStencil(int Depth);
-
-		virtual void SetTexture(int StartSlot, int * Texture, int Count);
-
+        
+        // set texture as uav
+        virtual void SetUnorderedAccessTexture(int StartSlot, int * Textures, int Count);
+        // set buffer as uav
+        virtual void SetUnorderedAccessBuffer(int StartSlot, int * Buffers, int Count);
+        // set texture as srv
+        virtual void SetTexture(int StartSlot, int * Texture, int Count);
+        // set buffer as srv
+        virtual void SetBuffer(int StartSlot, int * Buffers, int Count);
+        // set input layout
 		virtual void SetInputLayout(int Id);
 		// set vertex shader
 		virtual void SetVertexShader(int Shader);

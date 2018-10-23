@@ -25,7 +25,7 @@ void RootSignature::InitRootSignature() {
 	// texture misc srv t 14-20
 	DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
     // uavs  u 0-8
-    DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+    DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
 	// samplers  s 0-2. samplers use static descriptors
 	DescRange[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 3, 0);
 
@@ -229,8 +229,8 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
             D3D12_CPU_DESCRIPTOR_HANDLE * Start = DescTable.Handles + DescTable.Start;
             unsigned int NumToCopy = DescTable.End - DescTable.Start + 1;
             unsigned int StartPad = DescTable.Start;
-			// D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
-            D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(Start, StartPad, NumToCopy);
+			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
+            //D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(Start, StartPad, NumToCopy);
 			if (!handle.ptr) {
 				// need new descripterheap
 				return false;

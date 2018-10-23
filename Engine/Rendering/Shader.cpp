@@ -292,6 +292,10 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		// get constant buffer bind
 		D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 		Reflector->GetResourceBindingDescByName(Description.Name, &bind_desc);
+        if (bind_desc.Type != D3D_SIT_CBUFFER) {
+            // ignore rw uav buffers 
+            continue;
+        }
 		// store constant buffer info
 		ConstantBuffer cb;
 		cb.Name = (char*)Description.Name;
@@ -326,6 +330,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		// get constant buffer bind
 		D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 		Reflector->GetResourceBindingDesc(i, &bind_desc);
+        // get textures
 		if (bind_desc.Type == D3D_SIT_TEXTURE) {
 			// store constant buffer info
 			TextureUnit tu;
@@ -333,7 +338,28 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 			tu.Slot = bind_desc.BindPoint;
 			RenderPass->TextureUnits.PushBack(tu);
 		}
+        // get buffers. tbuffer. typed and structured buffer.
+        if (bind_desc.Type == D3D_SIT_TBUFFER || bind_desc.Type == D3D_SIT_STRUCTURED || bind_desc.Type == D3D_SIT_BYTEADDRESS) {
+            BufferUnit bu;
+            bu.Name = (char*)bind_desc.Name;
+            bu.Slot = bind_desc.BindPoint;
+            RenderPass->BufferUnits.PushBack(bu);
+        }
+        // get rwbuffers. unordered textture(buffers).
+        if (bind_desc.Type == D3D_SIT_UAV_RWTYPED 
+            || bind_desc.Type == D3D_SIT_UAV_RWSTRUCTURED 
+            || bind_desc.Type == D3D_SIT_UAV_RWBYTEADDRESS
+            || bind_desc.Type == D3D_SIT_UAV_APPEND_STRUCTURED
+            || bind_desc.Type == D3D_SIT_UAV_CONSUME_STRUCTURED
+            || bind_desc.Type ==D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER) {
+            RWBufferUnit rwbu;
+            rwbu.Name = (char*)bind_desc.Name;
+            rwbu.Slot = bind_desc.BindPoint;
+            RenderPass->RWBufferUnits.PushBack(rwbu);
+        }
 	}
+    // get buffers. tbuffer. typed and structured buffer.
+
 
 	return 0;
 }

@@ -60,8 +60,10 @@ typedef uint COLOR;
 #define AOIT_MAX_UNNORM_TRANS   ((1 << AOIT_TRANS_BIT_COUNT) - 1)
 #define AOIT_TRANS_MASK         (0xFFFFFFFF - (uint)AOIT_MAX_UNNORM_TRANS)
 
-// do hdr
-#define dohdr 1
+
+
+
+
 
 
 
@@ -207,7 +209,6 @@ struct ATSPNode
 #define _AOITSPDepthDataSRV gAOITSPDepthDataSRV
 #endif
 
-#define dopso 1
 
 // Since there's no reflection on the cpp side for these, set registers explicitly - don't change them, this is the expected order
 #ifdef dopso
@@ -218,9 +219,9 @@ RWTexture2D<uint> gAOITSPClearMaskUAV        : register(u1);
 RWStructuredBuffer<AOITSPDepthData> _AOITSPDepthDataUAV     : register( u2 );
 RWStructuredBuffer<AOITSPColorData> _AOITSPColorDataUAV     : register( u3 );
 
-Texture2D<uint> gAOITSPClearMaskSRV : register( t1 );
-StructuredBuffer<AOITSPColorData> _AOITSPColorDataSRV : register( t2 );
-StructuredBuffer<AOITSPDepthData> _AOITSPDepthDataSRV : register( t3 );
+Texture2D<uint> gAOITSPClearMaskSRV;
+StructuredBuffer<AOITSPColorData> _AOITSPColorDataSRV;
+StructuredBuffer<AOITSPDepthData> _AOITSPDepthDataSRV;
 
 
 //////////////////////////////////////////////

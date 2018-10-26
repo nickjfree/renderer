@@ -47,8 +47,14 @@ protected:
 	int SetDomainShader(void * data);
 	// set ps
 	int SetPixelShader(void * data);
-	// set texture
+	// set texture (srv)
 	int SetTexture(void * data);
+    // set shader resource (srv)
+    int SetShaderResourceBuffer(void * data);
+    // set UnorderedAccessBuffer (uav)
+    int SetUnordedAccessBuffer(void * data);
+    // set UnorderedAccessTexture (uav)
+    int SetUnordedAccessTexture(void * data);
 	// set depth
 	int SetDepthStencil(void * data);
 	// set rasterizer

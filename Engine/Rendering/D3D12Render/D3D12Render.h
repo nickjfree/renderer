@@ -104,6 +104,8 @@ namespace D3D12API {
 		int QuadId;
 		// null textureid
 		int NullId;
+        // null uav
+        int NullUAV;
 		// viewport size
 		int ViewPortWidth;
 		int ViewPortHeight;
@@ -136,6 +138,8 @@ namespace D3D12API {
 		void InitSamplers();
 		// init null texture
 		void InitNullTexture();
+        // init null uav
+        void InitNullUAV();
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube);
 		// create raw textures

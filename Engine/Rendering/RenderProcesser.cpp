@@ -23,6 +23,9 @@ RenderProcesser::RenderProcesser(RenderContext * context_) :context(context_)
 	Cmds[OP_RASTER_STAT].cmd = &RenderProcesser::SetRasterizer;
 	Cmds[OP_BLEND_STAT].cmd = &RenderProcesser::SetBlend;
 	Cmds[OP_TEXTURE].cmd = &RenderProcesser::SetTexture;
+    Cmds[OP_BUFFER].cmd = &RenderProcesser::SetShaderResourceBuffer;
+    Cmds[OP_UAVBUF].cmd = &RenderProcesser::SetUnordedAccessBuffer;
+    Cmds[OP_UAVTEX].cmd = &RenderProcesser::SetUnordedAccessTexture;
 	Cmds[OP_RENDER_GEO].cmd = &RenderProcesser::RenderGeometry;
 	Cmds[OP_END_EXECUTE].cmd = &RenderProcesser::EndBuffer;
 	Cmds[OP_INPUT_LAYOUT].cmd = &RenderProcesser::SetInputLayout;
@@ -162,6 +165,36 @@ int RenderProcesser::SetTexture(void * data){
 	int Id = *(int*)p;
 	Interface->SetTexture(slot, &Id, 1);
 	return 1;
+}
+int RenderProcesser::SetShaderResourceBuffer(void * data) {
+    ip += sizeof(int) + 2;
+    unsigned char* p = (unsigned char*)data;
+    int slot = *p;
+    p += 1;
+    int Id = *(int*)p;
+    Interface->SetBuffer(slot, &Id, 1);
+    return 1;
+}
+// set UnorderedAccessBuffer
+int RenderProcesser::SetUnordedAccessBuffer(void * data) {
+    ip += sizeof(int) + 2;
+    unsigned char* p = (unsigned char*)data;
+    int slot = *p;
+    p += 1;
+    int Id = *(int*)p;
+    Interface->SetUnorderedAccessBuffer(slot, &Id, 1);
+    return 1;
+}
+
+// set UnorderedAccessTexture
+int RenderProcesser::SetUnordedAccessTexture(void * data) {
+    ip += sizeof(int) + 2;
+    unsigned char* p = (unsigned char*)data;
+    int slot = *p;
+    p += 1;
+    int Id = *(int*)p;
+    Interface->SetUnorderedAccessTexture(slot, &Id, 1);
+    return 1;
 }
 
 int RenderProcesser::SetDepthStencil(void * data){

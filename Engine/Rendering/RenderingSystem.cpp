@@ -54,6 +54,12 @@ void RenderingSystem::PreloadingResource() {
 	Param.as<String*>() = &Preloadings[1];
 	Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
+    // loading oit shaders
+    Preloadings[2] = String("Shader\\shaders\\OIT\\0");
+    Param.as<String*>() = &Preloadings[2];
+    Preloading = new RenderPreloading(context);
+    Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);
+
 }
 
 int RenderingSystem::Initialize() {

@@ -3,7 +3,7 @@
 
 
 
-PostpassStage::PostpassStage(RenderContext * Context): RenderStage(Context), ssaoMaterial(0), HDRShader(0), Frames(0) {
+PostpassStage::PostpassStage(RenderContext * Context): RenderStage(Context), ssaoMaterial(0), HDRShader(0), OITShader(0), Frames(0) {
 	Initiallize();
 }
 
@@ -190,6 +190,29 @@ int PostpassStage::SSAO(BatchCompiler * Compiler) {
 	return Compiled;
 }
 
+int PostpassStage::OIT(BatchCompiler * Compiler) {
+    int Compiled = 0;
+    if (OITShader) {
+        int Targets[1];
+        // resolve
+        Compiled += OITShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
+        // draw full screen quad
+        Compiled += Compiler->Quad();
+        // clear
+        Compiled += OITShader->Compile(Compiler, 5, 0, Parameter, Parameter, Context);
+        // draw full screen quad
+        Compiler->SetRenderTargets(0, Targets);
+        Compiled += Compiler->Quad();
+    }
+    else {
+        Variant * Value = Context->GetResource(String("Shader\\shaders\\OIT\\0"));
+        if (Value) {
+            OITShader = Value->as<Shader*>();
+        }
+    }
+    return Compiled;
+}
+
 int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 	// set offset
 	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
@@ -344,7 +367,7 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
     // do SSAO
 	SSAO(Compiler);
     // do OIT final pass
-    
+    OIT(Compiler);
     // do tone mapping and bloom
 	HDR(Compiler);
 	// submit to queue

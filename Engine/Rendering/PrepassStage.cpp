@@ -45,6 +45,48 @@ void PrepassStage::CreateGBuffer() {
 	Context->RegisterRenderTarget(String("Depth"), Depth);
 }
 
+
+void PrepassStage::CreateABuffer() {
+
+    // clear mask texture
+    R_TEXTURE2D_DESC desc = {};
+    desc.Width = Context->FrameWidth;
+    desc.Height = Context->FrameHeight;
+    desc.ArraySize = 1;
+    desc.CPUAccess = (R_CPU_ACCESS)0;
+    desc.BindFlag = (R_BIND_FLAG)(BIND_SHADER_RESOURCE|BIND_UNORDERED_ACCESS);
+    desc.MipLevels = 1;
+    desc.Usage = DEFAULT;
+    desc.Format = FORMAT_R32_UINT;
+    desc.SampleDesc.Count = 1;
+    ABuffers[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+    
+    // uav for depth and color
+    DWORD Pixels = Context->FrameWidth * Context->FrameHeight;
+    int nodes = 4;
+    R_BUFFER_DESC buffer_desc = {};
+    buffer_desc.BindFlags = (R_BIND_FLAG)(BIND_SHADER_RESOURCE | BIND_UNORDERED_ACCESS);
+    buffer_desc.CPUAccessFlags = (R_CPU_ACCESS)0;
+    buffer_desc.MiscFlags = (R_MISC)0;
+    buffer_desc.Size = Pixels * 4 * nodes;
+    buffer_desc.StructureByteStride = 4 * nodes;
+    buffer_desc.Usage = DEFAULT;
+    ABuffers[1] = Interface->CreateBuffer(&buffer_desc);
+    ABuffers[2] = Interface->CreateBuffer(&buffer_desc);
+    
+    // resgister targets
+    Variant Resource;
+    Resource.as<int>() = ABuffers[0];
+    Context->SetResource(String("gAOITSPClearMaskUAV"), Resource);
+    Context->SetResource(String("gAOITSPClearMaskSRV"), Resource);
+    Resource.as<int>() = ABuffers[1];
+    Context->SetResource(String("gAOITSPDepthDataUAV"), Resource);
+    Context->SetResource(String("gAOITSPDepthDataSRV"), Resource);
+    Resource.as<int>() = ABuffers[2];
+    Context->SetResource(String("gAOITSPColorDataUAV"), Resource);
+    Context->SetResource(String("gAOITSPColorDataSRV"), Resource);
+}
+
 void PrepassStage::CreateRenderState() {
 	R_DEPTH_STENCIL_DESC depth = {};
 	// two side stencil for liging pass
@@ -92,21 +134,37 @@ void PrepassStage::CreateRenderState() {
 	depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
 	depth.StencilRef = 0;
 	DepthStat[2] = Interface->CreateDepthStencilStatus(&depth);
-    // transparent pass depth
+    // transparent pass depth stencil
     depth.ZTestEnable = 1;
+    depth.ZWriteEnable = 0;
+    depth.DepthFunc = R_CMP_FUNC::LESS_EQUAL;
+    depth.StencilEnable = 1;
+    depth.StencilFailFront = R_STENCIL_OP::KEEP;
+    depth.DepthFailFront = R_STENCIL_OP::KEEP;
+    depth.StencilPassFront = R_STENCIL_OP::REPLACE;
+    depth.StencilFuncFront = R_CMP_FUNC::ALWAYS;
+    depth.StencilFailBack = R_STENCIL_OP::KEEP;
+    depth.DepthFailBack = R_STENCIL_OP::KEEP;
+    depth.StencilPassBack = R_STENCIL_OP::REPLACE;
+    depth.StencilFuncBack = R_CMP_FUNC::ALWAYS;
+    depth.StencilRef = 1;
+    DepthStat[3] = Interface->CreateDepthStencilStatus(&depth);
+    // oit resolve/clear pass depth stencil
+    depth.ZTestEnable = 0;
     depth.ZWriteEnable = 0;
     depth.DepthFunc = R_CMP_FUNC::LESS_EQUAL;
     depth.StencilEnable = 0;
     depth.StencilFailFront = R_STENCIL_OP::KEEP;
     depth.DepthFailFront = R_STENCIL_OP::KEEP;
-    depth.StencilPassFront = R_STENCIL_OP::ZERO;
-    depth.StencilFuncFront = R_CMP_FUNC::NOT_EQUAL;
+    depth.StencilPassFront = R_STENCIL_OP::KEEP;
+    depth.StencilFuncFront = R_CMP_FUNC::EQUAL;
     depth.StencilFailBack = R_STENCIL_OP::KEEP;
     depth.DepthFailBack = R_STENCIL_OP::KEEP;
-    depth.StencilPassBack = R_STENCIL_OP::ZERO;
-    depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
-    depth.StencilRef = 0;
-    DepthStat[3] = Interface->CreateDepthStencilStatus(&depth);
+    depth.StencilPassBack = R_STENCIL_OP::KEEP;
+    depth.StencilFuncBack = R_CMP_FUNC::EQUAL;
+    depth.StencilRef = 1;
+    DepthStat[4] = Interface->CreateDepthStencilStatus(&depth);
+
 	// culling pass blend state
 	R_BLEND_STATUS blend = {};
 	blend.Enable = 0;
@@ -128,11 +186,11 @@ void PrepassStage::CreateRenderState() {
 	BlendStat[2] = Interface->CreateBlendStatus(&blend);
     // alpha blend
     blend.Enable = 1;
-    blend.SrcBlend = R_BLEND::BLEND_SRC_ALPHA;
-    blend.DestBlend = R_BLEND::BLEND_INV_SRC_ALPHA;
+    blend.SrcBlend = R_BLEND::BLEND_ONE;
+    blend.DestBlend = R_BLEND::BLEND_SRC_ALPHA;
     blend.BlendOp = R_BLEND_OP::BLEND_OP_ADD;
     blend.SrcBlendAlpha = R_BLEND::BLEND_ZERO;
-    blend.DestBlendAlpha = R_BLEND::BLEND_ONE;
+    blend.DestBlendAlpha = R_BLEND::BLEND_ZERO;
     blend.BlendOpAlpha = R_BLEND_OP::BLEND_OP_ADD;
     BlendStat[3] = Interface->CreateBlendStatus(&blend);
 	// restar
@@ -152,6 +210,7 @@ void PrepassStage::CreateRenderState() {
 	Context->RegisterRenderState(String("NoZ"), DepthStat[1]);
     Context->RegisterRenderState(String("Depth"), DepthStat[2]);
     Context->RegisterRenderState(String("TransDepth"), DepthStat[3]);
+    Context->RegisterRenderState(String("ResolveDepth"), DepthStat[4]);
 	Context->RegisterRenderState(String("NoFrame"), BlendStat[0]);
 	Context->RegisterRenderState(String("Additive"), BlendStat[1]);
 	Context->RegisterRenderState(String("Blend"), BlendStat[2]);
@@ -161,8 +220,9 @@ void PrepassStage::CreateRenderState() {
 }
 
 int PrepassStage::Initial() {
-	// create gbuffer first
+	// create gbuffer abuffer first
 	CreateGBuffer();
+    CreateABuffer();
 	CreateRenderState();
 	return 0;
 }
@@ -261,8 +321,8 @@ void PrepassStage::OITInitPass(RenderingCamera * Camera, Spatial * spatial, Rend
     renderview->Queue = renderQueue;
     renderview->Parameters.Clear();
     // set render target
-    renderview->TargetCount = 1;
-    renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer"));  // 0;
+    renderview->TargetCount = 0;
+    renderview->Targets[0] = -1; // Context->GetRenderTarget(String("gPostBuffer"));
     renderview->Depth = Depth;
     renderview->ClearDepth = 0;
     renderview->ClearTargets = 0;

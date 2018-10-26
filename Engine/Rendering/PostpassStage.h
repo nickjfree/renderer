@@ -38,6 +38,7 @@ private:
 	// frame num
 	int Frames;
 	Shader * HDRShader;
+    Shader * OITShader;
 private:
 	void CreatePingPongBuffer();
 	void CreateHDRBuffer();
@@ -51,6 +52,8 @@ private:
 
 	// SSAO
 	int SSAO(BatchCompiler * Compiler);
+    // OIT
+    int OIT(BatchCompiler * Compiler);
 	// HDR
 	int ScaleBy4(BatchCompiler * Compiler);
 	int CalcAvgLum(BatchCompiler * Compiler);

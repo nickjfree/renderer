@@ -39,6 +39,21 @@
 */
 #define OP_TEXTURE 0x0e
 
+/*
+    shader buffer resource
+*/
+
+#define OP_BUFFER 0x1a
+/*
+    shader buffer uav
+*/
+
+#define OP_UAVBUF 0x1b
+/*
+    shader texture uav
+*/
+
+#define OP_UAVTEX 0x1c
 
 /*
 	geometry

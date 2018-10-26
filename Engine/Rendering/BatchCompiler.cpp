@@ -111,6 +111,53 @@ int BatchCompiler::SetTexture(int Slot, int Texture) {
 	return sizeof(char)+sizeof(char)+sizeof(int);
 }
 
+int BatchCompiler::SetShaderResourceBuffer(int Slot, int Buffer) {
+    if (Buffer == 0) {
+        printf("fuck\n");
+    }
+    *Offset++ = OP_BUFFER;
+    *(unsigned char *)Offset++ = Slot;
+    *(int *)Offset = Buffer;
+    Offset += sizeof(int);
+    if (PreTextures[Slot] != Buffer) {
+        Instancing = 0;
+    }
+    PreTextures[Slot] = Buffer;
+    return sizeof(char) + sizeof(char) + sizeof(int);
+}
+
+// set UnorderedAccessBuffer
+int BatchCompiler::SetUnordedAccessBuffer(int Slot, int Buffer) {
+    if (Buffer == 0) {
+        printf("fuck\n");
+    }
+    *Offset++ = OP_UAVBUF;
+    *(unsigned char *)Offset++ = Slot;
+    *(int *)Offset = Buffer;
+    Offset += sizeof(int);
+    if (PreUAVs[Slot] != Buffer) {
+        Instancing = 0;
+    }
+    PreUAVs[Slot] = Buffer;
+    return sizeof(char) + sizeof(char) + sizeof(int);
+}
+
+// set UnorderedAccessTexture
+int BatchCompiler::SetUnordedAccessTexture(int Slot, int Texture) {
+    if (Texture == 0) {
+        printf("fuck\n");
+    }
+    *Offset++ = OP_UAVTEX;
+    *(unsigned char *)Offset++ = Slot;
+    *(int *)Offset = Texture;
+    Offset += sizeof(int);
+    if (PreUAVs[Slot] != Texture) {
+        Instancing = 0;
+    }
+    PreUAVs[Slot] = Texture;
+    return sizeof(char) + sizeof(char) + sizeof(int);
+}
+
 int BatchCompiler::EndBuffer() {
 	*Offset++ = OP_END_EXECUTE;
 	Instancing = 0;

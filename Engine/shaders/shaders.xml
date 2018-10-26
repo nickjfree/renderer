@@ -19,7 +19,53 @@
         <ps url="Shaders\shaders\basic.ps"></ps>
       </pass>
     </technique>
+    <technique name="AlphaBlend">
+      <pass name="Basic-pre" depthstencil="TransDepth" rasterizer="Rasterizer" blend="AlphaBlend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\oit-init.ps"></ps>
+      </pass>
+    </technique>
   </shader>
+
+  <shader name="OIT">
+    <technique name="GBuffering">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\basic-pre.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="ABuffer">
+      <pass name="ABuffer" depthstencil="TransDepth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\basic.vs"></vs>
+        <ps url="Shaders\shaders\oit-init.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Resolve">
+      <pass name="Resolve" depthstencil="NoZTest" rasterizer="NoCull" blend="AlphaBlend">
+        <vs url="Shaders\shaders\oit.vs"></vs>
+        <ps url="Shaders\shaders\oit-resolve.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Clear">
+      <pass name="Clear" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\oit.vs"></vs>
+        <ps url="Shaders\shaders\oit-clear.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
 
   <shader name="Skinning">
     <technique name="GBuffering">

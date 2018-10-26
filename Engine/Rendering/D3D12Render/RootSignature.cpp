@@ -5,9 +5,10 @@
 using namespace D3D12API;
 
 
-RootSignature::RootSignature(ID3D12Device * Device_, D3D12_CPU_DESCRIPTOR_HANDLE NullHandle_) {
+RootSignature::RootSignature(ID3D12Device * Device_, D3D12_CPU_DESCRIPTOR_HANDLE NullHandle_, D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle_) {
 	Device = Device_;
 	NullHandle = NullHandle_;
+    NullUAVHandle = NullUAVHandle_;
 	InitRootSignature();
 }
 
@@ -18,14 +19,26 @@ RootSignature::~RootSignature() {
 void RootSignature::InitRootSignature() {
 	CD3DX12_DESCRIPTOR_RANGE1 DescRange[5];
 
-	// texture materials src t 0-8
-	DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
-	// texture g-buffer srv t 9-13
-	DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 9, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
-	// texture misc srv t 14-20
-	DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+	//// texture materials src t 0-8
+	//DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+	//// texture g-buffer srv t 9-13
+	//DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 9, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+	//// texture misc srv t 14-20
+	//DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+ //   // uavs  u 0-8
+ //   DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+
+
+    // texture materials src t 0-8
+    DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 0, 0);
+    // texture g-buffer srv t 9-13
+    DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 9, 0);
+    // texture misc srv t 14-20
+    DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0);
     // uavs  u 0-8
-    DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0, D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE);
+    DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0);
+
+
 	// samplers  s 0-2. samplers use static descriptors
 	DescRange[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 3, 0);
 
@@ -96,8 +109,9 @@ void RootSignature::InitMapping() {
 	}
     // uavs
     i = 0;
+    offset = 0;
     while (i <= 8) {
-        UAVs[i].CacheSlot = 0;
+        UAVs[i].CacheSlot = 3;
         UAVs[i].Offset = offset++;
         UAVs[i].RootSlot = 9;
         i++;
@@ -160,7 +174,7 @@ bool RootSignature::SetTexture(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE han
 }
 
 bool RootSignature::SetUAV(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE handle) {
-    DescTableSlot TableSlot = Textures[slot];
+    DescTableSlot TableSlot = UAVs[slot];
     DescriptorTable& DescTable = DescTables[TableSlot.CacheSlot];
     int Offset = TableSlot.Offset;
     DescTable.Fresh[Offset] = 1;
@@ -204,22 +218,31 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList * CommandList, DescriptorHea
 		return false;
 	}
 
-    // flush textures
-	for (int i = 0; i < 3; i++) {
+    // flush tables
+	for (int i = 0; i < 4; i++) {
 		DescriptorTable &DescTable = DescTables[i];
 		int Start = DescTable.Start;
 		int Num = DescTable.TableSize - Start;
 		int Slot = DescTable.RootSlot;
 		if (DescTable.Dirty || BarrierFlushed || HeapChanged) {
 			if (BarrierFlushed) {
-				// unbind rendertarget textures
-				for (int n = 0; n < DescTable.TableSize; n++) {
-					if (!DescTable.Fresh[n]) {
-						DescTable.ResourceId[n] = -1;
-						DescTable.Handles[n] = NullHandle;
-					}
-				}
-               
+                if (i < 3) {
+                    // unbind srv
+                    for (int n = 0; n < DescTable.TableSize; n++) {
+                        if (!DescTable.Fresh[n]) {
+                            DescTable.ResourceId[n] = -1;
+                            DescTable.Handles[n] = NullHandle;
+                        }
+                    }
+                } else {
+                    // unbind uav
+                    for (int n = 0; n < DescTable.TableSize; n++) {
+                        if (!DescTable.Fresh[n]) {
+                            DescTable.ResourceId[n] = -1;
+                            DescTable.Handles[n] = NullUAVHandle;
+                        }
+                    }
+                }
 			}
             if (BarrierFlushed || HeapChanged) {
                 // flush all descrptors if heap changed or barriers has been flushed

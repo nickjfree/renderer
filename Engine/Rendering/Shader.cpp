@@ -346,16 +346,26 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
             RenderPass->BufferUnits.PushBack(bu);
         }
         // get rwbuffers. unordered textture(buffers).
-        if (bind_desc.Type == D3D_SIT_UAV_RWTYPED 
-            || bind_desc.Type == D3D_SIT_UAV_RWSTRUCTURED 
+        if (bind_desc.Type == D3D_SIT_UAV_RWTYPED
+            || bind_desc.Type == D3D_SIT_UAV_RWSTRUCTURED
             || bind_desc.Type == D3D_SIT_UAV_RWBYTEADDRESS
             || bind_desc.Type == D3D_SIT_UAV_APPEND_STRUCTURED
             || bind_desc.Type == D3D_SIT_UAV_CONSUME_STRUCTURED
-            || bind_desc.Type ==D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER) {
-            RWBufferUnit rwbu;
-            rwbu.Name = (char*)bind_desc.Name;
-            rwbu.Slot = bind_desc.BindPoint;
-            RenderPass->RWBufferUnits.PushBack(rwbu);
+            || bind_desc.Type == D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER) {
+
+            if (bind_desc.Dimension == D3D_SRV_DIMENSION_TEXTURE2D) {
+                RWTextureUnit rwtu;
+                rwtu.Name = (char*)bind_desc.Name;
+                rwtu.Slot = bind_desc.BindPoint;
+                RenderPass->RWTextureUnits.PushBack(rwtu);
+            } else {
+                RWBufferUnit rwbu;
+                rwbu.Name = (char*)bind_desc.Name;
+                rwbu.Slot = bind_desc.BindPoint;
+                RenderPass->RWBufferUnits.PushBack(rwbu);
+            }
+
+
         }
 	}
     // get buffers. tbuffer. typed and structured buffer.
@@ -395,6 +405,36 @@ int Shader::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Material
 					Compiled += Compiler->SetTexture(unit->Slot, id);
 				}
 			}
+            // buffers (SRV)
+            int buffer_units = pass->BufferUnits.Size();
+            for (int i = 0; i < buffer_units; i++) {
+                BufferUnit * unit = &pass->BufferUnits[i];
+                Variant * Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+                if (Value) {
+                    int id = Value->as<int>();
+                    Compiled += Compiler->SetShaderResourceBuffer(unit->Slot, id);
+                }
+            }
+            // rwbuffers (UAV)
+            int rwbuffer_units = pass->RWBufferUnits.Size();
+            for (int i = 0; i < rwbuffer_units; i++) {
+                RWBufferUnit * unit = &pass->RWBufferUnits[i];
+                Variant * Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+                if (Value) {
+                    int id = Value->as<int>();
+                    Compiled += Compiler->SetUnordedAccessBuffer(unit->Slot, id);
+                }
+            }
+            // rwtextures (UAV)
+            int rwtexture_units = pass->RWTextureUnits.Size();
+            for (int i = 0; i < rwtexture_units; i++) {
+                RWTextureUnit * unit = &pass->RWTextureUnits[i];
+                Variant * Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+                if (Value) {
+                    int id = Value->as<int>();
+                    Compiled += Compiler->SetUnordedAccessTexture(unit->Slot, id);
+                }
+            }
 			// constants
 			int parameters = pass->Parameters.Size();
 			for (int i = 0; i < parameters; i++) {

@@ -36,6 +36,7 @@ private:
 	int PrevDepthStencil;
 	int PrevRasterizer;
 	int PreTextures[32];
+    int PreUAVs[32];
 	// buffer
 	char * CommandBuffer;
 	// buffer pointer
@@ -63,7 +64,13 @@ public:
 	int SetPixelShader(int Shader);
 	// set texture
 	int SetTexture(int Slot, int Texture);
-	// set depth
+    // set buffer
+    int SetShaderResourceBuffer(int Slot, int Buffer);
+    // set UnorderedAccessBuffer
+    int SetUnordedAccessBuffer(int Slot, int Buffer);
+    // set UnorderedAccessTexture
+    int SetUnordedAccessTexture(int Slot, int Texture);
+    // set depth
 	int SetDepthStencil(int Id);
 	// set rasterizer
 	int SetRasterizer(int Id);

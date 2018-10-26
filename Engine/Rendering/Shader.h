@@ -75,6 +75,14 @@ typedef struct RWBufferUnit {
     unsigned int Slot;
 }RWBufferUnit;
 
+/*
+    RWTextures, Unordered Access Texture
+*/
+typedef struct RWTextureUnit {
+    String Name;
+    unsigned int Slot;
+}RWTextureUnit;
+
 
 /*
 	pass
@@ -100,6 +108,9 @@ typedef struct Pass{
     Vector<BufferUnit> BufferUnits;
     // rw buffers
     Vector<RWBufferUnit> RWBufferUnits;
+    // rw textures
+    Vector<RWTextureUnit> RWTextureUnits;
+    
 }Pass;
 
 /*

@@ -57,6 +57,8 @@ namespace D3D12API {
 		DescriptorTable DescTables[5];
 		// null handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullHandle;
+        // null uav handle
+        D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle;
 		// table size
 		int TotalTableSize;
 	private:
@@ -69,7 +71,7 @@ namespace D3D12API {
 		void InitCache(D3D12_CPU_DESCRIPTOR_HANDLE NullHandle);
 
 	public:
-		RootSignature(ID3D12Device * Device, D3D12_CPU_DESCRIPTOR_HANDLE NullHandle);
+		RootSignature(ID3D12Device * Device, D3D12_CPU_DESCRIPTOR_HANDLE NullHandle, D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle);
 		virtual ~RootSignature();
 		// get root signature
 		ID3D12RootSignature * Get() { return RootSig; }

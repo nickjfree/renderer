@@ -10,14 +10,17 @@ class PrepassStage : public RenderStage
 {
 private:
 	int Targets[8];
+    int ABuffers[8];
 	int Depth;
 	int DepthStat[8];
 	int RasterStat[8];
 	int BlendStat[8];
 	Vector<RenderView*> RenderViews;
 private:
-	// create g-buffer
+	// create g-buffer for deferred rendering
 	void CreateGBuffer();
+    // create a-buffer for oit
+    void CreateABuffer();
 	// cretae renderstat
 	void CreateRenderState();
 	void PrePass(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events);

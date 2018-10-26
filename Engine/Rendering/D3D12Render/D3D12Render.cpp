@@ -192,6 +192,7 @@ void D3D12Render::InitD3D12() {
 	}
 	// init rootsigature
 	InitNullTexture();
+    InitNullUAV();
 	InitRootSignature();
 	// init current commandcontext
 	SwapCommandContext();
@@ -239,8 +240,10 @@ void D3D12Render::InitDescriptorHeaps() {
 
 void D3D12Render::InitRootSignature() {
 	D3DTexture& texture = Textures.GetItem(NullId);
+    D3DBuffer& buffer = Buffers.GetItem(NullUAV);
 	D3D12_CPU_DESCRIPTOR_HANDLE nullHandle = texture.Resource[0];
-	RootSig = new RootSignature(Device, nullHandle);
+    D3D12_CPU_DESCRIPTOR_HANDLE nullUAVHandle = buffer.UAV[0];
+	RootSig = new RootSignature(Device, nullHandle, nullUAVHandle);
 }
 
 void D3D12Render::InitSamplers() {
@@ -290,6 +293,24 @@ void D3D12Render::InitNullTexture() {
 	CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
 	ResourceBarriers.PushBack(Barrier);
 	texture.State[0].CurrentState = NewState;
+}
+
+void D3D12Render::InitNullUAV() {
+    R_BUFFER_DESC desc = {};
+    desc.BindFlags = (R_BIND_FLAG)(BIND_SHADER_RESOURCE| BIND_UNORDERED_ACCESS);
+    desc.CPUAccessFlags = (R_CPU_ACCESS)0;
+    desc.Size = 16;
+    desc.StructureByteStride = 16;
+    desc.Usage = DEFAULT;
+    NullUAV = CreateBuffer(&desc);
+    D3DBuffer &buffer = Buffers.GetItem(NullUAV);
+    D3D12_CPU_DESCRIPTOR_HANDLE handle = buffer.UAV[0];
+    D3D12_RESOURCE_STATES OldState = buffer.State[0].CurrentState;
+    ID3D12Resource * Resource = buffer.BufferResource[0];
+    D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+    CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+    ResourceBarriers.PushBack(Barrier);
+    buffer.State[0].CurrentState = NewState;
 }
 
 int D3D12Render::Initialize(int Width_, int Height_) {
@@ -379,6 +400,7 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 	texture.MultiResource = false;
 	D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COPY_DEST;
 	D3D12_CLEAR_VALUE clear = {};
+    D3D12_CLEAR_VALUE * pClear = &clear;
 	clear.Format = (DXGI_FORMAT)Desc->Format;
 	if (Desc->BindFlag & BIND_DEPTH_STENCIL) {
 		// create multi rt  and ds for each frame
@@ -404,14 +426,20 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 		clear.Color[1] = 0.0f;
 		clear.Color[2] = 0.0f;
 		clear.Color[3] = 0.0f;
-	}
+	} else if (Desc->BindFlag & BIND_UNORDERED_ACCESS) {
+        // Num = NUM_FRAMES;
+        texture.MultiFrame = false;
+        textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+        pClear = NULL;
+    }
 	for (int i = 0; i < Num; i++) {
 		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&textureDesc,
 			state,
-			&clear,
+            pClear,
 			IID_PPV_ARGS(&texture.Texture[i]));
 		texture.State[i].CurrentState = state;
 	}
@@ -424,7 +452,7 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 	printf("create Texture2D\n");
 	D3DTexture texture = {};
 	int Id = Textures.AddItem(texture);
-	bool isCube;
+	bool isCube = 0;
 	if (Desc) {
 		CreateTexture2DRaw(Desc, texture, RawData, Size);
 	} else if (!Desc) {
@@ -474,11 +502,28 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Siz
 			texture.Depth[i] = handle;
 			Device->CreateDepthStencilView(texture.Texture[0], &dsDesc, handle);
 		}
-	} else if (!Desc) {
+	} else if (Desc && Desc->BindFlag & BIND_UNORDERED_ACCESS) {
+        NumFrames = 1;
+        D3D12_RESOURCE_DESC resDesc = texture.Texture[0]->GetDesc();
+        vdesc.Format = (DXGI_FORMAT)resDesc.Format;
+        if (isCube) {
+            vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+            vdesc.TextureCube.MipLevels = resDesc.MipLevels;
+        }
+        else {
+            vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            vdesc.Texture2D.MipLevels = resDesc.MipLevels;
+        }
+        udesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        udesc.Format = (DXGI_FORMAT)Desc->Format;
+        udesc.Texture2D.MipSlice = 0;
+        udesc.Texture2D.PlaneSlice = 0;
+    }
+    else if (!Desc) {
 		// commen textures, only use frame 0 heaps
 		NumFrames = 1;
-		D3D12_RESOURCE_DESC resDesc = texture.Texture[0]->GetDesc();
-		vdesc.Format = (DXGI_FORMAT)resDesc.Format;
+        D3D12_RESOURCE_DESC resDesc = texture.Texture[0]->GetDesc();
+        vdesc.Format = (DXGI_FORMAT)resDesc.Format;
 		if (isCube) {
 			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
 			vdesc.TextureCube.MipLevels = resDesc.MipLevels;
@@ -524,7 +569,7 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
     Device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
         D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Buffer(desc->Size),
+        &CD3DX12_RESOURCE_DESC::Buffer(desc->Size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
         D3D12_RESOURCE_STATE_COPY_DEST,
         nullptr,
         IID_PPV_ARGS(&Buffer.BufferResource[0]));
@@ -547,7 +592,7 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
     vdesc.Buffer.FirstElement = 0;
     vdesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
     vdesc.Buffer.StructureByteStride = desc->StructureByteStride;
-    vdesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+    vdesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
     // uav desc
     udesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
@@ -569,6 +614,7 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
         // store the state
         Buffer.State[i].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
     }
+    Buffers[Id] = Buffer;
     return Id;
 }
 
@@ -918,6 +964,9 @@ void D3D12Render::SetUnorderedAccessBuffer(int StartSlot, int * Buffers_, int Co
             CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
             ResourceBarriers.PushBack(Barrier);
             Buffer.State[ResourceIndex].CurrentState = NewState;
+            // for test
+            CD3DX12_RESOURCE_BARRIER UAVBarrier = CD3DX12_RESOURCE_BARRIER::UAV(Resource);
+            ResourceBarriers.PushBack(UAVBarrier);
         }
     }
 }
@@ -936,7 +985,7 @@ void D3D12Render::SetBuffer(int StartSlot, int * Buffers_, int Count) {
             ResourceIndex = FrameIndex;
         }
 
-        D3D12_CPU_DESCRIPTOR_HANDLE handle = Buffer.UAV[HandleIndex];
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = Buffer.SRV[HandleIndex];
         D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
         D3D12_RESOURCE_STATES OldState = Buffer.State[ResourceIndex].CurrentState;
         ID3D12Resource * Resource = Buffer.BufferResource[ResourceIndex];
@@ -965,7 +1014,7 @@ void D3D12Render::SetUnorderedAccessTexture(int StartSlot, int * Texture, int Co
         if (texture.MultiResource) {
             ResourceIndex = FrameIndex;
         }
-        D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.Resource[HandleIndex];
+        D3D12_CPU_DESCRIPTOR_HANDLE handle = texture.UAV[HandleIndex];
         D3D12_RESOURCE_STATES OldState = texture.State[ResourceIndex].CurrentState;
         ID3D12Resource * Resource = texture.Texture[ResourceIndex];
         D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
@@ -976,6 +1025,9 @@ void D3D12Render::SetUnorderedAccessTexture(int StartSlot, int * Texture, int Co
             CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
             ResourceBarriers.PushBack(Barrier);
             texture.State[ResourceIndex].CurrentState = NewState;
+            // for test
+            CD3DX12_RESOURCE_BARRIER UAVBarrier = CD3DX12_RESOURCE_BARRIER::UAV(Resource);
+            ResourceBarriers.PushBack(UAVBarrier);
         }
     }
 }

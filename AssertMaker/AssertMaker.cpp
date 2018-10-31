@@ -255,91 +255,10 @@ void ExtractMeshToH3d(aiScene * scene)
 			const char * name = scene->mMeshes[i]->mName.C_Str();
 			printf("extracting mesh %s\n", name);
 			// save to files
-			//SaveH3d(scene->mMeshes[i], (char*)name);
+			SaveH3d(scene->mMeshes[i], (char*)name);
 			// SaveH3dCharacter(scene->mMeshes[i], (char*)name);
 		}
 	}
-	// save bone data
-	DWORD write;
-	char pad = 0;
-	aiMesh *Mesh = scene->mMeshes[0];
-	BoneInfo * Bones = new BoneInfo[Mesh->mNumBones];
-	HANDLE BoneFile = CreateFileA("bone", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
-	for (int i = 0; i < Mesh->mNumBones; i++) {
-		aiBone * bone = Mesh->mBones[i];
-		Bones[i].name = bone->mName.data;
-		Bones[i].offsetMatrix = bone->mOffsetMatrix;
-		Bones[i].parent = -1;
-		// find parent id
-		// write parent id
-	}
-	// save parent infos
-	for (int i = 0; i < Mesh->mNumBones; i++) {
-		aiBone * bone = Mesh->mBones[i];
-		Bones[i].name = bone->mName.data;
-		Bones[i].parent = -1;
-		// find node first
-		aiNode * self = FindNode(scene->mRootNode, bone->mName.data);
-		aiNode * ParentNode = self->mParent;
-		// find parent id
-		int p = 0;
-		for (int p = 0; p < Mesh->mNumBones; p++) {
-			if (Mesh->mBones[p]->mName == ParentNode->mName) {
-				Bones[i].parent = p;
-			}
-		}
-		WriteFile(BoneFile, &Bones[i].parent, sizeof(int), &write, NULL);
-		WriteFile(BoneFile, &pad, sizeof(char) * 12, &write, NULL);
-		WriteFile(BoneFile, &Bones[i].offsetMatrix, sizeof(float) * 16, &write, NULL);
-		
-		printf("%d bone: %s %d\n", i, Mesh->mBones[i]->mName.data, Bones[i].parent);
-	}
-
-
-	//WriteFile(BoneFile, &bone->mOffsetMatrix, sizeof(float) * 16, &write, NULL);
-	CloseHandle(BoneFile);
-
-	// save test animation file
-	HANDLE AnimeFile = CreateFileA("anime", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
-	aiAnimation * animation = scene->mAnimations[0];
-	for (int i = 0; i < animation->mNumChannels; i++) {
-		aiString name = animation->mChannels[i]->mNodeName;
-		int BoneId = -1;
-		for (int p = 0; p < Mesh->mNumBones; p++) {
-			if (Mesh->mBones[p]->mName == name) {
-				BoneId = p;
-			}
-		}
-		// same frame 0 as test frame
-		TestFrame Frame = {};
-		if (BoneId == -1) {
-			printf("node with no bone %s\n", name.data);
-			continue;
-		}
-		int index = 0;
-		if (animation->mChannels[i]->mNumPositionKeys == 39) {
-			index = 1;
-		} else {
-			index = 0;
-		}
-		Frame.BoneId = BoneId;
-		Frame.Translation[0] = animation->mChannels[i]->mPositionKeys[index].mValue.x;
-		Frame.Translation[1] = animation->mChannels[i]->mPositionKeys[index].mValue.y;
-		Frame.Translation[2] = animation->mChannels[i]->mPositionKeys[index].mValue.z;
-		index = 0;
-		if (animation->mChannels[i]->mNumRotationKeys == 39) {
-			index = 1;
-		} else {
-			index = 0;
-		}
-		Frame.Rotation[0] = animation->mChannels[i]->mRotationKeys[index].mValue.x;
-		Frame.Rotation[1] = animation->mChannels[i]->mRotationKeys[index].mValue.y;
-		Frame.Rotation[2] = animation->mChannels[i]->mRotationKeys[index].mValue.z;
-		Frame.Rotation[3] = animation->mChannels[i]->mRotationKeys[index].mValue.w;
-
-		WriteFile(AnimeFile, &Frame, sizeof(Frame), &write, NULL);
-	}
-	CloseHandle(AnimeFile);
 }
 
 
@@ -560,8 +479,8 @@ bool DoTheImportThing(const std::string& pFile) {
 		return false;  
 	}  // Now we can access the file's contents.   
 	printf("scene load success\n");
-	//ExtractMeshToH3d(scene);
-	ExtractAnimeMesh(scene);
+	ExtractMeshToH3d(scene);
+	//ExtractAnimeMesh(scene);
 	// We're done. Everything will be cleaned up by the importer destructor  
 	return true;
 }
@@ -570,7 +489,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("human_test.fbx");
+	DoTheImportThing("resistor.fbx");
 	return 0;
 }
 

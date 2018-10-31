@@ -8,7 +8,7 @@
 //BTW: every shaders use the same vertex format
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
-static const float MiddleGray = 0.2f;
+static const float MiddleGray = 0.18f;
 static const float BRIGHT_PASS_THRESHOLD = 5.0f;
 
 

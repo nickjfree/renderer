@@ -151,41 +151,28 @@ void D3D12Render::InitD3D12() {
 	swapChain->QueryInterface(IID_PPV_ARGS(&SwapChain));
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
 
-	// Create descriptor heaps.
-	// Describe and create a render target view (RTV) descriptor heap.
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc = {};
-	rtvHeapDesc.NumDescriptors = FrameCount;
-	rtvHeapDesc.NumDescriptors = 2;
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	Device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&RtvHeap));
-
-	RtvDescriptorSize = Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	// Create frame resources.
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = RtvHeap->GetCPUDescriptorHandleForHeapStart();
-
-	// Create a RTV for each frame.
-	for (UINT n = 0; n < FrameCount; n++)
-	{
-		SwapChain->GetBuffer(n, IID_PPV_ARGS(&RenderTargets[n]));
-		Device->CreateRenderTargetView(RenderTargets[n], nullptr, rtvHandle);
-		rtvHandle.ptr += RtvDescriptorSize;
-	}
-
 	// create resource 0 as backbuffer
 	D3DTexture NewTexture = {};
+    D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle;
+    D3D12_RENDER_TARGET_VIEW_DESC vdesc = {};
+
 	int Id = Textures.AddItem(NewTexture);
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
 	D3DTexture& texture = Textures.GetItem(Id);
-	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	texture.MultiFrame = 1;
 	texture.MultiResource = 1;
+
+    vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    vdesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+    vdesc.Texture2D.MipSlice = 0;
+    vdesc.Texture2D.PlaneSlice = 0;
+
 	for (UINT n = 0; n < NUM_FRAMES; n++) {
 		SwapChain->GetBuffer(n, IID_PPV_ARGS(&RenderTargets[n]));
 		rtvHandle = CpuRTVHeaps[n][HeapIndex]->GetCpuHandle(HeapSlot);
-		Device->CreateRenderTargetView(RenderTargets[n], nullptr, rtvHandle);
+		Device->CreateRenderTargetView(RenderTargets[n], &vdesc, rtvHandle);
 		texture.Target[n] = rtvHandle;
 		texture.Texture[n] = RenderTargets[n];
 		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;

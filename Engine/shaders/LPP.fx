@@ -166,7 +166,7 @@ PS_Output PS_LPP_Normal_Skinning(PS_Input input)
     PS_Output output = (PS_Output)0;
     float4 normal = gNormalMap0.Sample(gSam,input.TexCoord);
     float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
-    float4 specular = gSpecularMap0.Sample(gSam, input.TexCoord);
+    float4 specular = float4(1, 0.2f, 1, 0);
     normal = normal * 2.0 - 1;
     normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
     normal.w = 0;
@@ -177,7 +177,7 @@ PS_Output PS_LPP_Normal_Skinning(PS_Input input)
     output.Normal.xy = EncodeNormal(normal);
     output.Depth.x = input.Depth;
     output.Diffuse = float4(1,1,1,1);
-    output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
+    output.Specular = float4(gSpecular, 1 - specular.y, 0.0f, 0);
     return output;
 }
 

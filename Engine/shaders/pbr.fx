@@ -173,6 +173,7 @@ PS_Output PS_PointLightShadow(PS_Input input)
 			float3 F0 = float3(rm.x, rm.x, rm.x);
 			float metallic = rm.z;
 			float roughness = pow(1 - 0.7 * smoothness, 6);
+			//float roughness = 1 - smoothness;
 			float3 f0 = lerp(F0, albedo.rgb, rm.z);
 			float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
 			float3 an = gLightColor * intensity * saturate(1 - d / radius);
@@ -207,6 +208,7 @@ PS_Output PS_DirectionLight(PS_Input input)
 	float3 F0 = float3(rm.x, rm.x, rm.x);
 	float metallic = rm.z;
 	float roughness = pow(1 - 0.7* smoothness, 6);
+	//float roughness = 1 - smoothness;
 	float3 f0 = lerp(F0, albedo.rgb, rm.z);
 	float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
 	output.Light = float4(color * gLightColor * saturate(dot(Normal, L)), 0) * intensity;
@@ -268,6 +270,8 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 	float metallic = rm.z;
 	float  Roughness = pow(1 - 0.7 * smoothness, 6);
 
+	//float  Roughness = 1 - smoothness;
+
 	float2 DFGterms = DFGLookup(Roughness, NoV);
 
 	float4 WorldNormal = mul(float4(N.xyz, 0), gInvertViewMaxtrix);
@@ -281,7 +285,7 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 	float  mipmap = SelectLDMipmap(Roughness);
 
 
-	float3 specular = diffuse * ApproximateSpecularIBL(F0, Roughness, N, V);
+	float3 specular = diffuse * ApproximateSpecularIBL(f0, Roughness, N, V);
 
 	diffuse = saturate((1 - metallic) * diffuse);
 	color.rgb = diffuse * irradiance + specular;

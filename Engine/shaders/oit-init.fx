@@ -21,6 +21,8 @@ struct PS_Output
 };
 
 
+
+[earlydepthstencil]
 PS_Output PS(PS_Input input)
 {   
     PS_Output output = (PS_Output)0;

@@ -22,7 +22,8 @@ int TestGen(char * File) {
 	char * meshes[4] = {
 		"Mesh\\Unit.pack\\plane2\\0", 
 		//"Mesh\\Unit.pack\\adata121\\0", 
-		"Mesh\\character.pack\\human\\0",
+		// "Mesh\\character.pack\\human\\0",
+        "Mesh\\chip.pack\\resistor\\0",
 		"Mesh\\Unit.pack\\sphere\\0", 
 		"Mesh\\Unit.pack\\sneak\\0" 
 	};
@@ -49,7 +50,8 @@ int TestGen(char * File) {
 		"Material\\Materials\\lightprobe.xml\\0", 
 		"Material\\Materials\\cylinder.xml\\0", 
 		//"Material\\Materials\\usbdrive.xml\\0", 
-		"Material\\Materials\\human.xml\\0",
+		// "Material\\Materials\\human.xml\\0",
+        "Material\\Materials\\resistor.xml\\0",
 		"Material\\Materials\\light.xml\\0",
 	};
 	MatrialEntry material = {};
@@ -120,7 +122,7 @@ int TestGen(char * File) {
 	light.MaterialIndex = 0;
 	light.ModelIndex = 2;
 	light.Color = Vector3(1, 1, 1);
-	light.Intensity = 10;
+	light.Intensity = 1;
 	light.Radius = 50;
 	light.Type = 0;
 	strcpy_s(light.Info.TypeName, "Light");
@@ -136,7 +138,7 @@ int TestGen(char * File) {
 	light.MaterialIndex = 0;
 	light.ModelIndex = 2;
 	light.Color = Vector3(1, 1, 1);
-	light.Intensity = 3.14;
+	light.Intensity = 1;
 	light.Radius = 50;
 	light.Type = 1;
 	light.Direction = Vector3(1.414f, -1.414f, 0.5);
@@ -190,7 +192,7 @@ int TestGen(char * File) {
 	light.MaterialIndex = 3;
 	light.ModelIndex = 2;
 	light.Color = Vector3(1, 1, 1);
-	light.Intensity = 3.14;
+	light.Intensity = 1;
 	light.Radius = 50;
 	light.Type = 3;
 	light.Direction = Vector3(1.414f, -1.414f, 0.5);

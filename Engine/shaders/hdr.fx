@@ -49,7 +49,8 @@ PS_Output PS_Log(PS_Input input)
     {
         // Compute the sum of log(luminance) throughout the sample points
 		vSample = gPostBuffer.Sample(gSamBilinear, input.TexCoord + gSampleOffsets[iSample]);
-        fLogLumSum += log(dot(vSample, LumVector)+0.0001f);
+        // fLogLumSum += log(dot(vSample, LumVector)+0.0001f);
+        fLogLumSum += dot(vSample, LumVector);
     }
     // Divide the sum to complete the average
     fLogLumSum *= 0.25;
@@ -104,7 +105,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	float vLum = 0.0f;
 	float4 vBloom = 0.0f;
     vLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));
-	vLum = exp(vLum);
+	// vLum = exp(vLum);
 	vSample = gPostBuffer.Sample(gSam,input.TexCoord);
 	vBloom =  gDiffuseMap1.Sample(gSam,input.TexCoord);
 	vSample.xyz *= MiddleGray /(vLum + 0.001f);
@@ -113,7 +114,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	// bloom effect
 	vSample += vBloom * 1.0f;
 	output.Color = float4(vSample, 0);
-	//output.Color = vLum;
+	//output.Color = gPostBuffer.Sample(gSam,input.TexCoord);;
 	return output;
 }
 
@@ -122,7 +123,7 @@ PS_Output PS_BrightPass(PS_Input input)
 	PS_Output output = (PS_Output)0;
 	float4 vSample = gPostBuffer.Sample(gSam,input.TexCoord);
 	float  fAdaptedLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));;
-	fAdaptedLum = exp(fAdaptedLum);
+	// fAdaptedLum = exp(fAdaptedLum);
 	// Determine what the pixel's value will be after tone-mapping occurs
 	vSample.rgb *= MiddleGray /(fAdaptedLum + 0.001f);
 	

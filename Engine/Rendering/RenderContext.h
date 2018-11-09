@@ -38,6 +38,10 @@ typedef struct ShaderParameterDesc {
 #define FRAMEBUFFER_WIDTH  3840
 #define FRAMEBUFFER_HEIGHT 2160
 
+//#define FRAMEBUFFER_WIDTH  1920
+//#define FRAMEBUFFER_HEIGHT 1080
+
+
 
 class RenderContext
 {

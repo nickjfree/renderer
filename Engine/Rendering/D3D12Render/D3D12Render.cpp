@@ -132,13 +132,20 @@ void D3D12Render::InitD3D12() {
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.SampleDesc.Count = 1;
+    // full screen
+    DXGI_SWAP_CHAIN_FULLSCREEN_DESC fullScreenChain = {};
+    fullScreenChain.RefreshRate.Denominator = 1;
+    fullScreenChain.RefreshRate.Numerator = 60;
+    fullScreenChain.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+    fullScreenChain.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+    fullScreenChain.Windowed = 1;
 
 	IDXGISwapChain1 * swapChain;
 	if (FAILED(pFactory->CreateSwapChainForHwnd(
 		Queue,		// Swap chain needs the queue so that it can force a flush on it.
 		hWnd,
 		&swapChainDesc,
-		NULL,
+        &fullScreenChain,
 		NULL,
 		&swapChain
 	))) {
@@ -160,11 +167,11 @@ void D3D12Render::InitD3D12() {
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
 	D3DTexture& texture = Textures.GetItem(Id);
-	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	texture.MultiFrame = 1;
 	texture.MultiResource = 1;
 
-    vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     vdesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
     vdesc.Texture2D.MipSlice = 0;
     vdesc.Texture2D.PlaneSlice = 0;
@@ -247,9 +254,9 @@ void D3D12Render::InitSamplers() {
 	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(0));
 	// bilinear sampler
 	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(1));
 	// point sampler
 	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;

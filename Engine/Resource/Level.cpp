@@ -241,7 +241,7 @@ int Level::InitScript() {
             PhysicsObject * Physics = new PhysicsObject(context);
             // creat convext hulls for collision shape
             MeshRenderer * render = (MeshRenderer *)Object->GetComponent(String("Renderer"));
-            render->SetTransparente();
+            //render->SetTransparente();
         }
 		if (Object->GetName() == "Lumia") {
 			PhysicsObject * Physics = new PhysicsObject(context);

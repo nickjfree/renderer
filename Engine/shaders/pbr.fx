@@ -3,14 +3,12 @@
 
 #include "common.fx"
 
-// Physics Based Shading for point light
+// Physics Based Shading
 
 #define  PI  3.141592657
-#define  IBL_LD_MIPMAPS 6
-//#define  SMOOTHNESS 0.3
-// #define  F0 float3(0.5, 0.5, 0.5f)
+#define  IBL_LD_MIPMAPS 8
 #define  F90 1
-//#define  METALLIC 0
+
 
 struct VS_Input
 {
@@ -31,10 +29,15 @@ struct PS_Output
 
 
 // pbr functions
-float3 F_Schlick(in float3 f0, in float f90, in float u)
+float3 F_Schlick(in float3 f0, in float f90, in float HdotV)
 {
-	return f0 + (f90 - f0) * pow(1.f - u, 5.f);
+	return f0 + (f90 - f0) * pow(1.f - HdotV, 5.f);
 }
+
+float3 FresnelSchlickRoughness(float3 F0, float roughness, float cosTheta)
+{
+    return F0 + (max(float(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}  
 
 
 float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
@@ -54,30 +57,41 @@ float V_SmithGGXCorrelated(float NdotL, float NdotV, float alphaG)
 	return 0.5f / (Lambda_GGXV + Lambda_GGXL);
 }
 
-float D_GGX(float NdotH, float m)
-{
-	// Divide by PI is apply later 
-	float m2 = m * m;
-	float f = (NdotH * m2 - NdotH) * NdotH + 1;
-	return m2 / (f * f);
 
+float DistributionGGX(float3 N, float3 H, float roughness) 
+{
+    float a      = roughness * roughness;
+    float a2     = a * a;
+    float NdotH  = saturate(dot(N, H));
+    float NdotH2 = NdotH * NdotH;
+
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return num / denom;
 }
 
-float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughness)
+float GeometrySchlickGGX(float NdotV, float roughness) 
 {
-	float energyBias = lerp(0, 0.5, linearRoughness);
-	float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
-	float fd90 = energyBias + 2.0 * LdotH*LdotH * linearRoughness;
-	float3 f0 = float3(1.0f, 1.0f, 1.0f);
-	float lightScatter = F_Schlick(f0, fd90, NdotL).r;
-	float viewScatter = F_Schlick(f0, fd90, NdotV).r;
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
 
-	return lightScatter * viewScatter * energyFactor;
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
 }
 
-
-
-
+float GeometrySmith(float3 N, float3 V, float3 L, float roughness) 
+{
+    float NdotV = saturate(dot(N, V));
+    float NdotL = saturate(dot(N, L));
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
 
 //// This code is an example of call of previous functions 
 //
@@ -102,29 +116,32 @@ float Fr_DisneyDiffuse(float NdotV, float NdotL, float LdotH, float linearRoughn
 // roughness = (10-7 Smoothness)^6
 
 
-
-float4 Calc_PointLight(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness, float3 albedo, float metallic) {
+float4 BRDF(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness, float3 albedo, float metallic) {
 
 	float NdotV = abs(dot(N, V)) + 1e-5f;
 	// avoid artifact 
 	float3 H = normalize(V + L);
+
 	float LdotH = saturate(dot(L, H));
 	float NdotH = saturate(dot(N, H));
 	float NdotL = saturate(dot(N, L));
 
 	// Specular BRDF
-	float3 F = F_Schlick(f0, f90, LdotH);
-	float Vis = V_SmithGGXCorrelated(NdotV, NdotL, roughness);
-	float D = D_GGX(NdotH, roughness);
-	float3 Fr = D * F * Vis / PI;
+    float  NDF = DistributionGGX(N, H, roughness);        
+    float  G   = GeometrySmith(N, V, L, roughness);      
+    float3 F   = F_Schlick(f0, f90, saturate(dot(H, V)));      
+
+	float3 numerator = NDF * G * F;
+    float denominator = 4.0 * NdotV * NdotH;
+    float3 specular = numerator / max(denominator, 0.001);
 
 	// Diffuse BRDF 
-	float Fd = Fr_DisneyDiffuse(NdotV, NdotL, LdotH, roughness) / PI;
-	//Fd = 1 / PI;
-//	return float4(lerp(albedo * Fd, Fr, Metalic), 0);
-	Fd = saturate((1 - metallic) * Fd);
-	return float4(albedo * Fd + Fr, 0);
-//	return float4(0 * Fd + Fr, 0);
+	float3 kS = F;
+	float3 kD = 1 - kS;
+	kD = lerp(kD, 0, metallic);
+	float3 diffuse = kD * albedo / PI;
+
+	return float4(diffuse + specular, 0);
 }
 
 
@@ -169,19 +186,15 @@ PS_Output PS_PointLightShadow(PS_Input input)
 			float d = distance(gLightPosition, Position.xyz);
 			float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
 			float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
-			float smoothness = rm.y;
 			float3 F0 = float3(rm.x, rm.x, rm.x);
 			float metallic = rm.z;
-			float roughness = pow(1 - 0.7 * smoothness, 6);
-			//float roughness = 1 - smoothness;
-			float3 f0 = lerp(F0, albedo.rgb, rm.z);
-			float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
+			float roughness = rm.y;
+			float3 SpecularColor = lerp(F0, albedo.rgb, metallic);
+			float3 color = BRDF(Normal, V, L, SpecularColor, F90, roughness, albedo.xyz, metallic);
 			float3 an = gLightColor * intensity * saturate(1 - d / radius);
 			output.Light = float4(color * an * saturate(dot(Normal, L)), 0);
 			return output;
 		}
-		//output.Light = float4(1,1,1,0);
-		// return output;
 	}
 	output.Light = float4(0, 0, 0, 0);
 	return output;
@@ -202,17 +215,16 @@ PS_Output PS_DirectionLight(PS_Input input)
 	V = normalize(V);
 	float3 H = normalize(L + V);
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
-	// float3 F0 = gSpecularBuffer.Sample(gSam, input.TexCoord);
 	float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
-	float smoothness = rm.y;
 	float3 F0 = float3(rm.x, rm.x, rm.x);
 	float metallic = rm.z;
-	float roughness = pow(1 - 0.7* smoothness, 6);
-	//float roughness = 1 - smoothness;
-	float3 f0 = lerp(F0, albedo.rgb, rm.z);
-	float3 color = Calc_PointLight(Normal, V, L, f0, F90, roughness, albedo.xyz, metallic);
+	float roughness = rm.y;
+	float3 SpecularColor = lerp(F0, albedo.rgb, metallic);
+	float3 color = BRDF(Normal, V, L, SpecularColor, F90, roughness, albedo.xyz, metallic);
 	output.Light = float4(color * gLightColor * saturate(dot(Normal, L)), 0) * intensity;
-//	output.Light = saturate(dot(Normal, L));
+
+
+	// output.Light = albedo;
 	return output;
 }
 
@@ -222,12 +234,13 @@ float SelectLDMipmap(float Roughness)
 	return lerp(0, IBL_LD_MIPMAPS - 1, Roughness);
 }
 
-float2 DFGLookup(float Roughness, float NoV)
+float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV)
 {
-	return gLUT.Sample(gSamBilinear, float2(Roughness, NoV));
+	float2 BRDF = gLUT.Sample(gSam, float2(Roughness, NoV));
+	return SpecularColor * BRDF.x + BRDF.y;
 }
 
-float3 ApproximateSpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
+float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 {
 
 	float NoV = saturate(dot(N, V));
@@ -235,10 +248,10 @@ float3 ApproximateSpecularIBL(float3 SpecularColor, float Roughness, float3 N, f
 
 	float mipmap = SelectLDMipmap(Roughness);
 	float4 WorldReflect = mul(float4(R, 0), gInvertViewMaxtrix);
-	float3 PrefilteredColor = gLdCube.SampleLevel(gSamBilinear, WorldReflect, mipmap).rgb;
-	float2 EnvBRDF = DFGLookup(Roughness, NoV);
+	float3 PrefilteredColor = gLdCube.SampleLevel(gSam, WorldReflect, mipmap).rgb;
+	float3 envBRDF = EnvBRDF(SpecularColor, Roughness, NoV);
 
-	return PrefilteredColor * (SpecularColor * EnvBRDF.x + EnvBRDF.y);
+	return PrefilteredColor * envBRDF;
 
 }
 
@@ -260,38 +273,39 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 
 	float3 V = -Position.xyz;
 	V = normalize(V);
-
 	float NoV = saturate(dot(N, V));
 
+
 	float4 color;
+
+	// get params
 	float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
-	float smoothness = rm.y;
 	float3 F0 = float3(rm.x, rm.x, rm.x);
 	float metallic = rm.z;
-	float  Roughness = pow(1 - 0.7 * smoothness, 6);
-
-	//float  Roughness = 1 - smoothness;
-
-	float2 DFGterms = DFGLookup(Roughness, NoV);
-
-	float4 WorldNormal = mul(float4(N.xyz, 0), gInvertViewMaxtrix);
-
-	float3 irradiance = gLightProbeIrradiance.Sample(gSamBilinear, WorldNormal).rgb;
+	float roughness = rm.y;
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
+    float4 WorldNormal = mul(float4(N.xyz, 0), gInvertViewMaxtrix);
+	float3 irradiance = gLightProbeIrradiance.Sample(gSamBilinear, WorldNormal).rgb;
 
-	float3 f0 = lerp(F0, albedo.rgb, rm.z);
-	
-	float3 diffuse = (f0 * DFGterms.x + F90 * DFGterms.y) * albedo.xyz;
-	float  mipmap = SelectLDMipmap(Roughness);
+	// IBL Specular
+	float3 SpecularColor = lerp(F0, albedo.rgb, metallic);
+	float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
+    float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
 
 
-	float3 specular = diffuse * ApproximateSpecularIBL(f0, Roughness, N, V);
+	// IBL Diffuse
+	float3 diffuse = irradiance * albedo.xyz;
+	float3 kD = 1 - kS;
+	kD = lerp(kD, 0, metallic);
 
-	diffuse = saturate((1 - metallic) * diffuse);
-	color.rgb = diffuse * irradiance + specular;
+	float intensity = gRadiusIntensity.y;
+
+	color.rgb = (kD * diffuse + specular) * intensity;
+	//color.rgb = (kD * diffuse) * intensity;
+	// color.rgb = albedo;
 	color.a = 1;
-
 	output.Light = color;
 	return output;
 }
+
 #endif

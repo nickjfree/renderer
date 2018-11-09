@@ -157,7 +157,7 @@ PS_Output PS_LPP_Normal(PS_Input input)
 	output.Depth.x = input.Depth;
 	output.Diffuse = diffuse;
 	//output.Diffuse = float4(1,1,1,0);
-	output.Specular = float4(gSpecular, 1 - specular.y, specular.z, 0);
+	output.Specular = float4(gSpecular, specular.y, specular.z, 0);
 	return output;
 }
 
@@ -177,7 +177,7 @@ PS_Output PS_LPP_Normal_Skinning(PS_Input input)
     output.Normal.xy = EncodeNormal(normal);
     output.Depth.x = input.Depth;
     output.Diffuse = float4(1,1,1,1);
-    output.Specular = float4(gSpecular, 1 - specular.y, 0.0f, 0);
+    output.Specular = float4(gSpecular, specular.y, 0.0f, 0);
     return output;
 }
 

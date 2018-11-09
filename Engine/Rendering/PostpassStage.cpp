@@ -128,6 +128,8 @@ void PostpassStage::CreateHDRBuffer() {
 		desc.Height = height;
 		desc.Format = FORMAT_R16_FLOAT;
 		if (width < 4 && height < 4) {
+            desc.Width = 1;
+            desc.Height = 1;
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 			AdaptLum[0] = LumScaleArray[i];
 			LumScaleArray[i+1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
@@ -357,7 +359,7 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	// set render target
 	renderview->TargetCount = 1;
     renderview->ClearTargets = 1;
-	renderview->Targets[0] = PingPong[1];
+    renderview->Targets[0] =  PingPong[1];
 	//renderview->Depth = Context->GetRenderTarget(String("Depth"));
 	renderview->ClearDepth = 0;
 	BatchCompiler * Compiler = renderview->Compiler;
@@ -371,6 +373,8 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
     // do tone mapping and bloom
 	HDR(Compiler);
 	// submit to queue
+    // Compiler->SetRenderTargets(1, renderview->Targets);
+
 	renderview->QueueCommand();
 	renderview->Recycle();
 	return 0;

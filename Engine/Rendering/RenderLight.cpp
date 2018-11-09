@@ -119,12 +119,15 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	switch (LightType) {
 	case POINT:
 		Stage = 1;
+        //return Compiled;
 		break;
 	case DIRECTION:
 		Stage = 2;
+       // return Compiled;
 		break;
 	case ENV:
 		Stage = 3;
+       // return Compiled;
 		break;
 	default:
 		Stage = 1;

@@ -39,10 +39,10 @@ void PostpassStage::CreatePingPongBuffer() {
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
 	desc.MipLevels = 1;
 	desc.Usage = DEFAULT;
-	desc.Format = FORMAT_R16G16B16A16_UNORM;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
 	PingPong[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	desc.Format = FORMAT_R16G16B16A16_UNORM;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	PingPong[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	//// resgister targets

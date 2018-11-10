@@ -28,7 +28,7 @@ void PrepassStage::CreateGBuffer() {
 	Targets[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	Targets[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	desc.Format = FORMAT_R8G8B8A8_UNORM;
+	desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
 	Targets[3] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R8G8B8A8_UNORM;
 	Targets[4] = Interface->CreateTexture2D(&desc, 0, 0, 0);

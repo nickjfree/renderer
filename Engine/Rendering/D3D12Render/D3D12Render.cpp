@@ -167,11 +167,11 @@ void D3D12Render::InitD3D12() {
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
 	D3DTexture& texture = Textures.GetItem(Id);
-	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	texture.RTVFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	texture.MultiFrame = 1;
 	texture.MultiResource = 1;
 
-    vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     vdesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
     vdesc.Texture2D.MipSlice = 0;
     vdesc.Texture2D.PlaneSlice = 0;
@@ -254,9 +254,9 @@ void D3D12Render::InitSamplers() {
 	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(0));
 	// bilinear sampler
 	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+	sampDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	Device->CreateSampler(&sampDesc, GpuSamplerHeaps[0]->GetCpuHandle(1));
 	// point sampler
 	sampDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;

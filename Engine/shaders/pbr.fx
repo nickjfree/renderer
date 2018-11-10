@@ -6,7 +6,7 @@
 // Physics Based Shading
 
 #define  PI  3.141592657
-#define  IBL_LD_MIPMAPS 8
+#define  IBL_LD_MIPMAPS 10
 #define  F90 1
 
 
@@ -236,7 +236,8 @@ float SelectLDMipmap(float Roughness)
 
 float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV)
 {
-	float2 BRDF = gLUT.Sample(gSam, float2(Roughness, NoV));
+	// LUT is generated from IBLBaker
+	float2 BRDF = gLUT.Sample(gSam, float2(NoV, Roughness));
 	return SpecularColor * BRDF.x + BRDF.y;
 }
 
@@ -244,8 +245,7 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 {
 
 	float NoV = saturate(dot(N, V));
-	float3 R = 2 * dot(V, N) * N - V;
-
+	float3 R = reflect(-V, N);
 	float mipmap = SelectLDMipmap(Roughness);
 	float4 WorldReflect = mul(float4(R, 0), gInvertViewMaxtrix);
 	float3 PrefilteredColor = gLdCube.SampleLevel(gSam, WorldReflect, mipmap).rgb;
@@ -285,7 +285,7 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 	float roughness = rm.y;
 	float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
     float4 WorldNormal = mul(float4(N.xyz, 0), gInvertViewMaxtrix);
-	float3 irradiance = gLightProbeIrradiance.Sample(gSamBilinear, WorldNormal).rgb;
+	float3 irradiance = gLightProbeIrradiance.Sample(gSam, WorldNormal).rgb;
 
 	// IBL Specular
 	float3 SpecularColor = lerp(F0, albedo.rgb, metallic);
@@ -301,8 +301,8 @@ PS_Output PS_ImageBasedLight(PS_Input input)
 	float intensity = gRadiusIntensity.y;
 
 	color.rgb = (kD * diffuse + specular) * intensity;
-	//color.rgb = (kD * diffuse) * intensity;
-	// color.rgb = albedo;
+	//color.rgb = specular;
+	// color.rgb = diffuse;
 	color.a = 1;
 	output.Light = color;
 	return output;

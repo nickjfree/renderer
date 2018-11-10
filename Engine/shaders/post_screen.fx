@@ -90,16 +90,17 @@ PS_Output PS(PS_Input input)
 		ao += CalcAO(uv + coord2, Position, Normal);
 	}
 	ao /= float(iterations) * 4;
-	output.Color = (1.0 - ao) *Color;//float4(ao.xyz,0);// * Noise;
-	if(Color.y == 0.5 && Color.x == 0 && Color.z == 0)
-	{
-		output.Color = Color;
-	}
-	if(isnan(output.Color.x)) 
-	{
-		output.Color = Color;
-	}
+	output.Color = (1.0 - ao) *Color;
+//	if(Color.y == 0.5 && Color.x == 0 && Color.z == 0)
+//	{
+//		output.Color = Color;
+//	}
+//	if(isnan(output.Color.x)) 
+//	{
+//		output.Color = Color;
+//	}
 	//output.Color = Normal;
+	// output.Color = Color;
 	return output;
 }
 

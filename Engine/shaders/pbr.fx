@@ -69,7 +69,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return num / denom;
+    return num / (denom + 1e-5f);
 }
 
 float GeometrySchlickGGX(float NdotV, float roughness) 
@@ -237,7 +237,7 @@ float SelectLDMipmap(float Roughness)
 float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV)
 {
 	// LUT is generated from IBLBaker
-	float2 BRDF = gLUT.Sample(gSam, float2(NoV, Roughness));
+	float2 BRDF = gLUT.Sample(gSam, float2(NoV, 1-Roughness));
 	return SpecularColor * BRDF.x + BRDF.y;
 }
 

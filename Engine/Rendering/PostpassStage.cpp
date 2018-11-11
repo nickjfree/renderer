@@ -72,8 +72,13 @@ void PostpassStage::InitSampleOffset() {
 		if (Width == 1 && Height == 1) {
 			break;
 		}
-		Width /= 4;
-		Height /= 4;
+        if (i == 0) {
+            Width = 1024;
+            Height = 1024;
+        } else {
+            Width /= 4;
+            Height /= 4;
+        }
 	}
 	// bright pass offset
 	float tux = 2.0f / Context->FrameWidth;
@@ -115,12 +120,11 @@ void PostpassStage::CreateHDRBuffer() {
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
-	LumScaleBy4 = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// create scale array
 	memset(LumScaleArray, -1, sizeof(int) * MAX_HDR_LUM);
 	int  i = 0;
-	int width = Width;
-	int height = Height;
+	int width = 4096;
+	int height = 4096;
 	for (int i = 0; i < MAX_HDR_LUM; i++) {
 		width /= 4;
 		height /= 4;
@@ -223,7 +227,7 @@ int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, LumScaleArray);
 	HDRShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
 	// Quad
-	Compiler->SetViewport(0, 0, Context->FrameWidth / 4.0f, Context->FrameHeight / 4.0f, 0, 1);
+	Compiler->SetViewport(0, 0, 1024, 1024, 0, 1);
 	Compiler->Quad();
 	return 0;
 }
@@ -231,8 +235,8 @@ int PostpassStage::ScaleBy4(BatchCompiler * Compiler) {
 int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 	// set offset
 	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
-	int Width = Context->FrameWidth / 4.0f;
-	int Height = Context->FrameHeight / 4.0f;
+    int Width = 1024;  // Context->FrameWidth / 4.0f;
+    int Height = 1024; // Context->FrameHeight / 4.0f;
 	for (int i = 1; i < AvgIter; i++) {
 		Width /= 4;
 		Height /= 4;

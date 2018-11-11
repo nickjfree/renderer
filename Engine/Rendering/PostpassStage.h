@@ -27,7 +27,6 @@ private:
 	int AvgIter;
 	int LumBufferWidth;
 	int LumBufferHeight;
-	int LumScaleBy4;
 	int LumScaleArray[MAX_HDR_LUM];
 	int AdaptLum[2];
 	int Bright;

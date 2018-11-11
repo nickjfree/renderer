@@ -54,6 +54,7 @@ PS_Output PS_Log(PS_Input input)
     }
     // Divide the sum to complete the average
     fLogLumSum *= 0.25;
+    fLogLumSum = log(fLogLumSum + 0.0001f);
 	output.Color = float4(fLogLumSum,fLogLumSum,fLogLumSum,0);
 	return output;
 }
@@ -82,6 +83,9 @@ PS_Output PS_Adapt(PS_Input input)
 	float OldLum = 0.0f;
 	float CurLum = 0.0f;
     OldLum = gDiffuseMap0.Sample(gSam,input.TexCoord);
+    if (((asuint(OldLum) & 0x7f800000u) == 0x7f800000u) && (asuint(OldLum) & 0x7fffffu) ) {
+    	OldLum = 0;
+    }
 	float vSample = 0.0f;
 	for (int iSample = 0; iSample < 4; iSample++)
 	{
@@ -105,7 +109,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	float vLum = 0.0f;
 	float4 vBloom = 0.0f;
     vLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));
-	// vLum = exp(vLum);
+	vLum = exp(vLum);
 	vSample = gPostBuffer.Sample(gSam,input.TexCoord);
 	vBloom =  gDiffuseMap1.Sample(gSam,input.TexCoord);
 	vSample.xyz *= MiddleGray /(vLum + 0.001f);
@@ -114,7 +118,7 @@ PS_Output PS_ToneMapping(PS_Input input)
 	// bloom effect
 	vSample += vBloom * 1.0f;
 	output.Color = float4(vSample, 0);
-	//output.Color = gPostBuffer.Sample(gSam,input.TexCoord);
+	// output.Color = gPostBuffer.Sample(gSam,input.TexCoord);
 	//output.Color = input.TexCoord.x;
 	return output;
 }
@@ -124,7 +128,7 @@ PS_Output PS_BrightPass(PS_Input input)
 	PS_Output output = (PS_Output)0;
 	float4 vSample = gPostBuffer.Sample(gSam,input.TexCoord);
 	float  fAdaptedLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f));;
-	// fAdaptedLum = exp(fAdaptedLum);
+	fAdaptedLum = exp(fAdaptedLum);
 	// Determine what the pixel's value will be after tone-mapping occurs
 	vSample.rgb *= MiddleGray /(fAdaptedLum + 0.001f);
 	

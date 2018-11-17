@@ -236,6 +236,11 @@ int Level::InitScript() {
 			Model * model = render->GetModel();
 			Physics->CreateShapeFromModel(model);
 			Object->AddComponent(Physics);
+
+            // add scripts to all for test
+            Script * script = new Script(context);
+            script->SetScript(String("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua"));
+            Object->AddComponent(script);
 		}
         if (Object->GetName() == "ADATA") {
             PhysicsObject * Physics = new PhysicsObject(context);

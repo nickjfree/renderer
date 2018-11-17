@@ -27,6 +27,14 @@ namespace D3D12API {
 #define MAX_GEOMETRY_SIZE    4096
 #define MAX_RESOURCE_BARRIER 2048
 
+    typedef struct PerformaceInfo {
+        LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+        LARGE_INTEGER Frequency;
+        unsigned int DrawCallCount;
+    }PerformaceInfo;
+
+
+
 	class D3D12Render : public RenderInterface
 	{
 	private:
@@ -116,8 +124,7 @@ namespace D3D12API {
 		// windows title
 		char WindowTitle[1024];
 		// perfomence counters
-		LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
-		LARGE_INTEGER Frequency;
+        PerformaceInfo Performance;
 	public:
 		D3D12Render();
 		~D3D12Render();
@@ -160,6 +167,8 @@ namespace D3D12API {
 		void FlushRootSignature();
 		// flush rendertargets
 		void FlushRenderTargets();
+        // update performance info
+        void ShowPerformanceInfo();
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue

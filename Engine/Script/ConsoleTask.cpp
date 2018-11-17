@@ -13,6 +13,7 @@ ConsoleTask::~ConsoleTask() {
 
 int ConsoleTask::Work() {
 	printf("console>");
+    // 7 btyes for "return:
 	fgets(buffer, DEBUG_BUFFER_SIZE, stdin);
 	return 0;
 }

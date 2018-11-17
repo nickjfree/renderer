@@ -111,10 +111,11 @@ void ScriptingSystem::RunDebug(char * script) {
 	if (ret) {
 		printf("Couldn't load script: %s\n", lua_tostring(LuaState, -1));
 	}
-	ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
+	ret = lua_pcall(LuaState, 0, 1, 0);
 	if (ret) {
 		printf("error: %s\n", lua_tostring(LuaState, -1));
 	}
+    lua_settop(LuaState, 0);
 	// read another line
 	GetConsoleInput();
 }
@@ -127,5 +128,39 @@ void ScriptingSystem::RegisterScript(Script * script) {
 void ScriptingSystem::RemoveScript(Script * script) {
 	Scripts.Remove(script);
 	script->DecRef();
+}
+
+int ScriptingSystem::LoadFile(String& File) {
+    int ret = 0;
+    lua_getglobal(LuaState, "scripts");
+    lua_getfield(LuaState, -1, File);
+    if (lua_isnil(LuaState, -1)) {
+        // we need to load this scripts as a table
+        printf("new file %s\n", (char*)File);
+        lua_pop(LuaState, 1);
+        luaL_loadfile(LuaState, File);
+        if (ret) {
+            printf("Couldn't load script: %s\n", lua_tostring(LuaState, -1));
+            return -1;
+        }
+        lua_newtable(LuaState);
+        // put newly created templte to "scripts" table at -4
+        lua_pushvalue(LuaState, -1);
+        lua_setfield(LuaState, -4, File);
+        // set upvalue for loaded scripts
+        lua_setupvalue(LuaState, -2, 1);
+        // run this scripts in template's ENV
+        lua_pcall(LuaState, 0, 0, 0);
+        if (ret) {
+            printf("error pcall: %s\n", lua_tostring(LuaState, -1));
+        }
+        // push template on the top
+        lua_getfield(LuaState, -1, File);
+    } else {
+       // printf("file %s is already loaded\n", (char*)File);
+    }
+    // balance remove "scripts"
+    lua_remove(LuaState, -2);
+    return 0;
 }
 

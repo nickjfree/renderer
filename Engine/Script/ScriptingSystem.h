@@ -47,12 +47,14 @@ public:
 	virtual int HandleEvent(Event * Evt);
 	// exceute debug 
 	void RunDebug(char * script);
-	// ger vm
+	// get vm
 	lua_State * GetVM() { return LuaState; }
 	// register script into lua vm
 	void RegisterScript(Script * script);
 	// remove script
 	void RemoveScript(Script * script);
+    // load file
+    int LoadFile(String& File);
 };
 
 #endif

@@ -64,11 +64,10 @@ int Script::OnAttach(GameObject * GameObj) {
 
 // register 
 void Script::Register() {
-	//File = "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua";
-	int ret = luaL_loadfile(vm, File);
-	if (ret) {
-		printf("Couldn't load script: %s\n", lua_tostring(vm, -1));
-	}
+    // push clone function first
+    lua_getglobal(vm, "clone");
+	// load and put template table on top of the stack
+    int ret = scriptingsystem->LoadFile(File);
 	// get gameobject _ENV for sandboxing
 	lua_getglobal(vm, "objects");
 	lua_geti(vm, -1, ObjectId);
@@ -82,12 +81,10 @@ void Script::Register() {
 	// set event table
 	lua_newtable(vm);
 	lua_setfield(vm, -2, "event");
-	// set upvalue _ENV to function
-	lua_setupvalue(vm, -2, 1);
-	// run file
-	lua_pcall(vm, 0, LUA_MULTRET, 0);
+	// set upvalue _ENV  , copy data to gameobject's table
+    ret = lua_pcall(vm, 2, 0, 0);
 	if (ret) {
-		printf("eror pcall: %s\n", lua_tostring(vm, -1));
+		printf("eror pcall: %s %d\n", lua_tostring(vm, -1), __LINE__);
 	}
 	scriptingsystem->RegisterScript(this);
 }
@@ -133,7 +130,7 @@ int Script::HandleEvent(Event * Evt) {
 		lua_setupvalue(vm, -2, 1);
 		int ret = lua_pcall(vm, 0, LUA_MULTRET, 0);
 		if (ret) {
-			printf("eror pcall: %s\n", lua_tostring(vm, -1));
+			printf("eror pcall: %s %d\n", lua_tostring(vm, -1), __LINE__);
 		}
 		// balance the stack
 		lua_pop(vm, 3);
@@ -149,9 +146,10 @@ int Script::OnDestroy(GameObject * GameObj) {
 	lua_getglobal(vm, "entities");
 	lua_geti(vm, -1, ObjectId);
 	// set obj's metatable to a default special table to disable operations on this object
-	lua_getglobal(vm, "destroyed_mt");
-	lua_setmetatable(vm, -2);
+	//lua_getglobal(vm, "destroyed_mt");
+	//lua_setmetatable(vm, -2);
 	lua_pop(vm, 1);
+    // set entitis[id] to nil
 	lua_pushnil(vm);
 	lua_seti(vm, -2, ObjectId);
 	// balance the stack
@@ -160,6 +158,6 @@ int Script::OnDestroy(GameObject * GameObj) {
 	ObjectId = -1;
 	Component::OnDestroy(GameObj);
 	// dec gameobjects ref count
-	Owner->DecRef();
+	// Owner->DecRef();
 	return 0;
 }

@@ -160,7 +160,7 @@ void H3DMesh::ComputeConvexHull() {
 		ConvexHulls = new MeshConvex[nClusters];
 	}
 
-	printf("%s has %d clusters\n", (char*)URL,nClusters);
+	printf("%s has %zd clusters\n", (char*)URL, nClusters);
 	for (int c = 0; c<nClusters; c++) {
 		//generate convex result
 		Vector3 Center(0, 0, 0);

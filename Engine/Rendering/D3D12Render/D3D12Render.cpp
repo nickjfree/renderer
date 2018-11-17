@@ -10,7 +10,7 @@ using namespace DirectX;
 
 D3D12Render * D3D12Render::thisRender = NULL;
 
-D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlushed(0)
+D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlushed(0), Performance({})
 {
 //	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
@@ -19,7 +19,7 @@ D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlus
 		PrevFenceValue[i] = 0;
 	}
 	// init perfomence conter preq
-	QueryPerformanceFrequency(&Frequency);
+	QueryPerformanceFrequency(&Performance.Frequency);
 
 }
 
@@ -1157,13 +1157,8 @@ void D3D12Render::Present() {
 	// change current command context and set rootsignature
 	SwapCommandContext();
 	WaitForPreviousFrame();
-	QueryPerformanceCounter(&EndingTime);
-	ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
-	StartingTime = EndingTime;
-	ElapsedMicroseconds.QuadPart *= 1000000;
-	ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
-	sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %lld", Width, Height, 1000000/ ElapsedMicroseconds.QuadPart);
-	SetWindowTextA(hWnd, WindowTitle);
+    // show performance
+    ShowPerformanceInfo();
 }
 
 void D3D12Render::WaitForPreviousFrame() {
@@ -1173,11 +1168,7 @@ void D3D12Render::WaitForPreviousFrame() {
 	FrameIndex = SwapChain->GetCurrentBackBufferIndex();
 	UINT64 FenceToWait = PrevFenceValue[FrameIndex];
 	// wait for prev frame
-	static DWORD s;
 	Queue->Wait(FenceToWait);
-	DWORD e = GetTickCount();
-//	printf("%d\n", e - s);
-	s = e;
 }
 
 ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
@@ -1319,6 +1310,7 @@ void D3D12Render::Draw(int Id) {
 	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
 	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
+    Performance.DrawCallCount++;
 //	printf("draw %d\n", Geometry.INum);
 }
 
@@ -1357,6 +1349,7 @@ void D3D12Render::DrawInstance(int Id, void * InstanceBuffer, unsigned int Buffe
 	cmdList->IASetVertexBuffers(0, 2, InstanceDesc);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
 	cmdList->DrawIndexedInstanced(Geometry.INum, InstanceNum, 0, 0, 0);
+    Performance.DrawCallCount++;
 }
 
 void D3D12Render::Quad() {
@@ -1369,5 +1362,18 @@ void D3D12Render::Quad() {
 	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
 	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
+    Performance.DrawCallCount++;
 //	printf("Quad\n");
+}
+
+
+void D3D12Render::ShowPerformanceInfo() {
+    QueryPerformanceCounter(&Performance.EndingTime);
+    Performance.ElapsedMicroseconds.QuadPart = Performance.EndingTime.QuadPart - Performance.StartingTime.QuadPart;
+    Performance.StartingTime = Performance.EndingTime;
+    Performance.ElapsedMicroseconds.QuadPart *= 1000000;
+    Performance.ElapsedMicroseconds.QuadPart /= Performance.Frequency.QuadPart;
+    sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %lld  Draw Calls %d", Width, Height, 1000000 / Performance.ElapsedMicroseconds.QuadPart, Performance.DrawCallCount);
+    SetWindowTextA(hWnd, WindowTitle);
+    Performance.DrawCallCount = 0;
 }

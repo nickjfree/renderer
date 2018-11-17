@@ -45,6 +45,7 @@ BEGIN_PROXY(GameObject)
 	METHOD(Destroy, &GameObject::Destroy)
 	METHOD(GetRef, &GameObject::GetRef)
 	METHOD(GetObjectId, &GameObject::GetObjectId)
+    METHOD(IsDestroyed, &GameObject::IsDestroyed)
 END_PROXY()
 
 // Model

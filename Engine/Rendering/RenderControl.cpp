@@ -37,14 +37,18 @@ int RenderControl::Initialize() {
 
 int RenderControl::Execute() {
 	int numCamera = Cameras.Size();
+
+
+    
 	while (numCamera--) {
 		RenderingCamera * cam = Cameras[numCamera];
 		StartCamera(cam);
 	}
+
 	// wait for tasks finish
 	int Count = Events.Size();
-	OsEvent::Join(Count, &Events[0], 1);
-	Events.Empty();
+	OsEvent::Join(Count, &Events[0], 1);  
+    Events.Empty();
 	// end stages
 	RenderingPath * path = RenderPath[LIGHT_PRE];
 	int stages = path->Stages.Size();

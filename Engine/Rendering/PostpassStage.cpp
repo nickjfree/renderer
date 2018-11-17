@@ -97,10 +97,10 @@ void PostpassStage::InitSampleOffset() {
 	memset(BloomOffset, 0, sizeof(float) * 32);
 	memset(BloomWeight, 0, sizeof(float) * 16);
 	// horizion
-	BloomOffset[0][4] = (1.0f + 0.5 / 1.3f) * tux;
+	BloomOffset[0][4] = (1.0f + 0.5f / 1.3f) * tux;
 	BloomOffset[0][8] = -BloomOffset[0][4];
 	// vertical
-	BloomOffset[1][5] = (1.0f + 0.5 / 1.3f) * tuy;
+	BloomOffset[1][5] = (1.0f + 0.5f / 1.3f) * tuy;
 	BloomOffset[1][9] = -BloomOffset[1][5];
 	// bloom weight
 	BloomWeight[0] = 1.0f;

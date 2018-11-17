@@ -19,7 +19,7 @@ protected:
 	unsigned int RefCount;
 	unsigned int ObjectId;
 public:
-	int Destroyed;
+	bool Destroyed;
 public:
 	Object(Context * context_);
 	virtual ~Object();
@@ -28,6 +28,7 @@ public:
 	virtual unsigned int GetObjectId();
 	virtual void SetObjectId(unsigned int);
 	unsigned int GetRef() {return RefCount; };
+    bool IsDestroyed() { return Destroyed; };
 };
 
 #endif

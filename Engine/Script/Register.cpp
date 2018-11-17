@@ -22,6 +22,7 @@ EXPORT_CLASS(GameObject)
 	EXPORT(GameObject, Destroy)
 	EXPORT(GameObject, GetRef)
 	EXPORT(GameObject, GetObjectId)
+    EXPORT(GameObject, IsDestroyed)
 	GC(GameObject)
 END_EXPORT()
 

@@ -18,7 +18,11 @@ int CullingTask::Work() {
 	Frustum frustum = renderview->Camera->GetFrustum();
 	BatchCompiler * Compiler = renderview->Compiler;
 	renderview->VisibleObjects.Empty();
+  
+    
+   
 	spatial->Query(frustum, renderview->VisibleObjects, ObjectType);
+
 //	printf("visible objects in %d %d\n", ObjectType, renderview->VisibleObjects.Size());
 	int Size = renderview->VisibleObjects.Size();
 	char * Buffer = (char*)renderview->CommandBuffer;
@@ -37,7 +41,7 @@ int CullingTask::Work() {
 	// add the buffer to renderqueue
 	renderview->QueueCommand();
 	// signal main thread
-	renderview->Event->Set();
+	renderview->Event->Set();   
 	return 0;
 }
 

@@ -169,6 +169,8 @@ namespace D3D12API {
 		void FlushRenderTargets();
         // update performance info
         void ShowPerformanceInfo();
+        // get topology_type by topology
+        R_PRIMITIVE_TOPOLOGY_TYPE GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology);
 	public:
 		static D3D12Render * GetRender() { return thisRender; }
 		// get queue
@@ -182,7 +184,8 @@ namespace D3D12API {
         // create texture
 		virtual int  CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag);
 		// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
-		virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat);
+		virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, 
+            R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top);
 		       
         virtual int CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size);
 		virtual int CreateVertexShader(void * ByteCode, unsigned int Size, int flag);

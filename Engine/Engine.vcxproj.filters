@@ -803,10 +803,4 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="Script\test\script.lua" />
-    <None Include="Script\test\test.lua" />
-  </ItemGroup>
 </Project>

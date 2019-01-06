@@ -1,16 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicRender", "GraphicRender\GraphicRender.vcxproj", "{FA18AE58-CB20-490D-B05F-65C9D09DEE12}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletCollision", "BulletCollision\BulletCollision.vcxproj", "{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BulletDynamics", "BulletDynamics\BulletDynamics.vcxproj", "{672E5E24-0BD9-4579-AFF1-A0B40949617B}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LinearMath", "LinearMath\LinearMath.vcxproj", "{445C3915-F40D-40B2-9C71-30A90755230D}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssertMaker", "AssertMaker\AssertMaker.vcxproj", "{7BC196E3-A054-493F-9A86-3522396C85F3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{74933FB1-D575-4713-B9A7-3E6CD22C164E}"
@@ -33,102 +25,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|Mixed Platforms.ActiveCfg = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|Mixed Platforms.Build.0 = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|Win32.ActiveCfg = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|Win32.Build.0 = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|x64.ActiveCfg = Debug|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.D3D12|x64.Build.0 = Debug|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|Win32.ActiveCfg = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|Win32.Build.0 = Debug|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|x64.ActiveCfg = Debug|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Debug|x64.Build.0 = Debug|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|Mixed Platforms.ActiveCfg = GamePlay|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|Mixed Platforms.Build.0 = GamePlay|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|Win32.ActiveCfg = GamePlay|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|Win32.Build.0 = GamePlay|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|x64.ActiveCfg = GamePlay|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.GamePlay|x64.Build.0 = GamePlay|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|Win32.ActiveCfg = Release|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|Win32.Build.0 = Release|Win32
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|x64.ActiveCfg = Release|x64
-		{FA18AE58-CB20-490D-B05F-65C9D09DEE12}.Release|x64.Build.0 = Release|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|Mixed Platforms.ActiveCfg = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|Mixed Platforms.Build.0 = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|Win32.ActiveCfg = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|Win32.Build.0 = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|x64.ActiveCfg = Debug|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.D3D12|x64.Build.0 = Debug|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|Win32.ActiveCfg = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|Win32.Build.0 = Debug|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|x64.ActiveCfg = Debug|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Debug|x64.Build.0 = Debug|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|Mixed Platforms.ActiveCfg = GamePlay|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|Mixed Platforms.Build.0 = GamePlay|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|Win32.ActiveCfg = GamePlay|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|Win32.Build.0 = GamePlay|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|x64.ActiveCfg = GamePlay|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.GamePlay|x64.Build.0 = GamePlay|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|Win32.ActiveCfg = Release|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|Win32.Build.0 = Release|Win32
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|x64.ActiveCfg = Release|x64
-		{52C72FB5-2228-4C85-B5E3-E5B58769B9CC}.Release|x64.Build.0 = Release|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|Mixed Platforms.ActiveCfg = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|Mixed Platforms.Build.0 = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|Win32.ActiveCfg = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|Win32.Build.0 = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|x64.ActiveCfg = Debug|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.D3D12|x64.Build.0 = Debug|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|Win32.Build.0 = Debug|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|x64.ActiveCfg = Debug|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Debug|x64.Build.0 = Debug|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|Mixed Platforms.ActiveCfg = GamePlay|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|Mixed Platforms.Build.0 = GamePlay|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|Win32.ActiveCfg = GamePlay|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|Win32.Build.0 = GamePlay|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|x64.ActiveCfg = GamePlay|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.GamePlay|x64.Build.0 = GamePlay|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|Win32.ActiveCfg = Release|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|Win32.Build.0 = Release|Win32
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|x64.ActiveCfg = Release|x64
-		{672E5E24-0BD9-4579-AFF1-A0B40949617B}.Release|x64.Build.0 = Release|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|Mixed Platforms.ActiveCfg = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|Mixed Platforms.Build.0 = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|Win32.ActiveCfg = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|Win32.Build.0 = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|x64.ActiveCfg = Debug|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.D3D12|x64.Build.0 = Debug|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|Win32.Build.0 = Debug|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|x64.ActiveCfg = Debug|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Debug|x64.Build.0 = Debug|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|Mixed Platforms.ActiveCfg = GamePlay|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|Mixed Platforms.Build.0 = GamePlay|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|Win32.ActiveCfg = GamePlay|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|Win32.Build.0 = GamePlay|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|x64.ActiveCfg = GamePlay|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.GamePlay|x64.Build.0 = GamePlay|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|Win32.ActiveCfg = Release|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|Win32.Build.0 = Release|Win32
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|x64.ActiveCfg = Release|x64
-		{445C3915-F40D-40B2-9C71-30A90755230D}.Release|x64.Build.0 = Release|x64
 		{7BC196E3-A054-493F-9A86-3522396C85F3}.D3D12|Mixed Platforms.ActiveCfg = Debug|Win32
 		{7BC196E3-A054-493F-9A86-3522396C85F3}.D3D12|Mixed Platforms.Build.0 = Debug|Win32
 		{7BC196E3-A054-493F-9A86-3522396C85F3}.D3D12|Win32.ActiveCfg = Debug|Win32
@@ -197,5 +93,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DE945B5-5938-4611-BC55-78EB80ABBFA7}
 	EndGlobalSection
 EndGlobal

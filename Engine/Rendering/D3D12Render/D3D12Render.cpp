@@ -354,7 +354,8 @@ void D3D12Render::InitShortOperation() {
 	IBuffer[4] = 1;
 	IBuffer[5] = 3;
 	// set QuadId for later use
-	QuadId = CreateGeometry(VBuffer, sizeof(BasicVertex)* 4, sizeof(BasicVertex), IBuffer, 6, R_FORMAT::FORMAT_R16_UINT);
+	QuadId = CreateGeometry(VBuffer, sizeof(BasicVertex)* 4, sizeof(BasicVertex), IBuffer, 6,
+        R_FORMAT::FORMAT_R16_UINT, R_PRIMITIVE_TOPOLOGY::R_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void D3D12Render::CreateTextureDDS(D3DTexture& Texture, void * ddsData, int Size, bool * isCube) {
@@ -613,7 +614,8 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
 }
 
 
-int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int INum, R_FORMAT IndexFormat) {
+int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int INum, 
+    R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top) {
 	D3DGeometry Geometry = {};
 	// create vertex buffer
 	Device->CreateCommittedResource(
@@ -634,6 +636,7 @@ int D3D12Render::CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned in
 	Geometry.VBSize = VertexSize;
 	Geometry.INum = INum;
 	Geometry.VSize = VBSize;
+    Geometry.Top = Top;
 	// copy resource
 	CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ID3D12Resource * UploadHeapV, * UploadHeapI;
@@ -1200,7 +1203,7 @@ ID3D12PipelineState * D3D12Render::CreatePSO(PSOCache& cache) {
 		Desc.InputLayout = InputLayouts.GetItem(cache.InputLayout).Layout;
 	}
 	Desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-	Desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    Desc.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)cache.Top;    D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	Desc.NumRenderTargets = cache.NumRTV;
 	memcpy(Desc.RTVFormats, cache.RTVFormat, cache.NumRTV * sizeof(DXGI_FORMAT));
 	Desc.DSVFormat = cache.DSVFormat;
@@ -1300,22 +1303,36 @@ void D3D12Render::FlushRenderTargets() {
 }
 
 void D3D12Render::Draw(int Id) {
+    // get geometry
+    D3DGeometry &Geometry = Geometries.GetItem(Id);
+    // set primitive topology
+    CurrentPSO.Top = GetPtimitiveTopologyType(Geometry.Top);
+
+    // flush context
 	FlushResourceBarriers();
 	FlushRootSignature();
 	FlushPSO();
 	FlushRenderTargets();
 	// draw
 	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
-	D3DGeometry &Geometry = Geometries.GetItem(Id);
+
 	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
+    cmdList->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)Geometry.Top);
 	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
     Performance.DrawCallCount++;
 //	printf("draw %d\n", Geometry.INum);
 }
 
 void D3D12Render::DrawInstance(int Id, void * InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum) {
-	FlushResourceBarriers();
+    
+    // get geometry
+    D3DGeometry &Geometry = Geometries.GetItem(Id);
+    // set primitive topology
+    CurrentPSO.Top = GetPtimitiveTopologyType(Geometry.Top);
+
+    // flush context
+    FlushResourceBarriers();
 	FlushRootSignature();
 	FlushPSO();
 	FlushRenderTargets();
@@ -1344,15 +1361,18 @@ void D3D12Render::DrawInstance(int Id, void * InstanceBuffer, unsigned int Buffe
 	InstanceDesc[1].StrideInBytes = BufferSize;
 
 	ID3D12GraphicsCommandList * cmdList = CurrentCommandContext->GetGraphicsCommandList();
-	D3DGeometry &Geometry = Geometries.GetItem(Id);
 	InstanceDesc[0] = Geometry.VBV;
 	cmdList->IASetVertexBuffers(0, 2, InstanceDesc);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
+    cmdList->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)Geometry.Top);
 	cmdList->DrawIndexedInstanced(Geometry.INum, InstanceNum, 0, 0, 0);
     Performance.DrawCallCount++;
 }
 
 void D3D12Render::Quad() {
+
+    CurrentPSO.Top = R_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    
 	FlushResourceBarriers();
 	FlushRootSignature();
 	FlushPSO();
@@ -1361,10 +1381,31 @@ void D3D12Render::Quad() {
 	D3DGeometry &Geometry = Geometries.GetItem(QuadId);
 	cmdList->IASetVertexBuffers(0, 1, &Geometry.VBV);
 	cmdList->IASetIndexBuffer(&Geometry.IBV);
+    cmdList->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)Geometry.Top);
 	cmdList->DrawIndexedInstanced(Geometry.INum, 1, 0, 0, 0);
     Performance.DrawCallCount++;
 //	printf("Quad\n");
 }
+
+R_PRIMITIVE_TOPOLOGY_TYPE D3D12Render::GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology) {
+    if (topology == R_PRIMITIVE_TOPOLOGY_UNDEFINED) {
+        return R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+    }
+    else if (topology == R_PRIMITIVE_TOPOLOGY_POINTLIST) {
+        return R_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+    } else if (topology == R_PRIMITIVE_TOPOLOGY_LINELIST || topology == R_PRIMITIVE_TOPOLOGY_LINESTRIP || 
+        topology == R_PRIMITIVE_TOPOLOGY_LINELIST_ADJ || topology == R_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ) {
+        return R_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+    } else if (topology == R_PRIMITIVE_TOPOLOGY_TRIANGLELIST || topology == R_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP ||
+        topology == R_PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ || topology == R_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ) {
+        return R_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    } else if (topology == R_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST || topology == R_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST ||
+        topology == R_PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST || topology == R_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST) {
+        return R_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+    }
+    return R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+}
+
 
 
 void D3D12Render::ShowPerformanceInfo() {

@@ -33,14 +33,14 @@ struct Frustum;
 */
 typedef struct AABB {
 	BoundingBox Box;
-	Vector3 LocalCenter;
 	Vector3 InitExtents;
+    Vector3 LocalCenter;
 	AABB() {};
 	AABB(Vector3& LocalCenter_, Vector3& Extents_) {
-		XMStoreFloat3(&Box.Center, LocalCenter.vector);
+		XMStoreFloat3(&Box.Center, LocalCenter_.vector);
 		XMStoreFloat3(&Box.Extents, Extents_.vector);
-		LocalCenter = LocalCenter_;
 		InitExtents = Extents_;
+        LocalCenter = LocalCenter_;
 	};
 
 	// contain test
@@ -49,7 +49,7 @@ typedef struct AABB {
 	};
 
 	void Translate(Vector3& Position) {
-		XMStoreFloat3(&Box.Center, (LocalCenter + Position).vector);
+		XMStoreFloat3(&Box.Center, Position.vector);
 	}
 
 	void UniformScale(float Scale) {

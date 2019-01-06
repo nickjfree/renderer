@@ -15,6 +15,6 @@ TestComponent::~TestComponent()
 
 int TestComponent::HandleEvent(Event *Evt) {
 
-	printf("reduce health by %d, the attacker is %x\n", (*Evt)[String("param1")].as<int>(), (unsigned int)(*Evt)[String("attacker")].as<GameObject*>());
+//	printf("reduce health by %d, the attacker is %x\n", (*Evt)[String("param1")].as<int>(), (unsigned int)(*Evt)[String("attacker")].as<GameObject*>());
 	return 0;
 }

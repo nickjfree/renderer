@@ -210,3 +210,13 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+/Game.VC.db
+/AssertMaker/a.txt
+*.diagsession
+/Engine/textures/新建文件夹
+/Game.exe
+/GraphicRender.dll
+/oldcode.txt
+/unit.blu
+/Engine/D3D12/Engine.tlog
+/Engine/D3D12/vc140.idb

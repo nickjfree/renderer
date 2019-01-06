@@ -4,7 +4,7 @@
 using namespace D3D12API;
 
 PSOCache::PSOCache(): hash(-1), VS(-1), PS(-1), GS(-1), DS(-1), HS(-1), InputLayout(-1), NumRTV(0), 
-Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0) {
+Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0), Top(R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED) {
 	memset(RTVFormat, -1, sizeof(DXGI_FORMAT) * 8);
 	DSVFormat = DXGI_FORMAT_FORCE_UINT;
 }
@@ -33,7 +33,7 @@ PSOCache::operator int() {
 
 bool PSOCache::operator==(PSOCache& rh) {
 	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
-		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat) {
+		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
 				return true;
 			}
@@ -44,7 +44,7 @@ bool PSOCache::operator==(PSOCache& rh) {
 
 bool PSOCache::operator!=(PSOCache& rh) {
 	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
-		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat) {
+		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
 				return false;
 			}

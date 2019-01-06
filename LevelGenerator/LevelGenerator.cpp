@@ -22,8 +22,8 @@ int TestGen(char * File) {
 	char * meshes[4] = {
 		"Mesh\\Unit.pack\\plane2\\0", 
 		//"Mesh\\Unit.pack\\adata121\\0", 
-		// "Mesh\\character.pack\\human\\0",
-        "Mesh\\chip.pack\\resistor\\0",
+		"Mesh\\character.pack\\human\\0",
+        //"Mesh\\chip.pack\\resistor\\0",
 		"Mesh\\Unit.pack\\sphere\\0", 
 		"Mesh\\Unit.pack\\sneak\\0" 
 	};
@@ -50,8 +50,8 @@ int TestGen(char * File) {
 		"Material\\Materials\\lightprobe.xml\\0", 
 		"Material\\Materials\\cylinder.xml\\0", 
 		//"Material\\Materials\\usbdrive.xml\\0", 
-		// "Material\\Materials\\human.xml\\0",
-        "Material\\Materials\\resistor.xml\\0",
+		"Material\\Materials\\human.xml\\0",
+        //"Material\\Materials\\resistor.xml\\0",
 		"Material\\Materials\\light.xml\\0",
 	};
 	MatrialEntry material = {};

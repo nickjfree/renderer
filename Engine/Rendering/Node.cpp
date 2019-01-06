@@ -62,6 +62,7 @@ void Node::SyncCullingObject() {
 	//Center = Center + Position;
 	Center = Center * GetWorldMatrix();
 	CullingObj.Translate(Center);
+
 }
 
 

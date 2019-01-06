@@ -262,7 +262,7 @@ int Level::InitScript() {
 			Skeleton * skeleton = GetSkeleton(0);
 			animator->SetSkeleton(skeleton);
 			animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 1.0f);
-			//Object->AddComponent(animator);
+			Object->AddComponent(animator);
 		}
 		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {
 			// global light should follow camera

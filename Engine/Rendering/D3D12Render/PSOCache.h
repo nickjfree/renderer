@@ -3,6 +3,8 @@
 
 #include <d3d12.h>
 
+#include "Rendering\RenderDesc.h"
+
 namespace D3D12API {
 
 	class PSOCache {
@@ -29,6 +31,8 @@ namespace D3D12API {
 		int NumRTV;
 		DXGI_FORMAT RTVFormat[8];
 		DXGI_FORMAT DSVFormat;
+        // geometry topology
+        R_PRIMITIVE_TOPOLOGY_TYPE Top;
 	public:
 		// operator int
 		operator int();

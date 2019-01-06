@@ -9,6 +9,6 @@
   <shader name="Basic" url="Shader\shaders\Basic\0"></shader>
 
   <parameters>
-    <parameter name="gSpecular" value="0.5"/>
+    <parameter name="gSpecular" value="0.04f"/>
   </parameters>
 </material>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2016-05-28T16:30:50Z</created><keywords></keywords><modified>2016-05-28T16:30:50Z</modified><revision></revision><subject></subject><title></title><unit meter="1.000000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <library_geometries>
+    <geometry id="Box001-lib" name="Box001Mesh">
+      <mesh>
+        <source id="Box001-POSITION">
+          <float_array id="Box001-POSITION-array" count="108">
+-15.000000 -15.000000 0.000000
+15.000000 -15.000000 0.000000
+-15.000000 15.000000 0.000000
+15.000000 15.000000 0.000000
+-15.000000 -15.000000 1.000000
+15.000000 -15.000000 1.000000
+-15.000000 15.000000 1.000000
+15.000000 15.000000 1.000000
+15.000000 15.000000 0.000000
+-15.000000 -15.000000 0.000000
+15.000000 15.000000 1.000000
+-15.000000 -15.000000 1.000000
+-15.000000 -15.000000 0.000000
+15.000000 -15.000000 0.000000
+15.000000 -15.000000 1.000000
+15.000000 -15.000000 1.000000
+-15.000000 -15.000000 1.000000
+-15.000000 -15.000000 0.000000
+15.000000 -15.000000 0.000000
+15.000000 15.000000 0.000000
+15.000000 15.000000 1.000000
+15.000000 15.000000 1.000000
+15.000000 -15.000000 1.000000
+15.000000 -15.000000 0.000000
+15.000000 15.000000 0.000000
+-15.000000 15.000000 0.000000
+-15.000000 15.000000 1.000000
+-15.000000 15.000000 1.000000
+15.000000 15.000000 1.000000
+15.000000 15.000000 0.000000
+-15.000000 15.000000 0.000000
+-15.000000 -15.000000 0.000000
+-15.000000 -15.000000 1.000000
+-15.000000 -15.000000 1.000000
+-15.000000 15.000000 1.000000
+-15.000000 15.000000 0.000000
+</float_array>
+          <technique_common>
+            <accessor source="#Box001-POSITION-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Box001-Normal0">
+          <float_array id="Box001-Normal0-array" count="108">
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 -1.000000
+0.000000 0.000000 1.000000
+0.000000 0.000000 1.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+0.000000 -1.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+1.000000 0.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+0.000000 1.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+-1.000000 0.000000 0.000000
+</float_array>
+          <technique_common>
+            <accessor source="#Box001-Normal0-array" count="36" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Box001-UV0">
+          <float_array id="Box001-UV0-array" count="72">
+0.507198 0.492802
+1.000000 0.492802
+0.507198 0.000000
+1.000000 0.000000
+0.000000 0.000000
+0.492802 0.000000
+0.000000 0.492802
+0.492802 0.492802
+1.000000 0.000000
+0.507198 0.492802
+0.492802 0.492802
+0.000000 0.000000
+0.000000 0.507198
+0.492802 0.507198
+0.492802 0.523625
+0.492802 0.523625
+0.000000 0.523625
+0.000000 0.507198
+0.000000 0.599665
+0.492802 0.599665
+0.492802 0.616092
+0.492802 0.616092
+0.000000 0.616092
+0.000000 0.599665
+0.507198 0.507198
+1.000000 0.507198
+1.000000 0.523625
+1.000000 0.523625
+0.507198 0.523625
+0.507198 0.507198
+0.000000 0.538020
+0.492802 0.538020
+0.492802 0.554447
+0.492802 0.554447
+0.000000 0.554447
+0.000000 0.538020
+</float_array>
+          <technique_common>
+            <accessor source="#Box001-UV0-array" count="36" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Box001-VERTEX">
+          <input semantic="POSITION" source="#Box001-POSITION"/>
+          <input semantic="NORMAL" source="#Box001-Normal0"/>
+          <input semantic="TEXCOORD" source="#Box001-UV0"/>
+        </vertices>
+        <triangles count="12"><input semantic="VERTEX" offset="0" source="#Box001-VERTEX"/><p> 0 2 3 8 1 9 4 5 7 10 6 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35</p></triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="" name="">
+      <node name="Box001" id="Box001" sid="Box001"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 -1.000000 0.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#Box001-lib"/><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <extra><technique profile="MAX3D"><frame_rate>30.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.000000</start_time><end_time>3.333333</end_time></technique></extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#"></instance_visual_scene>
+  </scene>
+</COLLADA>

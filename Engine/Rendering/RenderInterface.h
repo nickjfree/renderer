@@ -27,7 +27,7 @@ public:
 	virtual int CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag) { return -1; };
 
 	// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
-	virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat) { 
+	virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top) {
 		Debug("creategeometry\n");
 		return -1; 
 	}

@@ -50,6 +50,7 @@ namespace D3D12API {
 		unsigned int VSize;
 		unsigned int INum;
 		unsigned int VBSize;
+        R_PRIMITIVE_TOPOLOGY Top;
 	}D3DGeometry;
 
     /*

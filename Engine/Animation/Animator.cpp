@@ -24,7 +24,7 @@ void Animator::Update(float time) {
 	MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent(String("Renderer"));
 	renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
 	// apply root motion
-	Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotonDelta, Quaternion());
+	Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());
 	Tanslation = Tanslation * Owner->GetTransform();
 	Owner->SetTransform(Tanslation);
 	//Owner->SetRotation(Stage->RootRotation);

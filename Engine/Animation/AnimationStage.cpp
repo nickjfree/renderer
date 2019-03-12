@@ -31,6 +31,6 @@ void AnimationStage::Apply() {
 	Clip->Sample(Time, Cache);
 	Vector3& CurrentRootMotion = Cache->Result[0].Translation;
 	RootRotation = Cache->Result[0].Rotation;
-	MotonDelta = CurrentRootMotion - RootMotion;
+	MotionDelta = CurrentRootMotion - RootMotion;
 	RootMotion = CurrentRootMotion;
 }

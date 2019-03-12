@@ -343,7 +343,7 @@ void ExtractAnimeMesh(aiScene * scene) {
 	// write clips info
 	ha_clip clip;
 	clip.start = 1;
-	clip.end = 38;
+	clip.end = 275;
 	strcpy_s(clip.name, "walk");
 	clip.looped = 1;
 	WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);
@@ -479,8 +479,8 @@ bool DoTheImportThing(const std::string& pFile) {
 		return false;  
 	}  // Now we can access the file's contents.   
 	printf("scene load success\n");
-	ExtractMeshToH3d(scene);
-	//ExtractAnimeMesh(scene);
+	//ExtractMeshToH3d(scene);
+	ExtractAnimeMesh(scene);
 	// We're done. Everything will be cleaned up by the importer destructor  
 	return true;
 }
@@ -489,7 +489,7 @@ bool DoTheImportThing(const std::string& pFile) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	DoTheImportThing("resistor.fbx");
+	DoTheImportThing("human_2.fbx");
 	return 0;
 }
 

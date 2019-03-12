@@ -24,7 +24,7 @@ private:
 	unsigned char StartBone;	
 public:
 	// motion delta of this frame
-	Vector3 MotonDelta;
+	Vector3 MotionDelta;
 	// root motion rotation
 	Quaternion RootRotation;
 	// weight

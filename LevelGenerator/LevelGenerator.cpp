@@ -22,7 +22,7 @@ int TestGen(char * File) {
 	char * meshes[4] = {
 		"Mesh\\Unit.pack\\plane2\\0", 
 		//"Mesh\\Unit.pack\\adata121\\0", 
-		"Mesh\\character.pack\\human\\0",
+		"Mesh\\character.pack\\human2\\0",
         //"Mesh\\chip.pack\\resistor\\0",
 		"Mesh\\Unit.pack\\sphere\\0", 
 		"Mesh\\Unit.pack\\sneak\\0" 

@@ -4,6 +4,7 @@
 
 #include "AnimationClip.h"
 #include "AnimationStage.h"
+#include "BlendingNode.h"
 #include "Skeleton.h"
 #include "Scene\GameObject.h"
 
@@ -21,6 +22,8 @@ class Animator : public Component {
 private:
 	// test stage
 	AnimationStage * Stage;
+    // test blending node
+    BlendingNode * BlendNode;
 	// skeleton
 	Skeleton * skeleton;
 public:
@@ -28,6 +31,8 @@ public:
 	virtual ~Animator();
 	// Set Stage
 	void SetAnimationStage(int Layer, AnimationClip * Clip, unsigned char StartBone, float Scale=1.0f);
+    // Set blending node
+    void SetBlendingNode(BlendingNode * Node);
 	// Set Skeleton
 	void SetSkeleton(Skeleton * Skeleton) { skeleton = Skeleton; }
 	// update

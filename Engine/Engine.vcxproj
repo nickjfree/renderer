@@ -246,6 +246,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Animation\AnimationSystem.h" />
     <ClInclude Include="Animation\AnimationTrack.h" />
     <ClInclude Include="Animation\Animator.h" />
+    <ClInclude Include="Animation\BlendingNode.h" />
     <ClInclude Include="Animation\Skeleton.h" />
     <ClInclude Include="Container\Dict.h" />
     <ClInclude Include="Container\HashIndex.h" />
@@ -377,6 +378,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Animation\AnimationSystem.cpp" />
     <ClCompile Include="Animation\AnimationTrack.cpp" />
     <ClCompile Include="Animation\Animator.cpp" />
+    <ClCompile Include="Animation\BlendingNode.cpp" />
     <ClCompile Include="Animation\Skeleton.cpp" />
     <ClCompile Include="Container\Dict.cpp" />
     <ClCompile Include="Container\HashIndex.cpp" />

@@ -15,18 +15,20 @@ Animator::~Animator() {
 
 void Animator::Update(float time) {
 	// advance in time
-	Stage->Advance(time);
-	Stage->Apply();
+	//Stage->Advance(time);
+	//Stage->Apply();
+    BlendNode->Advance(time);
+    BlendNode->Apply();
 	// get the result
-	AnimationCache * Cache = Stage->GetAnimationCache();
+	AnimationCache * Cache = BlendNode->GetAnimationCache();
 	// set palette
 	Cache->GeneratePalette(skeleton);
 	MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent(String("Renderer"));
 	renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
 	// apply root motion
-	Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());
-	Tanslation = Tanslation * Owner->GetTransform();
-	Owner->SetTransform(Tanslation);
+	//Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());
+	//Tanslation = Tanslation * Owner->GetTransform();
+	//Owner->SetTransform(Tanslation);
 	//Owner->SetRotation(Stage->RootRotation);
 }
 
@@ -35,6 +37,10 @@ void Animator::SetAnimationStage(int Layer, AnimationClip * Clip, unsigned char 
 	Stage->SetAnimationClip(Clip);
 	Stage->SetTime(0.0f);
 	Stage->SetScale(Scale);
+}
+
+void Animator::SetBlendingNode(BlendingNode * Node) {
+    BlendNode = Node;
 }
 
 int Animator::OnAttach(GameObject * GameObj) {

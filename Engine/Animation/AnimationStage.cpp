@@ -14,6 +14,7 @@ AnimationStage::~AnimationStage() {
 void AnimationStage::SetAnimationClip(AnimationClip * Clip_) {
 	 Clip = Clip_;
 	 RootMotion = Clip_->RootStart;
+     Duration = Clip_->EndTime - Clip_->TimeOffset;
 }
 
 void AnimationStage::Advance(float time) {

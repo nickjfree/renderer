@@ -395,6 +395,9 @@
     <ClInclude Include="Animation\AnimationSystem.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Animation\BlendingNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -800,6 +803,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Animation\AnimationSystem.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation\BlendingNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

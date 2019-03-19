@@ -27,8 +27,8 @@ public:
 	Vector3 MotionDelta;
 	// root motion rotation
 	Quaternion RootRotation;
-	// weight
-	float Weight;
+    // float duration
+    float Duration;
 	// actived
 	bool Actived;
 public:

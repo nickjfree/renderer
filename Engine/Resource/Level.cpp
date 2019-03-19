@@ -132,7 +132,7 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	offset += sizeof(LevelHeader);
 	ObjectEntries = (ObjectEntry *)offset;
 	// dependency count
-	DepCount = NumMeshes + NumMaterials + 1 + 1;  // add 1 skeleton for test
+	DepCount = NumMeshes + NumMaterials + 1 + 2;  // add 1 skeleton and 2 animation for test
 	return 0;
 }
 
@@ -162,7 +162,10 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	// for test submiting animation loading task
 	Param.as<int>() = 0;
 	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource(String("Animation\\keyframe\\human.ha"), this, Param);
+	Cache->AsyncLoadResource(String("Animation\\keyframe\\human_walk.ha"), this, Param);
+    Param.as<int>() = 1;
+    Animations.PushBack(empty_animation);
+    Cache->AsyncLoadResource(String("Animation\\keyframe\\human_run.ha"), this, Param);
 	return 0;
 }
 
@@ -258,10 +261,23 @@ int Level::InitScript() {
 			Object->AddComponent(Physics);
 			// set animation component
 			Animator * animator = new Animator(context);
-			Animation * animetion = GetAnimation(0);
+            Animation * animetion_walk = GetAnimation(0);
+			Animation * animetion_run = GetAnimation(1);
 			Skeleton * skeleton = GetSkeleton(0);
-			animator->SetSkeleton(skeleton);
-			animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 1.0f);
+            // walk node
+            BlendingNode * walk = new BlendingNode(context);
+            walk->SetAnimationClip(animetion_walk, 0);
+            // run node
+            BlendingNode * run = new BlendingNode(context);
+            run->SetAnimationClip(animetion_run, 0);
+            // blend by 0.5
+            BinaryBlendingNode * blend = new BinaryBlendingNode(context);
+            blend->AddNodes(walk, run, true);
+            blend->SetAlpha(0.7);
+
+            animator->SetSkeleton(skeleton);
+            animator->SetBlendingNode(blend);
+			// animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 0.1f);
 			Object->AddComponent(animator);
 		}
 		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {

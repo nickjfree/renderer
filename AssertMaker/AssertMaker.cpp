@@ -338,12 +338,12 @@ void ExtractAnimeMesh(aiScene * scene) {
 	anime_header.NumFrames = 0;
 	anime_header.NumClips = 1;
 	anime_header.OffsetFrames = sizeof(ha_header) + sizeof(ha_clip) * anime_header.NumClips;
-	HANDLE hAnime = CreateFileA("human.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+	HANDLE hAnime = CreateFileA("..\\Engine\\keyframe\\human_run.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
 	WriteFile(hAnime, &anime_header, sizeof(ha_header), &write, NULL);
 	// write clips info
 	ha_clip clip;
-	clip.start = 1;
-	clip.end = 275;
+	clip.start = 0;
+	clip.end = 15;
 	strcpy_s(clip.name, "walk");
 	clip.looped = 1;
 	WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);

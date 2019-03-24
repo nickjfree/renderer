@@ -18,6 +18,8 @@ class BlendingNode : public Object
 protected:
     // animation stage
     AnimationStage * AnimStage;
+    // parameters
+    Dict Parameters;
 public:
     // length
     float Duration;
@@ -36,6 +38,8 @@ public:
     virtual int Apply();
     // GetAnimationCache
     virtual AnimationCache * GetAnimationCache();
+    // Set Parameters
+    void SetParameter(String& Name, float Value);
 };
 
 class BinaryBlendingNode : public BlendingNode
@@ -61,7 +65,7 @@ public:
     // add 2 nodes
     void AddNodes(BlendingNode * NodeA, BlendingNode * NodeB, bool SyncCycle);
     // set alpha
-    void SetAlpha(float alpha) { Alpha = alpha; };
+    void SetAlpha(float alpha) { SetParameter(String("x"), alpha); };
     // advance
     virtual int Advance(float time);
     // apply

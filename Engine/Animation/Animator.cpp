@@ -43,9 +43,22 @@ void Animator::SetBlendingNode(BlendingNode * Node) {
     BlendNode = Node;
 }
 
+BlendingNode * Animator::GetBlendingNode() {
+    return BlendNode;
+}
+
 int Animator::OnAttach(GameObject * GameObj) {
 	
 	AnimationSystem * animationSys = context->GetSubsystem<AnimationSystem>();
 	animationSys->AddAnimator(this);
 	return 0;
+}
+
+int Animator::OnDestroy(GameObject * GameObj) {
+    // call parent
+    Component::OnDestroy(GameObj);
+    if (BlendNode) {
+        BlendNode->DecRef();
+    }
+    return 0;
 }

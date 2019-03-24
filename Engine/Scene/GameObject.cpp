@@ -54,7 +54,6 @@ Component * GameObject::GetComponent(String& TypeName) {
 	return NULL;
 }
 
-
 void GameObject::NotifyTransform() {
 	Component * component = GetComponent(String("Renderer"));
 	if (component) {

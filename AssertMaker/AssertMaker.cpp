@@ -343,7 +343,7 @@ void ExtractAnimeMesh(aiScene * scene) {
 	// write clips info
 	ha_clip clip;
 	clip.start = 0;
-	clip.end = 15;
+	clip.end = 30;
 	strcpy_s(clip.name, "walk");
 	clip.looped = 1;
 	WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);

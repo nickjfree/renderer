@@ -33,13 +33,16 @@ public:
 	void SetAnimationStage(int Layer, AnimationClip * Clip, unsigned char StartBone, float Scale=1.0f);
     // Set blending node
     void SetBlendingNode(BlendingNode * Node);
-	// Set Skeleton
+ 	// Set Skeleton
 	void SetSkeleton(Skeleton * Skeleton) { skeleton = Skeleton; }
+    // get blending node
+    BlendingNode * GetBlendingNode();
 	// update
 	void Update(float time);
 	// on attach
 	virtual int OnAttach(GameObject * GameObj);
-
+    // on destroy
+    virtual int OnDestroy(GameObject * GameObj);
 };
 
 #endif

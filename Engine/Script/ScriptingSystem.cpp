@@ -4,6 +4,7 @@
 #include "Core\StringTable.h"
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
+#include "Animation\Animator.h"
 
 
 ScriptingSystem::ScriptingSystem(Context * context): System(context) {
@@ -47,6 +48,8 @@ void ScriptingSystem::InitEnvironment() {
 	REGISTER_CLASS(LuaState, MeshRenderer);
 	REGISTER_CLASS(LuaState, InputSystem);
 	REGISTER_CLASS(LuaState, PhysicsObject);
+    REGISTER_CLASS(LuaState, Animator);
+    REGISTER_CLASS(LuaState, BlendingNode);
 }
 
 int ScriptingSystem::Initialize() {

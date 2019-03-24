@@ -9,6 +9,8 @@
 #include "Rendering\MeshRenderer.h"
 #include "Input\InputSystem.h"
 #include "Physics\PhysicsObject.h"
+#include "Animation\Animator.h"
+
 
 // proxy Scene
 BEGIN_PROXY(Scene)
@@ -46,6 +48,7 @@ BEGIN_PROXY(GameObject)
 	METHOD(GetRef, &GameObject::GetRef)
 	METHOD(GetObjectId, &GameObject::GetObjectId)
     METHOD(IsDestroyed, &GameObject::IsDestroyed)
+    METHOD(GetComponent, &GameObject::GetComponent)
 END_PROXY()
 
 // Model
@@ -73,6 +76,15 @@ END_PROXY()
 BEGIN_PROXY(PhysicsObject)
 	METHOD(CreateShapeFromModel, &PhysicsObject::CreateShapeFromModel)
 	METHOD(SetObjectType, (void (PhysicsObject::*)(int))&PhysicsObject::SetObjectType)
+END_PROXY()
+
+// Animation
+BEGIN_PROXY(BlendingNode)
+    METHOD(SetParameter, &BlendingNode::SetParameter)
+END_PROXY()
+
+BEGIN_PROXY(Animator)
+    METHOD(GetBlendingNode, &Animator::GetBlendingNode)
 END_PROXY()
 
 #endif 

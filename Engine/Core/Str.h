@@ -19,11 +19,11 @@ private:
 	// value
 	unsigned int value;
 private:
-	unsigned int hash(char * buff);
+	unsigned int hash(const char * buff);
 
 public:
 	StringHash() {};
-	StringHash(char * buff);
+	StringHash(const char * buff);
 	StringHash(StringHash& rh) { value = rh.value; };
 	inline operator int();
 	bool inline operator ==(StringHash& rh);
@@ -40,14 +40,14 @@ private:
 	// buffer for shor string
 	char ShortStr[SHORSTR_LENGTH];
 	// pointer to buffer contain string
-	char * Str;
+	const char * Str;
 	// string length
-	int Length;
+	unsigned int Length;
 	StringHash Hash;
 public:
 	String();
 	String(String& rh);
-	String(char * buff);
+	String(const char * buff);
 	String& operator=(String& rh);
 	String& operator=(char * rh);
 	operator int();

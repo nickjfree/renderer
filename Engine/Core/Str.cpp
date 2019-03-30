@@ -6,7 +6,7 @@ String::String() :Length(0), Str(0)
 {
 }
 
-String::String(char * buff) 
+String::String(const char * buff) 
 {
 	Length = strlen(buff);
 	if (Length < SHORSTR_LENGTH) {
@@ -22,7 +22,7 @@ String::String(char * buff)
 
 String::String(String& rh)
 {
-	char * buff = rh.Str;
+	const char * buff = rh.Str;
 	Length = strlen(rh.Str);
 	if (Length < SHORSTR_LENGTH) {
 		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
@@ -36,7 +36,7 @@ String::String(String& rh)
 }
 
 String& String::operator=(String& rh) {
-	char * buff = rh.Str;
+	const char * buff = rh.Str;
 	if (!rh.Length) {
 		return *this;
 	}
@@ -73,7 +73,7 @@ String& String::operator=(char * buff) {
 
 String::operator char *()
 {
-	return Str;
+	return (char*)Str;
 }
 
 String::operator int() {
@@ -133,7 +133,7 @@ String::~String()
 }
 
 
-StringHash::StringHash(char * buff)
+StringHash::StringHash(const char * buff)
 {
 	value = hash(buff);
 }
@@ -159,7 +159,7 @@ StringHash::operator unsigned int()
 	return value;
 };
 
-unsigned int StringHash::hash(char * buff)
+unsigned int StringHash::hash(const char * buff)
 {
 	value = djb2_hash((unsigned char *)buff);
 	return value;

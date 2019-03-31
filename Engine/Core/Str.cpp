@@ -128,14 +128,13 @@ bool String::operator != (const String& rh) const {
 	return Hash != rh.Hash;
 }
 
-int String::Split(char delimiter, String * Result, int Count) {
+int String::Split(char delimiter, String * Result, int Count) const {
 	int c = 0;
-	int size = Length;
 	int offset = 0;
 	char buffer[1024];
-	for (int i = 0; i <= Length; i++) {
+	for (auto i = 0; i <= Length; i++) {
 		if (Str[i] == delimiter || Str[i] == '\0') {
-			memcpy(buffer,Str + offset, i - offset);
+			memcpy(buffer, Str + offset, i - offset);
 			// terminate the string
 			buffer[i - offset] = 0;
 			Result[c] = String(buffer);

@@ -15,7 +15,7 @@ WorkerThread::~WorkerThread()
 
 int WINAPI WorkerThread::ThreadEntry(WorkerThread * Thread) {
 	// init thread local value
-	ThreadLocal::SetThreadLocal((void*)Thread->Index);
+	ThreadLocal::SetThreadLocal(reinterpret_cast<void*>(Thread->Index));
 	// call work function
 	Thread->WorkFunction(NULL);
 	return 0;

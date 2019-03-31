@@ -67,7 +67,7 @@ int Engine::Update(int ms) {
 	return 0;
 }
 
-int Engine::OnMessage(int msg, DWORD lParam, DWORD wParam) {
+int Engine::OnMessage(int msg, size_t lParam, size_t wParam) {
 	InputSystem * Input = context->GetSubsystem<InputSystem>();
 	return Input->OnWindowsMessage(msg, lParam, wParam);
 }

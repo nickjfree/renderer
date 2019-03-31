@@ -27,7 +27,7 @@ ResourceCache::~ResourceCache()
 	}
 }
 
-void ResourceCache::DoAsyncLoadResource(String& URL, Resource * Caller, Variant& Parameter) {
+void ResourceCache::DoAsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter) {
 	// create resource from url
 	Resource * resource = CreateResource(URL);
 	if (resource) {
@@ -44,7 +44,7 @@ void ResourceCache::DoAsyncLoadResource(String& URL, Resource * Caller, Variant&
 	}
 }
 
-int ResourceCache::AsyncLoadResource(String& URL, Resource * Caller, Variant& Param) {
+int ResourceCache::AsyncLoadResource(const String& URL, Resource * Caller, Variant& Param) {
 	HashMap<String, Resource*, CACHE_SIZE>::Iterator Iter;
 	Iter = Resources.Find(URL);
 	if (Iter != Resources.End()) {
@@ -84,7 +84,7 @@ template <class T> int ResourceCache::RegisterLoader() {
 }
 
 
-Resource * ResourceCache::CreateResource(String& URL) {
+Resource * ResourceCache::CreateResource(const String& URL) {
 	HashMap<String, ObjectFactory *>::Iterator Iter;
 	String Paths[3];
 	String& Type = Paths[0];
@@ -113,7 +113,7 @@ Resource * ResourceCache::CreateResource(String& URL) {
 	}
 }
 
-Resource *  ResourceCache::GetResource(String& URL) {
+Resource *  ResourceCache::GetResource(const String& URL) {
 	HashMap<String, Resource*, CACHE_SIZE>::Iterator Iter;
 	Iter = Resources.Find(URL);
 	if (Iter != Resources.End()) {

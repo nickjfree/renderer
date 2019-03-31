@@ -59,7 +59,7 @@ int Material::OnSerialize(Deserializer& deserializer){
 			xml_attribute<> * attr = parameter->first_attribute("name");
 			char * name = attr->value();
 			attr = parameter->first_attribute("value");
-			float value = atof(attr->value());
+			float value = static_cast<float>(atof(attr->value()));
 			parameter = parameter->next_sibling();
 			Parameters[String(name)].as<float>() = value;
 			printf("material parameter: %s  %f\n", name, value);

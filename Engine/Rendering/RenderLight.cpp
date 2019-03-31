@@ -96,7 +96,7 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	// light parameters
 	Parameter[hash_string::gLightPosition].as<Vector3>() = Position * Camera->GetViewMatrix();
 	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
-	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(Context->FrameWidth, Context->FrameHeight);
+	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 	// light iewprojection
 	UpdateLightView();
 	// process material

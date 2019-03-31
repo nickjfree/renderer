@@ -41,19 +41,19 @@ void GLDebugDrawer::drawSphere (const btVector3& p, btScalar radius, const btVec
 
 	int i, j;
 	for(i = 0; i <= lats; i++) {
-		btScalar lat0 = SIMD_PI * (-btScalar(0.5) + (btScalar) (i - 1) / lats);
-		btScalar z0  = radius*sin(lat0);
-		btScalar zr0 =  radius*cos(lat0);
+		btScalar lat0 = SIMD_PI * (-btScalar(0.5f) + (btScalar) (i - 1) / lats);
+		btScalar z0  = (float)(radius*sin(lat0));
+		btScalar zr0 =  (float)(radius*cos(lat0));
 
-		btScalar lat1 = SIMD_PI * (-btScalar(0.5) + (btScalar) i / lats);
-		btScalar z1 = radius*sin(lat1);
-		btScalar zr1 = radius*cos(lat1);
+		btScalar lat1 = SIMD_PI * (-btScalar(0.5f) + (btScalar) i / lats);
+		btScalar z1 = (float)(radius*sin(lat1));
+		btScalar zr1 = float(radius*cos(lat1));
 
 		glBegin(GL_QUAD_STRIP);
 		for(j = 0; j <= longs; j++) {
 			btScalar lng = 2 * SIMD_PI * (btScalar) (j - 1) / longs;
-			btScalar x = cos(lng);
-			btScalar y = sin(lng);
+			btScalar x = (float)cos(lng);
+			btScalar y = (float)sin(lng);
 
 			glNormal3f(x * zr0, y * zr0, z0);
 			glVertex3f(x * zr0, y * zr0, z0);

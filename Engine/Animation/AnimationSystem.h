@@ -17,7 +17,8 @@ class AnimationSystem : public System
 private:
 	// all the animators
 	List<Animator> Animators;
-
+    // destroyed animator
+    Vector<Animator*> Destroyed;
 public:
 	AnimationSystem(Context * context);
 	virtual ~AnimationSystem();

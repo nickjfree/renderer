@@ -70,7 +70,7 @@ int ScriptingSystem::HandleEvent(Event *Evt) {
 }
 
 void ScriptingSystem::OnLevelLoaded(Level * level) {
-	printf("Level %x loaded\n", level);
+	printf("Level %zx loaded\n", reinterpret_cast<size_t>(level));
 	// load the initilization scripts
 	int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
 	if (ret) {

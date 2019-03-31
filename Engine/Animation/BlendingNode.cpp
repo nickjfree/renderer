@@ -45,7 +45,7 @@ AnimationCache * BlendingNode::GetAnimationCache() {
     return AnimStage->GetAnimationCache();
 }
 
-void BlendingNode::SetParameter(String& Name, float Value) {
+void BlendingNode::SetParameter(const String& Name, float Value) {
     Parameters[Name].as<float>() = Value;
 }
 
@@ -71,7 +71,7 @@ void BinaryBlendingNode::AddNodes(BlendingNode * NodeA_, BlendingNode * NodeB_, 
 
 // advance
 int BinaryBlendingNode::Advance(float time) {
-    Alpha = Parameters[String("x")].as<float>();
+    Alpha = Parameters["x"].as<float>();
     // calculate scale factor
     if (SyncCycle) {
         Scale = NodeA->Duration / NodeB->Duration;
@@ -92,7 +92,7 @@ int BinaryBlendingNode::Advance(float time) {
 
 // apply
 int BinaryBlendingNode::Apply() {
-    Alpha = Parameters[String("x")].as<float>();
+    Alpha = Parameters["x"].as<float>();
     NodeA->Apply();
     NodeB->Apply();
     // Blending

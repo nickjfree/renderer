@@ -23,7 +23,7 @@ int InputSystem::Shutdown() {
 	return 0;
 }
 
-int InputSystem::OnWindowsMessage(DWORD Msg, DWORD lParam, DWORD wParam) {
+int InputSystem::OnWindowsMessage(DWORD Msg, size_t lParam, size_t wParam) {
 	Handler->OnWindowsMessage(Msg, lParam, wParam);
 	return 0;
 }

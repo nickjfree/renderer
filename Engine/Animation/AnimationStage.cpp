@@ -23,7 +23,7 @@ void AnimationStage::Advance(float time) {
     int Loop = (int)(Time / Range);
 	if (Loop) {
 		Time -= Loop * Range;
-		RootMotion = RootMotion - Clip->Tanslation * Loop;
+		RootMotion = RootMotion - Clip->Tanslation * (float)Loop;
 	}
 }
 

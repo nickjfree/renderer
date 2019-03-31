@@ -101,7 +101,7 @@ public:
 	// instance
 	int Instance(int Geometry, void * InstanceData, int Size);
 	// Get cmd size
-	unsigned int GetCommandSize();
+	size_t GetCommandSize();
 };
 
 

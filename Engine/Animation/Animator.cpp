@@ -23,7 +23,7 @@ void Animator::Update(float time) {
 	AnimationCache * Cache = BlendNode->GetAnimationCache();
 	// set palette
 	Cache->GeneratePalette(skeleton);
-	MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent(String("Renderer"));
+	MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent("Renderer");
 	renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
 	// apply root motion
 	//Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());

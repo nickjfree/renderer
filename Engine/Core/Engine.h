@@ -25,7 +25,7 @@ public:
 	// Update
 	int Update(int ms);
 	// handle message
-	int OnMessage(int msg, DWORD lParam, DWORD wParam);
+	int OnMessage(int msg, size_t lParam, size_t wParam);
 	// Shutdown
 	int Shutdown();
 };

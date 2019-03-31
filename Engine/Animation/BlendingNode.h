@@ -39,7 +39,7 @@ public:
     // GetAnimationCache
     virtual AnimationCache * GetAnimationCache();
     // Set Parameters
-    void SetParameter(String& Name, float Value);
+    void SetParameter(const String& Name, float Value);
 };
 
 class BinaryBlendingNode : public BlendingNode
@@ -65,7 +65,7 @@ public:
     // add 2 nodes
     void AddNodes(BlendingNode * NodeA, BlendingNode * NodeB, bool SyncCycle);
     // set alpha
-    void SetAlpha(float alpha) { SetParameter(String("x"), alpha); };
+    void SetAlpha(float alpha) { SetParameter("x", alpha); };
     // advance
     virtual int Advance(float time);
     // apply

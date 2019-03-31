@@ -87,7 +87,7 @@ void D3D11Render::InitD3D11(){
 	// Create Device and Swap Chain
 	DWORD ret = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0,D3D11_CREATE_DEVICE_DEBUG,/*D3D11_CREATE_DEVICE_SINGLETHREADED*/
 		NULL, 0, D3D11_SDK_VERSION, &SwapChainDesc, &SwapChain, &Device, &FeatureLevel, &DeviceContext);
-	printf("D3DDeivce %x, DeviceContex %x\n", Device, DeviceContext);
+	printf("D3DDeivce %zx, DeviceContex %zx\n", reinterpret_cast<size_t>(Device), reinterpret_cast<size_t>(DeviceContext));
 	// the following code shold change to : adding a textureid 0 to textures
 	ID3D11Texture2D * BackBuffer;
 	D3DTexture Texture;
@@ -104,8 +104,8 @@ void D3D11Render::InitD3D11(){
 	D3D11_VIEWPORT ViewPort;
 	ViewPort.TopLeftX = 0;
 	ViewPort.TopLeftY = 0;
-	ViewPort.Width = Width;
-	ViewPort.Height = Height;
+	ViewPort.Width = static_cast<float>(Width);
+	ViewPort.Height = static_cast<float>(Height);
 	ViewPort.MinDepth = 0.0f;
 	ViewPort.MaxDepth = 1.0f;
 	DeviceContext->RSSetViewports(1, &ViewPort);

@@ -25,7 +25,7 @@ public:
 	InputSystem(Context * context);
 	virtual ~InputSystem();
 
-	int OnWindowsMessage(DWORD Msg, DWORD lParam, DWORD wParam);
+	int OnWindowsMessage(DWORD Msg, size_t lParam, size_t wParam);
 			
 	virtual int Initialize();
 

@@ -339,6 +339,6 @@ int BatchCompiler::Instance(int Geometry, void * InstanceData, int Size) {
 }
 
 
-unsigned int BatchCompiler::GetCommandSize() {
+size_t BatchCompiler::GetCommandSize() {
 	return this->Offset - CommandBuffer;
 }

@@ -12,7 +12,7 @@ RenderContext::RenderContext(RenderInterface * Interface_) {
 RenderContext::~RenderContext() {
 }
 
-int RenderContext::RegisterConstant(String& Name, int Slot, unsigned int Size) {
+int RenderContext::RegisterConstant(const String& Name, int Slot, unsigned int Size) {
 	ConstantDesc * Constant = Constants[Slot];
 	if (Constant) {
 		return 1;
@@ -33,7 +33,7 @@ int RenderContext::RegisterConstant(String& Name, int Slot, unsigned int Size) {
 }
 
 
-int RenderContext::RegisterParameter(String& Name, int Slot, unsigned int Offset, unsigned int Size) {
+int RenderContext::RegisterParameter(const String& Name, int Slot, unsigned int Offset, unsigned int Size) {
 	return 0;
 }
 
@@ -75,7 +75,7 @@ void RenderContext::EndFrame() {
 	}
 }
 
-int RenderContext::RegisterRenderState(String& Name, int Id) {
+int RenderContext::RegisterRenderState(const String& Name, int Id) {
 	HashMap<String, int>::Iterator Iter;
 	Iter = RenderStats.Find(Name);
 	if (Iter == RenderStats.End()) {
@@ -88,7 +88,7 @@ int RenderContext::RegisterRenderState(String& Name, int Id) {
 	return 0;
 }
 
-int RenderContext::GetRenderState(String& Name) {
+int RenderContext::GetRenderState(const String& Name) {
 	HashMap<String, int>::Iterator Iter;
 	Iter = RenderStats.Find(Name);
 	if (Iter != RenderStats.End()) {
@@ -97,7 +97,7 @@ int RenderContext::GetRenderState(String& Name) {
 	return -1;
 }
 
-int RenderContext::RegisterRenderTarget(String& Target, int Id) {
+int RenderContext::RegisterRenderTarget(const String& Target, int Id) {
 	HashMap<String, int>::Iterator Iter;
 	Iter = RenderTarget.Find(Target);
 	if (Iter == RenderTarget.End()) {
@@ -113,7 +113,7 @@ int RenderContext::RegisterRenderTarget(String& Target, int Id) {
 	return 0;
 }
 
-int RenderContext::GetRenderTarget(String& Target) {
+int RenderContext::GetRenderTarget(const String& Target) {
 	HashMap<String, int>::Iterator Iter;
 	Iter = RenderTarget.Find(Target);
 	if (Iter != RenderTarget.End()) {
@@ -122,12 +122,12 @@ int RenderContext::GetRenderTarget(String& Target) {
 	return -1;
 }
 
-int RenderContext::SetResource(String& Name, Variant& resource) {
+int RenderContext::SetResource(const String& Name, Variant& resource) {
 	Parameters[Name] = resource;
 	return 0;
 }
 
-Variant* RenderContext::GetResource(String& Name) {
+Variant* RenderContext::GetResource(const String& Name) {
 	Dict::Iterator Iter = Parameters.Find(Name);
 	if (Iter != Parameters.End()) {
 		return &(*Iter).Value;

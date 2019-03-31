@@ -27,7 +27,7 @@ void PostpassStage::InitPostSchema() {
 	depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
 	depth.StencilRef = 0;
 	DepthStat[0] = Interface->CreateDepthStencilStatus(&depth);
-	Context->RegisterRenderState(String("NoZTest"), DepthStat[0]);
+	Context->RegisterRenderState("NoZTest", DepthStat[0]);
 }
 
 void PostpassStage::CreatePingPongBuffer() {
@@ -46,12 +46,12 @@ void PostpassStage::CreatePingPongBuffer() {
 	PingPong[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	//// resgister targets
-	Context->RegisterRenderTarget(String("gPostBuffer"), PingPong[0]);
-	Context->RegisterRenderTarget(String("gFinalBuffer"), PingPong[1]);
+	Context->RegisterRenderTarget("gPostBuffer", PingPong[0]);
+	Context->RegisterRenderTarget("gFinalBuffer", PingPong[1]);
 
 	Variant ScreenSize;
-	ScreenSize.as<Vector2>() = Vector2(Context->FrameWidth, Context->FrameHeight);
-	Context->SetResource(String("gScreenSize"), ScreenSize);
+	ScreenSize.as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
+	Context->SetResource("gScreenSize", ScreenSize);
 }
 
 void PostpassStage::InitSampleOffset() {
@@ -187,7 +187,7 @@ int PostpassStage::SSAO(BatchCompiler * Compiler) {
 		Compiled += Compiler->Quad();
 	}
 	else {
-		Variant * Value = Context->GetResource(String("Material\\Materials\\ssao.xml\\0"));
+		Variant * Value = Context->GetResource("Material\\Materials\\ssao.xml\\0");
 		if (Value) {
 			ssaoMaterial = Value->as<Material*>();
 		}
@@ -211,7 +211,7 @@ int PostpassStage::OIT(BatchCompiler * Compiler) {
         Compiled += Compiler->Quad();
     }
     else {
-        Variant * Value = Context->GetResource(String("Shader\\shaders\\OIT\\0"));
+        Variant * Value = Context->GetResource("Shader\\shaders\\OIT\\0");
         if (Value) {
             OITShader = Value->as<Shader*>();
         }
@@ -246,7 +246,7 @@ int PostpassStage::CalcAvgLum(BatchCompiler * Compiler) {
 		memcpy_s(Offset, sizeof(Variant), &ScaleOffset[i], sizeof(float) * 16);
 		HDRShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
 		// Quad
-		Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+		Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f);
 		Compiler->Quad();
 	}
 	return 0;
@@ -266,7 +266,7 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, &AdaptLum[0]);
 	memcpy_s(Offset, sizeof(Variant), &ScaleOffset[AvgIter], sizeof(float) * 16);
 	HDRShader->Compile(Compiler, 2, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, LumBufferWidth, LumBufferHeight, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(LumBufferWidth), static_cast<float>(LumBufferHeight), 0.0f, 1.0f);
 	Compiler->Quad();
 	Frames++;
 	return 0;
@@ -274,13 +274,13 @@ int PostpassStage::CalcAdaptLum(BatchCompiler * Compiler) {
 
 int PostpassStage::BrightPass(BatchCompiler * Compiler){
 	// bright pass to bloom 0
-	int Width = Context->FrameWidth / 2.0f;
-	int Height = Context->FrameHeight / 2.0f;
+	int Width = Context->FrameWidth / 2;
+	int Height = Context->FrameHeight / 2;
 	Parameter[hash_string::gPostBuffer].as<int>() = PingPong[1];
 	Parameter[hash_string::gDiffuseMap0].as<int>() = AdaptLum[0];
 	Compiler->SetRenderTargets(1, &Bright);
 	HDRShader->Compile(Compiler, 3, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f);
 	Compiler->Quad();
 	// downsample to bloom0
 	float * Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
@@ -288,15 +288,15 @@ int PostpassStage::BrightPass(BatchCompiler * Compiler){
 	memcpy_s(Offset, sizeof(Variant), BrightOffset, sizeof(float) * 16);
 	Compiler->SetRenderTargets(1, &Bloom[0]);
 	HDRShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, Width/4, Height/4, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Width/4), static_cast<float>(Height/4), 0.0f, 1.0f);
 	Compiler->Quad();
 	return 0;
 }
 
 int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 	// bright pass
-	int Width = Context->FrameWidth / 8.0f;
-	int Height = Context->FrameHeight / 8.0f;
+	int Width = Context->FrameWidth / 8;
+	int Height = Context->FrameHeight / 8;
 	float * Weight = Parameter[hash_string::gSampleWeights].as<float[16]>();
 	memcpy_s(Weight, sizeof(Variant), BloomWeight, sizeof(float) * 16);
 	// horizion bloom0 -> bloom1
@@ -305,7 +305,7 @@ int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 	Parameter[hash_string::gPostBuffer].as<int>() = Bloom[0];
 	Compiler->SetRenderTargets(1, &Bloom[1]);
 	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f);
 	Compiler->Quad();
 	// horizion bloom1->bloom2
 	Offset = Parameter[hash_string::gSampleOffsets].as<float[16]>();
@@ -313,7 +313,7 @@ int PostpassStage::BloomPass(BatchCompiler * Compiler) {
 	Parameter[hash_string::gPostBuffer].as<int>() = Bloom[1];
 	Compiler->SetRenderTargets(1, &Bloom[2]);
 	HDRShader->Compile(Compiler, 4, 0, Parameter, Parameter, Context);
-	Compiler->SetViewport(0, 0, Width, Height, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Width), static_cast<float>(Height), 0.0f, 1.0f);
 	Compiler->Quad();
 	return 0;
 }
@@ -326,7 +326,7 @@ int PostpassStage::ToneMapping(BatchCompiler * Compiler) {
 	Compiler->SetRenderTargets(1, &Target);
 	HDRShader->Compile(Compiler, 5, 0, Parameter, Parameter, Context);
 	// restore viewport
-	Compiler->SetViewport(0, 0, Context->FrameWidth, Context->FrameHeight, 0, 1);
+	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight), 0.0f, 1.0f);
 	Compiler->Quad();
 	Compiler->Present();
 	return 0;
@@ -343,7 +343,7 @@ int PostpassStage::HDR(BatchCompiler * Compiler) {
 		Compiled += BloomPass(Compiler);
 		Compiled += ToneMapping(Compiler);
 	} else {
-		Variant * Value = Context->GetResource(String("Shader\\shaders\\HDR\\0"));
+		Variant * Value = Context->GetResource("Shader\\shaders\\HDR\\0");
 		if (Value) {
 			HDRShader = Value->as<Shader*>();
 		}
@@ -364,7 +364,7 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	renderview->TargetCount = 1;
     renderview->ClearTargets = 1;
     renderview->Targets[0] =  PingPong[1];
-	//renderview->Depth = Context->GetRenderTarget(String("Depth"));
+	//renderview->Depth = Context->GetRenderTarget("Depth");
 	renderview->ClearDepth = 0;
 	BatchCompiler * Compiler = renderview->Compiler;
 	char * Buffer = (char*)renderview->CommandBuffer;

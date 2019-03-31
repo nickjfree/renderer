@@ -11,7 +11,7 @@ namespace D3D12API {
 
 	private:
 		// hash value
-		unsigned int hash;
+		mutable unsigned int hash;
 	public:
 		// dirty flag
 		int Dirty;

@@ -7,7 +7,7 @@ InputHandler::InputHandler(InputSystem * Input_): Input(Input_) {
 InputHandler::~InputHandler() {
 }
 
-int InputHandler::OnWindowsMessage(int msg, DWORD lParam, DWORD wParam) {
+int InputHandler::OnWindowsMessage(int msg, size_t lParam, size_t wParam) {
 
 	Action action = {};
 	int prev_stat;

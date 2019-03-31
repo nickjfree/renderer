@@ -191,7 +191,7 @@ void	GLDebugDrawStringInternal(int x,int y,const char* string, const btVector3& 
 				glEnd();
 #endif			
 
-				glTranslatef(spacing,0,0);
+				glTranslatef(float(spacing), 0.0f, 0.0f);
 			}
 		}
 

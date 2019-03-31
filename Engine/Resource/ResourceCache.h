@@ -28,17 +28,17 @@ private:
 	// registered resource loaders
 	HashMap<String, ResourceLoader*> ResourceLoaderFac;
 private:
-	void DoAsyncLoadResource(String& URL, Resource * Caller, Variant& Parameter);
+	void DoAsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter);
 public:
 	ResourceCache(Context * context);
 	virtual ~ResourceCache();
 	virtual int Initialize();
-	int AsyncLoadResource(String& URL, Resource * Caller, Variant& Parameter);
+	int AsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter);
 	template <class T> int RegisterResource();
 	template <class T> int RegisterLoader();
-	Resource * CreateResource(String& URL);
-	template <class T> 	inline  T* Get(String& URL) { return (T*)GetResource(URL); }
-	Resource * GetResource(String& URL);
+	Resource * CreateResource(const String& URL);
+	template <class T> 	inline  T* Get(const String& URL) { return (T*)GetResource(URL); }
+	Resource * GetResource(const String& URL);
 };
 
 #endif

@@ -42,7 +42,7 @@ private:
 	// pointer to buffer contain string
 	const char * Str;
 	// string length
-	unsigned int Length;
+	size_t Length;
 	StringHash Hash;
 public:
 	String();
@@ -58,8 +58,8 @@ public:
 	//bool operator == (const char * buff);
 	bool operator == (const String& rh) const;
 	bool operator != (const String& rh) const ;
-	int Split(char delimiter, String * Result, int Count);
-	unsigned int Len() const { return Length; }
+	int Split(char delimiter, String * Result, int Count) const;
+	size_t Len() const { return Length; }
     const char * ToStr() const { return Str; } 
  	virtual ~String();
 };

@@ -44,7 +44,7 @@ int Level::InitModel() {
 	return 0;
 }
 
-int Level::CreateGameobject(ObjectEntry * Entry) {
+size_t Level::CreateGameobject(ObjectEntry * Entry) {
 	char * offset = (char*)Entry + sizeof(ObjectEntry);
 	GameObject * Object = scene->CreateGameObject(Entry->Name);
 	Object->SetTranslation(Entry->Position);
@@ -147,25 +147,25 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	for (int i = 0; i < NumMeshes; i++) {
 		Param.as<int>() = i;
 		Meshs.PushBack(empty_mesh);    // init mesh vertor to zero
-		Cache->AsyncLoadResource(String(MeshEntries[i].Url), this, Param);
+		Cache->AsyncLoadResource(MeshEntries[i].Url, this, Param);
 	}
 
 	for (int i = 0; i < NumMaterials; i++) {
 		Param.as<int>() = i;
 		Materials.PushBack(empty_material); // init material vector to zero
-		Cache->AsyncLoadResource(String(MaterialEntries[i].Url), this, Param);
+		Cache->AsyncLoadResource(MaterialEntries[i].Url, this, Param);
 	}
 	// for test submiting skeletion loading task
 	Param.as<int>() = 0;
 	Skeletons.PushBack(empty_skeleton);
-	Cache->AsyncLoadResource(String("Skeleton\\skeletons\\human.hsk"), this, Param);
+	Cache->AsyncLoadResource("Skeleton\\skeletons\\human.hsk", this, Param);
 	// for test submiting animation loading task
 	Param.as<int>() = 0;
 	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource(String("Animation\\keyframe\\human_walk.ha"), this, Param);
+	Cache->AsyncLoadResource("Animation\\keyframe\\human_walk.ha", this, Param);
     Param.as<int>() = 1;
     Animations.PushBack(empty_animation);
-    Cache->AsyncLoadResource(String("Animation\\keyframe\\human_run.ha"), this, Param);
+    Cache->AsyncLoadResource("Animation\\keyframe\\human_run.ha", this, Param);
 	return 0;
 }
 
@@ -220,7 +220,7 @@ int Level::InitScript() {
 	// add camera script
 	// attach a script component for test 
 	Script * script = new Script(context);
-	script->SetScript(String("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\camera.lua"));
+	script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\camera.lua");
 	MainCamera->AddComponent(script);
 	// update test
 	Vector<GameObject *>::Iterator Iter;
@@ -229,32 +229,32 @@ int Level::InitScript() {
 		if (Object->GetName() == "Lumia") {
 			// attach a script component for test 
 			Script * script = new Script(context);
-			script->SetScript(String("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua"));
+			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
 			Object->AddComponent(script);
 		}
 		if (Object->GetName() == "qianzhihe" || Object->GetName() == "ADATA") {
 			PhysicsObject * Physics = new PhysicsObject(context);
 			// creat convext hulls for collision shape
-			MeshRenderer * render = (MeshRenderer * )Object->GetComponent(String("Renderer"));
+			MeshRenderer * render = (MeshRenderer * )Object->GetComponent("Renderer");
 			Model * model = render->GetModel();
 			Physics->CreateShapeFromModel(model);
 			Object->AddComponent(Physics);
 
             // add scripts to all for test
             Script * script = new Script(context);
-            script->SetScript(String("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua"));
+            script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
             Object->AddComponent(script);
 		}
         if (Object->GetName() == "ADATA") {
             PhysicsObject * Physics = new PhysicsObject(context);
             // creat convext hulls for collision shape
-            MeshRenderer * render = (MeshRenderer *)Object->GetComponent(String("Renderer"));
+            MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
             //render->SetTransparente();
         }
 		if (Object->GetName() == "Lumia") {
 			PhysicsObject * Physics = new PhysicsObject(context);
 			// creat convext hulls for collision shape
-			MeshRenderer * render = (MeshRenderer *)Object->GetComponent(String("Renderer"));
+			MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
 			Model * model = render->GetModel();
 			Physics->CreateShapeFromModel(model);
 			Physics->SetObjectType(PhysicsObject::KINEMATIC);

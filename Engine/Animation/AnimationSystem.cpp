@@ -24,7 +24,17 @@ int AnimationSystem::Update(int ms) {
 	List<Animator>::Iterator Iter;
 	for (Iter = Animators.Begin(); Iter != Animators.End(); Iter++) {
 		Animator * animator = *Iter;
-		animator->Update((float)ms);
+        if (!animator->Destroyed) {
+            animator->Update((float)ms);
+        } else {
+            Destroyed.PushBack(animator);
+        }
 	}
+    // handle destroyed animators
+    for (auto Iter = Destroyed.Begin(); Iter != Destroyed.End(); Iter++) {
+        Animator * animator = *Iter;
+        animator->DecRef();
+    }
+    Destroyed.Empty();
 	return 0;
 }

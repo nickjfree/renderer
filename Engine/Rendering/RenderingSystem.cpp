@@ -19,7 +19,7 @@ RenderingSystem::~RenderingSystem()
 }
 
 void RenderingSystem::InitRendering() {
-	RenderContext_->RegisterRenderTarget(String("Color"), 0);
+	RenderContext_->RegisterRenderTarget("Color", 0);
 }
 
 void RenderingSystem::InitLowLevel() {
@@ -44,18 +44,18 @@ void RenderingSystem::InitTopLevel() {
 void RenderingSystem::PreloadingResource() {
 	ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
 	// loading ssao
-	Preloadings[0] = String("Material\\Materials\\ssao.xml\\0");
+	Preloadings[0] = "Material\\Materials\\ssao.xml\\0";
 	Variant Param;
 	Param.as<String*>() = &Preloadings[0];
 	RenderPreloading * Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[0], Preloading, Param);
 	// loading hdr shaders
-	Preloadings[1] = String("Shader\\shaders\\HDR\\0");
+	Preloadings[1] = "Shader\\shaders\\HDR\\0";
 	Param.as<String*>() = &Preloadings[1];
 	Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
     // loading oit shaders
-    Preloadings[2] = String("Shader\\shaders\\OIT\\0");
+    Preloadings[2] = "Shader\\shaders\\OIT\\0";
     Param.as<String*>() = &Preloadings[2];
     Preloading = new RenderPreloading(context);
     Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);

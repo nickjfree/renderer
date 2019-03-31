@@ -106,24 +106,6 @@ public:
 		return Iter;
 	}
 
-    Iterator Find(K& k) {
-        int Key = (int)k;
-        unsigned int Index = Key & Mask;
-        KeyValue * head = &Entry[Index];
-        KeyValue * kv = head->Next;
-        while (kv != head && kv->Key != k) {
-            kv = kv->Next;
-        }
-        Iterator Iter;
-        if (kv == head) {
-            Iter.ptr = NULL;
-        }
-        else {
-            Iter.ptr = kv;
-        }
-        return Iter;
-    }
-
 	// set
 	void Set(const K& k, V& v) {
 		Get(k) = v;

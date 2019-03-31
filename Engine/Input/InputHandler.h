@@ -18,7 +18,7 @@ public:
 	InputHandler(InputSystem * Input);
 	virtual ~InputHandler();
 	// handle messages
-	int OnWindowsMessage(int msg, DWORD lParam, DWORD wParam);
+	int OnWindowsMessage(int msg, size_t lParam, size_t wParam);
 };
 
 #endif 

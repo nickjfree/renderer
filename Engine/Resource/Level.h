@@ -81,7 +81,7 @@ private:
 	int InitGameObjects();
 	int InitLevel();
 	int InitModel();
-	int CreateGameobject(ObjectEntry * Entry);
+	size_t CreateGameobject(ObjectEntry * Entry);
 	int CreateComponent(GameObject * Object, ComponentEntry * ComponentData);
 	int CreateScene();
 public:

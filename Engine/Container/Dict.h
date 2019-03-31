@@ -27,7 +27,7 @@ private:
 	HashIndex HashIndex_;
 private:
 	// get stringhash
-	int hash(char * string) { return djb2_hash((unsigned char*)string); }
+	int hash(const char * string) { return djb2_hash((unsigned char*)string); }
 
 public:
 	class Iterator {
@@ -50,9 +50,9 @@ public:
 public:
 	Dict();
 	virtual ~Dict();
-	template <class T>  T& Get(String& key);
-	template <class T>  int Set(String& key, T& value);
-	Variant& operator[] (String& key);
+	template <class T>  T& Get(const String& key);
+	template <class T>  int Set(const String& key, T& value);
+	Variant& operator[] (const String& key);
 	void Clear() { HashIndex_.Reset(); Items.Resize(0, 1); };
 //	Variant& operator[] (char * key);
 	// begin, not used
@@ -62,7 +62,7 @@ public:
 		return Iter;
 	};
 
-	Iterator Find(String& key) {
+	Iterator Find(const String& key) {
 		Iterator Iter;
 		unsigned int StringHash = (unsigned int)key;
 		int Index = HashIndex_.First(StringHash);

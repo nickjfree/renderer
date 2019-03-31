@@ -68,25 +68,25 @@ public:
 	// interface
 	RenderInterface * GetRenderInterface() { return Interface; }
 	// Register constant buffer, create one if it's the first time
-	int RegisterConstant(String& Name, int Slot, unsigned int Size);
+	int RegisterConstant(const String& Name, int Slot, unsigned int Size);
 	// register shader parameter
-	int RegisterParameter(String& Name, int Slot, unsigned int Offset, unsigned int Size);
+	int RegisterParameter(const String& Name, int Slot, unsigned int Offset, unsigned int Size);
 	// Set parameter
 	int SetParameter(int Slot, void * CPUData, unsigned int Offset, unsigned int Size);
 	// update constant
 	int UpdateConstant(int Slot);
 	// Regiseter Render State
-	int RegisterRenderState(String& Name, int Id);
+	int RegisterRenderState(const String& Name, int Id);
 	// Get render state by name
-	int GetRenderState(String& Name);
+	int GetRenderState(const String& Name);
 	// RegiterRenderTarget
-	int RegisterRenderTarget(String& Target, int Id);
+	int RegisterRenderTarget(const String& Target, int Id);
 	// get rendertarget
-	int GetRenderTarget(String& Target);
+	int GetRenderTarget(const String& Target);
 	// set resource
-	int SetResource(String& Name, Variant& resource);
+	int SetResource(const String& Name, Variant& resource);
 	// get by name
-	Variant* GetResource(String& Name);
+	Variant* GetResource(const String& Name);
 	// End Frame
 	void EndFrame();
 };

@@ -862,12 +862,12 @@ void D3D12Render::SetViewPort(float tlx, float tly, float width, float height, f
 	// setScissorRects
 	D3D12_RECT rect = {};
 	rect.left = 0;
-	rect.right = width;
+	rect.right = (long)width;
 	rect.top = 0;
-	rect.bottom = height;
+	rect.bottom = (long)height;
 	cmdList->RSSetScissorRects(1, &rect);
-	ViewPortWidth = width;
-	ViewPortHeight = height;
+	ViewPortWidth = (int)width;
+	ViewPortHeight = (int)height;
 }
 
 
@@ -1228,7 +1228,7 @@ void D3D12Render::SwapCommandContext() {
 	NumTargets = 0;
 	TargetDirty = 0;
 	// reset viewport
-	SetViewPort(0, 0, ViewPortWidth, ViewPortHeight, 0, 1);
+	SetViewPort(0.0f, 0.0f, (float)ViewPortWidth, (float)ViewPortHeight, 0.0f, 1.0f);
 }
 
 

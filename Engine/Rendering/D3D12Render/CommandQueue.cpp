@@ -28,7 +28,7 @@ CommandQueue::~CommandQueue() {
 
 void CommandQueue::Wait(UINT64 FenceValue_) {
 	// get thread local index
-	int Index = (int)ThreadLocal::GetThreadLocal();
+    size_t Index = reinterpret_cast<size_t>(ThreadLocal::GetThreadLocal());
 	// fencevalue is the fencevalue to wait for
 	UINT64 FenceToWait = FenceValue_;
 	Fence->SetEventOnCompletion(FenceToWait, FenceEvent[Index]);
@@ -36,7 +36,7 @@ void CommandQueue::Wait(UINT64 FenceValue_) {
 }
 
 void CommandQueue::IdleGpu() {
-	int Index = (int)ThreadLocal::GetThreadLocal();
+    size_t Index = reinterpret_cast<size_t>(ThreadLocal::GetThreadLocal());
 	// fencevalue is the fencevalue to wait for
 	QueueLock.Acquire();
 	UINT64 CurrentFence = InterlockedIncrement(&FenceValue);

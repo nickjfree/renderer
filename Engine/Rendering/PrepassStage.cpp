@@ -37,12 +37,12 @@ void PrepassStage::CreateGBuffer() {
 	desc.Format = FORMAT_D24_UNORM_S8_UINT;
 	Depth = Interface->CreateTexture2D(&desc, NULL, 0, 0);
 	// resgister targets
-	Context->RegisterRenderTarget(String("gDepthBuffer"), Targets[0]);
-	Context->RegisterRenderTarget(String("gNormalBuffer"), Targets[1]);
-	Context->RegisterRenderTarget(String("gLightBuffer"), Targets[2]);
-	Context->RegisterRenderTarget(String("gDiffuseBuffer"), Targets[3]);
-	Context->RegisterRenderTarget(String("gSpecularBuffer"), Targets[4]);
-	Context->RegisterRenderTarget(String("Depth"), Depth);
+	Context->RegisterRenderTarget("gDepthBuffer", Targets[0]);
+	Context->RegisterRenderTarget("gNormalBuffer", Targets[1]);
+	Context->RegisterRenderTarget("gLightBuffer", Targets[2]);
+	Context->RegisterRenderTarget("gDiffuseBuffer", Targets[3]);
+	Context->RegisterRenderTarget("gSpecularBuffer", Targets[4]);
+	Context->RegisterRenderTarget("Depth", Depth);
 }
 
 
@@ -77,14 +77,14 @@ void PrepassStage::CreateABuffer() {
     // resgister targets
     Variant Resource;
     Resource.as<int>() = ABuffers[0];
-    Context->SetResource(String("gAOITSPClearMaskUAV"), Resource);
-    Context->SetResource(String("gAOITSPClearMaskSRV"), Resource);
+    Context->SetResource("gAOITSPClearMaskUAV", Resource);
+    Context->SetResource("gAOITSPClearMaskSRV", Resource);
     Resource.as<int>() = ABuffers[1];
-    Context->SetResource(String("gAOITSPDepthDataUAV"), Resource);
-    Context->SetResource(String("gAOITSPDepthDataSRV"), Resource);
+    Context->SetResource("gAOITSPDepthDataUAV", Resource);
+    Context->SetResource("gAOITSPDepthDataSRV", Resource);
     Resource.as<int>() = ABuffers[2];
-    Context->SetResource(String("gAOITSPColorDataUAV"), Resource);
-    Context->SetResource(String("gAOITSPColorDataSRV"), Resource);
+    Context->SetResource("gAOITSPColorDataUAV", Resource);
+    Context->SetResource("gAOITSPColorDataSRV", Resource);
 }
 
 void PrepassStage::CreateRenderState() {
@@ -206,17 +206,17 @@ void PrepassStage::CreateRenderState() {
 	raster.FrontCounterClockwise = 1;
 	RasterStat[1] = Interface->CreateRasterizerStatus(&raster);
 	// register
-	Context->RegisterRenderState(String("TwoSideStencil"), DepthStat[0]);
-	Context->RegisterRenderState(String("NoZ"), DepthStat[1]);
-    Context->RegisterRenderState(String("Depth"), DepthStat[2]);
-    Context->RegisterRenderState(String("TransDepth"), DepthStat[3]);
-    Context->RegisterRenderState(String("ResolveDepth"), DepthStat[4]);
-	Context->RegisterRenderState(String("NoFrame"), BlendStat[0]);
-	Context->RegisterRenderState(String("Additive"), BlendStat[1]);
-	Context->RegisterRenderState(String("Blend"), BlendStat[2]);
-    Context->RegisterRenderState(String("AlphaBlend"), BlendStat[3]);
-	Context->RegisterRenderState(String("NoCull"), RasterStat[0]);
-	Context->RegisterRenderState(String("Rasterizer"), RasterStat[1]);
+	Context->RegisterRenderState("TwoSideStencil", DepthStat[0]);
+	Context->RegisterRenderState("NoZ", DepthStat[1]);
+    Context->RegisterRenderState("Depth", DepthStat[2]);
+    Context->RegisterRenderState("TransDepth", DepthStat[3]);
+    Context->RegisterRenderState("ResolveDepth", DepthStat[4]);
+	Context->RegisterRenderState("NoFrame", BlendStat[0]);
+	Context->RegisterRenderState("Additive", BlendStat[1]);
+	Context->RegisterRenderState("Blend", BlendStat[2]);
+    Context->RegisterRenderState("AlphaBlend", BlendStat[3]);
+	Context->RegisterRenderState("NoCull", RasterStat[0]);
+	Context->RegisterRenderState("Rasterizer", RasterStat[1]);
 }
 
 int PrepassStage::Initial() {
@@ -271,7 +271,7 @@ void PrepassStage::LigthingPass(RenderingCamera * Camera, Spatial * spatial, Ren
 	//renderview->Parameters.Clear();
 	// set render target
 	renderview->TargetCount = 1;
-	renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer")); // Targets[2];
+	renderview->Targets[0] = Context->GetRenderTarget("gPostBuffer"); // Targets[2];
 	// 4. submit to workqueue
 	int count = 1;
 	while (count--) {
@@ -295,7 +295,7 @@ void PrepassStage::ShadingPass(RenderingCamera * Camera, Spatial * spatial, Rend
 	renderview->Parameters.Clear();
 	// set render target
 	renderview->TargetCount = 1;
-	renderview->Targets[0] = Context->GetRenderTarget(String("gPostBuffer"));  // 0;
+	renderview->Targets[0] = Context->GetRenderTarget("gPostBuffer");  // 0;
 	renderview->Depth = Depth;
 	renderview->ClearDepth = 0;
     renderview->ClearTargets = 1;
@@ -322,7 +322,7 @@ void PrepassStage::OITInitPass(RenderingCamera * Camera, Spatial * spatial, Rend
     renderview->Parameters.Clear();
     // set render target
     renderview->TargetCount = 0;
-    renderview->Targets[0] = -1; // Context->GetRenderTarget(String("gPostBuffer"));
+    renderview->Targets[0] = -1; // Context->GetRenderTarget("gPostBuffer");
     renderview->Depth = Depth;
     renderview->ClearDepth = 0;
     renderview->ClearTargets = 0;

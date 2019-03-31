@@ -55,19 +55,19 @@ Component * GameObject::GetComponent(const String& TypeName) {
 }
 
 void GameObject::NotifyTransform() {
-	Component * component = GetComponent(String("Renderer"));
+	Component * component = GetComponent("Renderer");
 	if (component) {
 		component->OnTransform(this);
 	}
-	component = GetComponent(String("Light"));
+	component = GetComponent("Light");
 	if (component) {
 		component->OnTransform(this);
 	}
-	component = GetComponent(String("Camera"));
+	component = GetComponent("Camera");
 	if (component) {
 		component->OnTransform(this);
 	}
-	component = GetComponent(String("PhysicsObject"));
+	component = GetComponent("PhysicsObject");
 	if (component) {
 		component->OnTransform(this);
 	}
@@ -135,7 +135,7 @@ Component * GameObject::CreateComponent(String& type) {
 
 bool GameObject::AddComponent(Component * component) {
 	if (GetComponent(component->GetTypeName())) {
-		return false;
+		return false ;
 	}
 	else {
 		Components.PushBack(component);
@@ -209,7 +209,7 @@ void GameObject::Attach(GameObject * Sub) {
 
 int GameObject::Subscribe(int Event, String& Callback) {
 	// we are acctually subscribe script componet as a gameobject in scripting
-	Component * comp = GetComponent(String("Script"));
+	Component * comp = GetComponent("Script");
 	if (comp) {
 		return comp->Subscribe(Event, Callback);
 	}

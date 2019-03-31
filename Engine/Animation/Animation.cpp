@@ -27,7 +27,7 @@ int Animation::OnSerialize(Deserializer& serializer) {
 			KeyFrame& keyframe = Tracks[bone_id].Frames[frame];
 			ha_frame& raw_frame = frames[frame];
 			keyframe.BoneId = bone_id;
-			keyframe.Time = raw_frame.time;
+			keyframe.Time = (float)raw_frame.time;
 			keyframe.Rotation = Quaternion(raw_frame.rx, raw_frame.ry, raw_frame.rz, raw_frame.rw);
 			keyframe.Translation = Vector3(raw_frame.tx, raw_frame.ty, raw_frame.tz);
 			keyframe.Scale = 1.0f;
@@ -44,8 +44,8 @@ int Animation::OnSerialize(Deserializer& serializer) {
 		ha_frame * end = keyframes + raw_clip.end;
 		Clip.Tanslation = Tracks[0].Frames[raw_clip.end].Translation - Tracks[0].Frames[raw_clip.start].Translation;
 		Clip.RootStart = Tracks[0].Frames[raw_clip.start].Translation;
-		Clip.TimeOffset = start->time;
-		Clip.EndTime = end->time;
+		Clip.TimeOffset = (float)start->time;
+		Clip.EndTime = (float)end->time;
 		Clip.Name = raw_clip.name;
 		Clips.PushBack(Clip);
 	}

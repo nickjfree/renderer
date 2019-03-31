@@ -44,10 +44,10 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 	VTSize = H3DMesh->VertexSize;
 	IBuffer = Index;
 	// check for out off bound indices
-	for (int i = 0; i < INum; i++) {
+	for (DWORD i = 0; i < INum; i++) {
 		unsigned int pos = IBuffer[i];
 		if (pos > H3DMesh->VertexNum) {
-			IBuffer[i] = H3DMesh->VertexNum - 1;
+			IBuffer[i] = static_cast<WORD>(H3DMesh->VertexNum - 1);
 		}
 	}
 	return 0;
@@ -176,11 +176,11 @@ void H3DMesh::ComputeConvexHull() {
 
 		// points
 		for (size_t v = 0; v < nPoints; v++) {
-			vertices[4 * v] = pointsCH[v].X();
-			vertices[4 * v + 1] = pointsCH[v].Y();
-			vertices[4 * v + 2] = pointsCH[v].Z();
-			vertices[4 * v + 3] = 0;
-			Center = Center + Vector3(pointsCH[v].X(), pointsCH[v].Y(), pointsCH[v].Z());
+			vertices[4 * v] = (float)pointsCH[v].X();
+			vertices[4 * v + 1] = (float)pointsCH[v].Y();
+			vertices[4 * v + 2] = (float)pointsCH[v].Z();
+			vertices[4 * v + 3] = 0.0f;
+			Center = Center + Vector3((float)pointsCH[v].X(), (float)pointsCH[v].Y(), (float)pointsCH[v].Z());
 		}
 		Center = Center * (1.0f / nPoints);
 		// shift points with center at (0,0,0)
@@ -199,14 +199,14 @@ void H3DMesh::ComputeConvexHull() {
 			triangles[3 * f + 2] = trianglesCH[f].Z();
 		}
 		ConvexHulls[c].Center = Center;
-		ConvexHulls[c].VNum = nPoints;
+		ConvexHulls[c].VNum = static_cast<int>(nPoints);
 		ConvexHulls[c].VBuffer = vertices;
-		ConvexHulls[c].INum = nTriangles;
+		ConvexHulls[c].INum = static_cast<int>(nTriangles);
 		ConvexHulls[c].IBuffer = triangles;
 
 		delete[] pointsCH;
 		delete[] trianglesCH;
 	}
-	NumConvex = nClusters;
+	NumConvex = static_cast<int>(nClusters);
 }
 

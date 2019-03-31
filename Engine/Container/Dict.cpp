@@ -10,7 +10,7 @@ Dict::~Dict()
 {
 }
 
-template <class T>  T& Dict::Get(String& key) {
+template <class T>  T& Dict::Get(const String& key) {
 	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Items[Index].key != key) {
@@ -23,7 +23,7 @@ template <class T>  T& Dict::Get(String& key) {
 	return *(T*)&Items[Index].Value;
 }
 
-template <class T>  int Dict::Set(String& key, T& value) {
+template <class T>  int Dict::Set(const String& key, T& value) {
 	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Items[Index].key != key) {
@@ -42,7 +42,7 @@ template <class T>  int Dict::Set(String& key, T& value) {
 	return Index;
 }
 
-Variant& Dict::operator[] (String& key) {
+Variant& Dict::operator[] (const String& key) {
 	unsigned int StringHash = (unsigned int)key;
 	int Index = HashIndex_.First(StringHash);
 	while (Index != -1 && Items[Index].key != key) {

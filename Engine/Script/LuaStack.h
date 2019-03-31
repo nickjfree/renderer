@@ -249,11 +249,11 @@ public:
 		float x, y, z;
 		luaL_checktype(vm, index, LUA_TTABLE);
 		lua_getfield(vm, index, "x");
-		x = luaL_checknumber(vm, -1);
+		x = (float)luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "y");
-		y = luaL_checknumber(vm, -1);
+		y = (float)luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "z");
-		z = luaL_checknumber(vm, -1);
+		z = (float)luaL_checknumber(vm, -1);
 		lua_pop(vm, 3);
 		value = Vector3(x, y, z);
 	}
@@ -262,13 +262,13 @@ public:
 		float x, y, z, w;
 		luaL_checktype(vm, index, LUA_TTABLE);
 		lua_getfield(vm, index, "x");
-		x = luaL_checknumber(vm, -1);
+		x = (float)luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "y");
-		y = luaL_checknumber(vm, -1);
+		y = (float)luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "z");
-		z = luaL_checknumber(vm, -1);
+		z = (float)luaL_checknumber(vm, -1);
 		lua_getfield(vm, index, "w");
-		w = luaL_checknumber(vm, -1);
+		w = (float)luaL_checknumber(vm, -1);
 		value = Quaternion();
 		value.x = x;
 		value.y = y;

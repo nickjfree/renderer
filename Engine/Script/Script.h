@@ -64,7 +64,7 @@ public:
 	// remove script
 	void Remove();
 	// set script
-	void SetScript(String& file) { File = file; };
+	void SetScript(const String& file) { File = file; };
 	// on destroy
 	virtual int OnDestroy(GameObject * GameObj);
 

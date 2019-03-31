@@ -246,7 +246,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		instance.Offset = 0;
 		instance.Size = 0;
 		int Instance = 0;
-		for (int i = 0; i < desc.InputParameters; i++) {
+		for (UINT i = 0; i < desc.InputParameters; i++) {
 			D3D12_SIGNATURE_PARAMETER_DESC input_desc;
 			Reflector->GetInputParameterDesc(i, &input_desc);
 			R_INPUT_ELEMENT * Element = &Elements[i];
@@ -285,7 +285,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 	}
 
 	// get constant buffers
-	for (int i = 0; i < desc.ConstantBuffers; i++) {
+	for (UINT i = 0; i < desc.ConstantBuffers; i++) {
 		D3D12_SHADER_BUFFER_DESC Description;
 		ID3D12ShaderReflectionConstantBuffer* ConstBuffer = Reflector->GetConstantBufferByIndex(i);
 		ConstBuffer->GetDesc(&Description);
@@ -307,7 +307,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		}
 		cb.IsArray = IsArray;
 		RenderPass->Constants.PushBack(cb);
-		for (int j = 0; j < Description.Variables; j++)  {   // Get the variable description and store it   
+		for (UINT j = 0; j < Description.Variables; j++)  {   // Get the variable description and store it   
 			ID3D12ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
 			D3D12_SHADER_VARIABLE_DESC var_desc;   
 			Variable->GetDesc( &var_desc );     
@@ -326,7 +326,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		}
 	}
 	// get textures
-	for (int i = 0; i < desc.BoundResources; i++) {
+	for (UINT i = 0; i < desc.BoundResources; i++) {
 		// get constant buffer bind
 		D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 		Reflector->GetResourceBindingDesc(i, &bind_desc);

@@ -30,7 +30,7 @@ h3d_mesh * H3DMesh::GetH3DMesh(h3d_header * Header, int MeshIndex) {
 
 
 int H3DMesh::OnSerialize(Deserializer& deserializer) {
-	printf("mesh serialize %s\n", (char*)this->GetUrl());
+	printf("mesh serialize %s\n", this->GetUrl().ToStr());
 	void * Data = deserializer.Raw();
 	h3d_header * Header = (h3d_header*)Data;
 	h3d_mesh   * H3DMesh = GetH3DMesh(Header, this->Index);
@@ -160,7 +160,7 @@ void H3DMesh::ComputeConvexHull() {
 		ConvexHulls = new MeshConvex[nClusters];
 	}
 
-	printf("%s has %zd clusters\n", (char*)URL, nClusters);
+	printf("%s has %zd clusters\n", URL.ToStr(), nClusters);
 	for (int c = 0; c<nClusters; c++) {
 		//generate convex result
 		Vector3 Center(0, 0, 0);

@@ -31,11 +31,11 @@ private:
 public:
 	Context();
 	virtual ~Context();
-	System * RegisterSubsystem(String& Name, System * Subsystem);
-	System * GetSubsystem(String& Name);
+	System * RegisterSubsystem(const String& Name, System * Subsystem);
+	System * GetSubsystem(const String& Name);
 
-	ObjectFactory * RegisterObject(String& Name, ObjectFactory * Factory);
-	Object * CreateObject(String& Name);
+	ObjectFactory * RegisterObject(const String& Name, ObjectFactory * Factory);
+	Object * CreateObject(const String& Name);
 
 	// SendEvent 
 	int SendEvent(EventNode * Receiver, Event * event);

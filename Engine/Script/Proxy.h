@@ -20,6 +20,11 @@ struct ParamType<T&> {
 	typedef T Type;
 };
 
+template <typename T>
+struct ParamType<const T&> {
+    typedef T Type;
+};
+
 
 // void ()
 template <typename ClassType, typename FuncType>

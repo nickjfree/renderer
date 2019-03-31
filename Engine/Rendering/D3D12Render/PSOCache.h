@@ -35,7 +35,7 @@ namespace D3D12API {
         R_PRIMITIVE_TOPOLOGY_TYPE Top;
 	public:
 		// operator int
-		operator int();
+		operator int() const;
 		bool operator == (PSOCache& rh);
 		bool operator != (PSOCache& rh);
 		PSOCache();

@@ -16,7 +16,7 @@ Deserializer FileLoader::GetDeserializer(String& URL) {
 	String Pack = Paths[1];
 	String File = Paths[2];
 	char file[256];
-	sprintf_s(file, 256, "%s\\%s", (char*)Pack, (char*)File);
+	sprintf_s(file, 256, "%s\\%s", Pack.ToStr(), File.ToStr());
 	// read the file data in,realloc if no space to store it
 	//printf("create file %x\n", context);
 	HANDLE hFile = CreateFileA(file, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);

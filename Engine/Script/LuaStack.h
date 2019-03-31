@@ -39,7 +39,7 @@ public:
 	}
 
 	static void Push(lua_State* vm, String& value) {
-		lua_pushstring(vm, value);
+		lua_pushstring(vm, value.ToStr());
 	}
 
 	static void Push(lua_State* vm, Vector3& value) {
@@ -106,10 +106,10 @@ public:
 			if (id == -1) {
 				// allocate a new id and export object
 				id = object_id++;
-				String& Name = value->GetTypeName();
+				const String& Name = value->GetTypeName();
 				// export it
 				lua_newtable(vm);
-				int exists = luaL_newmetatable(vm, Name);
+				int exists = luaL_newmetatable(vm, Name.ToStr());
 				lua_setmetatable(vm, -2);
 				// set a userdata to __self field
 				void * user_data = lua_newuserdata(vm, sizeof(void*));
@@ -167,10 +167,10 @@ public:
 		if (id == -1) {
 			// allocate a new id and export object
 			id = object_id++;
-			String& Name = value->GetTypeName();
+			const String& Name = value->GetTypeName();
 			// export it
 			lua_newtable(vm);
-			int exists = luaL_newmetatable(vm, Name);
+			int exists = luaL_newmetatable(vm, Name.ToStr());
 			lua_setmetatable(vm, -2);
 			// set a userdata to __self field
 			void * user_data = lua_newuserdata(vm, sizeof(void*));
@@ -276,16 +276,16 @@ public:
 		value.w = w;
 	}
 
-	template <typename T>
-	static void Get(lua_State* vm, int index, T& value) {
-		char * Name = T::GetTypeNameStatic();
-		T * data = *(T **)luaL_checkudata(vm, index, Name);
-		value = *data;
-	}
+	//template <typename T>
+	//static void Get(lua_State* vm, int index, T& value) {
+	//	char * Name = T::GetTypeNameStatic();
+	//	T * data = *(T **)luaL_checkudata(vm, index, Name);
+	//	value = *data;
+	//}
 
 	template <typename T>
 	static void Get(lua_State* vm, int index, T* &value) {
-		char * Name = T::GetTypeNameStatic();
+		//char * Name = T::GetTypeNameStatic();
 		luaL_checktype(vm, index, LUA_TTABLE);
 		lua_getfield(vm, index, "__self");
 		T * data = *(T **)lua_touserdata(vm, -1);

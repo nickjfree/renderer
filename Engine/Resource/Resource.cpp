@@ -14,10 +14,8 @@ Resource::~Resource()
 
 
 Deserializer Resource::AsyncLoad() {
-	printf("asyncload %s\n", (char*)URL);
+	printf("asyncload %s\n", URL.ToStr());
 	return Loader->GetDeserializer(URL);
-	//void * Base = Loader->GetMappingBase(Pack);
-	//void * Header = Loader->GetFileHeader(Base, File);
 }
 
 void Resource::SetUrl(String& url) {

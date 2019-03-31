@@ -62,7 +62,7 @@ int ResourceCache::AsyncLoadResource(String& URL, Resource * Caller, Variant& Pa
 	} else {
 		// load this resource
 		// TODO : check resource usage,and free some resource
-		printf("cache loading %s\n", (char*)URL);
+		printf("cache loading %s\n", URL.ToStr());
 		DoAsyncLoadResource(URL, Caller, Param);
 		// 
 	}

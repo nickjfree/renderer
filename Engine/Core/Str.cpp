@@ -20,7 +20,7 @@ String::String(const char * buff)
 	Hash = StringHash(buff);
 }
 
-String::String(String& rh)
+String::String(const String& rh)
 {
 	const char * buff = rh.Str;
 	Length = strlen(rh.Str);
@@ -35,7 +35,21 @@ String::String(String& rh)
 	Hash = rh.Hash;
 }
 
-String& String::operator=(String& rh) {
+String::String(String&& rh) {
+    const char * buff = rh.Str;
+    Length = strlen(rh.Str);
+    if (Length < SHORSTR_LENGTH) {
+        strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
+        Str = ShortStr;
+    }
+    else {
+        // be carefull not to free buff from outsite
+        Str = buff;
+    }
+    Hash = rh.Hash;
+}
+
+String& String::operator=(const String& rh) {
 	const char * buff = rh.Str;
 	if (!rh.Length) {
 		return *this;
@@ -53,7 +67,25 @@ String& String::operator=(String& rh) {
 	return *this;
 }
 
-String& String::operator=(char * buff) {
+String& String::operator=(String&& rh) {
+    const char * buff = rh.Str;
+    if (!rh.Length) {
+        return *this;
+    }
+    Length = rh.Length;
+    if (Length < SHORSTR_LENGTH) {
+        strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
+        Str = ShortStr;
+    }
+    else {
+        // be carefull not to free buff from outsite
+        Str = buff;
+    }
+    Hash = rh.Hash;
+    return *this;
+}
+
+String& String::operator=(const char * buff) {
 	if (!buff) {
 		return *this;
 	}
@@ -70,39 +102,29 @@ String& String::operator=(char * buff) {
 	return *this;
 }
 
-
-String::operator char *()
-{
-	return (char*)Str;
-}
-
-String::operator int() {
+String::operator int() const {
 	return Hash;
 }
 
-String::operator unsigned int() {
+String::operator unsigned int() const {
 	return Hash;
 }
 
-bool String::operator == (char * buff) {
-	if (!Length) {
-		return false;
-	}
-	return !strcmp(Str, buff);
-}
+//bool String::operator == (const char * buff) {
+//	if (!Length) {
+//		return false;
+//	}
+//	return !strcmp(Str, buff);
+//}
 
-bool String::operator == (String& rh) {
+bool String::operator == (const String& rh) const {
 	if (!Length) {
 		return false;
 	}
 	return Hash == rh.Hash;
 }
 
-bool String::operator != (char * buff) {
-	return strcmp(Str, buff);
-}
-
-bool String::operator != (String& rh) {
+bool String::operator != (const String& rh) const {
 	return Hash != rh.Hash;
 }
 
@@ -142,19 +164,19 @@ StringHash::~StringHash()
 {
 }
 
-StringHash::operator int()
+StringHash::operator int() const
 {
 	return (int)value;
 };
 
-bool StringHash::operator==(StringHash& rh) {
+bool StringHash::operator==(const StringHash& rh) const {
 	return value == rh.value;
 }
 
-bool StringHash::operator !=(StringHash& rh) {
+bool StringHash::operator !=(const StringHash& rh) const {
 	return value != rh.value;
 }
-StringHash::operator unsigned int()
+StringHash::operator unsigned int() const
 {
 	return value;
 };

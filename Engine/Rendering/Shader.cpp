@@ -122,7 +122,7 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 	node = xml_doc->first_node("shaders");
 	// get first shader node
 	node = node->first_node();
-	char * name = (char*)File;
+	const char * name = File.ToStr();
 	// find shader node with name same as File
 	while (node && strcmp(node->first_attribute("name")->value(), name)) {
 		node = node->next_sibling();
@@ -211,7 +211,7 @@ int Shader::OnCreateComplete(Variant& Parameter) {
 				TextureUnit& tu = pass.TextureUnits[i];
 				Variant * texture = rendercontext->GetResource(tu.Name);
 				if (texture) {
-					printf("texture unit %s, slot %d, id %d\n", (char*)tu.Name, tu.Slot, texture->as<int>());
+					printf("texture unit %s, slot %d, id %d\n", tu.Name.ToStr(), tu.Slot, texture->as<int>());
 				}
 			}
 			//printf("Depth %d, Rasterizer %d Blend %d\n", pass.DepthStencil, pass.Rasterizer, pass.Blend);
@@ -302,7 +302,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 		cb.Size = Description.Size;
 		cb.Slot = bind_desc.BindPoint;
 		int IsArray = 0;
-		if (!memcmp(cb.Name, "Array", 5)) {
+		if (!memcmp(cb.Name.ToStr(), "Array", 5)) {
 			IsArray = 1;
 		}
 		cb.IsArray = IsArray;
@@ -320,7 +320,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 			sp.Slot = cb.Slot;
 			sp.Name = (char*)var_desc.Name;
 			sp.Size = var_desc.Size;
-			sp.Constant = (char*)cb.Name;
+			sp.Constant = cb.Name;
 			sp.IsArray = IsArray;
 			RenderPass->Parameters.PushBack(sp);
 		}

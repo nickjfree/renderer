@@ -75,8 +75,8 @@ int Material::OnCreateComplete(Variant& Parameter) {
 	for (Iter = Dependencies.Begin(); Iter != Dependencies.End(); Iter++) {
 		KeyValue& kv = *Iter;
 		// key is resource url
-		printf("async loading %s \n", (char*)kv.key);
-		char * tmp = (char*)kv.key;
+		printf("async loading %s \n", kv.key.ToStr());
+		// char * tmp = (char*)kv.key;
 		Cache->AsyncLoadResource(kv.key, this, kv.Value);
 	}
 	OwnerParameter = Parameter;

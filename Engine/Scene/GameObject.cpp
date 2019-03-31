@@ -42,7 +42,7 @@ Quaternion& GameObject::GetWorldRotation() {
 	return GlobalRotation;
 }
 
-Component * GameObject::GetComponent(String& TypeName) {
+Component * GameObject::GetComponent(const String& TypeName) {
 	Vector<Component*>::Iterator Iter;
 	Component * Comp = NULL;
 	for (Iter = Components.Begin(); Iter != Components.End(); Iter++) {

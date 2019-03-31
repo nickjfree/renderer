@@ -13,21 +13,17 @@ Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0), Top(R_PRIMITIVE_TOPOLOGY_TYPE_UN
 PSOCache::~PSOCache() {
 }
 
-PSOCache::operator int() {
-	if (!Dirty) {
-		return hash;
-	} else {
-		hash = 0;
-		hash = (hash << 5) + VS;
-		hash = (hash << 5) + PS;
-		hash = (hash << 5) + GS;
-		hash = (hash << 5) + DS;
-		hash = (hash << 5) + HS;
-		hash = (hash << 5) + InputLayout;
-		hash = (hash << 5) + Depth;
-		hash = (hash << 5) + Rasterizer;
-		hash = (hash << 5) + Blend;
-	}
+PSOCache::operator int() const {
+    unsigned int hash = 0;
+	hash = (hash << 5) + VS;
+	hash = (hash << 5) + PS;
+	hash = (hash << 5) + GS;
+	hash = (hash << 5) + DS;
+	hash = (hash << 5) + HS;
+	hash = (hash << 5) + InputLayout;
+	hash = (hash << 5) + Depth;
+	hash = (hash << 5) + Rasterizer;
+	hash = (hash << 5) + Blend;
 	return hash;
 }
 

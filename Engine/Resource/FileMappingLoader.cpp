@@ -10,7 +10,7 @@ FileMappingLoader::~FileMappingLoader(void)
 {
 }
 
-void * FileMappingLoader::GetMappingBase(char * FileName)
+void * FileMappingLoader::GetMappingBase(const char * FileName)
 {
 	MapMutex.Acquire();
 	FileMapping * Mapping = NULL;
@@ -44,7 +44,7 @@ void * FileMappingLoader::GetMappingBase(char * FileName)
 	return Mapping->Data;
 }
 
-unsigned int FileMappingLoader::hash(char * str)
+unsigned int FileMappingLoader::hash(const char * str)
 {
 	register unsigned int h = 0;
 	register unsigned char *p; 
@@ -53,7 +53,7 @@ unsigned int FileMappingLoader::hash(char * str)
 	return h;
 }
 
-void * FileMappingLoader::GetFileHeader(void * Base, char * Name)
+void * FileMappingLoader::GetFileHeader(void * Base, const char * Name)
 {
 	int Index = FindEntry(Name);
 	FileEntry * Entry = (FileEntry*)((char *)Base + 4);
@@ -66,13 +66,13 @@ void * FileMappingLoader::GetFileHeader(void * Base, char * Name)
 	return Header;
 }
 
-int FileMappingLoader::FindEntry(char * Name)
+int FileMappingLoader::FindEntry(const char * Name)
 {
 	return hash(Name) % MAX_ENTRY;
 }
 
 // decrease ref of mapping
-int FileMappingLoader::PutMappingBase(char * FileName)
+int FileMappingLoader::PutMappingBase(const char * FileName)
 {
 	FileMapping * Mapping = NULL;
 	MapMutex.Acquire();
@@ -99,8 +99,8 @@ int FileMappingLoader::PutMappingBase(char * FileName)
 Deserializer FileMappingLoader::GetDeserializer(String& URL) {
 	String Paths[3];
 	URL.Split('\\', Paths, 3);
-	void * Base = GetMappingBase(Paths[1]);
-	void * Header = GetFileHeader(Base, Paths[2]);
+	void * Base = GetMappingBase(Paths[1].ToStr());
+	void * Header = GetFileHeader(Base, Paths[2].ToStr());
 	return Deserializer(Header);
 	//Pack = Paths[1];
 	//File = Paths[2];
@@ -110,5 +110,5 @@ Deserializer FileMappingLoader::GetDeserializer(String& URL) {
 void FileMappingLoader::Unload(String& URL) {
 	String Paths[3];
 	URL.Split('\\', Paths, 3);
-	PutMappingBase(Paths[1]);
+	PutMappingBase(Paths[1].ToStr());
 }

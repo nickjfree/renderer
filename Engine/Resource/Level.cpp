@@ -173,22 +173,22 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
 	GPUResource * resource = (GPUResource*)Sub;
 	int Index = Param.as<int>();
 	if (resource->ResourceType == R_MESH) {
-		printf("finish  mesh %s\n", (char*)resource->GetUrl());
+		printf("finish  mesh %s\n", resource->GetUrl().ToStr());
 		Meshs[Index] = (Mesh*)resource;
 		DepCount--;
 	}
 	if (resource->ResourceType == R_MATERIAL) {
-		printf("finish  material %s\n", (char*)resource->GetUrl());
+		printf("finish  material %s\n", resource->GetUrl().ToStr());
 		Materials[Index] = (Material*)resource;
 		DepCount--;
 	}
 	if (resource->ResourceType == R_SKELETON) {
-		printf("finish  skeleton %s\n", (char*)resource->GetUrl());
+		printf("finish  skeleton %s\n", resource->GetUrl().ToStr());
 		Skeletons[Index] = (Skeleton *)resource;
 		DepCount--;
 	}
 	if (resource->ResourceType == R_ANIMATION) {
-		printf("finish  animation %s\n", (char*)resource->GetUrl());
+		printf("finish  animation %s\n", resource->GetUrl().ToStr());
 		Animations[Index] = (Animation*)resource;
 		DepCount--;
 	}

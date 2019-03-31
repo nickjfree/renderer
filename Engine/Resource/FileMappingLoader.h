@@ -42,17 +42,17 @@ private:
 public:
 	FileMappingLoader(Context * context);
 	~FileMappingLoader(void);
-	void * GetMappingBase(char * FileName);
+	void * GetMappingBase(const char * FileName);
 private:
-	unsigned int hash(char * str);
+	unsigned int hash(const char * str);
 public:
-	void * GetFileHeader(void  * Base, char * Name);
+	void * GetFileHeader(void  * Base, const char * Name);
 	// decrease ref of mapping
-	int PutMappingBase(char * FileName);
+	int PutMappingBase(const char * FileName);
 	virtual Deserializer GetDeserializer(String&  URL);
 	virtual void Unload(String& URL);
 private:
-	int FindEntry(char * Name);
+	int FindEntry(const char * Name);
 
 };
 

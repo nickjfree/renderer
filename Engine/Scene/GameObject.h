@@ -41,7 +41,7 @@ public:
 	Quaternion& GetWorldRotation();
 
 	// Get componnen by component name hash
-	Component * GetComponent(String& TypeName);
+	Component * GetComponent(const String& TypeName);
 	// Get Look
 	Vector3& GetLook() { return Look; }
 	// Get Up

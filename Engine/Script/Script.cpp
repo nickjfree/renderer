@@ -104,7 +104,7 @@ int Script::Subscribe(int Event, String& Callback) {
 	lua_geti(vm, -1, ObjectId);
 	lua_getfield(vm, -1, "event");
 	// get callback functions
-	lua_getfield(vm, -2, Callback);
+	lua_getfield(vm, -2, Callback.ToStr());
 	lua_seti(vm, -2, Event);
 	// done. clear the stack
 	lua_pop(vm, 3);

@@ -25,10 +25,10 @@ public:
 	StringHash() {};
 	StringHash(const char * buff);
 	StringHash(StringHash& rh) { value = rh.value; };
-	inline operator int();
-	bool inline operator ==(StringHash& rh);
-	bool inline operator !=(StringHash& rh);
-	inline operator unsigned int();
+	inline operator int() const;
+	bool inline operator ==(const StringHash& rh) const;
+	bool inline operator !=(const StringHash& rh) const;
+	inline operator unsigned int() const;
 	virtual ~StringHash();
 };
 
@@ -46,19 +46,21 @@ private:
 	StringHash Hash;
 public:
 	String();
-	String(String& rh);
+	String(const String& rh);
+    String(String&& rh);
 	String(const char * buff);
-	String& operator=(String& rh);
-	String& operator=(char * rh);
-	operator int();
-	operator unsigned int();
-	operator char * ();
-	bool operator == (char * buff);
-	bool operator == (String& rh);
-	bool operator != (char * buff);
-	bool operator != (String& rh);
+	String& operator=(const String& rh);
+    String& operator=(String&& rh);
+	String& operator=(const char * rh);
+	operator int() const;
+	operator unsigned int() const;
+	//operator char * ();
+	//bool operator == (const char * buff);
+	bool operator == (const String& rh) const;
+	bool operator != (const String& rh) const ;
 	int Split(char delimiter, String * Result, int Count);
-	unsigned int Len() { return Length; }
+	unsigned int Len() const { return Length; }
+    const char * ToStr() const { return Str; } 
  	virtual ~String();
 };
 

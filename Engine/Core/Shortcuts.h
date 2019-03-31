@@ -37,9 +37,9 @@
 // common object memebers and functions
 #define OBJECT(TypeName) \
 	public: \
-		static String& GetTypeNameStatic() { static String TypeName(#TypeName); return TypeName; } \
-		virtual String& GetTypeName() { return GetTypeNameStatic(); } \
-		virtual String& GetBaseTypeName() { return GetBaseTypeNameStatic(); } \
+		static const String& GetTypeNameStatic() { static const String TypeName(#TypeName); return TypeName; } \
+		virtual const String& GetTypeName() { return GetTypeNameStatic(); } \
+		virtual const String& GetBaseTypeName() { return GetBaseTypeNameStatic(); } \
 	//	virtual unsigned int GetObjectId() { return ObjectId==-1?ObjectId=Class.GetId():ObjectId; };
 		//operator int() { return (int)this; } \
 
@@ -49,12 +49,12 @@
 
 #define BASEOBJECT(TypeName) \
 		public: \
-			static String& GetBaseTypeNameStatic() { static String TypeName(#TypeName); return TypeName; } \
+			static const String& GetBaseTypeNameStatic() { static const String TypeName(#TypeName); return TypeName; } \
 
 
 #define LOADEROBJECT(TypeName) \
 		public: \
-			static String& GetLoaderTypeNameStatic() { static String TypeName(#TypeName); return TypeName; } \
-			virtual String& GetLoaderTypeName() { return GetLoaderTypeNameStatic(); }
+			static const String& GetLoaderTypeNameStatic() { static const String TypeName(#TypeName); return TypeName; } \
+			virtual const String& GetLoaderTypeName() { return GetLoaderTypeNameStatic(); }
 
 #endif

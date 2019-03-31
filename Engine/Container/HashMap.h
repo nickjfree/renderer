@@ -71,7 +71,7 @@ public:
 	}
 
 	// get
-	V& Get(K& k) {
+	V& Get(const K& k) {
 		int Key = (int)k;
 		int Index = Key & Mask;
 		KeyValue * head= &Entry[Index];
@@ -87,7 +87,8 @@ public:
 		}
 		return kv->Value;
 	}
-	Iterator Find(K& k) {
+
+	Iterator Find(const K& k) {
 		int Key = (int)k;
 		unsigned int Index = Key & Mask;
 		KeyValue * head = &Entry[Index];
@@ -104,13 +105,32 @@ public:
 		}
 		return Iter;
 	}
+
+    Iterator Find(K& k) {
+        int Key = (int)k;
+        unsigned int Index = Key & Mask;
+        KeyValue * head = &Entry[Index];
+        KeyValue * kv = head->Next;
+        while (kv != head && kv->Key != k) {
+            kv = kv->Next;
+        }
+        Iterator Iter;
+        if (kv == head) {
+            Iter.ptr = NULL;
+        }
+        else {
+            Iter.ptr = kv;
+        }
+        return Iter;
+    }
+
 	// set
-	void Set(K& k, V& v) {
+	void Set(const K& k, V& v) {
 		Get(k) = v;
 	}
 
 	// remove
-	void Erase(K& k) {
+	void Erase(const K& k) {
 		Iterator Iter = Find(k);
 		if (Iter != End()) {
 			Remove(Iter.ptr);
@@ -118,7 +138,7 @@ public:
  	}
 	
 	// operator []
-	V& operator [] (K& k) {
+	V& operator [] (const K& k) {
 		return Get(k);
 	}
 

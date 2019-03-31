@@ -136,12 +136,12 @@ void ScriptingSystem::RemoveScript(Script * script) {
 int ScriptingSystem::LoadFile(String& File) {
     int ret = 0;
     lua_getglobal(LuaState, "scripts");
-    lua_getfield(LuaState, -1, File);
+    lua_getfield(LuaState, -1, File.ToStr());
     if (lua_isnil(LuaState, -1)) {
         // we need to load this scripts as a table
-        printf("new file %s\n", (char*)File);
+        printf("new file %s\n", File.ToStr());
         lua_pop(LuaState, 1);
-        luaL_loadfile(LuaState, File);
+        luaL_loadfile(LuaState, File.ToStr());
         if (ret) {
             printf("Couldn't load script: %s\n", lua_tostring(LuaState, -1));
             return -1;
@@ -149,7 +149,7 @@ int ScriptingSystem::LoadFile(String& File) {
         lua_newtable(LuaState);
         // put newly created templte to "scripts" table at -4
         lua_pushvalue(LuaState, -1);
-        lua_setfield(LuaState, -4, File);
+        lua_setfield(LuaState, -4, File.ToStr());
         // set upvalue for loaded scripts
         lua_setupvalue(LuaState, -2, 1);
         // run this scripts in template's ENV
@@ -158,7 +158,7 @@ int ScriptingSystem::LoadFile(String& File) {
             printf("error pcall: %s\n", lua_tostring(LuaState, -1));
         }
         // push template on the top
-        lua_getfield(LuaState, -1, File);
+        lua_getfield(LuaState, -1, File.ToStr());
     } else {
        // printf("file %s is already loaded\n", (char*)File);
     }

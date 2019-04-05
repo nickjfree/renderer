@@ -38,7 +38,7 @@ void RenderObject::SetTransparent() {
     Type = Node::TRANS;
 }
 
-int RenderObject::GetRenderMesh(int Stage, int Lod) {
+int RenderObject::GetRenderMesh(int Stage, int Lod) const {
 	// ignore stage
 	Mesh * mesh = model->MeshResource[Lod];
 	if (mesh) {
@@ -57,28 +57,26 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 	} else if (Stage == R_STAGE_OIT) {
         Stage = 3;
     }
-	Matrix4x4 Transform = GetWorldMatrix();
-	Matrix4x4 Tmp;
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Tmp);
-	StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>() = Tmp;
-	StageParameter[hash_string::InstanceWVP].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Tmp);
-	StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>() = Tmp;
-	StageParameter[hash_string::InstanceWV].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Camera->GetInvertView(), &Tmp);
-	StageParameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
-	StageParameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = Tmp;
+    // prepare perObject constants
+	Matrix4x4& Transform = GetWorldMatrix();
+	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Camera->GetInvertView(), &StageParameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Camera->GetProjection(), &StageParameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
 	StageParameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
-	// if has skinning matrix
+	// if there is a skinning matrix
 	if (palette.Size) {
 		StageParameter[hash_string::gSkinMatrix].as<ShaderParameterArray>() = palette;
 	}
+    // if there are  blend shapes
+
+
+
 	int Compiled = 0;
 	int Instance = 0;
 	int InstanceSize = 0;
 	Shader * shader = 0;
-	//int a = 100 / (int)shader;
+    // prepare material 
 	if (material) {
 		Compiled += material->Compile(Compiler, Stage, Lod);
 		// process shader
@@ -86,6 +84,7 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
 		Instance = shader->IsInstance(Stage);
 	}
+    // prepare batch
 	int Geometry = GetRenderMesh(Stage, Lod);
 	if (Geometry != -1) {
 		if (Instance) {

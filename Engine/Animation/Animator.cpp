@@ -56,6 +56,8 @@ int Animator::OnAttach(GameObject * GameObj) {
 
 int Animator::OnDestroy(GameObject * GameObj) {
     // call parent
+    AnimationSystem * animationSys = context->GetSubsystem<AnimationSystem>();
+    animationSys->RemoveAnimator(this);
     Component::OnDestroy(GameObj);
     if (BlendNode) {
         BlendNode->DecRef();

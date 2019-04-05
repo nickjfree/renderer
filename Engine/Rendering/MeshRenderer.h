@@ -31,6 +31,8 @@ public:
 	virtual ~MeshRenderer();
 	// on attach
 	virtual int OnAttach(GameObject * GameObj);
+    // on destroy
+    virtual int OnDestroy(GameObject * GameObj);
 	// transform change
 	virtual int MeshRenderer::OnTransform(GameObject * GameObj);
 	// load

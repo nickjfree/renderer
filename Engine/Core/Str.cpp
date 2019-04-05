@@ -67,23 +67,23 @@ String& String::operator=(const String& rh) {
 	return *this;
 }
 
-String& String::operator=(String&& rh) {
-    const char * buff = rh.Str;
-    if (!rh.Length) {
-        return *this;
-    }
-    Length = rh.Length;
-    if (Length < SHORSTR_LENGTH) {
-        strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
-        Str = ShortStr;
-    }
-    else {
-        // be carefull not to free buff from outsite
-        Str = buff;
-    }
-    Hash = rh.Hash;
-    return *this;
-}
+//String& String::operator=(String&& rh) {
+//    const char * buff = rh.Str;
+//    if (!rh.Length) {
+//        return *this;
+//    }
+//    Length = rh.Length;
+//    if (Length < SHORSTR_LENGTH) {
+//        strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
+//        Str = ShortStr;
+//    }
+//    else {
+//        // be carefull not to free buff from outsite
+//        Str = buff;
+//    }
+//    Hash = rh.Hash;
+//    return *this;
+//}
 
 String& String::operator=(const char * buff) {
 	if (!buff) {

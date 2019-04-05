@@ -38,9 +38,9 @@ public:
     // set type
     void SetTransparent();
 	// get model
-	Model * GetModel() { return model; }
+	Model * GetModel() const { return model; }
 	// get render mesh
-	virtual int GetRenderMesh(int Stage, int Lod);
+	virtual int GetRenderMesh(int Stage, int Lod) const ;
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
 	// set matrix palette
 	void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);

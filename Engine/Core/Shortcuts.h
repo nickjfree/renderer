@@ -45,7 +45,7 @@
 
 #define UUID() \
 	public: \
-		virtual unsigned int GetObjectId() { return ObjectId==-1?ObjectId=Class.GetId():ObjectId; }; \
+		virtual unsigned int GetObjectId() const  { return ObjectId==-1?ObjectId=Class.GetId():ObjectId; }; \
 
 #define BASEOBJECT(TypeName) \
 		public: \

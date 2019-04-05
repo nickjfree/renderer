@@ -54,6 +54,21 @@ struct MemberFunctor<R(ClassType::*)(), FuncType> {
 	}
 };
 
+//R () const
+template <typename ClassType, typename R, typename FuncType>
+struct MemberFunctor<R(ClassType::*)() const, FuncType> {
+    static int Call(lua_State * L, FuncType mfp) {
+        ClassType* object;
+        //ParamType<R>::Type ret;
+        LuaStack::Get(L, 1, object);
+        //		printf("calling funcs\n");
+                // ret = (object->*mfp)();
+                //  push return values
+        LuaStack::Push(L, (object->*mfp)());
+        return 1;
+    }
+};
+
 //void P1
 template <typename ClassType, typename P1, typename FuncType>
 struct MemberFunctor<void (ClassType::*)(P1), FuncType> {

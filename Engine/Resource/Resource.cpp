@@ -31,7 +31,7 @@ void Resource::AddOwner(Resource * owner) {
 }
 
 int Resource::NotifyOwner(int Message, Variant& Param) {
-	List<Resource>::Iterator Iter = Owner.Begin();
+	auto Iter = Owner.Begin();
 	while (Iter != Owner.End()) {
 		Resource * owner = *Iter;
 		owner->OnSubResource(Message, this, Param);

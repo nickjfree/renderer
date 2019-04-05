@@ -75,7 +75,7 @@ public:
 	void AddOwner(Resource * Owner);
 	int NotifyOwner(int Message, Variant& Param);
 	void SetUrl(String& URL);
-	String& GetUrl() { return URL; };
+	const String& GetUrl() const { return URL; };
 	virtual Deserializer AsyncLoad();
 	virtual int OnSerialize(Deserializer& serializer) { return 0; };
 	virtual int OnLoadComplete(Variant& Data) { return 0; };

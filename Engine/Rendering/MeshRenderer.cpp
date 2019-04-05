@@ -14,14 +14,7 @@ MeshRenderer::MeshRenderer(Context * context) : Renderer(context) {
 
 
 MeshRenderer::~MeshRenderer() {
-	// Notify partition
-	Scene * scene = Owner->GetScene();
-	Event * Evt = Event::Create();
-	Evt->EventId = EV_NODE_REMOVE;
-	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
-	SendEvent(scene, Evt);
-	Evt->Recycle();
-	// free renderObj
+    // free renderObj
 	delete renderObject;
 }
 
@@ -42,6 +35,19 @@ int MeshRenderer::OnAttach(GameObject * GameObj) {
 	renderObject->SetPosition(GameObj->GetWorldTranslation());
 	renderObject->SetRotation(GameObj->GetWorldRotation());
 	return Component::OnAttach(GameObj);
+}
+
+int MeshRenderer::OnDestroy(GameObject * GameObj) {
+    // Notify partition to remove renderobject from scenegraph
+    Scene * scene = Owner->GetScene();
+    Event * Evt = Event::Create();
+    Evt->EventId = EV_NODE_REMOVE;
+    Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
+    SendEvent(scene, Evt);
+    Evt->Recycle();
+    // call base destroy
+    Renderer::OnDestroy(GameObj);
+    return 0;
 }
 
 int MeshRenderer::HandleEvent(Event * Ev) {

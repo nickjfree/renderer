@@ -24,7 +24,7 @@ private:
 public:
 	StringHash() {};
 	StringHash(const char * buff);
-	StringHash(StringHash& rh) { value = rh.value; };
+	StringHash(const StringHash& rh) { value = rh.value; };
 	inline operator int() const;
 	bool inline operator ==(const StringHash& rh) const;
 	bool inline operator !=(const StringHash& rh) const;
@@ -50,7 +50,7 @@ public:
     String(String&& rh);
 	String(const char * buff);
 	String& operator=(const String& rh);
-    String& operator=(String&& rh);
+    //String& operator=(String&& rh);
 	String& operator=(const char * rh);
 	operator int() const;
 	operator unsigned int() const;

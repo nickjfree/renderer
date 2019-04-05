@@ -15,8 +15,7 @@ void Scene::AddGameObject(GameObject * obj) {
 }
 
 int Scene::Update(int ms) {
-	List<GameObject>::Iterator Iter;
-	for (Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
+	for (auto Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
 		GameObject * obj = *Iter;
 		if (!obj->Destroyed) {
 			obj->Update(ms);
@@ -29,6 +28,7 @@ int Scene::Update(int ms) {
 	for (int i = 0; i < Size; i++) {
 		GameObject * obj = Destroyed[i];
 		Objects.Remove(obj);
+        // decref is assumed to delete this gameobject
 		obj->DecRef();
 	}
 	Destroyed.Empty();

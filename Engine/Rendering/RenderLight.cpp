@@ -83,15 +83,10 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	Matrix4x4 Scale;
 	Scale.Scale(Vector3(Radius, Radius, Radius));
 	Transform = Scale * Transform;
-	Matrix4x4 Tmp;
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Tmp);
-	Parameter[hash_string::gWorldViewProjection].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Tmp);
-	Parameter[hash_string::gWorldViewMatrix].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Camera->GetInvertView(), &Tmp);
-	Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>() = Tmp;
-	Matrix4x4::Tranpose(Camera->GetProjection(), &Tmp);
-	Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = Tmp;
+	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Parameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Parameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Camera->GetProjection(), &Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
 	Parameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
 	// light parameters
 	Parameter[hash_string::gLightPosition].as<Vector3>() = Position * Camera->GetViewMatrix();

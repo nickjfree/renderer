@@ -165,8 +165,7 @@ int PhysicsSystem::Update(int ms) {
 	// do simulation
 	dynamicsWorld->stepSimulation(ms/60.0f, 2);
 	// update every component
-	List<PhysicsObject>::Iterator Iter;
-	for (Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
+	for (auto Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
 		PhysicsObject * obj = *Iter;
 		if (!obj->Destroyed) {
 			obj->Update(ms);

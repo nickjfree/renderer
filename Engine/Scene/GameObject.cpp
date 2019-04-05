@@ -16,6 +16,7 @@ GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(c
 
 
 GameObject::~GameObject() {
+    printf_s("destruct game object %d \n", ObjectId);
 }
 
 
@@ -43,9 +44,8 @@ Quaternion& GameObject::GetWorldRotation() {
 }
 
 Component * GameObject::GetComponent(const String& TypeName) {
-	Vector<Component*>::Iterator Iter;
 	Component * Comp = NULL;
-	for (Iter = Components.Begin(); Iter != Components.End(); Iter++) {
+	for (auto Iter = Components.Begin(); Iter != Components.End(); Iter++) {
 		Comp = (*Iter);
 		if (Comp->GetBaseTypeName() == TypeName) {
 			return Comp;
@@ -166,10 +166,8 @@ void GameObject::Destroy() {
 	if (Destroyed) {
 		return;
 	}
-	Vector<Component *>::Iterator Iter;
-	Component *Comp;
-	for (Iter = Components.Begin(); Iter != Components.End(); Iter++) {
-		Comp = (*Iter);
+	for (auto Iter = Components.Begin(); Iter != Components.End(); Iter++) {
+		auto Comp = (*Iter);
 		Comp->OnDestroy(this);
 		Comp->DecRef();
 	}

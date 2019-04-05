@@ -483,10 +483,9 @@ bool Shader::IsInstance(int Stage) {
 }
 
 int Shader::MakeInstance(BatchCompiler * Compiler, int Stage, Dict& ObjectParameter, void * Buffer) {
-	Vector<InstanceElement>::Iterator Iter;
 	int Ret = 0;
 	Vector<InstanceElement>& InstanceElements = Techs[Stage].InstanceElements;
-	for (Iter = InstanceElements.Begin(); Iter != InstanceElements.End(); Iter++) {
+	for (auto Iter = InstanceElements.Begin(); Iter != InstanceElements.End(); Iter++) {
 		InstanceElement& element = *Iter;
 		Variant * data = &ObjectParameter[element.Name];
 		memcpy((char*)Buffer + element.Offset, data, element.Size);

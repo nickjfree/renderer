@@ -15,7 +15,6 @@ class Camera : public Component
 	BASEOBJECT(Camera);
 	OBJECT(Camera);
 	DECLAR_ALLOCATER(Camera);
-	UUID()
 private:
 	RenderingCamera * RenderCamera;
 protected:

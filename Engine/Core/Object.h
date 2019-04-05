@@ -25,7 +25,7 @@ public:
 	virtual ~Object();
 	int AddRef();
 	int DecRef();
-	virtual unsigned int GetObjectId();
+	virtual unsigned int GetObjectId() const;
 	virtual void SetObjectId(unsigned int);
 	unsigned int GetRef() {return RefCount; };
     bool IsDestroyed() { return Destroyed; };

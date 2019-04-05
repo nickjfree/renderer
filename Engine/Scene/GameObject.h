@@ -88,10 +88,9 @@ public:
 		return Root;
 	}
 	// get name
-	String& GetName() { return Name; }
+	const String& GetName() const { return Name; }
 	// set name
-	void SetName(char * Name_) { Name = Name_; };
-	void SetName(String& Name_) { Name = Name; };
+	void SetName(const String& Name_) { Name = Name; };
 	// subscript event for scripts
 	int Subscribe(int Event, String& Callback);
 	// send event

@@ -38,9 +38,8 @@ CommandContext * CommandContext::Alloc(ID3D12Device * Device, D3D12_COMMAND_LIST
 	if (free.Size()) {
 		context = free.PopBack();
 	} else {
-		List<CommandContext>::Iterator Iter;
 		bool Found = 0;
-		for (Iter = retired.Begin(); Iter != retired.End(); Iter++) {
+		for (auto Iter = retired.Begin(); Iter != retired.End(); Iter++) {
 			context = *Iter;
 			UINT64 FenceValue = context->FenceValue;
 			if (Queue->FenceComplete(FenceValue)) {

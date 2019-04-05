@@ -1307,7 +1307,6 @@ void D3D12Render::Draw(int Id) {
     D3DGeometry &Geometry = Geometries.GetItem(Id);
     // set primitive topology
     CurrentPSO.Top = GetPtimitiveTopologyType(Geometry.Top);
-
     // flush context
 	FlushResourceBarriers();
 	FlushRootSignature();

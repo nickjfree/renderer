@@ -17,8 +17,7 @@ ScriptingSystem::~ScriptingSystem() {
 
 int ScriptingSystem::Update(int ms) {
 	// loop through all script compoment then call update of each compoment
-	List<Script>::Iterator Iter;
-	for (Iter = Scripts.Begin(); Iter != Scripts.End(); Iter++) {
+	for (auto Iter = Scripts.Begin(); Iter != Scripts.End(); Iter++) {
 		Script * script = *Iter;
 		if (!script->Destroyed) {
 			script->Update(ms);

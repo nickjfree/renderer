@@ -6,9 +6,16 @@
 	Vector container, Need a remove method
 */
 
+
+using namespace std;
+
+#include <utility>
 #include <memory.h>
 
 #define VECTOR_INIT_SIZE 32
+
+
+
 
 template <class T>
 class Vector {
@@ -75,7 +82,7 @@ int Vector<T>::Resize(int NewSize, int Fill) {
 	if (NewSize > Capacity) {
 		T * newData = new T[NewSize];
 		for (int i = 0; i < ItemSize; i++) {
-			newData[i] = Data[i];
+			newData[i] = std::move(Data[i]);
 		}
 		//memcpy(newData, Data, sizeof(T)* ItemSize);
 		delete[] Data;

@@ -117,7 +117,6 @@ int Script::HandleEvent(Event * Evt) {
 		return 1;
 	}
 	// user event is larger than USER_EVENT
-	GameObject * object = this->Owner;
 	if (Evt->EventId > USER_EVENT) {
 		// this is event sent from scripts	
 		// get evnet table
@@ -139,13 +138,19 @@ int Script::HandleEvent(Event * Evt) {
 }
 
 int Script::OnDestroy(GameObject * GameObj) {
+    // this will completelly remove the reference to gameobject in scripting space
+    // so scripts can no longer use this gameobjects
+    // gameobject maynot be removed immediatly after this call
+    // because of how lua's garbage collection works
+
 	if (ObjectId == -1) {
 		return 1;
 	}
 	// get gameobject table
 	lua_getglobal(vm, "entities");
 	lua_geti(vm, -1, ObjectId);
-	// set obj's metatable to a default special table to disable operations on this object
+	// todo:: set obj's metatable to a default special table to disable operations on this object
+    // can't do this now because it will ruin the __gc meta method
 	//lua_getglobal(vm, "destroyed_mt");
 	//lua_setmetatable(vm, -2);
 	lua_pop(vm, 1);
@@ -157,7 +162,6 @@ int Script::OnDestroy(GameObject * GameObj) {
 	// reset objectid
 	ObjectId = -1;
 	Component::OnDestroy(GameObj);
-	// dec gameobjects ref count
-	// Owner->DecRef();
+    
 	return 0;
 }

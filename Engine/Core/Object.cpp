@@ -23,7 +23,7 @@ int Object::DecRef() {
 	return RefCount;
 }
 
-unsigned int Object::GetObjectId() {
+unsigned int Object::GetObjectId() const {
 	return ObjectId;
 }
 

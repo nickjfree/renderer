@@ -66,14 +66,13 @@ int EventNode::RemoveEventHandler(int EventId, EventNode* Handler) {
 	if (!Handler) {
 		return -1;
 	}
-	HashMap<int, List<EventNode>>::Iterator Iter = EventChannel.Find(EventId);
+	auto Iter = EventChannel.Find(EventId);
 	if (Iter == EventChannel.End()) {
 		return -1;
 	}
 	else {
 		List<EventNode> &Handlers = *Iter;
-		List<EventNode>::Iterator HandlerIter;
-		for (HandlerIter = Handlers.Begin(); HandlerIter != Handlers.End(); HandlerIter++) {
+		for (auto HandlerIter = Handlers.Begin(); HandlerIter != Handlers.End(); HandlerIter++) {
 			if (*HandlerIter == Handler) {
 				Handlers.Remove(HandlerIter);
 				Handler->DecRef();
@@ -105,14 +104,13 @@ int EventNode::SendEvent(EventNode * Receiver, Event * Evt) {
 int EventNode::HandleEvent(Event * Evt) {
 	// print test
 	int Result = -1;
-	HashMap<int, List<EventNode>>::Iterator Iter = EventChannel.Find(Evt->EventId);
+	auto Iter = EventChannel.Find(Evt->EventId);
 	if (Iter == EventChannel.End()) {
 		return -1;
 	}
 	else{
 		List<EventNode> &Handlers = *Iter;
-		List<EventNode>::Iterator HandlerIter;
-		for (HandlerIter = Handlers.Begin(); HandlerIter != Handlers.End(); HandlerIter++) {
+		for (auto HandlerIter = Handlers.Begin(); HandlerIter != Handlers.End(); HandlerIter++) {
 			Result = (*HandlerIter)->HandleEvent(Evt);
 		}
 	}

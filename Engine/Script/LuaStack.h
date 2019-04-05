@@ -26,7 +26,7 @@ public:
 		lua_pushinteger(vm, value);
 	}
 
-	static void Push(lua_State* vm, char * value) {
+	static void Push(lua_State* vm, const char * value) {
 		lua_pushstring(vm, value);
 	}
 
@@ -38,31 +38,32 @@ public:
 		lua_pushboolean(vm, value);
 	}
 
-	static void Push(lua_State* vm, String& value) {
-		lua_pushstring(vm, value.ToStr());
-	}
+    static void Push(lua_State* vm, const String& value) {
+        lua_pushstring(vm, value.ToStr());
+    }
 
-	static void Push(lua_State* vm, Vector3& value) {
-		lua_newtable(vm);
-		lua_pushnumber(vm, value.x);
-		lua_setfield(vm, -2, "x");
-		lua_pushnumber(vm, value.y);
-		lua_setfield(vm, -2, "y");
-		lua_pushnumber(vm, value.z);
-		lua_setfield(vm, -2, "z");
-	}
 
-	static void Push(lua_State* vm, Quaternion& value) {
-		lua_newtable(vm);
-		lua_pushnumber(vm, value.x);
-		lua_setfield(vm, -2, "x");
-		lua_pushnumber(vm, value.y);
-		lua_setfield(vm, -2, "y");
-		lua_pushnumber(vm, value.z);
-		lua_setfield(vm, -2, "z");
-		lua_pushnumber(vm, value.w);
-		lua_setfield(vm, -2, "w");
-	}
+    static void Push(lua_State* vm, Vector3& value) {
+        lua_newtable(vm);
+        lua_pushnumber(vm, value.x);
+        lua_setfield(vm, -2, "x");
+        lua_pushnumber(vm, value.y);
+        lua_setfield(vm, -2, "y");
+        lua_pushnumber(vm, value.z);
+        lua_setfield(vm, -2, "z");
+    }
+
+    static void Push(lua_State* vm, Quaternion& value) {
+        lua_newtable(vm);
+        lua_pushnumber(vm, value.x);
+        lua_setfield(vm, -2, "x");
+        lua_pushnumber(vm, value.y);
+        lua_setfield(vm, -2, "y");
+        lua_pushnumber(vm, value.z);
+        lua_setfield(vm, -2, "z");
+        lua_pushnumber(vm, value.w);
+        lua_setfield(vm, -2, "w");
+    }
 
 	/*
 		push object to stack.
@@ -191,40 +192,8 @@ public:
 		value->SetObjectId(id);
 	}
 
-	//// pops
-
-	//static void Pop(lua_State* vm, unsigned int & value) {
-	//	value = lua_tointeger(vm, -1);
-	//	lua_pop(vm, 1);
-	//}
-
-	//static void Pop(lua_State* vm, int& value) {
-	//	value = lua_tointeger(vm, -1);
-	//	lua_pop(vm, 1);
-	//}
-
-	//static void Pop(lua_State* vm, char *& value) {
-	//	value = (char*)lua_tostring(vm, -1);
-	//	lua_pop(vm, 1);
-	//}
-
-	//static void Pop(lua_State* vm, float & value) {
-	//	value = luaL_checknumber(vm, -1);
-	//	lua_pop(vm, 1);
-	//}
-
-	//static void Pop(lua_State* vm, String& value) {
-	//	value = (char*)lua_tostring(vm, -1);
-	//	lua_pop(vm, 1);
-	//}
-
-	//template <typename T>
-	//static void Pop(lua_State* vm, T& value) {
-	//	return;
-	//}
 
 	// gets
-
 	static void Get(lua_State* vm, int index, unsigned int & value) {
 		value = (unsigned int)luaL_checkinteger(vm, index);
 	}
@@ -276,13 +245,6 @@ public:
 		value.w = w;
 	}
 
-	//template <typename T>
-	//static void Get(lua_State* vm, int index, T& value) {
-	//	char * Name = T::GetTypeNameStatic();
-	//	T * data = *(T **)luaL_checkudata(vm, index, Name);
-	//	value = *data;
-	//}
-
 	template <typename T>
 	static void Get(lua_State* vm, int index, T* &value) {
 		//char * Name = T::GetTypeNameStatic();
@@ -292,15 +254,6 @@ public:
 		value = data;
 	}
 
-	//template <typename T>
-	//static void Push(lua_State* vm, T value) {
-	//	return;
-	//}
-
-	//template <typename T>
-	//static void Push(lua_State* vm, T* value) {
-	//	return;
-	//}
 
 };
 

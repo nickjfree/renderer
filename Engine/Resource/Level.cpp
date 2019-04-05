@@ -223,16 +223,15 @@ int Level::InitScript() {
 	script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\camera.lua");
 	MainCamera->AddComponent(script);
 	// update test
-	Vector<GameObject *>::Iterator Iter;
-	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+	for (auto Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
 		GameObject * Object = *Iter;
-		if (Object->GetName() == "Lumia") {
+		if (Object->GetName() == "Player") {
 			// attach a script component for test 
 			Script * script = new Script(context);
 			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
 			Object->AddComponent(script);
 		}
-		if (Object->GetName() == "qianzhihe" || Object->GetName() == "ADATA") {
+		if (Object->GetName() == "qianzhihe" || Object->GetName() == "Plane") {
 			PhysicsObject * Physics = new PhysicsObject(context);
 			// creat convext hulls for collision shape
 			MeshRenderer * render = (MeshRenderer * )Object->GetComponent("Renderer");
@@ -245,13 +244,13 @@ int Level::InitScript() {
             script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
             Object->AddComponent(script);
 		}
-        if (Object->GetName() == "ADATA") {
+        if (Object->GetName() == "Plane") {
             PhysicsObject * Physics = new PhysicsObject(context);
             // creat convext hulls for collision shape
             MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
-            //render->SetTransparente();
+            render->SetTransparente();
         }
-		if (Object->GetName() == "Lumia") {
+		if (Object->GetName() == "Player") {
 			PhysicsObject * Physics = new PhysicsObject(context);
 			// creat convext hulls for collision shape
 			MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
@@ -294,9 +293,8 @@ void Level::Update(int ms) {
 	if (!Loaded) {
 		return;
 	}
-	Vector<GameObject *>::Iterator Iter;
 	float speed = 0.5f/1000.0f;
-	for (Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
+	for (auto Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
 		GameObject * Object = *Iter;
 		if (Object->GetName() == "qianzhihe") {
 			Quaternion rotation = Quaternion();

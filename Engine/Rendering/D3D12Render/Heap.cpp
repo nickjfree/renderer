@@ -54,9 +54,8 @@ Heap * Heap::Alloc(ID3D12Device * Device, int Type) {
 		heap = Free.PopBack();
 	}
 	else {
-		List<Heap>::Iterator Iter;
 		bool Found = 0;
-		for (Iter = Retired.Begin(); Iter != Retired.End(); Iter++) {
+		for (auto Iter = Retired.Begin(); Iter != Retired.End(); Iter++) {
 			heap = *Iter;
 			UINT64 FenceValue = heap->FenceValue;
 			if (Queue->FenceComplete(FenceValue)) {

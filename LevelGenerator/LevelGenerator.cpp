@@ -86,7 +86,7 @@ int TestGen(char * File) {
 	Quaternion rot = Quaternion();
 	object.Rotation = Quaternion();
 	// lumia
-	strcpy_s(object.Name, "Lumia");
+	strcpy_s(object.Name, "Player");
 	object.NumComponents = 1;
 	object.Position = Vector3(0, 0, 0);
 	object.Rotation = Quaternion();
@@ -100,7 +100,7 @@ int TestGen(char * File) {
 
 
 	// adata
-	strcpy_s(object.Name, "ADATA");
+	strcpy_s(object.Name, "Plane");
 	object.NumComponents = 1;
 	object.Position = Vector3(0.4f, 4.4, -5.5f);
 	rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);

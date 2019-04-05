@@ -21,8 +21,7 @@ void AnimationSystem::RemoveAnimator(Animator * animator) {
 
 int AnimationSystem::Update(int ms) {
 	// update all animators
-	List<Animator>::Iterator Iter;
-	for (Iter = Animators.Begin(); Iter != Animators.End(); Iter++) {
+	for (auto Iter = Animators.Begin(); Iter != Animators.End(); Iter++) {
 		Animator * animator = *Iter;
         if (!animator->Destroyed) {
             animator->Update((float)ms);

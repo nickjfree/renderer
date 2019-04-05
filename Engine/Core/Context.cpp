@@ -37,12 +37,12 @@ int Context::BroadCast(Event * event) {
 
 
 System * Context::RegisterSubsystem(const String& Name, System * Subsystem) {
-	Subsystems[const_cast<String&>(Name)] = Subsystem;
+	Subsystems[Name] = Subsystem;
 	return Subsystem;
 }
 System * Context::GetSubsystem(const String& Name) {
 	HashMap<String, System *>::Iterator Iter;
-	Iter = Subsystems.Find(const_cast<String&>(Name));
+	Iter = Subsystems.Find(Name);
 	if (Iter != Subsystems.End()) {
 		return *Iter;
 	}
@@ -50,7 +50,7 @@ System * Context::GetSubsystem(const String& Name) {
 }
 
 ObjectFactory * Context::RegisterObject(const String& Name, ObjectFactory * Factory) {
-	ObjectFactories[const_cast<String&>(Name)] = Factory;
+	ObjectFactories[Name] = Factory;
 	return Factory;
 }
 
@@ -58,7 +58,7 @@ Object * Context::CreateObject(const String& Name) {
 	ObjectFactory * Factory = 0;
 	Object * Obj;
 	HashMap<String, ObjectFactory*>::Iterator Iter;
-	Iter = ObjectFactories.Find(const_cast<String&>(Name));
+	Iter = ObjectFactories.Find(Name);
 	if (Iter != ObjectFactories.End()) {
 		Factory = *Iter;
 		Obj = (Object*)Factory->CreateObject(this);

@@ -55,11 +55,11 @@ public:
 	// set shadow map
 	void SetShadowMap(int id);
 	// get radius
-	float GetRadius() { return Radius; }
+	float GetRadius() const { return Radius; }
 	// get spot angle
-	float GetSpotAngle() { return SpotAngle; }
+	float GetSpotAngle() const { return SpotAngle; }
 	// get shadow casting
-	int GetShadowCasting() { return ShadowCast; }
+	int GetShadowCasting() const { return ShadowCast; }
 	// get Light Camera
 	RenderingCamera * GetLightCamera();
 };

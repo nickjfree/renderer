@@ -53,8 +53,7 @@ DescriptorHeap * DescriptorHeap::Alloc(ID3D12Device * Device, D3D12_DESCRIPTOR_H
 		retired = &GpuRetired[type];
 	}
 	DescriptorHeap * heap = NULL;
-	List<DescriptorHeap>::Iterator Iter;
-	for (Iter = retired->Begin(); Iter != retired->End(); Iter++) {
+	for (auto Iter = retired->Begin(); Iter != retired->End(); Iter++) {
 		heap = *Iter;
 		if (Queue->FenceComplete(heap->FenceValue)) {
 			retired->Remove(Iter);

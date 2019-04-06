@@ -42,10 +42,8 @@ int RenderContext::SetParameter(int Slot, void * CPUData, unsigned int Offset, u
 		ConstantDesc * Constant = Constants[Slot];
 		if (Constant) {
 			void * Dest = Constant->CPUData;
-			if (memcmp((char*)Dest + Offset, CPUData, Size)) {
-				memcpy((char*)Dest + Offset, CPUData, Size);
-				Constant->Dirty = 1;
-			}
+			memcpy((char*)Dest + Offset, CPUData, Size);
+			Constant->Dirty = 1;
 		}
 	}
 	return 0;
@@ -60,6 +58,7 @@ int RenderContext::UpdateConstant(int Slot) {
 			int Size = Constant->Size;
 			void * Data = Constant->CPUData;
 			Interface->SetConstant(Slot, Id, Data, Size);
+            printf("UpdateConstant %s at slot %d\n", Constant->Name.ToStr(), Slot);
 			Constant->Dirty = 0;
 		}
 	}

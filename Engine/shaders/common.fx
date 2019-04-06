@@ -46,7 +46,6 @@ cbuffer PerObject: register(b0)
 {
 	// object
 	float4x4 gWorldViewProjection;
-	float4x4 gWorldInvertProjection;
 	float4x4 gWorldViewMatrix;
     // material
 	float gSpecular;
@@ -57,7 +56,6 @@ cbuffer PerLight: register(b1)
 {
 	// shadow map constant
 	float4x4  gLightViewProjection;
-	float4x4  gLightView;
 	float4x4  gLightProjection;
 	// lighting
 	float4 gLightPosition;

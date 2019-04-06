@@ -19,9 +19,10 @@ RenderView::~RenderView()
 	delete Compiler;
 }
 
-int RenderView::Compile() {
+int RenderView::Compile(RenderContext * Context) {
 	int Compiled = 0;
-	Compiled += Compiler->SetDepthBuffer(Depth);
+	// config rendertargets    
+    Compiled += Compiler->SetDepthBuffer(Depth);
     Compiled += Compiler->SetRenderTargets(TargetCount, Targets);
     if (ClearTargets) {
         Compiled += Compiler->ClearRenderTarget();
@@ -29,7 +30,13 @@ int RenderView::Compile() {
 	if (ClearDepth) {
 		Compiled += Compiler->ClearDepthStencil();
 	}
-	return 0;
+    // config perframe. eg. camera
+    Parameters.Clear();
+    Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameters["gInvertViewMaxtrix"].as<Matrix4x4>());
+    Matrix4x4::Tranpose(Camera->GetProjection(), &Parameters["gProjectionMatrix"].as<Matrix4x4>());
+    Parameters["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
+    Parameters["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
+    return 0;
 }
 
 

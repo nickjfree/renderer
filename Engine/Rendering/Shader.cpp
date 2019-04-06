@@ -375,7 +375,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
 }
 
 Variant * Shader::GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext * Context) {
-	Dict::Iterator Iter = Material.Find(Name);
+	auto Iter = Material.Find(Name);
 	if (Iter != Material.End()) {
 		return &(*Iter).Value;
 	}

@@ -47,11 +47,11 @@ public:
 	virtual ~RenderingCamera();
 	Frustum& GetFrustum();
 	void Update(int ms);
-	Matrix4x4& GetViewMatrix() { return ViewMatrix; }
-	Matrix4x4& GetViewProjection() { return ViewProjection; }
-	Matrix4x4& GetProjection() { return Projection; }
-	Matrix4x4& GetInvertView() { return InvertView; }
-	Vector3& GetViewPoint() { return Position; }
+	Matrix4x4& GetViewMatrix()  { return ViewMatrix; }
+	Matrix4x4& GetViewProjection()  { return ViewProjection; }
+	Matrix4x4& GetProjection()  { return Projection; }
+	Matrix4x4& GetInvertView()  { return InvertView; }
+	Vector3& GetViewPoint()  { return Position; }
 	void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
 	void SetTransform(Vector3& Transform);
 	void SetRotation(Quaternion& Rotation);

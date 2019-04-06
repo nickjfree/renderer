@@ -56,7 +56,7 @@ public:
 public:
 	RenderView();
 	virtual ~RenderView();
-	virtual int Compile();
+	virtual int Compile(RenderContext * Context);
 	int QueueCommand();
 };
 

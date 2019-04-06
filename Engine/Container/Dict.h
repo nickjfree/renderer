@@ -52,6 +52,7 @@ public:
 	virtual ~Dict();
 	template <class T>  T& Get(const String& key);
 	template <class T>  int Set(const String& key, T& value);
+    void Remove(const String& key);
 	Variant& operator[] (const String& key);
 	void Clear() { HashIndex_.Reset(); Items.Resize(0, 1); };
 //	Variant& operator[] (char * key);

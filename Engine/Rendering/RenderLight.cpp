@@ -17,11 +17,6 @@ RenderLight::RenderLight() : Radius(1.0f), Intensity(1.0f), Color(Vector3(0.0f, 
 {
 	Type = Node::LIGHT;
 	LightType = RenderLight::POINT;
-	Matrix4x4 InitMatrix;
-	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
-	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
-	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(0,0);
-	Parameter[hash_string::gLightViewProjection].as<Matrix4x4>() = InitMatrix;
 	// lightCamera
 	LightCamera = new RenderingCamera();
 }
@@ -38,23 +33,23 @@ void RenderLight::SetLightType(int Type) {
 
 void RenderLight::SetRadius(float r) {
 	Radius = r;
-	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	//Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	CullingObj.UniformScale(r);
 }
 // set color
 void RenderLight::SetColor(Vector3& Color_) {
 	Color = Color_;
-	Parameter[hash_string::gLightColor].as<Vector3>() = Color;
+	//Parameter[hash_string::gLightColor].as<Vector3>() = Color;
 }
 // set intensity
 void RenderLight::SetIntensity(float Intensity_) {
 	Intensity = Intensity_;
-	Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	//Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
 }
 // set direction
 void RenderLight::SetDirection(Vector3& Direction_) {
 	Direction = Direction_;
-	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction;
+	//Parameter[hash_string::gLightDirection].as<Vector3>() = Direction;
 }
 // set shdowcast disable/enable
 void RenderLight::SetShadowCast(int Flag) {
@@ -62,18 +57,14 @@ void RenderLight::SetShadowCast(int Flag) {
 }
 
 void RenderLight::SetShadowMap(int id) {
-	Parameter[hash_string::gShadowMap].as<int>() = id;
+	// Parameter[hash_string::gShadowMap].as<int>() = id;
+    ShadowMap = id;
 }
 
 RenderingCamera * RenderLight::GetLightCamera() {
 	Matrix4x4 Projection = Matrix4x4::PerspectiveFovLH(0.25f * 3.1415926f, 1.0f, 1, Radius);
 	LightCamera->FromLight(Position, Rotation, Projection);
 	return LightCamera;
-}
-
-
-void RenderLight::UpdateLightView() {
-	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &Parameter[hash_string::gLightViewProjection].as<Matrix4x4>());
 }
 
 int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context){
@@ -83,18 +74,22 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	Matrix4x4 Scale;
 	Scale.Scale(Vector3(Radius, Radius, Radius));
 	Transform = Scale * Transform;
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &Parameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &Parameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Camera->GetProjection(), &Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
-	Parameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
+    // perlight position
+	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
+    // per-frame
+	//Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
+	//Matrix4x4::Tranpose(Camera->GetProjection(), &Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
+	//Parameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
+    //Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 	// light parameters
-	Parameter[hash_string::gLightPosition].as<Vector3>() = Position * Camera->GetViewMatrix();
-	Parameter[hash_string::gLightDirection].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
-	Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
-	// light iewprojection
-	UpdateLightView();
-	// process material
+    StageParameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
+    StageParameter["gLightDirection"].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
+    StageParameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+    StageParameter["gLightColor"].as<Vector3>() = Color;
+    StageParameter["gShadowMap"].as<int>() = ShadowMap;
+    Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &StageParameter["gLightViewProjection"].as<Matrix4x4>());
+    // process material
 	int Compiled = 0;
 	// stencil-pass
 	Shader * shader = 0;
@@ -102,7 +97,7 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 		Compiled += material->Compile(Compiler, Stage, Lod);
 		// process shader
 		shader = material->GetShader();
-		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), Parameter, Context);
+		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
 	}
 	int Geometry = GetRenderMesh(Stage, Lod);
 	if (Geometry != -1 && LightType == POINT) {
@@ -127,7 +122,7 @@ int RenderLight::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& Sta
 	default:
 		Stage = 1;
 	}
-	Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), Parameter, Context);
+	Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
 	// full screen quad
 	Compiled += Compiler->Quad();
 	return Compiled;

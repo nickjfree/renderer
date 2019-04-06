@@ -59,6 +59,9 @@ Variant& Dict::operator[] (const String& key) {
 	return Items[Index].Value;
 }
 
+void Dict::Remove(const String& key) {
+}
+
 //Variant& Dict::operator[] (char* key) {
 //	unsigned int StringHash = (unsigned int)String(key);
 //	int Index = HashIndex_.First(StringHash);

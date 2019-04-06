@@ -25,15 +25,16 @@ private:
 	int ShadowCast;
 	// light camera
 	RenderingCamera * LightCamera;
+    // light type
 	int LightType;
+    // showmap id
+    int ShadowMap;
 	enum {
 		POINT,
 		DIRECTION,
 		SPOT,
 		ENV,
 	};
-private:
-	void UpdateLightView();
 
 public:
 	RenderLight();

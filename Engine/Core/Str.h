@@ -22,9 +22,9 @@ private:
 	unsigned int hash(const char * buff);
 
 public:
-	StringHash() {};
-	StringHash(const char * buff);
-	StringHash(const StringHash& rh) { value = rh.value; };
+    StringHash() {};
+    StringHash(const char * buff);
+    StringHash(const StringHash& rh) { value = rh.value; };
 	inline operator int() const;
 	bool inline operator ==(const StringHash& rh) const;
 	bool inline operator !=(const StringHash& rh) const;
@@ -45,19 +45,19 @@ private:
 	size_t Length;
 	StringHash Hash;
 public:
-	String();
-	String(const String& rh);
+    String();
+    String(const String& rh);
     String(String&& rh);
-	String(const char * buff);
+    String(const char * buff);
 	String& operator=(const String& rh);
     //String& operator=(String&& rh);
 	String& operator=(const char * rh);
 	operator int() const;
-	operator unsigned int() const;
+    operator unsigned int() const;
 	//operator char * ();
 	//bool operator == (const char * buff);
 	bool operator == (const String& rh) const;
-	bool operator != (const String& rh) const ;
+	bool operator != (const String& rh) const;
 	int Split(char delimiter, String * Result, int Count) const;
 	size_t Len() const { return Length; }
     const char * ToStr() const { return Str; } 

@@ -20,7 +20,7 @@ protected:
 	// Material
 	Material * material;
 	// parameter
-	Dict Parameter;
+	// Dict Parameter;
 	// pre create keys for sorting
 	unsigned int SortKeyHigh;
 	unsigned int SortKeyLow;
@@ -44,6 +44,8 @@ public:
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
 	// set matrix palette
 	void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
+    // set blendshap data
+    void SetBlendShapeBuffer(int Id, size_t ShapeSize, void * Weights, size_t WeightSize);
 };
 
 #endif

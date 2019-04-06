@@ -369,7 +369,7 @@ int PostpassStage::Execute(RenderingCamera * Camera, Spatial * spatial, RenderQu
 	BatchCompiler * Compiler = renderview->Compiler;
 	char * Buffer = (char*)renderview->CommandBuffer;
 	Compiler->SetBuffer(Buffer);
-	renderview->Compile();
+	renderview->Compile(Context);
     // do SSAO
 	SSAO(Compiler);
     // do OIT final pass

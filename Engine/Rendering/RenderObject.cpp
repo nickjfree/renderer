@@ -6,15 +6,6 @@ USING_ALLOCATER(RenderObject);
 RenderObject::RenderObject()
 {
 	Type = Node::RENDEROBJECT;
-	Matrix4x4 InitMatrix;
-	// init the need keys in dict. so the rendereing process wouln't create them. in case the multi-thread creation problem
-	Parameter[hash_string::gWorldViewProjection].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::gWorldViewMatrix].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::InstanceWVP].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::InstanceWV].as<Matrix4x4>() = InitMatrix;
-	Parameter[hash_string::gViewPoint].as<Vector3>() = Vector3(0,0,0);
 }
 
 
@@ -59,11 +50,9 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
     }
     // prepare perObject constants
 	Matrix4x4& Transform = GetWorldMatrix();
+    // per-object position
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Camera->GetInvertView(), &StageParameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Camera->GetProjection(), &StageParameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
-	StageParameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
 	// if there is a skinning matrix
 	if (palette.Size) {
 		StageParameter[hash_string::gSkinMatrix].as<ShaderParameterArray>() = palette;
@@ -102,4 +91,8 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
 void RenderObject::SetMatrixPalette(Matrix4x4 * palette_, unsigned int NumMatrix_) {
 	palette.Data = palette_;
 	palette.Size = sizeof(Matrix4x4) * NumMatrix_;
+}
+
+void RenderObject::SetBlendShapeBuffer(int Id, size_t ShapeSize, void * Weights, size_t WeightSize) {
+
 }

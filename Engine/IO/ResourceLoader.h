@@ -15,7 +15,9 @@ public:
 	ResourceLoader(Context * context);
 	virtual ~ResourceLoader();
 	// virtual functions
-	virtual Deserializer  GetDeserializer(String& URL) { return Deserializer(); };
+	virtual Deserializer  GetDeserializer(const String& URL) { 
+        return Deserializer(); 
+    };
 	virtual void Unload(String& URL) {};
 };
 

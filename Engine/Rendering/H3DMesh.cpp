@@ -98,11 +98,6 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 
 
 int H3DMesh::OnCreateComplete(Variant& Data) {
-	//Event * event = Event::Create();
-	//event->EventId = 999;
-	//event->EventParam["Mesh"].as<Mesh*>() = this;
-	//context->SendEvent(Listener, event);
-	//event->Recycle();
 	NotifyOwner(RM_LOAD, Data);
 	return 0;
 }

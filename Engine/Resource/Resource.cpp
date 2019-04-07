@@ -3,7 +3,7 @@
 
 USING_ALLOCATER(Resource)
 
-Resource::Resource(Context* context) : EventNode(context), References(0), DepCount(0)
+Resource::Resource(Context* context) : EventNode(context), DepCount(0)
 {
 }
 

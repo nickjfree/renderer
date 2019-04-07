@@ -49,7 +49,7 @@ public:
 	void * GetFileHeader(void  * Base, const char * Name);
 	// decrease ref of mapping
 	int PutMappingBase(const char * FileName);
-	virtual Deserializer GetDeserializer(String&  URL);
+	virtual Deserializer GetDeserializer(const String&  URL);
 	virtual void Unload(String& URL);
 private:
 	int FindEntry(const char * Name);

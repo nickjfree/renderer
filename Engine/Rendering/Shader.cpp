@@ -160,7 +160,7 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 					FileLoader Loader(context);
 					Deserializer ShaderDes = Loader.GetDeserializer(url);
 					void * Binary = ShaderDes.Raw();
-					unsigned int Size = ShaderDes.Length();
+					auto Size = ShaderDes.Length();
 					if (!strcmp(shader->name(), "vs")) {
 						RenderPass->VS = renderinterface->CreateVertexShader(Binary, Size, 0);
 					}
@@ -217,13 +217,14 @@ int Shader::OnCreateComplete(Variant& Parameter) {
 			//printf("Depth %d, Rasterizer %d Blend %d\n", pass.DepthStencil, pass.Rasterizer, pass.Blend);
 		}
 	}
+    // notify owner. materials
 	NotifyOwner(RM_LOAD, Parameter);
-	// create the constant buffer and register shader parameters
 	return 0;
 }
 
 int Shader::OnLoadComplete(Variant& Parameter) {
 	// do nothing for shader resource
+    DeSerial.Release();
 	return 0;
 }
 

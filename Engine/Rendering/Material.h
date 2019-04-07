@@ -37,7 +37,10 @@ public:
 	Material(Context * context);
 	~Material();
 	virtual int OnSerialize(Deserializer& deserializer);
+    // on create complete
 	virtual int OnCreateComplete(Variant& Parameter);
+    // on raw data parse complete(worker thread)
+    virtual int OnLoadComplete(Variant& Data) {/* DeSerial.Release();*/ return 0; };
 	virtual int OnSubResource(int Message, Resource * Sub, Variant& Parameter);
 	virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);
 	Dict& GetParameter() { return Parameters; }

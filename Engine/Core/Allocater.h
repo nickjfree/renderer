@@ -18,11 +18,11 @@ public:
 	void   Free(void * ptr);
 };
 
-template <class T, int align = 16>
+template <class T, int align>
 ObjectContainer * Allocater<T, align>::m_ObjectContainer = new ObjectContainer(sizeof(T)+sizeof(int)+ align - sizeof(int));
 
 
-template <class T, int align = 16>
+template <class T, int align>
 void * Allocater<T, align>::Alloc()
 {
 	
@@ -34,7 +34,7 @@ void * Allocater<T, align>::Alloc()
 	return (char*)ptr + sizeof(int);
 }
 
-template <class T, int align = 16>
+template <class T, int align>
 void Allocater<T, align>::Free(void * ptr)
 {
 	int id = *(int*)((char*)ptr - sizeof(int));

@@ -15,14 +15,12 @@ ResourceTask::~ResourceTask()
 
 int ResourceTask::Work() {
 	// load file into memorty
-	if (resource) {
-		int a = 100;
-	}
-
+    
 	Deserializer deserializer = resource->AsyncLoad();
-	// serialize
-
+	// serialize and 
 	resource->OnSerialize(deserializer);
+    // pass raw data ownership to resource
+    resource->SetDeserializer(std::move(deserializer));
 	// on load complete
 	resource->OnLoadComplete(Param);
 	return 0;

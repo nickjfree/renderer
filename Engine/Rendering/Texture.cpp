@@ -21,6 +21,8 @@ int Texture::OnCreateComplete(Variant& Parameter) {
 
 int Texture::OnLoadComplete(Variant& Paramener) {
 	id = renderinterface->CreateTexture2D(NULL, Raw, Size, 0);
+    // raw data can be released
+    DeSerial.Release();
 	return 0;
 }
 

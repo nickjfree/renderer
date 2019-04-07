@@ -32,7 +32,10 @@ private:
 public:
 	Animation(Context * context);
 	virtual ~Animation();
+    // process raw data
 	virtual int OnSerialize(Deserializer& serializer);
+    // on raw data parse complete(worker thread)
+    virtual int OnLoadComplete(Variant& Data) { DeSerial.Release(); return 0; };
 	// get clip
 	AnimationClip * GetAnimationClip(int Index) { return &Clips[Index]; };
 };

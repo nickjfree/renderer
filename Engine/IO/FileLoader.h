@@ -12,7 +12,7 @@ class FileLoader : public ResourceLoader
 public:
 	FileLoader(Context * context);
 	~FileLoader();
-	Deserializer GetDeserializer(String& URL);
+	Deserializer GetDeserializer(const String& URL);
 };
 
 #endif

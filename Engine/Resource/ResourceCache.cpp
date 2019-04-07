@@ -45,16 +45,14 @@ void ResourceCache::DoAsyncLoadResource(const String& URL, Resource * Caller, Va
 }
 
 int ResourceCache::AsyncLoadResource(const String& URL, Resource * Caller, Variant& Param) {
-	HashMap<String, Resource*, CACHE_SIZE>::Iterator Iter;
-	Iter = Resources.Find(URL);
+	auto Iter = Resources.Find(URL);
 	if (Iter != Resources.End()) {
 		// found
 		Resource * sub = *Iter;
 		if (Caller) {
 			if (sub->GetAsyncStatus() == Resource::S_LOADING) {
 				sub->AddOwner(Caller);
-			}
-			else {
+			} else {
 				Caller->OnSubResource(Resource::RM_LOAD, sub, Param);
 			}
 		}

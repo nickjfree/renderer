@@ -96,14 +96,12 @@ int FileMappingLoader::PutMappingBase(const char * FileName)
 	return 0;
 }
 
-Deserializer FileMappingLoader::GetDeserializer(String& URL) {
+Deserializer FileMappingLoader::GetDeserializer(const String& URL) {
 	String Paths[3];
 	URL.Split('\\', Paths, 3);
 	void * Base = GetMappingBase(Paths[1].ToStr());
 	void * Header = GetFileHeader(Base, Paths[2].ToStr());
 	return Deserializer(Header);
-	//Pack = Paths[1];
-	//File = Paths[2];
 }
 
 

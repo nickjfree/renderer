@@ -1,20 +1,33 @@
 #ifndef __SERIALIZER_H__
 #define __SERIALIZER_H__
 
+#include "../Core/Str.h"
 
 class Deserializer
 {
 private:
+    // data
 	void * Data;
-public:
-	unsigned int Size;
+    // data size
+    unsigned int Size;
+    // flag
+    bool NeedClear;
 public:
 	Deserializer();
-	Deserializer(void * Data, unsigned int Size=0);
-	virtual ~Deserializer();
-	void * Raw() { return Data; };
+    // construct by outer data
+	Deserializer(void * Data);
+    // construct by resource url
+    Deserializer(const String& URL);
+	// detor
+    virtual ~Deserializer();
+    // move operation
+    Deserializer(Deserializer&& rh);
+    Deserializer& operator=(Deserializer&& rh);
+    // raw data info
+    void * Raw() { return Data; };
 	unsigned int Length() { return Size; }
-	int Read(char * buffer, unsigned int size, unsigned int * read);
+    // release raw resource
+    void Release();
 };
 
 #endif

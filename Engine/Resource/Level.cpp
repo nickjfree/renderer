@@ -105,7 +105,6 @@ int Level::CreateScene() {
 
 int Level::OnSerialize(Deserializer& deserializer) {
 	// parse level file
-	unsigned int Size = deserializer.Length();
 	char * Raw = (char*)deserializer.Raw();
 	char * offset = Raw;
 	// read meshes

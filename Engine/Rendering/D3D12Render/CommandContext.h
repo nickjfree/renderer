@@ -55,10 +55,12 @@ class CommandContext {
 		ID3D12GraphicsCommandList  * GetGraphicsCommandList() { return CommandList; }
 		// init texture
 		void InitializeTexture(ID3D12Resource * DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources, ID3D12Resource ** Upload);
-		// init buffers
+		// init vertext buffers
 		void InitializeVetexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload);
-		// init buffers
+		// init index buffers
 		void InitializeIndexBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload);
+        // init uav buffers
+        void InitializeUnorderedAccessBuffer(ID3D12Resource * DestResource, void * Buffer, unsigned int Size, ID3D12Resource ** Upload);
 		// get commandlist
 		ID3D12CommandList * GetCommandList();
 	};

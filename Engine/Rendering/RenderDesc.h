@@ -86,6 +86,7 @@ typedef struct R_BUFFER_DESC {
 	R_CPU_ACCESS       CPUAccessFlags;
 	R_MISC             MiscFlags;
 	unsigned int       StructureByteStride;
+    void *             CPUData;
 }R_BUFFER_DESC;
 
 

@@ -11,7 +11,7 @@ PrepassStage::~PrepassStage()
 {
 }
 
-
+// create g-buffer, for opaque objects
 void PrepassStage::CreateGBuffer() {
 	R_TEXTURE2D_DESC desc = {};
 	desc.Width = Context->FrameWidth;
@@ -45,7 +45,7 @@ void PrepassStage::CreateGBuffer() {
 	Context->RegisterRenderTarget("Depth", Depth);
 }
 
-
+// create a-buffer, for transparency objects
 void PrepassStage::CreateABuffer() {
 
     // clear mask texture
@@ -71,6 +71,7 @@ void PrepassStage::CreateABuffer() {
     buffer_desc.Size = Pixels * 4 * nodes;
     buffer_desc.StructureByteStride = 4 * nodes;
     buffer_desc.Usage = DEFAULT;
+    buffer_desc.CPUData = nullptr;
     ABuffers[1] = Interface->CreateBuffer(&buffer_desc);
     ABuffers[2] = Interface->CreateBuffer(&buffer_desc);
     

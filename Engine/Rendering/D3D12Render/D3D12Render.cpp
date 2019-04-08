@@ -560,7 +560,7 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
     // no multi resource and multi frame
     Buffer.MultiFrame = 0;
     Buffer.MultiResource = 0;
-
+    // create buffer in gpu memory
     Device->CreateCommittedResource(
         &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
         D3D12_HEAP_FLAG_NONE,
@@ -571,8 +571,20 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
     // create uav
     int Id = Buffers.AddItem(Buffer);
     
-    int HeapSlot = Id;
-    int HeapIndex = 0;
+    int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
+    int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
+
+    // upload cpu data to this buffer
+    if (desc->CPUData) {
+        CommandContext * Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        // assum we will only use it as UAV buffer
+        ID3D12Resource * Upload;
+        Context->InitializeVetexBuffer(Buffer.BufferResource[0], desc->CPUData, desc->Size, &Upload);
+        // wait upload complete
+        Context->Finish(true);
+        // free upload buffer
+        Upload->Release();
+    }
 
     // create uav for this buffer
     D3D12_CPU_DESCRIPTOR_HANDLE handle;

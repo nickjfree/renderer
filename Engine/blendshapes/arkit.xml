@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<blendshapes>
+  <blendshape name="jawOpen" url="Mesh\blendshapes.pack\jawOpen\0"></blendshape>
+  <blendshape name="tongueOut" url="Mesh\blendshapes.pack\tongueOut\0"></blendshape>
+  <blendshape name="eyeBlinkLeft" url="Mesh\blendshapes.pack\eyeBlinkLeft\0"></blendshape>
+</blendshapes>

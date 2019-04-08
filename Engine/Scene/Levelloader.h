@@ -6,24 +6,24 @@
 #include "Scene\GameObject.h"
 #include "Resource\ResourceCache.h"
 /*
-	Level Loader
+    Level Loader
 */
 class LevelLoader : public System
 {
-	OBJECT(LevelLoader);
+    OBJECT(LevelLoader);
 private:
-	Scene * scene;
+    Scene * scene;
 public:
-	LevelLoader(Context * context);
-	virtual ~LevelLoader();
+    LevelLoader(Context * context);
+    virtual ~LevelLoader();
 
-	virtual int Initialize();
+    virtual int Initialize();
 
-	// update
-	virtual int Update(int ms);
+    // update
+    virtual int Update(int ms);
 
-	// event hander
-	virtual int HandleEvent(Event * event);
+    // event hander
+    virtual int HandleEvent(Event * event);
 };
 
 #endif

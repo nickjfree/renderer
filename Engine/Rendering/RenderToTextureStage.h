@@ -4,11 +4,11 @@
 #include "RenderStage.h"
 
 
-class RenderToTextureStage :  public RenderStage {
+class RenderToTextureStage : public RenderStage {
 
 public:
-	RenderToTextureStage(RenderContext * context);
-	virtual ~RenderToTextureStage();
+    RenderToTextureStage(RenderContext * context);
+    virtual ~RenderToTextureStage();
 };
 
 #endif

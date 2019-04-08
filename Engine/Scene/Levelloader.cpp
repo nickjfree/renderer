@@ -18,29 +18,29 @@ LevelLoader::~LevelLoader()
 }
 
 int LevelLoader::Update(int ms) {
-	// test code
-	static int flag = 0;
-	ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
-	String LevelUrl = "Level\\levels\\desktop.level\\0";
-	if (!flag) {
-		Variant Param;
-		Cache->AsyncLoadResource(LevelUrl, NULL, Param);
-		flag = 1;
-	}
-	// try to get that resource 
-	Level * level = Cache->Get<Level>(LevelUrl);
-	if (level) {
-		level->Update(ms);
-	}
-	return 0;
+    // test code
+    static int flag = 0;
+    ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
+    String LevelUrl = "Level\\levels\\desktop.level\\0";
+    if (!flag) {
+        Variant Param;
+        Cache->AsyncLoadResource(LevelUrl, NULL, Param);
+        flag = 1;
+    }
+    // try to get that resource 
+    Level * level = Cache->Get<Level>(LevelUrl);
+    if (level) {
+        level->Update(ms);
+    }
+    return 0;
 }
 
 int LevelLoader::HandleEvent(Event * event) {
-	return 0;
+    return 0;
 }
 
 int LevelLoader::Initialize() {
-	context->RegisterObject<MeshRenderer>();
-	context->RegisterObject<Light>();
-	return 0;
+    context->RegisterObject<MeshRenderer>();
+    context->RegisterObject<Light>();
+    return 0;
 }

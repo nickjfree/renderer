@@ -2,7 +2,7 @@
 
 
 
-RenderToTextureStage::RenderToTextureStage(RenderContext * context): RenderStage(context) {
+RenderToTextureStage::RenderToTextureStage(RenderContext * context) : RenderStage(context) {
 }
 
 

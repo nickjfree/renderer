@@ -5,24 +5,24 @@
 #include "Resource\Resource.h"
 #include "Resource\FileMappingLoader.h"
 /*
-	Resource Loading task
+    Resource Loading task
 */
 
 class ResourceTask : public Task
 {
-	DECLAR_ALLOCATER(ResourceTask);
-	DECLAR_RECYCLE(ResourceTask);
+    DECLAR_ALLOCATER(ResourceTask);
+    DECLAR_RECYCLE(ResourceTask);
 public:
-	Resource * resource;
-	Resource * caller;
-	Variant Param;
+    Resource * resource;
+    Resource * caller;
+    Variant Param;
 public:
-	ResourceTask();
-	virtual ~ResourceTask();
+    ResourceTask();
+    virtual ~ResourceTask();
 
-	virtual int Work();
+    virtual int Work();
 
-	virtual int Complete();
+    virtual int Complete();
 };
 
 #endif

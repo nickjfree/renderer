@@ -5,7 +5,7 @@
 
 
 /*
-	mesh entry
+    mesh entry
 */
 typedef struct mesh_entry {
 
@@ -13,12 +13,12 @@ typedef struct mesh_entry {
 
 
 /*
-	material entry
+    material entry
 */
 
 
 /*
-	gameobject entry
+    gameobject entry
 */
 
 

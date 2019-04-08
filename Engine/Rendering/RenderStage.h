@@ -10,24 +10,24 @@
 #include "Spatial.h"
 
 /*
-	Renderpath stage
+    Renderpath stage
 */
 class RenderStage
 {
 private:
-	// initial stages
-	int Initial();
+    // initial stages
+    int Initial();
 protected:
-	RenderContext * Context;
-	RenderInterface * Interface;
+    RenderContext * Context;
+    RenderInterface * Interface;
 
 public:
-	RenderStage(RenderContext * Context);
-	virtual ~RenderStage();
-	// execute stage
-	virtual int Execute(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events);
-	// end
-	virtual int End() { return 0; };
+    RenderStage(RenderContext * Context);
+    virtual ~RenderStage();
+    // execute stage
+    virtual int Execute(RenderingCamera * Camera, Spatial * spatial, RenderQueue* renderQueue, WorkQueue * Queue, Vector<OsEvent*>& Events);
+    // end
+    virtual int End() { return 0; };
 };
 
 #endif

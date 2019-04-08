@@ -8,34 +8,34 @@
 
 #include "Rendering\RenderingCamera.h"
 /*
-	camera component
+    camera component
 */
 class Camera : public Component
 {
-	BASEOBJECT(Camera);
-	OBJECT(Camera);
-	DECLAR_ALLOCATER(Camera);
+    BASEOBJECT(Camera);
+    OBJECT(Camera);
+    DECLAR_ALLOCATER(Camera);
 private:
-	RenderingCamera * RenderCamera;
+    RenderingCamera * RenderCamera;
 protected:
-	int DHR;
-	int Occlusion;
+    int DHR;
+    int Occlusion;
 public:
-	enum  RenderPath {
-		FORWARD,
-		DEFERRED,
-		LIGHT_PRE,
-	};
+    enum  RenderPath {
+        FORWARD,
+        DEFERRED,
+        LIGHT_PRE,
+    };
 public:
-	Camera(Context * context);
-	virtual ~Camera();
+    Camera(Context * context);
+    virtual ~Camera();
 
-	virtual int HandleEvent(Event * Ev);
-	// on transform
-	virtual int OnTransform(GameObject * GameObj);
-	// setters
-	void Enable();
-	void Disable();
+    virtual int HandleEvent(Event * Ev);
+    // on transform
+    virtual int OnTransform(GameObject * GameObj);
+    // setters
+    void Enable();
+    void Disable();
 };
 
 #endif

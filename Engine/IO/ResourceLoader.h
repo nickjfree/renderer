@@ -2,7 +2,7 @@
 #define __LOADER_H__
 
 /*
-	basic loader. 
+    basic loader.
 */
 #include "Deserializer.h"
 #include "Core\Str.h"
@@ -12,13 +12,13 @@
 class ResourceLoader : public Object
 {
 public:
-	ResourceLoader(Context * context);
-	virtual ~ResourceLoader();
-	// virtual functions
-	virtual Deserializer  GetDeserializer(const String& URL) { 
-        return Deserializer(); 
+    ResourceLoader(Context * context);
+    virtual ~ResourceLoader();
+    // virtual functions
+    virtual Deserializer  GetDeserializer(const String& URL) {
+        return Deserializer();
     };
-	virtual void Unload(String& URL) {};
+    virtual void Unload(String& URL) {};
 };
 
 #endif

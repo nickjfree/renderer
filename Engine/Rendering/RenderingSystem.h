@@ -36,66 +36,66 @@ typedef D3D12Render RenderImp;
 #include "Tasks\OsEvent.h"
 
 /*
-	Rendering system. implement with H3D rendering engine
+    Rendering system. implement with H3D rendering engine
 */
 
 class RenderingSystem : public System {
-	BASEOBJECT(System);
-	OBJECT(RenderingSystem);
+    BASEOBJECT(System);
+    OBJECT(RenderingSystem);
 private:
-	// frame
-	unsigned int frames;
-	// Spatial
-	Spatial * spatial;
-	// main camera
-	RenderingCamera * MainCamera;
-	// renderinterface
-	RenderInterface * Interface;
-	// render context
-	RenderContext * RenderContext_;
-	// Rendercontrol
-	RenderControl * Control;
-	// render queue
-	RenderQueue * RenderQueue_;
-	// render processer
-	RenderProcesser * RenderProcesser_;
-	// test rendertarget
-	int DepthBuffer;
-	// test Coler buffer
-	int ColorBuffer;
-	// Preloadings
-	String Preloadings[16];
+    // frame
+    unsigned int frames;
+    // Spatial
+    Spatial * spatial;
+    // main camera
+    RenderingCamera * MainCamera;
+    // renderinterface
+    RenderInterface * Interface;
+    // render context
+    RenderContext * RenderContext_;
+    // Rendercontrol
+    RenderControl * Control;
+    // render queue
+    RenderQueue * RenderQueue_;
+    // render processer
+    RenderProcesser * RenderProcesser_;
+    // test rendertarget
+    int DepthBuffer;
+    // test Coler buffer
+    int ColorBuffer;
+    // Preloadings
+    String Preloadings[16];
 private:
-	// set up rendering 
-	void InitLowLevel();
-	// set up lighting, ssao. post processing. basic materials and geometry
-	void InitTopLevel();
-	// init render ddfault rendering setup
-	void InitRendering();
+    // set up rendering 
+    void InitLowLevel();
+    // set up lighting, ssao. post processing. basic materials and geometry
+    void InitTopLevel();
+    // init render ddfault rendering setup
+    void InitRendering();
 public:
-	RenderingSystem(Context * context);
-	virtual ~RenderingSystem();
-	// init
-	virtual int Initialize();
-	// update
-	virtual int Update(int ms);
-	// shutdown 
-	virtual int Shutdown();
-	// get interface
-	RenderInterface * GetRenderInterface() { return Interface; }
-	// get render context
-	RenderContext * GetRenderContext() { return RenderContext_; }
-	// get spatial
-	Spatial * GetSpatial() { return spatial; }
-	// set spatial
-	void SetSpatial(Spatial* spatial);
-	// get renderqueue
-	RenderQueue * GetRenderQueue() { return RenderQueue_; }
-	// set main camera
-	void AddCamera(RenderingCamera * Camera) { MainCamera = Camera; 	Control->AddCamera(MainCamera); }
-	// preloading
-	// preloading resource
-	void PreloadingResource();
+    RenderingSystem(Context * context);
+    virtual ~RenderingSystem();
+    // init
+    virtual int Initialize();
+    // update
+    virtual int Update(int ms);
+    // shutdown 
+    virtual int Shutdown();
+    // get interface
+    RenderInterface * GetRenderInterface() { return Interface; }
+    // get render context
+    RenderContext * GetRenderContext() { return RenderContext_; }
+    // get spatial
+    Spatial * GetSpatial() { return spatial; }
+    // set spatial
+    void SetSpatial(Spatial* spatial);
+    // get renderqueue
+    RenderQueue * GetRenderQueue() { return RenderQueue_; }
+    // set main camera
+    void AddCamera(RenderingCamera * Camera) { MainCamera = Camera; 	Control->AddCamera(MainCamera); }
+    // preloading
+    // preloading resource
+    void PreloadingResource();
 };
 
 #endif

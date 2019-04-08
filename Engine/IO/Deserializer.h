@@ -7,25 +7,25 @@ class Deserializer
 {
 private:
     // data
-	void * Data;
+    void * Data;
     // data size
     unsigned int Size;
     // flag
     bool NeedClear;
 public:
-	Deserializer();
+    Deserializer();
     // construct by outer data
-	Deserializer(void * Data);
+    Deserializer(void * Data);
     // construct by resource url
     Deserializer(const String& URL);
-	// detor
+    // detor
     virtual ~Deserializer();
     // move operation
     Deserializer(Deserializer&& rh);
     Deserializer& operator=(Deserializer&& rh);
     // raw data info
     void * Raw() { return Data; };
-	unsigned int Length() { return Size; }
+    unsigned int Length() { return Size; }
     // release raw resource
     void Release();
 };

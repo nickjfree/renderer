@@ -5,14 +5,14 @@
 
 
 /*
-	Partition method for rendering
+    Partition method for rendering
 */
 
 class PartitionMethod : public Component
 {
 public:
-	PartitionMethod(Context * context);
-	virtual ~PartitionMethod();
+    PartitionMethod(Context * context);
+    virtual ~PartitionMethod();
 };
 
 #endif

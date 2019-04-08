@@ -5,21 +5,21 @@
 
 
 /*
-	Basic culling method
+    Basic culling method
 */
 class BasicCullingImp : public Spatial
 {
 public:
-	BasicCullingImp();
-	~BasicCullingImp();
-	// insert
-	virtual int Add(RenderObject* RenderObj);
-	//remove
-	virtual int Remove(RenderObject* RenderObj);
-	// query by frustum
-	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Type);
-	// query by aabb
-	virtual int Query(AABB& Box, Vector<Node*>& Result, int Type);
+    BasicCullingImp();
+    ~BasicCullingImp();
+    // insert
+    virtual int Add(RenderObject* RenderObj);
+    //remove
+    virtual int Remove(RenderObject* RenderObj);
+    // query by frustum
+    virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Type);
+    // query by aabb
+    virtual int Query(AABB& Box, Vector<Node*>& Result, int Type);
 };
 
 

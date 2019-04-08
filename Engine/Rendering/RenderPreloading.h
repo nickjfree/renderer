@@ -8,9 +8,9 @@
 class RenderPreloading : public GPUResource {
 
 public:
-	RenderPreloading(Context * context);
-	virtual ~RenderPreloading();
-	virtual int OnSubResource(int Message, Resource * Sub, Variant& Param);
+    RenderPreloading(Context * context);
+    virtual ~RenderPreloading();
+    virtual int OnSubResource(int Message, Resource * Sub, Variant& Param);
 };
 
 #endif

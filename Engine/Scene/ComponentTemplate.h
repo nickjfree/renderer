@@ -5,9 +5,9 @@ template <class T>
 class ComponentTemplate : public Component
 {
 public:
-	T * next, * prev;
+    T * next, *prev;
 public:
-	ComponentTemplate(void);
+    ComponentTemplate(void);
 };
 
 

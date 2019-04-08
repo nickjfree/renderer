@@ -14,22 +14,22 @@ ResourceTask::~ResourceTask()
 
 
 int ResourceTask::Work() {
-	// load file into memorty
-    
-	Deserializer deserializer = resource->AsyncLoad();
-	// serialize and 
-	resource->OnSerialize(deserializer);
+    // load file into memorty
+
+    Deserializer deserializer = resource->AsyncLoad();
+    // serialize and 
+    resource->OnSerialize(deserializer);
     // pass raw data ownership to resource
     resource->SetDeserializer(std::move(deserializer));
-	// on load complete
-	resource->OnLoadComplete(Param);
-	return 0;
+    // on load complete
+    resource->OnLoadComplete(Param);
+    return 0;
 }
 
 int ResourceTask::Complete() {
 
-	//resource->OnLoadComplete(Param);
-	resource->SetAsyncStatus(Resource::S_ACTIVED);
-	resource->OnCreateComplete(Param);
-	return 0;
+    //resource->OnLoadComplete(Param);
+    resource->SetAsyncStatus(Resource::S_ACTIVED);
+    resource->OnCreateComplete(Param);
+    return 0;
 }

@@ -14,7 +14,7 @@ class BlendingNode : public Object
 {
     BASEOBJECT(BlendingNode);
     OBJECT(BlendingNode);
-   
+
 protected:
     // animation stage
     AnimationStage * AnimStage;
@@ -24,7 +24,7 @@ public:
     // length
     float Duration;
     // motion delta
-    
+
 public:
     BlendingNode(Context * context);
     ~BlendingNode();

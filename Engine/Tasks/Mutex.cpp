@@ -3,7 +3,7 @@
 
 Mutex::Mutex()
 {
-	InitializeCriticalSection(&section);
+    InitializeCriticalSection(&section);
 }
 
 
@@ -13,9 +13,9 @@ Mutex::~Mutex()
 
 
 void Mutex::Acquire() {
-	EnterCriticalSection(&section);
+    EnterCriticalSection(&section);
 }
 
 void Mutex::Release() {
-	LeaveCriticalSection(&section);
+    LeaveCriticalSection(&section);
 }

@@ -4,80 +4,80 @@
 USING_ALLOCATER(Light);
 Light::Light(Context * context) :Component(context)
 {
-	renderLight = new RenderLight();
+    renderLight = new RenderLight();
 }
 
 
 Light::~Light() {
-	Scene * scene = Owner->GetScene();
-	Event * Evt = Event::Create();
-	Evt->EventId = EV_NODE_REMOVE;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
-	SendEvent(scene, Evt);
-	Evt->Recycle();
-	// delete the node
-	delete renderLight;
+    Scene * scene = Owner->GetScene();
+    Event * Evt = Event::Create();
+    Evt->EventId = EV_NODE_REMOVE;
+    Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
+    SendEvent(scene, Evt);
+    Evt->Recycle();
+    // delete the node
+    delete renderLight;
 }
 
 int Light::Load(void * Raw, Level * level) {
-	LightEntry * Entry = (LightEntry*)Raw;
-	Model * model = level->GetModel(Entry->ModelIndex);
-	Material * material = level->GetMaterial(Entry->MaterialIndex);
-	SetModel(model);
-	SetMaterial(material);
-	SetRadius(Entry->Radius);
-	SetColor(Entry->Color);
-	SetIntensity(Entry->Intensity);
-	SetDirection(Entry->Direction);
-	SetShadowCast(0);
-	SetType(Entry->Type);
-	return sizeof(LightEntry);
+    LightEntry * Entry = (LightEntry*)Raw;
+    Model * model = level->GetModel(Entry->ModelIndex);
+    Material * material = level->GetMaterial(Entry->MaterialIndex);
+    SetModel(model);
+    SetMaterial(material);
+    SetRadius(Entry->Radius);
+    SetColor(Entry->Color);
+    SetIntensity(Entry->Intensity);
+    SetDirection(Entry->Direction);
+    SetShadowCast(0);
+    SetType(Entry->Type);
+    return sizeof(LightEntry);
 }
 
 int Light::OnAttach(GameObject * GameObj) {
-	SubscribeTo(Owner, 200);
-	Scene * scene = GameObj->GetScene();
-	// Notify partition
-	Event * Evt = Event::Create();
-	Evt->EventId = EV_NODE_ADD;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
-	SendEvent(scene, Evt);
-	Evt->Recycle();
-	// set init position
-	renderLight->SetPosition(GameObj->GetWorldTranslation());
-	renderLight->SetRotation(GameObj->GetWorldRotation());
-	return Component::OnAttach(GameObj);
+    SubscribeTo(Owner, 200);
+    Scene * scene = GameObj->GetScene();
+    // Notify partition
+    Event * Evt = Event::Create();
+    Evt->EventId = EV_NODE_ADD;
+    Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
+    SendEvent(scene, Evt);
+    Evt->Recycle();
+    // set init position
+    renderLight->SetPosition(GameObj->GetWorldTranslation());
+    renderLight->SetRotation(GameObj->GetWorldRotation());
+    return Component::OnAttach(GameObj);
 }
 
 int Light::OnTransform(GameObject * GameObj) {
-	// set init position
-	renderLight->SetPosition(GameObj->GetWorldTranslation());
-	renderLight->SetRotation(GameObj->GetWorldRotation());
-	return 0;
+    // set init position
+    renderLight->SetPosition(GameObj->GetWorldTranslation());
+    renderLight->SetRotation(GameObj->GetWorldRotation());
+    return 0;
 }
 
 
 int Light::HandleEvent(Event * Ev) {
-	return 0;
+    return 0;
 }
 
 void Light::SetRadius(float Radius) {
-	renderLight->SetRadius(Radius);
+    renderLight->SetRadius(Radius);
 }
 
 void Light::SetShadowCast(int Flag) {
-	renderLight->SetShadowCast(Flag);
+    renderLight->SetShadowCast(Flag);
 }
 
 void Light::SetColor(Vector3& Color) {
-	renderLight->SetColor(Color);
+    renderLight->SetColor(Color);
 }
 
 void Light::SetIntensity(float intensity) {
-	renderLight->SetIntensity(intensity);
+    renderLight->SetIntensity(intensity);
 }
 
 void Light::SetDirection(Vector3& Direction) {
-	renderLight->SetDirection(Direction);
+    renderLight->SetDirection(Direction);
 }
 

@@ -6,18 +6,18 @@
 #include "Container\Vector.h"
 
 /*
-	Rendering path
+    Rendering path
 */
 
 class RenderingPath
 {
 public:
-	// stages
-	Vector<RenderStage*> Stages;
+    // stages
+    Vector<RenderStage*> Stages;
 public:
-	RenderingPath(RenderContext * Context);
-	virtual ~RenderingPath();
-	int Execute();
+    RenderingPath(RenderContext * Context);
+    virtual ~RenderingPath();
+    int Execute();
 };
 
 #endif

@@ -10,12 +10,12 @@ Deserializer::~Deserializer() {
     Release();
 }
 
-Deserializer::Deserializer(void * Data_): NeedClear(false) {
-	Data = Data_;
+Deserializer::Deserializer(void * Data_) : NeedClear(false) {
+    Data = Data_;
 }
 
 
-Deserializer::Deserializer(const String& URL): NeedClear(true) {
+Deserializer::Deserializer(const String& URL) : NeedClear(true) {
     String Paths[3];
     URL.Split('\\', Paths, 3);
     String &Pack = Paths[1];

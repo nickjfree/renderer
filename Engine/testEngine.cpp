@@ -33,35 +33,36 @@
 
 int _tmain(int argc, _TCHAR* argv[]) {
 
-	//Engine initialize
-	Engine * GameEngine = new Engine();
-	GameEngine->Initialize();
-	GameEngine->InitSubsystems();
-	
+    //Engine initialize
+    Engine * GameEngine = new Engine();
+    GameEngine->Initialize();
+    GameEngine->InitSubsystems();
 
-	// simulate game loop
-	float progress = 0;
-	DWORD Pro = 0;
-	DWORD OldTime, NewTime, DeltaTime;
-	OldTime = GetCurrentTime();
 
-	while (1)
-	{
-		MSG msg;
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-			//printf("msg %d\n",msg.message);
-			GameEngine->OnMessage(msg.message, msg.lParam, msg.wParam);
-		} else {
-			//Sleep(10);
-			NewTime = GetCurrentTime();
-			DeltaTime = NewTime - OldTime;
-			OldTime = NewTime;
-			GameEngine->Update(DeltaTime);
-		}
-	}
-	while (_getch() != 27);
-	return 0;
+    // simulate game loop
+    float progress = 0;
+    DWORD Pro = 0;
+    DWORD OldTime, NewTime, DeltaTime;
+    OldTime = GetCurrentTime();
+
+    while (1)
+    {
+        MSG msg;
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+            //printf("msg %d\n",msg.message);
+            GameEngine->OnMessage(msg.message, msg.lParam, msg.wParam);
+        }
+        else {
+            //Sleep(10);
+            NewTime = GetCurrentTime();
+            DeltaTime = NewTime - OldTime;
+            OldTime = NewTime;
+            GameEngine->Update(DeltaTime);
+        }
+    }
+    while (_getch() != 27);
+    return 0;
 }
 

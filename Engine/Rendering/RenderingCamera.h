@@ -8,53 +8,53 @@
 #include "Rendering\Node.h"
 
 /*
-	RenderingCamera. Main Camera, shadow casting light camera, reflection camera and more.
-	Camera used for rendering, not confused with camera component
+    RenderingCamera. Main Camera, shadow casting light camera, reflection camera and more.
+    Camera used for rendering, not confused with camera component
 */
 class RenderingCamera
 {
-	DECLAR_ALLOCATER(RenderingCamera);
+    DECLAR_ALLOCATER(RenderingCamera);
 private:
-	float MoveSpeed;
-	float RotationSpeed;
+    float MoveSpeed;
+    float RotationSpeed;
 private:
-	// test move
-	void TestMove(int Delta);
-	// private method
-	int Walk(int TimeDelt);
-	int Fly(int TimeDelt);
-	int Strafe(int TimeDelt);
-	int Pitch(int TimeDelt);
-	int Yaw(int	TimeDelt);
-	int Roll(int TimeDelt);
-	int FreeMove(int TimeDelt);
-	int KeyMove(int TimeDelt);
-	void CheckStatus();
+    // test move
+    void TestMove(int Delta);
+    // private method
+    int Walk(int TimeDelt);
+    int Fly(int TimeDelt);
+    int Strafe(int TimeDelt);
+    int Pitch(int TimeDelt);
+    int Yaw(int	TimeDelt);
+    int Roll(int TimeDelt);
+    int FreeMove(int TimeDelt);
+    int KeyMove(int TimeDelt);
+    void CheckStatus();
 
 protected:
-	Vector3 Position;
-	Quaternion Orientation;
-	Vector3 Look;
-	Vector3 Up;
-	Vector3 Right;
-	Matrix4x4 Projection;
-	Matrix4x4 ViewMatrix;
-	Matrix4x4 ViewProjection;
-	Matrix4x4 InvertView;
-	Frustum frustum;
+    Vector3 Position;
+    Quaternion Orientation;
+    Vector3 Look;
+    Vector3 Up;
+    Vector3 Right;
+    Matrix4x4 Projection;
+    Matrix4x4 ViewMatrix;
+    Matrix4x4 ViewProjection;
+    Matrix4x4 InvertView;
+    Frustum frustum;
 public:
-	RenderingCamera();
-	virtual ~RenderingCamera();
-	Frustum& GetFrustum();
-	void Update(int ms);
-	Matrix4x4& GetViewMatrix()  { return ViewMatrix; }
-	Matrix4x4& GetViewProjection()  { return ViewProjection; }
-	Matrix4x4& GetProjection()  { return Projection; }
-	Matrix4x4& GetInvertView()  { return InvertView; }
-	Vector3& GetViewPoint()  { return Position; }
-	void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
-	void SetTransform(Vector3& Transform);
-	void SetRotation(Quaternion& Rotation);
-	void SetProjection(Matrix4x4& Projection);
+    RenderingCamera();
+    virtual ~RenderingCamera();
+    Frustum& GetFrustum();
+    void Update(int ms);
+    Matrix4x4& GetViewMatrix() { return ViewMatrix; }
+    Matrix4x4& GetViewProjection() { return ViewProjection; }
+    Matrix4x4& GetProjection() { return Projection; }
+    Matrix4x4& GetInvertView() { return InvertView; }
+    Vector3& GetViewPoint() { return Position; }
+    void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
+    void SetTransform(Vector3& Transform);
+    void SetRotation(Quaternion& Rotation);
+    void SetProjection(Matrix4x4& Projection);
 };
 #endif

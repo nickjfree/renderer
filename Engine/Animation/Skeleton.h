@@ -12,35 +12,35 @@
 using namespace h3d;
 
 /*
-	Bone
+    Bone
 */
 typedef struct Bone {
-	Matrix4x4 InverseBindPose;
-	int ParentId;
-	int Id;
-	String Name;
+    Matrix4x4 InverseBindPose;
+    int ParentId;
+    int Id;
+    String Name;
 }Bone;
 
 
 /*
-	bone hierarchy
+    bone hierarchy
 */
 
 class Skeleton : public Resource {
-	
-	BASEOBJECT(Skeleton);
-	OBJECT(Skeleton);
-	DECLAR_ALLOCATER(Skeleton);
-	LOADEROBJECT(FileLoader);
+
+    BASEOBJECT(Skeleton);
+    OBJECT(Skeleton);
+    DECLAR_ALLOCATER(Skeleton);
+    LOADEROBJECT(FileLoader);
 
 public:
-	// bones
-	Vector<Bone> Bones;
+    // bones
+    Vector<Bone> Bones;
 public:
-	Skeleton(Context * context);
-	~Skeleton();
-	
-	virtual int OnSerialize(Deserializer& serializer);
+    Skeleton(Context * context);
+    ~Skeleton();
+
+    virtual int OnSerialize(Deserializer& serializer);
 
 };
 

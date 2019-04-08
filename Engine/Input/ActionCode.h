@@ -45,7 +45,7 @@
 
 // keyboard keys
 /*
-	we don't need these
+    we don't need these
 */
 
 // max action
@@ -55,11 +55,11 @@
 // actions
 
 typedef struct Action {
-	int Code;
-	int Actived;
-	int Started;
-	int Stoped;
-	float Range;   // for joystick and mice
+    int Code;
+    int Actived;
+    int Started;
+    int Stoped;
+    float Range;   // for joystick and mice
 }Action;
 
 #endif

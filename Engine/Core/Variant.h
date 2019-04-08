@@ -10,13 +10,13 @@
 __declspec(align(16)) class Variant
 {
 public:
-	unsigned char data[VIARIANT_SIZE];      // raw data
+    unsigned char data[VIARIANT_SIZE];      // raw data
 public:
-	template <class T>	inline T& as() {
-		return (T&)data;
-	};
-	Variant() {};
-	~Variant() {};
+    template <class T>	inline T& as() {
+        return (T&)data;
+    };
+    Variant() {};
+    ~Variant() {};
 };
 
 #endif

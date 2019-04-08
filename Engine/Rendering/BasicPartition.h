@@ -5,17 +5,17 @@
 #include "BasicCullingImp.h"
 
 /*
-	Basci Partition method
+    Basci Partition method
 */
 class BasicPartition : public PartitionMethod
 {
 private:
-	BasicCullingImp * BasicCulling;
+    BasicCullingImp * BasicCulling;
 public:
-	BasicPartition(Context * context);
-	virtual ~BasicPartition();
-	virtual int OnAttach(GameObject * GameObj);
-	virtual int HandleEvent(Event * Evt);
+    BasicPartition(Context * context);
+    virtual ~BasicPartition();
+    virtual int OnAttach(GameObject * GameObj);
+    virtual int HandleEvent(Event * Evt);
 };
 
 #endif

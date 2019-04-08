@@ -11,5 +11,5 @@ Renderer::~Renderer() {
 }
 
 int Renderer::OnTransform(GameObject * GameObj) {
-	return 0;
+    return 0;
 }

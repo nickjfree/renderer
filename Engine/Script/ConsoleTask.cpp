@@ -12,13 +12,13 @@ ConsoleTask::~ConsoleTask() {
 }
 
 int ConsoleTask::Work() {
-	printf("console>");
+    printf("console>");
     // 7 btyes for "return:
-	fgets(buffer, DEBUG_BUFFER_SIZE, stdin);
-	return 0;
+    fgets(buffer, DEBUG_BUFFER_SIZE, stdin);
+    return 0;
 }
 
 int ConsoleTask::Complete() {
-	Scripting->RunDebug(buffer);
-	return 0;
+    Scripting->RunDebug(buffer);
+    return 0;
 }

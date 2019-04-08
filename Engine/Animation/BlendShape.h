@@ -23,7 +23,7 @@ public:
     // processing the file describeing blendshapes
     virtual int OnSerialize(Deserializer& serializer);
     // handle load complete event of each blendshape meshes
-    virtual int OnSubResource(int Message, Resource * Sub, Variant& Param);       
+    virtual int OnSubResource(int Message, Resource * Sub, Variant& Param);
     // async create all the blend shape meshes
     virtual int OnCreateComplete(Variant& Parameter);
     // on raw data parse complete(worker thread)

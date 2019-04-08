@@ -3,16 +3,16 @@
 
 USING_ALLOCATER(BlendShape);
 
-BlendShape::BlendShape(Context * context): GPUResource(context) 
+BlendShape::BlendShape(Context * context) : GPUResource(context)
 {
 }
 
 
-BlendShape::~BlendShape() 
+BlendShape::~BlendShape()
 {
 }
 
-int BlendShape::OnSerialize(Deserializer& serializer) 
+int BlendShape::OnSerialize(Deserializer& serializer)
 {
     return 0;
 }

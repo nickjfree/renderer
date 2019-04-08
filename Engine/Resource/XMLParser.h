@@ -10,9 +10,9 @@ using namespace rapidxml;
 class XMLParser
 {
 public:
-	XMLParser();
-	~XMLParser();
-	xml_document<> * Parse(void * Data);
+    XMLParser();
+    ~XMLParser();
+    xml_document<> * Parse(void * Data);
 };
 
 #endif

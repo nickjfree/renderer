@@ -6,7 +6,7 @@
 
 Context::Context()
 {
-	GlobalEventNode = new EventNode(this);
+    GlobalEventNode = new EventNode(this);
 }
 
 
@@ -16,53 +16,53 @@ Context::~Context()
 
 
 int Context::SubscribeFor(EventNode * node, int EventId) {
-	return node->SubscribeTo(GlobalEventNode, EventId);
+    return node->SubscribeTo(GlobalEventNode, EventId);
 }
 
 
 int Context::UnSubscribeFor(EventNode * node, int EventId) {
-	return node->UnSubscribe(GlobalEventNode, EventId);
+    return node->UnSubscribe(GlobalEventNode, EventId);
 }
 
 
-int Context::SendEvent(EventNode * Receiver, Event * event){
-	return Receiver->HandleEvent(event);
+int Context::SendEvent(EventNode * Receiver, Event * event) {
+    return Receiver->HandleEvent(event);
 }
 
 int Context::BroadCast(Event * event) {
-	GlobalEventNode->HandleEvent(event);
-	return 0;
+    GlobalEventNode->HandleEvent(event);
+    return 0;
 }
 
 
 
 System * Context::RegisterSubsystem(const String& Name, System * Subsystem) {
-	Subsystems[Name] = Subsystem;
-	return Subsystem;
+    Subsystems[Name] = Subsystem;
+    return Subsystem;
 }
 System * Context::GetSubsystem(const String& Name) {
-	HashMap<String, System *>::Iterator Iter;
-	Iter = Subsystems.Find(Name);
-	if (Iter != Subsystems.End()) {
-		return *Iter;
-	}
-	return NULL;
+    HashMap<String, System *>::Iterator Iter;
+    Iter = Subsystems.Find(Name);
+    if (Iter != Subsystems.End()) {
+        return *Iter;
+    }
+    return NULL;
 }
 
 ObjectFactory * Context::RegisterObject(const String& Name, ObjectFactory * Factory) {
-	ObjectFactories[Name] = Factory;
-	return Factory;
+    ObjectFactories[Name] = Factory;
+    return Factory;
 }
 
 Object * Context::CreateObject(const String& Name) {
-	ObjectFactory * Factory = 0;
-	Object * Obj;
-	HashMap<String, ObjectFactory*>::Iterator Iter;
-	Iter = ObjectFactories.Find(Name);
-	if (Iter != ObjectFactories.End()) {
-		Factory = *Iter;
-		Obj = (Object*)Factory->CreateObject(this);
-		return Obj;
-	}
-	return NULL;
+    ObjectFactory * Factory = 0;
+    Object * Obj;
+    HashMap<String, ObjectFactory*>::Iterator Iter;
+    Iter = ObjectFactories.Find(Name);
+    if (Iter != ObjectFactories.End()) {
+        Factory = *Iter;
+        Obj = (Object*)Factory->CreateObject(this);
+        return Obj;
+    }
+    return NULL;
 }

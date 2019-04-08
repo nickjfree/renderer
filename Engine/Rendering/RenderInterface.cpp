@@ -12,6 +12,6 @@ RenderInterface::~RenderInterface()
 
 
 int RenderInterface::Debug(char * info) {
-	printf(info);
-	return 0;
+    printf(info);
+    return 0;
 }

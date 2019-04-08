@@ -25,46 +25,46 @@ using std::weak_ptr;
 class EventNode;
 
 class EventRegistry {
-	DECLAR_ALLOCATER(EventRegistry)
+    DECLAR_ALLOCATER(EventRegistry)
 public:
-	LinkList<EventRegistry> Link;
-	int EventId;
-	EventNode * Node;
+    LinkList<EventRegistry> Link;
+    int EventId;
+    EventNode * Node;
 };
 
-/* 
+/*
 basic event processing node, can handle events and send events.
 */
 class EventNode : public Object
 {
 private:
-	// a map from certain event id to Event handlers, EventBus
-	HashMap<int, List<EventNode>>  EventChannel;
-	// keep track of subscribers and publishers
-	LinkList<EventRegistry> Subscribers;
-	LinkList<EventRegistry> Publishers;
+    // a map from certain event id to Event handlers, EventBus
+    HashMap<int, List<EventNode>>  EventChannel;
+    // keep track of subscribers and publishers
+    LinkList<EventRegistry> Subscribers;
+    LinkList<EventRegistry> Publishers;
 
 protected:
-	// remove all subscribers and unsubsribe all publishers 
-	void DisableEvent();
+    // remove all subscribers and unsubsribe all publishers 
+    void DisableEvent();
 
 public:
-	EventNode(Context * context_);
-	virtual ~EventNode();
-	// register self to other eventnode, and listen for event
-	int SubscribeTo(EventNode * Hub, int EventId);
-	// register self to global eventnode in context
-	virtual int Subscribe(int EventId, String& Callback);
-	// unregister
-	int UnSubscribe(EventNode * Hub, int EventId);
-	// add event handler
-	int AddEventHandler(int EventId, EventNode* Handler);
-	// remove event handler
-	int RemoveEventHandler(int EventId, EventNode* Handler);
-	// send event to eventnode
-	int SendEvent(EventNode * Receiver, Event * Evt);
-	// Handler event
-	virtual int HandleEvent(Event * Evt);
+    EventNode(Context * context_);
+    virtual ~EventNode();
+    // register self to other eventnode, and listen for event
+    int SubscribeTo(EventNode * Hub, int EventId);
+    // register self to global eventnode in context
+    virtual int Subscribe(int EventId, String& Callback);
+    // unregister
+    int UnSubscribe(EventNode * Hub, int EventId);
+    // add event handler
+    int AddEventHandler(int EventId, EventNode* Handler);
+    // remove event handler
+    int RemoveEventHandler(int EventId, EventNode* Handler);
+    // send event to eventnode
+    int SendEvent(EventNode * Receiver, Event * Evt);
+    // Handler event
+    virtual int HandleEvent(Event * Evt);
 };
 
 #endif

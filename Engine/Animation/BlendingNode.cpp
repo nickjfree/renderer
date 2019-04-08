@@ -2,7 +2,7 @@
 
 
 
-BlendingNode::BlendingNode(Context * context): Object(context) {
+BlendingNode::BlendingNode(Context * context) : Object(context) {
 }
 
 
@@ -117,6 +117,6 @@ int BinaryBlendingNode::Apply() {
 }
 
 // GetAnimationCache
-AnimationCache * BinaryBlendingNode::GetAnimationCache(){
+AnimationCache * BinaryBlendingNode::GetAnimationCache() {
     return Cache;
 }

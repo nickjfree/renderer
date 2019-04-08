@@ -17,42 +17,42 @@ class Script;
 
 class ScriptingSystem : public System {
 
-	BASEOBJECT(System);
-	OBJECT(ScriptingSystem);
+    BASEOBJECT(System);
+    OBJECT(ScriptingSystem);
 
 private:
-	lua_State * LuaState;
-	char DebugBuffer[DEBUG_BUFFER_SIZE];
-	// lua component list
-	List<Script> Scripts;
-	Vector<Script*> Destroyed;
+    lua_State * LuaState;
+    char DebugBuffer[DEBUG_BUFFER_SIZE];
+    // lua component list
+    List<Script> Scripts;
+    Vector<Script*> Destroyed;
 private:
-	// register classes
-	void InitEnvironment();
-	// on level loaded
-	void OnLevelLoaded(Level * level);
-	// run interactive debug console
-	void RunDebugConsole();
-	// get console input
-	void GetConsoleInput();
+    // register classes
+    void InitEnvironment();
+    // on level loaded
+    void OnLevelLoaded(Level * level);
+    // run interactive debug console
+    void RunDebugConsole();
+    // get console input
+    void GetConsoleInput();
 
-	
+
 public:
-	ScriptingSystem(Context * context);
-	~ScriptingSystem();
-	virtual int Update(int ms);
+    ScriptingSystem(Context * context);
+    ~ScriptingSystem();
+    virtual int Update(int ms);
 
-	virtual int Initialize();
+    virtual int Initialize();
 
-	virtual int HandleEvent(Event * Evt);
-	// exceute debug 
-	void RunDebug(char * script);
-	// get vm
-	lua_State * GetVM() { return LuaState; }
-	// register script into lua vm
-	void RegisterScript(Script * script);
-	// remove script
-	void RemoveScript(Script * script);
+    virtual int HandleEvent(Event * Evt);
+    // exceute debug 
+    void RunDebug(char * script);
+    // get vm
+    lua_State * GetVM() { return LuaState; }
+    // register script into lua vm
+    void RegisterScript(Script * script);
+    // remove script
+    void RemoveScript(Script * script);
     // load file
     int LoadFile(String& File);
 };

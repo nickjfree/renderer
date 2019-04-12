@@ -6,10 +6,12 @@
 #include "Rendering\Model.h"
 #include "Animation\Animation.h"
 #include "Animation\Skeleton.h"
+#include "Animation\BlendShape.h"
 
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
 #include "LevelDesc.h"
+
 
 typedef struct BoneInfo {
     int parent;
@@ -50,6 +52,9 @@ private:
     Vector<Model*> Models;
     Vector<Animation*> Animations;
     Vector<Skeleton*> Skeletons;
+    // blendshapes
+    Vector<BlendShape*> BlendShapes;
+
     // game objects
     Vector<GameObject*> GameObjects;
 

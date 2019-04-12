@@ -20,7 +20,7 @@
 #include "Physics\PhysicsObject.h"
 #include "Animation\Animator.h"
 #include "Animation\AnimationClip.h"
-#include "Animation\Skeleton.h"
+#include "Animation\BlendShape.h"
 
 
 USING_ALLOCATER(Level);
@@ -131,7 +131,11 @@ int Level::OnSerialize(Deserializer& deserializer) {
     offset += sizeof(LevelHeader);
     ObjectEntries = (ObjectEntry *)offset;
     // dependency count
-    DepCount = NumMeshes + NumMaterials + 1 + 2;  // add 1 skeleton and 2 animation for test
+    DepCount += NumMeshes;
+    DepCount += NumMaterials;
+    DepCount += 1;  // add 1 skeleton
+    DepCount += 2;  // and 2 animation
+    DepCount += 1;  // and 1 blendshape
     return 0;
 }
 
@@ -142,6 +146,7 @@ int Level::OnCreateComplete(Variant& Parameter) {
     Material * empty_material = 0;
     Skeleton * empty_skeleton = 0;
     Animation * empty_animation = 0;
+    BlendShape * empty_blendshape = 0;
     // submit resource creation task
     for (int i = 0; i < NumMeshes; i++) {
         Param.as<int>() = i;
@@ -165,6 +170,10 @@ int Level::OnCreateComplete(Variant& Parameter) {
     Param.as<int>() = 1;
     Animations.PushBack(empty_animation);
     Cache->AsyncLoadResource("Animation\\keyframe\\human_run.ha", this, Param);
+    // load blendshape
+    Param.as<int>() = 0;
+    BlendShapes.PushBack(empty_blendshape);
+    Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
     return 0;
 }
 

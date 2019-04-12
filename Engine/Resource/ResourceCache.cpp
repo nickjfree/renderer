@@ -9,6 +9,7 @@
 #include "Rendering\Shader.h"
 #include "Resource\Level.h"
 #include "Animation\Skeleton.h"
+#include "Animation\BlendShape.h"
 
 
 
@@ -135,6 +136,7 @@ int ResourceCache::Initialize() {
     RegisterResource<Shader>();
     RegisterResource<Skeleton>();
     RegisterResource<Animation>();
+    RegisterResource<BlendShape>();
     // register resource loader
     RegisterLoader<FileMappingLoader>();
     RegisterLoader<FileLoader>();

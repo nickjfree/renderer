@@ -17,16 +17,14 @@ int TestGen(char * File) {
     DWORD write;
     // write mesh data, Lumia, Adata usbdrive and Sphere(for point light)
     LevelHeader Header = {};
-    int Num = 4;
+    int Num = 5;
     Header.NumEntries = Num;
-    char * meshes[4] = {
+    char * meshes[5] = {
         "Mesh\\Unit.pack\\plane2\\0",
-        //"Mesh\\Unit.pack\\adata121\\0", 
         "Mesh\\character.pack\\human2\\0",
-        //"Mesh\\head.pack\\head\\0",
-        //"Mesh\\chip.pack\\resistor\\0",
         "Mesh\\Unit.pack\\sphere\\0",
-        "Mesh\\Unit.pack\\sneak\\0"
+        "Mesh\\Unit.pack\\sneak\\0",
+        "Mesh\\BlendShapes.pack\\eyeBlinkLeft\\0",
     };
     MeshEntry mesh = {};
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);
@@ -64,10 +62,10 @@ int TestGen(char * File) {
         WriteFile(hFile, &material, sizeof(material), &write, 0);
     }
     // write models
-    Num = 4;
+    Num = 5;
     Header.NumEntries = Num;
     ModelEntry model = {};
-    char * models[4] = { "sneak", "sphere", "sks", "usbdrive", };
+    char * models[5] = { "eyeBlinkLeft", "sneak", "sphere", "human2", "plane", };
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);
     while (Num--) {
         memset(model.MeshGroup, 0, sizeof(int) * 8);

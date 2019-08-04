@@ -38,7 +38,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
         vertex[i].x = position[i].x;
         vertex[i].y = position[i].y;
         vertex[i].z = position[i].z;
-        printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
+        // printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
 
         vertex[i].nx = normal[i].x;
         vertex[i].ny = normal[i].y;
@@ -248,6 +248,25 @@ aiNode * FindNode(aiNode * Node, char * name) {
     }
 }
 
+const char * GetMeshName(aiNode * node, int mesh_id) {
+    if (node->mNumMeshes) {
+        // assum there is only one mesh
+        if (node->mMeshes[0] == mesh_id) {
+            return node->mName.C_Str();
+        }
+    }
+    else {
+        for (auto i = 0; i < node->mNumChildren; i++) {
+            auto child = node->mChildren[i];
+            const char * name = GetMeshName(child, mesh_id);
+            if (name) {
+                return name;
+            }
+        }
+        return nullptr;
+    }
+}
+
 void ExtractMeshToH3d(aiScene * scene)
 {
     // extract scene mesh to h3d files, each file contains a mesh, with names
@@ -255,7 +274,8 @@ void ExtractMeshToH3d(aiScene * scene)
     if (scene->HasMeshes()) {
         int NumMesh = scene->mNumMeshes;
         for (int i = 0; i < NumMesh; i++) {
-            const char * name = scene->mMeshes[i]->mName.C_Str();
+            // get mesh name by node
+            const char * name = GetMeshName(scene->mRootNode, i);
             printf("extracting mesh %s\n", name);
             // save to files
             SaveH3d(scene->mMeshes[i], (char*)name);
@@ -263,6 +283,8 @@ void ExtractMeshToH3d(aiScene * scene)
         }
     }
 }
+
+
 
 
 void BFSBones(BoneEntry * entries, aiNode * node, aiMesh * mesh) {
@@ -467,15 +489,17 @@ bool DoTheImportThing(const std::string& pFile) {
     // Usually - if speed is not the most important aspect for you - you'll   
     // propably to request more postprocessing than we do in this example.  
     importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+    importer.SetPropertyFloat(AI_CONFIG_PP_CT_MAX_SMOOTHING_ANGLE, 360.0f);
+
 
     aiScene* scene = (aiScene*)importer.ReadFile(pFile,
-        aiProcess_CalcTangentSpace
-        | aiProcess_Triangulate
-        | aiProcess_JoinIdenticalVertices
-        | aiProcess_SortByPType
+       /* aiProcess_CalcTangentSpace*/
+        /*|aiProcess_Triangulate*/
+        aiProcess_JoinIdenticalVertices
+        /*| aiProcess_SortByPType*/
         | aiProcess_MakeLeftHanded
-        | aiProcess_ImproveCacheLocality
-        /*| aiProcess_LimitBoneWeights*/
+        /*| aiProcess_ImproveCacheLocality*/
+        | aiProcess_LimitBoneWeights
         /*| aiProcess_PreTransformVertices*/
     /*| aiProcess_FlipWindingOrder*/);
     // If the import failed, report it  
@@ -495,7 +519,13 @@ bool DoTheImportThing(const std::string& pFile) {
 int _tmain(int argc, _TCHAR* argv[])
 {
     //DoTheImportThing("human_2.fbx");
-    DoTheImportThing("head.fbx");
+    
+    DoTheImportThing("C:\\Users\\nick12\\Downloads\\POLYWINK_IPHONEX_ANIMATION_SAMPLE_PHOTOREAL\\blendCube2.fbx");
+
+    //DoTheImportThing("jawOpen.fbx");
+    //DoTheImportThing("tongueOut.fbx");
+    //DoTheImportThing("eyeBlinkLeft.fbx");
+    //DoTheImportThing("neutral.fbx");
     return 0;
 }
 

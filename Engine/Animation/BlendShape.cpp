@@ -7,6 +7,7 @@ USING_ALLOCATER(BlendShape);
 
 BlendShape::BlendShape(Context * context) : GPUResource(context), ShapeCount_(0), BufferSize_(0), ShapeStride_(0)
 {
+    ResourceType = R_BLEDNSHAPE;
 }
 
 
@@ -87,7 +88,7 @@ int BlendShape::OnCreateComplete(Variant & Parameter)
         ShapeCount_++;
     }
     // reserve vector size
-    BlendShapes_.Resize(ShapeStride_);
+    BlendShapes_.Resize(ShapeCount_);
     // defer owner parameter
     OwnerParameter_ = Parameter;
     return 0;

@@ -171,7 +171,7 @@ int Level::OnCreateComplete(Variant& Parameter) {
     Animations.PushBack(empty_animation);
     Cache->AsyncLoadResource("Animation\\keyframe\\human_run.ha", this, Param);
     // load blendshape
-    Param.as<int>() = 0;
+    //Param.as<int>() = 0;
     BlendShapes.PushBack(empty_blendshape);
     Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
     return 0;
@@ -198,6 +198,11 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
     if (resource->ResourceType == R_ANIMATION) {
         printf("finish  animation %s\n", resource->GetUrl().ToStr());
         Animations[Index] = (Animation*)resource;
+        DepCount--;
+    }
+    if (resource->ResourceType == R_BLEDNSHAPE) {
+        printf("finish  blendshape %s\n", resource->GetUrl().ToStr());
+        BlendShapes[Index] = (BlendShape*)resource;
         DepCount--;
     }
     if (!DepCount) {
@@ -256,6 +261,9 @@ int Level::InitScript() {
             PhysicsObject * Physics = new PhysicsObject(context);
             // creat convext hulls for collision shape
             MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
+            // test
+            Model * model = GetModel(4);
+            render->SetModel(model);
             //render->SetTransparente();
         }
         if (Object->GetName() == "Player") {

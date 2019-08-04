@@ -59,7 +59,7 @@ int RenderContext::UpdateConstant(int Slot) {
             int Size = Constant->Size;
             void * Data = Constant->CPUData;
             Interface->SetConstant(Slot, Id, Data, Size);
-            printf("UpdateConstant %s at slot %d\n", Constant->Name.ToStr(), Slot);
+            //printf("UpdateConstant %s at slot %d\n", Constant->Name.ToStr(), Slot);
             Constant->Dirty = 0;
         }
     }

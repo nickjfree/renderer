@@ -82,7 +82,7 @@ void SaveH3d(aiMesh *Mesh, char* Name)
     mesh.OffsetVertex = offset;
     offset += mesh.VertexSize * mesh.VertexNum;
     mesh.OffsetIndex = offset;
-    printf("vertex count %d, indics count %d\n", mesh.VertexNum, mesh.IndexNum);
+    printf("%s, vertex count %d, indics count %d\n", Name, mesh.VertexNum, mesh.IndexNum);
     WriteFile(hFile, &mesh, sizeof(mesh), &write, NULL);
     WriteFile(hFile, &bone, sizeof(bone), &write, NULL);
     // save vertex and index
@@ -90,6 +90,67 @@ void SaveH3d(aiMesh *Mesh, char* Name)
     WriteFile(hFile, index, mesh.IndexNum * mesh.IndexSize, &write, NULL);
     //over
     CloseHandle(hFile);
+    // save anime meshs
+    for (int i = 0; i < Mesh->mNumAnimMeshes; i++) {
+        aiAnimMesh * animMesh = Mesh->mAnimMeshes[i];
+        sprintf(FileName, "%s.h3d", animMesh->mName.C_Str());
+        HANDLE hFile = CreateFileA(FileName, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+        DWORD offset = 0;
+        DWORD write = 0;
+        h3d_vertex * vertex = new h3d_vertex[animMesh->mNumVertices];
+        // convert to h3d vertext and index
+        aiVector3D * position = animMesh->mVertices;
+        aiVector3D * normal = animMesh->mNormals;
+        aiVector3D * tangent = animMesh->mTangents;
+        aiVector3D * texcoord = animMesh->mTextureCoords[0];
+        for (int i = 0; i < animMesh->mNumVertices; i++) {
+            vertex[i].x = position[i].x;
+            vertex[i].y = position[i].y;
+            vertex[i].z = position[i].z;
+            // printf("(%f %f %f) ", position[i].x, position[i].y, position[i].z);
+
+            vertex[i].nx = normal[i].x;
+            vertex[i].ny = normal[i].y;
+            vertex[i].nz = normal[i].z;
+
+
+            if (tangent) {
+                vertex[i].tx = tangent[i].x;
+                vertex[i].ty = tangent[i].y;
+                vertex[i].tz = tangent[i].z;
+            }
+            if (texcoord) {
+                vertex[i].u = texcoord[i].x;
+                vertex[i].v = -texcoord[i].y;
+            }
+            vertex[i].parameter = 0;
+        }
+        // prepare h3d structure
+        h3d_header header;
+        h3d_mesh mesh;
+        h3d_bone bone;
+        header.Magic = (DWORD)H3DMAGIC;
+        header.MeshNum = 1;
+        header.Version = 0x01;
+        WriteFile(hFile, &header, sizeof(header), &write, NULL);
+        offset = sizeof(header) + sizeof(mesh) + sizeof(bone);
+        // write mesh header
+        mesh.VertexNum = animMesh->mNumVertices;
+        mesh.VertexSize = sizeof(h3d_vertex);
+        mesh.IndexSize = sizeof(WORD);
+        mesh.IndexNum = Mesh->mNumFaces * 3;
+        mesh.OffsetVertex = offset;
+        offset += mesh.VertexSize * mesh.VertexNum;
+        mesh.OffsetIndex = offset;
+        printf("blendshape: %s(%d), vertex count %d, indics count %d\n", FileName, i, mesh.VertexNum, mesh.IndexNum);
+        WriteFile(hFile, &mesh, sizeof(mesh), &write, NULL);
+        WriteFile(hFile, &bone, sizeof(bone), &write, NULL);
+        // save vertex and index
+        WriteFile(hFile, vertex, mesh.VertexSize * mesh.VertexNum, &write, NULL);
+        WriteFile(hFile, index, mesh.IndexNum * mesh.IndexSize, &write, NULL);
+        //over
+        CloseHandle(hFile);
+    }
 }
 
 void SaveH3dCharacter(aiMesh *Mesh, char* Name, BoneEntry * Bones)
@@ -493,9 +554,9 @@ bool DoTheImportThing(const std::string& pFile) {
 
 
     aiScene* scene = (aiScene*)importer.ReadFile(pFile,
-       /* aiProcess_CalcTangentSpace*/
+        aiProcess_CalcTangentSpace
         /*|aiProcess_Triangulate*/
-        aiProcess_JoinIdenticalVertices
+        | aiProcess_JoinIdenticalVertices
         /*| aiProcess_SortByPType*/
         | aiProcess_MakeLeftHanded
         /*| aiProcess_ImproveCacheLocality*/
@@ -520,7 +581,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     //DoTheImportThing("human_2.fbx");
     
-    DoTheImportThing("C:\\Users\\nick12\\Downloads\\POLYWINK_IPHONEX_ANIMATION_SAMPLE_PHOTOREAL\\blendCube2.fbx");
+    DoTheImportThing("C:\\Users\\nick12\\Downloads\\POLYWINK_IPHONEX_ANIMATION_SAMPLE_PHOTOREAL\\face.fbx");
 
     //DoTheImportThing("jawOpen.fbx");
     //DoTheImportThing("tongueOut.fbx");

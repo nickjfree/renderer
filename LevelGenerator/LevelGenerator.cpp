@@ -24,7 +24,7 @@ int TestGen(char * File) {
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
         "Mesh\\Unit.pack\\sneak\\0",
-        "Mesh\\BlendShapes.pack\\eyeBlinkLeft\\0",
+        "Mesh\\BlendShapes.pack\\eyeBlink_L\\0",
     };
     MeshEntry mesh = {};
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);

@@ -110,6 +110,8 @@ public:
     Skeleton * GetSkeleton(int Index) { return Skeletons[Index]; };
     // get animaton
     Animation * GetAnimation(int Index) { return Animations[Index]; };
+    // get blendshape
+    BlendShape * GetBlendShape(int Index) { return BlendShapes[Index]; };
     // get all gameobjects
     Vector<GameObject *> & GetGameObjects() { return GameObjects; };
     // get scene

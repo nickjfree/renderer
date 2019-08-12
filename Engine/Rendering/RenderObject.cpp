@@ -3,7 +3,7 @@
 #include "Core\StringTable.h"
 
 USING_ALLOCATER(RenderObject);
-RenderObject::RenderObject()
+RenderObject::RenderObject() : BlendShape_(0)
 {
     Type = Node::RENDEROBJECT;
 }
@@ -39,6 +39,7 @@ int RenderObject::GetRenderMesh(int Stage, int Lod) const {
 }
 
 int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context) {
+
     if (Stage == R_STAGE_PREPASSS) {
         Stage = 0;
     }
@@ -58,11 +59,13 @@ int RenderObject::Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& St
     Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
     // if there is a skinning matrix
     if (palette.Size) {
-        StageParameter[hash_string::gSkinMatrix].as<ShaderParameterArray>() = palette;
+        StageParameter["gSkinMatrix"].as<ShaderParameterArray>() = palette;
     }
     // if there are  blend shapes
-
-
+    if (BlendShape_) {
+        StageParameter["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
+        StageParameter["gWeightsArray"].as<ShaderParameterArray>() = blendshape;
+    }
 
     int Compiled = 0;
     int Instance = 0;
@@ -97,6 +100,12 @@ void RenderObject::SetMatrixPalette(Matrix4x4 * palette_, unsigned int NumMatrix
     palette.Size = sizeof(Matrix4x4) * NumMatrix_;
 }
 
-void RenderObject::SetBlendShapeBuffer(int Id, size_t ShapeSize, void * Weights, size_t WeightSize) {
+void RenderObject::SetBlendShapeParameters(void * data, unsigned int size) {
+    blendshape.Data = data;
+    blendshape.Size = size;
+}
+
+void RenderObject::SetBlendShape(BlendShape * Shape) {
+    BlendShape_ = Shape;
 
 }

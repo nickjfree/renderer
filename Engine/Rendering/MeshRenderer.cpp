@@ -82,3 +82,7 @@ void MeshRenderer::SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix)
 void MeshRenderer::SetTransparente() {
     renderObject->SetTransparent();
 }
+
+void MeshRenderer::SetBlendShape(BlendShape * Shape) {
+    renderObject->SetBlendShape(Shape);
+}

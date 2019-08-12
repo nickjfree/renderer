@@ -23,6 +23,7 @@ MAKE_HASH_STRING(gSampleWeights)
 MAKE_HASH_STRING(gTimeElapse)
 MAKE_HASH_STRING(gSpecular)
 MAKE_HASH_STRING(gSkinMatrix)
+MAKE_HASH_STRING(gBlendShapes)
 
 //event string
 MAKE_HASH_STRING(Level)

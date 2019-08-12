@@ -33,6 +33,7 @@ public:
     static String gTimeElapse;
     static String gSpecular;
     static String gSkinMatrix;
+    static String gBlendShapes;
     // event string
     static String Level;
     static String RenderObject;

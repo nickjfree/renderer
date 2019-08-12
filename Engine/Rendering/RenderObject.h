@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "Model.h"
 #include "Rendering\Material.h"
+#include "Animation\BlendShape.h"
 
 #include "Container\Dict.h"
 #include "RenderingCamera.h"
@@ -28,6 +29,9 @@ protected:
     unsigned char InstanceBuffer[64 * 4];
     // matrix palette
     ShaderParameterArray palette;
+    // blendshapes
+    ShaderParameterArray blendshape;
+    BlendShape * BlendShape_;
 public:
     RenderObject();
     virtual ~RenderObject();
@@ -45,7 +49,9 @@ public:
     // set matrix palette
     void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
     // set blendshap data
-    void SetBlendShapeBuffer(int Id, size_t ShapeSize, void * Weights, size_t WeightSize);
+    void SetBlendShape(BlendShape * Shape);
+    // set blendshape parameters
+    void SetBlendShapeParameters(void * data_, unsigned int size);
 };
 
 #endif

@@ -106,7 +106,13 @@ PS_Input VS_Instance(VS_Input_Instance input)
 PS_Output PS(PS_Input input)
 {	
 	PS_Output output = (PS_Output)0;
-	output.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	//oColor = (light + 0.1);
+	float4 light = gLightBuffer.Load(float3(input.PosH.xy, 0));
+	float4 diffuse = gDiffuseMap0.Sample(gSam, input.TexCoord);
+	//	float4 diffuse = gNormalBuffer.Sample(gSam, input.TexCoord);
+	float3 color = diffuse.xyz *(light.xyz) + float3(0.1,0.1,0.1);
+	float specular = light.w;
+	output.Color = float4(color + light.xyz * specular, 0);
 	return output;
 }
 

@@ -39,3 +39,6 @@ fxc /T vs_5_1 /E VS  /D dohdr=1  /Fo oit.vs  oit-resolve.fx
 fxc /T vs_5_1 /E VS_Skinning /Fo skin.vs  normal.fx
 fxc /T vs_5_1 /E VS_LPP_Normal_Skinning /Fo skin-pre.vs  LPP.fx
 fxc /T ps_5_1 /E PS_LPP_Normal_Skinning /Fo skin-pre.ps  LPP.fx
+
+fxc /T vs_5_1 /E VS_LPP /Fo blendshape-pre.vs  blendshape.cs
+fxc /T vs_5_1 /E VS /Fo blendshape.vs  blendshape.cs

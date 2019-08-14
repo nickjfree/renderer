@@ -130,6 +130,27 @@
     </technique>
   </shader>
 
+  <shader name="BlendShape">
+    <technique name="gbuffer">
+      <pass name="bs-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\blendshape-pre.vs"></vs>
+        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\blendshape.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="shadow">
+      <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
+        <vs url="Shaders\shaders\blendshape.vs"></vs>
+        <ps url="Shaders\shaders\basic.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="BasicPostObject">
       <technique name="GBuffering">
         <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">

@@ -8,7 +8,7 @@ struct VS_Input_Simple
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
     float  InstanceID : TEXCOORD1;
-    float4 Tangent  : TANGENT;
+    float3 Tangent  : TANGENT;
 };
 
 // instancing vertex layout
@@ -18,7 +18,7 @@ struct VS_Input_Instance
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD;
     float  InstanceID : TEXCOORD1;
-    float4 Tangent  : TANGENT;
+    float3 Tangent  : TANGENT;
     float4x4 InstanceWVP: InstanceWVP; 
     float4x4 InstanceWV: InstanceWV;
 };

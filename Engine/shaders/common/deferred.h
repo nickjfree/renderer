@@ -57,4 +57,8 @@ float4 GetNormal(float2 uv)
     return float4(DecodeNormal(raw), 0);
 }
 
+
+
+
+
 #endif

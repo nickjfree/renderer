@@ -19,7 +19,7 @@ PS_Input_GBuffer transform_to_view_gbuffer(
     float view_position = mul(float4(position, 1.0f), mv);
     // transform to homogeneous clip space.
     output.PosH = mul(float4(position, 1.0f), mvp);
-    // normal and tangent bi-normal
+    // processing normal tangent and bi-normal
     output.Normal = mul(float4(normal, 0), wv);
     output.Tangent = mul(float4(tangent, 0), mv);
     output.BiNormal = float4(cross(output.Normal.xyz, output.Tangent.xyz), 0);

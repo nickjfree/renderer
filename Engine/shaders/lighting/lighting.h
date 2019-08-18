@@ -150,4 +150,61 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 }
 
 
+/*
+    get deferred lighing color from gbuffer
+*/
+float3 deferred_lighting(float2 uv)
+{
+    // get vectors
+    float4 normal = GetNormal(uv);
+    float3 position = GetPosition(uv);
+    // get L, V, vectors
+    float3 L = gLightPosition - position.xyz;
+    float3 V = -position.xyz;
+    L = normalize(L);
+    V = normalize(V);
+    // deffise color
+    float4 albedo = gDiffuseBuffer.Sample(gSam, uv);
+    // get roughness, specular and metallic value
+    float4 rm = gSpecularBuffer.Sample(gSam, uv);
+    float roughness = rm.y;
+    float metallic = rm.z;
+    float3 F0 = float3(rm.x, rm.x, rm.x);
+    float3 specular = lerp(F0, albedo.rgb, metallic);
+    // calculate brdf   
+    return BRDF(normal, V, L, specular, F90, roughness, albedo.xyz, metallic);
+}
+
+/*
+    pixel in shadow or not?
+*/
+
+float shadow_value(float2 uv)
+{
+    // shadow bias
+    float bias = 0.0001f;
+    // pixel position in view space
+    float3 position = GetPosition(input.TexCoord);
+    // get position in light view space
+    float4 light_position = mul(float4(position, 1), gInvertViewMaxtrix);
+    light_position = mul(light_position, gLightViewProjection);
+    float2 light_screen;
+    light_screen.x = light_position.x / light_position.w / 2.0f + 0.5f;
+    light_screen.y = -light_position.y / light_position.w / 2.0f + 0.5f;
+    if ((saturate(light_screen.x) == light_screen.x) && (saturate(light_screen.y) == light_screen.y))
+    {
+        // check if cast shadow
+        float depth = gShadowMap.Sample(gSam, light_screen);
+        float depth_light = light_position.z / light_position.w - bias;
+        if (depth_light < depth) {
+            // in light
+            return 1.0f;
+        }
+    }
+    // in shadow
+    return 0.0f;
+}
+
+
+
 #endif

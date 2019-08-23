@@ -7,17 +7,19 @@
 PS_Output_Simple PS_Point_Light(PS_Input_Simple ps_input)
 {
     PS_Output_Simple output = (PS_Output_Simple)0;
+    // sample gbuffer
+    GBuffer gbuffer = GetGBuffer(ps_input.TexCoord);
     // shadow value
-    float shadow_value = shadow_value(ps_input.TexCoord);
+    float shadow_value = shadow_value(gbuffer);
     // lighting color
-    float3 lighting_color = deferred_lighting(ps_input.TexCoord); 
+    float3 lighting_color = deferred_lighting(gbuffer); 
     // adjust lighting by distance and light intensity
     float radius = gRadiusIntensity.x;
     float intensity = gRadiusIntensity.y;
     // pixel postion
-    float3 position = GetPosition(ps_input.TexCoord);
+    float3 position = gbuffer.Position;
     // get vectors
-    float4 normal = GetNormal(ps_input.TexCoord);
+    float4 normal = gbuffer.Normal;
     // get L, V, vectors
     float3 L = gLightPosition - position.xyz;
     L = normalize(L);
@@ -37,15 +39,16 @@ PS_Output_Simple PS_Point_Light(PS_Input_Simple ps_input)
 PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
 {
     PS_Output_Simple output = (PS_Output_Simple)0;
+    GBuffer gbuffer = GetGBuffer(ps_input.TexCoord);
     // get vectors
-    float4 normal = GetNormal(ps_input.TexCoord);
-    float3 position = GetPosition(ps_input.TexCoord);
+    float4 normal = gbuffer.Normal;
+    float3 position = gbuffer.Position;
     // get light view space texcoord
     float intensity = gRadiusIntensity.y;
     float3 L = -gLightDirection;
     L = normalize(L);
     // deferred lighting
-    float3 lighting_color = deferred_lighting(ps_input.TexCoord);
+    float3 lighting_color = deferred_lighting(gbuffer);
     // final color
     output.Color = float4(intensity * lighting_color * gLightColor * saturate(dot(normal, L)), 0)
     return output;
@@ -54,10 +57,11 @@ PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
 PS_Output_Simple PS_ImageBasedLight(PS_Input_Simple ps_input)
 {
     PS_Output_Simple output = (PS_Output_Simple)0;
-
+    // get gbuffer
+    GBuffer gbuffer = GetGBuffer(ps_input.TexCoord);
     // get normal and position
-    float4 N = GetNormal(input.TexCoord);
-    float3 position = GetPosition(input.TexCoord);
+    float4 N = gbuffer.Normal;
+    float3 position = gbuffer.Position;
 
     if (length(position) < 0.001) {
         // draw the light probe
@@ -73,14 +77,15 @@ PS_Output_Simple PS_ImageBasedLight(PS_Input_Simple ps_input)
     // get params
     float4 rm = gSpecularBuffer.Sample(gSam, input.TexCoord);
     float3 F0 = float3(rm.x, rm.x, rm.x);
-    float metallic = rm.z;
-    float roughness = rm.y;
-    float4 albedo = gDiffuseBuffer.Sample(gSam, input.TexCoord);
+    float metallic = gbuffer.Metallic;
+    float roughness = gbuffer.Roughness;
+
+    float4 albedo = gbuffer.Diffuse;
     float4 WorldNormal = mul(float4(N.xyz, 0), gInvertViewMaxtrix);
     float3 irradiance = gLightProbeIrradiance.Sample(gSam, WorldNormal).rgb;
 
     // IBL Specular
-    float3 SpecularColor = lerp(F0, albedo.rgb, metallic);
+    float3 SpecularColor = gbuffer.Specular;
     float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
     float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
 

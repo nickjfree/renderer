@@ -9,6 +9,20 @@
 
 static const float fov = tan(0.15 * 3.141592654);
 
+
+// gbuffer
+struct GBuffer
+{
+    float3 Position;
+    float4 Normal;
+    float4 Diffuse;
+    float4 View;
+    float3 Specular;
+    float Roughness;
+    float Metallic;
+};
+
+
 // get view space look vector
 float4 GetLookVector(float2 uv)
 {
@@ -56,5 +70,25 @@ float4 GetNormal(float2 uv)
     float4 raw =  gNormalBuffer.Sample(gSamPoint, uv);
     return float4(DecodeNormal(raw), 0);
 }
+
+
+// sample gbuffer
+GBuffer GetGBuffer(float uv)
+{
+    GBuffer gbuffer;
+
+    // get vectors
+    gbuffer.Position = GetPosition(uv);
+    gbuffer.Normal = GetNormal(uv);
+    gbuffer.Diffuse = gDiffuseBuffer.Sample(gSam, uv);
+    gbuffer.View = normalize(-gbuffer.Position.xyz);
+    // get roughness, specular and metallic value
+    float4 rm = gSpecularBuffer.Sample(gSam, uv);
+    gbuffer.Roughness = rm.y;
+    gbuffer.Metallic = rm.z;
+    float3 F0 = float3(rm.x, rm.x, rm.x);
+    gbuffer.Specular = lerp(F0, albedo.rgb, metallic);
+}
+
 
 #endif

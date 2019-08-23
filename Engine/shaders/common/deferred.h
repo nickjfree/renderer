@@ -2,10 +2,8 @@
 #ifndef  __DEFERRED__
 #define  __DEFERRED__
 
-#include "basic_registers.h"
-#include "basic_constant.h"
+#include "common.h"
 #include "post_constant.h"
-
 
 static const float fov = tan(0.15 * 3.141592654);
 
@@ -16,7 +14,7 @@ struct GBuffer
     float3 Position;
     float4 Normal;
     float4 Diffuse;
-    float4 View;
+    float3 View;
     float3 Specular;
     float Roughness;
     float Metallic;
@@ -59,8 +57,8 @@ float3 DecodeNormal(float2 G) {
 // get view space position at uv in screen space
 float3 GetPosition(float2 uv)
 {
-    float Depth  = gDepthBuffer.Sample(gSamPoint, uv);
-    float3 Position = GetLookVector(uv) * Depth;
+    float Depth  = gDepthBuffer.Sample(gSamPoint, uv).x;
+    float3 Position = (GetLookVector(uv) * Depth).xyz;
     return Position;
 }
 
@@ -68,12 +66,12 @@ float3 GetPosition(float2 uv)
 float4 GetNormal(float2 uv)
 {
     float4 raw =  gNormalBuffer.Sample(gSamPoint, uv);
-    return float4(DecodeNormal(raw), 0);
+    return float4(DecodeNormal(raw.xy), 0);
 }
 
 
 // sample gbuffer
-GBuffer GetGBuffer(float uv)
+GBuffer GetGBuffer(float2 uv)
 {
     GBuffer gbuffer;
 
@@ -81,13 +79,14 @@ GBuffer GetGBuffer(float uv)
     gbuffer.Position = GetPosition(uv);
     gbuffer.Normal = GetNormal(uv);
     gbuffer.Diffuse = gDiffuseBuffer.Sample(gSam, uv);
-    gbuffer.View = normalize(-gbuffer.Position.xyz);
+    gbuffer.View = normalize(-gbuffer.Position);
     // get roughness, specular and metallic value
     float4 rm = gSpecularBuffer.Sample(gSam, uv);
     gbuffer.Roughness = rm.y;
     gbuffer.Metallic = rm.z;
     float3 F0 = float3(rm.x, rm.x, rm.x);
-    gbuffer.Specular = lerp(F0, albedo.rgb, metallic);
+    gbuffer.Specular = lerp(F0, gbuffer.Diffuse.rgb, gbuffer.Metallic);
+    return gbuffer;
 }
 
 

@@ -2,7 +2,7 @@
 #define __SKINNING__
 
 
-#include "common/common.h"
+#include "../common/common.h"
 
 // animation use 128 constants buffer, bone transform, update for each object draw
 cbuffer ArrayAnime: register(b3)

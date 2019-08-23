@@ -26,7 +26,8 @@ Texture2D gDepthBuffer : register(t9);
 Texture2D gNormalBuffer: register(t10);
 Texture2D gDiffuseBuffer: register(t11);
 Texture2D gSpecularBuffer: register(t12);
-Texture2D gLightBuffer : register(t13);
+
+// t13 not used
 
 
 #endif

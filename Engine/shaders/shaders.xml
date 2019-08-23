@@ -3,25 +3,25 @@
   <shader name="Basic">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic-pre.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <vs url="Shaders\shaders\basic-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="Shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="AlphaBlend">
       <pass name="Basic-pre" depthstencil="TransDepth" rasterizer="Rasterizer" blend="AlphaBlend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic.vs"></vs>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
         <ps url="Shaders\shaders\oit-init.ps"></ps>
       </pass>
     </technique>
@@ -30,37 +30,37 @@
   <shader name="OIT">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic-pre.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <vs url="Shaders\shaders\basic-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="Shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="ABuffer">
       <pass name="ABuffer" depthstencil="TransDepth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic.vs"></vs>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
         <ps url="Shaders\shaders\oit-init.ps"></ps>
       </pass>
     </technique>
     <technique name="Resolve">
       <pass name="Resolve" depthstencil="NoZTest" rasterizer="NoCull" blend="AlphaBlend">
-        <vs url="Shaders\shaders\oit.vs"></vs>
+        <vs url="Shaders\shaders\oit-quad.vs"></vs>
         <ps url="Shaders\shaders\oit-resolve.ps"></ps>
       </pass>
     </technique>
     <technique name="Clear">
       <pass name="Clear" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\oit.vs"></vs>
+        <vs url="Shaders\shaders\oit-quad.vs"></vs>
         <ps url="Shaders\shaders\oit-clear.ps"></ps>
       </pass>
     </technique>
@@ -70,20 +70,20 @@
   <shader name="Skinning">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\skin-pre.vs"></vs>
-        <ps url="Shaders\shaders\skin-pre.ps"></ps>
+        <vs url="Shaders\shaders\skin-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
-        <vs url="Shaders\shaders\skin.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\skin-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="Shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\skin.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\skin-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
   </shader>
@@ -91,20 +91,20 @@
   <shader name="Instance">
     <technique name="GBuffering_Instance" instance="yes">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic-pre-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <vs url="Shaders\shaders\instance-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading" instance="yes">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
-        <vs url="Shaders\shaders\basic-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\instance-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="Shadow_Instance" instance="yes">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\basic-instance.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\instance-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
   </shader>
@@ -112,20 +112,20 @@
   <shader name="BasicNoCull">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\basic-pre.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <vs url="Shaders\shaders\basic-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
    <technique name="Shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="NoCull" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
   </shader>
@@ -133,20 +133,20 @@
   <shader name="BlendShape">
     <technique name="gbuffer">
       <pass name="bs-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
-        <vs url="Shaders\shaders\blendshape-pre.vs"></vs>
-        <ps url="Shaders\shaders\basic-pre.ps"></ps>
+        <vs url="Shaders\shaders\blendshape-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="shading">
       <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
-        <vs url="Shaders\shaders\blendshape.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\blendshape-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\blendshape.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\blendshape-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
   </shader>
@@ -154,20 +154,20 @@
   <shader name="BasicPostObject">
       <technique name="GBuffering">
         <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
-          <vs url="Shaders\shaders\basic-pre.vs"></vs>
-          <ps url="Shaders\shaders\basic-pre.ps"></ps>
+          <vs url="Shaders\shaders\basic-gbuffer.vs"></vs>
+          <ps url="Shaders\shaders\gbuffer.ps"></ps>
         </pass>
       </technique>
       <technique name="Shading">
         <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend">
-          <vs url="Shaders\shaders\basic.vs"></vs>
-          <ps url="Shaders\shaders\basic.ps"></ps>
+          <vs url="Shaders\shaders\basic-simple.vs"></vs>
+          <ps url="Shaders\shaders\simple.ps"></ps>
         </pass>
       </technique>
      <technique name="Shadow">
       <pass name="Basic-shadow" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="ShadowMap">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
    </shader>
@@ -175,25 +175,25 @@
   <shader name="PointLight">
     <technique name="stencil">
       <pass name="stencil" depthstencil="TwoSideStencil" rasterizer="NoCull" blend="NoFrame">
-        <vs url="Shaders\shaders\basic.vs"></vs>
-        <ps url="Shaders\shaders\basic.ps"></ps>
+        <vs url="Shaders\shaders\basic-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
     <technique name="QuadPointLight">
       <pass name="quad" depthstencil="NoZ" rasterizer="NoCull" blend="Additive">
-        <vs url="Shaders\shaders\pointlight.vs"></vs>
-        <ps url="Shaders\shaders\light_pbr.ps"></ps>
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\point_light.ps"></ps>
       </pass>
     </technique>
     <technique name="QuadDirectionLight">
       <pass name="quad" depthstencil="NoZTest" rasterizer="NoCull" blend="Additive">
-        <vs url="Shaders\shaders\pointlight.vs"></vs>
-        <ps url="Shaders\shaders\light_direction.ps"></ps>
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\direction_light.ps"></ps>
       </pass>
     </technique>
     <technique name="ImageBasedLight">
       <pass name="quad" depthstencil="NoZTest" rasterizer="NoCull" blend="Additive">
-        <vs url="Shaders\shaders\pointlight.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\ibl.ps"></ps>
       </pass>
     </technique>
@@ -203,7 +203,7 @@
   <shader name="SSAO">
     <technique name="ssao">
       <pass name="ssao" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\ssao.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\ssao.ps"></ps>
       </pass>
     </technique>
@@ -212,37 +212,37 @@
   <shader name="HDR">
     <technique name="scale_log">
       <pass name="scale_log" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_scale.ps"></ps>
       </pass>
     </technique>
     <technique name="lum_avg">
       <pass name="lum_avg" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_avg.ps"></ps>
       </pass>
     </technique>
     <technique name="adapt_lum">
       <pass name="adapt_lum" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_adapt.ps"></ps>
       </pass>
     </technique>
     <technique name="bright_pass">
       <pass name="bright_pass" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_bright.ps"></ps>
       </pass>
     </technique>
     <technique name="bloom">
       <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_bloom.ps"></ps>
       </pass>
     </technique>
     <technique name="tonemapping">
       <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\hdr.vs"></vs>
+        <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_tone.ps"></ps>
       </pass>
     </technique>

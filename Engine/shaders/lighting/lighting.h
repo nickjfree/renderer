@@ -31,7 +31,7 @@ TextureCube  gLightProbeIrradiance : register(t20);
 
 #define  PI  3.141592657
 #define  IBL_LD_MIPMAPS 10
-#define  F90 1
+#define  F90 1.0f
 
 
 /*
@@ -132,7 +132,7 @@ float SelectLDMipmap(float Roughness)
 float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV)
 {
     // LUT is generated from IBLBaker
-    float2 BRDF = gLUT.Sample(gSam, float2(NoV, 1-Roughness));
+    float2 BRDF = gLUT.Sample(gSam, float2(NoV, 1-Roughness)).xy;
     return SpecularColor * BRDF.x + BRDF.y;
 }
 
@@ -142,8 +142,8 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
     float NoV = saturate(dot(N, V));
     float3 R = reflect(-V, N);
     float mipmap = SelectLDMipmap(Roughness);
-    float4 WorldReflect = mul(float4(R, 0), gInvertViewMaxtrix);
-    float3 PrefilteredColor = gLdCube.SampleLevel(gSam, WorldReflect, mipmap).rgb;
+    float3 WorldReflect = mul(float4(R, 0), gInvertViewMaxtrix).xyz;
+    float3 PrefilteredColor = gLdCube.SampleLevel(gSam, WorldReflect, mipmap).xyz;
     float3 envBRDF = EnvBRDF(SpecularColor, Roughness, NoV);
 
     return PrefilteredColor * envBRDF;
@@ -153,18 +153,18 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 /*
     get deferred lighing color from gbuffer
 */
-float3 deferred_lighting(GBuffer gbuffer)
+float4 deferred_lighting(GBuffer gbuffer)
 {
     // get vectors
-    float4 normal = gbuffer.normal;
-    float3 position = gbuffer.position;
+    float3 normal = gbuffer.Normal.xyz;
+    float3 position = gbuffer.Position;
     // get L, V, vectors
-    float3 L = gLightPosition - position.xyz;
+    float3 L = gLightPosition.xyz - position.xyz;
     L = normalize(L);
-    V = normalize(gbuffer.View);
+    float3 V = normalize(gbuffer.View);
     // calculate brdf   
     return BRDF(normal, V, L, gbuffer.Specular, F90, 
-        gbuffer.roughness, gbuffer.Diffuse.xyz, gubuffer.metallic);
+        gbuffer.Roughness, gbuffer.Diffuse.xyz, gbuffer.Metallic);
 }
 
 /*
@@ -176,7 +176,7 @@ float shadow_value(GBuffer gbuffer)
     // shadow bias
     float bias = 0.0001f;
     // pixel position in view space
-    float3 position = GBuffer.position;
+    float3 position = gbuffer.Position;
     // get position in light view space
     float4 light_position = mul(float4(position, 1), gInvertViewMaxtrix);
     light_position = mul(light_position, gLightViewProjection);
@@ -186,7 +186,7 @@ float shadow_value(GBuffer gbuffer)
     if ((saturate(light_screen.x) == light_screen.x) && (saturate(light_screen.y) == light_screen.y))
     {
         // check if cast shadow
-        float depth = gShadowMap.Sample(gSam, light_screen);
+        float depth = gShadowMap.Sample(gSam, light_screen).x;
         float depth_light = light_position.z / light_position.w - bias;
         if (depth_light < depth) {
             // in light

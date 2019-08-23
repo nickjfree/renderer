@@ -35,6 +35,14 @@ struct VS_Input_Skinning
     float3 Tangent  : TANGENT;
 };
 
+// quad vertex
+struct VS_Input_Quad
+{
+    float3 PosL  : POSITION;
+    float2 TexCoord : TEXCOORD;
+};
+
+
 // simple pixel shader input
 struct PS_Input_Simple
 {
@@ -51,7 +59,7 @@ struct PS_Input_GBuffer
     float4 Normal : NORMAL;
     float4 Tangent : TEXCOORD1;
     float4 BiNormal: TEXCOORD2;
-    float  Depth :TEXCOORD3;
+    float  Depth : TEXCOORD3;
 };
 
 // GBuffer pixel shader output

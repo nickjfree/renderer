@@ -1,0 +1,161 @@
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Basic_GBuffer  /Fo basic-gbuffer.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\basic-gbuffer.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Basic_Simple /Fo basic-simple.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\basic-simple.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_GBuffer  /Fo gbuffer.ps  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\gbuffer.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Simple /Fo simple.ps  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\simple.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Instancing_Simple /Fo instance-simple.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\instance-simple.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Instancing_GBuffer  /Fo instance-gbuffer.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\instance-gbuffer.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Skinning_Simple /Fo skin-simple.vs  animation/skinning.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\skin-simple.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Skinning_GBuffer /Fo skin-gbuffer.vs  animation/skinning.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\skin-gbuffer.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Basic_Simple /Fo blendshape-simple.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\blendshape-simple.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS_Basic_GBuffer /Fo blendshape-gbuffer.vs  common/basic.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\blendshape-gbuffer.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS /Fo quad.vs  common/quad.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\quad.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Point_Light /Fo point_light.ps lighting/lighting.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+F:\proj\Game11\Game\Engine\shaders\lighting\lighting.h(194,9): warning X4000: use of potentially uninitialized variable (shadow_value)
+F:\proj\Game11\Game\Engine\shaders\lighting\lighting.h(195,5): warning X4000: use of potentially uninitialized variable (shadow_value)
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\point_light.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Direction_Light /Fo direction_light.ps lighting/lighting.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\direction_light.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_ImageBased_Light /Fo ibl.ps lighting/lighting.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\ibl.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS /Fo ssao.ps  post/ssao.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\ssao.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Log /Fo hdr_scale.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_scale.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Avg /Fo hdr_avg.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_avg.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_Adapt /Fo hdr_adapt.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_adapt.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_BrightPass /Fo hdr_bright.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_bright.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_GaussBloom5x5 /Fo hdr_bloom.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_bloom.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS_ToneMapping /Fo hdr_tone.ps  post/hdr.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\hdr_tone.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E PS  /D dohdr=1  /Fo oit-init.ps  oit/oit.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+F:\proj\Game11\Game\Engine\shaders\oit\oit.hlsl(73,13-69): warning X3206: implicit truncation of vector type
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\oit-init.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T vs_5_1 /E VS  /D dohdr=1  /Fo oit-quad.vs  oit/oit.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+F:\proj\Game11\Game\Engine\shaders\oit\oit.hlsl(73,13-69): warning X3206: implicit truncation of vector type
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\oit-quad.vs
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E AOITSPResolvePS /D dohdr=1   /Fo oit-resolve.ps  oit/oit.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+F:\proj\Game11\Game\Engine\shaders\oit\oit.hlsl(73,13-69): warning X3206: implicit truncation of vector type
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\oit-resolve.ps
+
+F:\proj\Game11\Game\Engine\shaders>fxc /T ps_5_1 /E AOITSPClearPS /D dohdr=1   /Fo oit-clear.ps  oit/oit.hlsl 
+Microsoft (R) Direct3D Shader Compiler 10.1
+Copyright (C) 2013 Microsoft. All rights reserved.
+
+F:\proj\Game11\Game\Engine\shaders\oit\oit.hlsl(73,13-69): warning X3206: implicit truncation of vector type
+
+compilation object save succeeded; see F:\proj\Game11\Game\Engine\shaders\oit-clear.ps

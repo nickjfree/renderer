@@ -1,3 +1,7 @@
+set PATH=%PATH%;%WindowsSDK_ExecutablePath_x64%
+
+cd %ProjectDir%shaders\
+
 fxc /T vs_5_1 /E VS_Basic_GBuffer  /Fo basic-gbuffer.vs  common/basic.hlsl
 fxc /T vs_5_1 /E VS_Basic_Simple /Fo basic-simple.vs  common/basic.hlsl
 

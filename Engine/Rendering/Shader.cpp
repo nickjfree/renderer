@@ -248,6 +248,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
         instance.Offset = 0;
         instance.Size = 0;
         int Instance = 0;
+        int NumElements = 0;
         for (UINT i = 0; i < desc.InputParameters; i++) {
             D3D12_SIGNATURE_PARAMETER_DESC input_desc;
             Reflector->GetInputParameterDesc(i, &input_desc);
@@ -264,8 +265,7 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
                 Instance = 1;
                 if (instance.Name == Element->Semantic) {
                     instance.Size += GetOffset(input_desc.Mask);
-                }
-                else {
+                } else {
                     if (instance.Name.Len()) {
                         InstanceElements.PushBack(instance);
                     }
@@ -273,6 +273,9 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
                     instance.Size = GetOffset(input_desc.Mask);
                     instance.Name = Element->Semantic;
                 }
+            } else if (!memcmp(Element->Semantic, "SV_", 3)) {
+                // ignore system semantic
+                continue;
             }
             else {
                 Element->Slot = input_desc.Stream;
@@ -280,12 +283,13 @@ int Shader::ReflectShader(Pass * RenderPass, void * Shader, unsigned int Size, V
             Element->Offset = Offset;
             Element->Format = GetFormat(input_desc.Mask, input_desc.ComponentType);
             Offset += GetOffset(input_desc.Mask);
+            NumElements++;
         }
         if (instance.Name.Len()) {
             InstanceElements.PushBack(instance);
         }
         // create input layout
-        RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, desc.InputParameters, Shader, Size);
+        RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, NumElements, Shader, Size);
     }
 
     // get constant buffers

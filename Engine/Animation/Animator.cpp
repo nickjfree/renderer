@@ -6,7 +6,7 @@
 
 USING_ALLOCATER(Animator)
 
-Animator::Animator(Context * context) : Component(context) {
+Animator::Animator(Context * context) : Component(context), BlendNode(nullptr) {
 }
 
 
@@ -17,14 +17,16 @@ void Animator::Update(float time) {
     // advance in time
     //Stage->Advance(time);
     //Stage->Apply();
-    BlendNode->Advance(time);
-    BlendNode->Apply();
-    // get the result
-    AnimationCache * Cache = BlendNode->GetAnimationCache();
-    // set palette
-    Cache->GeneratePalette(skeleton);
-    MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent("Renderer");
-    renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
+    if (BlendNode) {
+        BlendNode->Advance(time);
+        BlendNode->Apply();
+        // get the result
+        AnimationCache * Cache = BlendNode->GetAnimationCache();
+        // set palette
+        Cache->GeneratePalette(skeleton);
+        MeshRenderer * renderer = (MeshRenderer *)Owner->GetComponent("Renderer");
+        renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
+    }
     // apply root motion
     //Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());
     //Tanslation = Tanslation * Owner->GetTransform();

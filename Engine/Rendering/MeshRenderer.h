@@ -51,6 +51,8 @@ public:
     void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
     // set blendshape
     void SetBlendShape(BlendShape * Shape);
+    // set blendshape weights
+    void SetBlendShapeWeights(float * indics, float * weights_, unsigned int count);
 };
 
 

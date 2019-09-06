@@ -171,7 +171,7 @@ int Level::OnCreateComplete(Variant& Parameter) {
     Animations.PushBack(empty_animation);
     Cache->AsyncLoadResource("Animation\\keyframe\\human_run.ha", this, Param);
     // load blendshape
-    //Param.as<int>() = 0;
+    Param.as<int>() = 0;
     BlendShapes.PushBack(empty_blendshape);
     Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
     return 0;
@@ -266,6 +266,9 @@ int Level::InitScript() {
             BlendShape * shape = GetBlendShape(0);
             render->SetModel(model);
             render->SetBlendShape(shape);
+            float test_weights[3] = { 0.5f, 0.5f, 1.0f };
+            float test_indics[3] = { 0, 1, 2};
+            render->SetBlendShapeWeights(test_indics, test_weights, 3);
             //render->SetTransparente();
         }
         if (Object->GetName() == "Player") {

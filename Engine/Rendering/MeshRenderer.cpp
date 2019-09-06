@@ -86,3 +86,7 @@ void MeshRenderer::SetTransparente() {
 void MeshRenderer::SetBlendShape(BlendShape * Shape) {
     renderObject->SetBlendShape(Shape);
 }
+
+void MeshRenderer::SetBlendShapeWeights(float * indics, float * weights, unsigned int count) {
+    renderObject->SetBlendShapeWeights(indics, weights, count);
+}

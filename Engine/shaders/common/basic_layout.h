@@ -35,6 +35,18 @@ struct VS_Input_Skinning
     float3 Tangent  : TANGENT;
 };
 
+
+// blendshape
+// struct VS_Input_BlendShape
+// {
+//     float3 PosL  : POSITION;
+//     float3 Normal : NORMAL;
+//     float2 TexCoord : TEXCOORD;
+//     float  InstanceID : TEXCOORD1;
+//     float3 Tangent  : TANGENT;
+//     uint VertexId : SV_VertexId;
+// };
+
 // quad vertex
 struct VS_Input_Quad
 {

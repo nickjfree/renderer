@@ -7,6 +7,39 @@
 #include "../Container/Vector.h"
 
 
+constexpr int MAX_BS_NUMBER = 128;
+
+/*
+    blendshape weight entry
+*/
+typedef struct BSWeight
+{
+    // shape index
+    float index;
+    // shape weight
+    float weight;
+    // padding
+    float padding0;
+    // padding
+    float padding1;
+}BSWeight;
+
+/*
+    blendshape description data, for shader resource (cbuffer)
+*/
+typedef struct BSDesc
+{
+    // blendshape count and size of each shape (in vertex)
+    float num_shapes, buffer_stride;
+    // weight count
+    float num_weiths, padding;
+    // weight data
+    BSWeight entries[MAX_BS_NUMBER];
+}BSDesc;
+
+/*
+    blendshape resource class
+*/
 class BlendShape : public GPUResource
 {
 
@@ -14,8 +47,8 @@ class BlendShape : public GPUResource
     BASEOBJECT(BlendShape);
     LOADEROBJECT(FileLoader);
     DECLAR_ALLOCATER(BlendShape);
-
-private:
+    
+public:
     // blendshapes
     Vector<Mesh*> BlendShapes_;
     // blendshape desc
@@ -28,6 +61,8 @@ private:
     unsigned int VertexStride_;
     // shape count
     int ShapeCount_;
+    
+private:
     // 
     Variant OwnerParameter_;
 public:

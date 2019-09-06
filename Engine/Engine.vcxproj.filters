@@ -12,9 +12,6 @@
     <Filter Include="头文件\h3d">
       <UniqueIdentifier>{c3c0a9da-009c-4069-904c-ecbc1f26aae6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\shaders">
-      <UniqueIdentifier>{c2d78f14-f641-4f34-9580-e4dcb72dc278}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

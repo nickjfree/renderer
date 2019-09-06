@@ -29,9 +29,12 @@ protected:
     unsigned char InstanceBuffer[64 * 4];
     // matrix palette
     ShaderParameterArray palette;
-    // blendshapes
-    ShaderParameterArray blendshape;
+    // blendshapes parameters for shader
+    ShaderParameterArray blendshape_;
+    // blendshape
     BlendShape * BlendShape_;
+    // blendshape description data
+    BSDesc * BlendShapeDesc_;
 public:
     RenderObject();
     virtual ~RenderObject();
@@ -51,7 +54,7 @@ public:
     // set blendshap data
     void SetBlendShape(BlendShape * Shape);
     // set blendshape parameters
-    void SetBlendShapeParameters(void * data_, unsigned int size);
+    void SetBlendShapeWeights(float * indics, float * weights, unsigned int count);
 };
 
 #endif

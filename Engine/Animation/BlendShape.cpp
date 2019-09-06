@@ -47,14 +47,14 @@ int BlendShape::OnSubResource(int Message, Resource * Sub, Variant & Param)
     // all sub-resources loaded
     if (!--DepCount) {
         // set update blendshape desc
-        ShapeStride_ = mesh->VBSize;
-        BufferSize_ = ShapeStride_ * ShapeCount_;
+        ShapeStride_ = mesh->VBSize/mesh->VTSize;
+        BufferSize_ = mesh->VBSize * ShapeCount_;
         VertexStride_ = mesh->VTSize;
         // alloc data for blendshape buffer
         char * buffer = new char[BufferSize_];
         for (auto i = 0; i < ShapeCount_; i++) {
             mesh = BlendShapes_[i];
-            memcpy(buffer+(i * ShapeStride_), mesh->VBuffer, mesh->VBSize);
+            memcpy(buffer+(i * mesh->VBSize), mesh->VBuffer, mesh->VBSize);
         }
         // create buffer
         R_BUFFER_DESC desc = {

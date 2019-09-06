@@ -15,8 +15,8 @@ fxc /T vs_5_1 /E VS_Instancing_GBuffer  /Fo instance-gbuffer.vs  common/basic.hl
 fxc /T vs_5_1 /E VS_Skinning_Simple /Fo skin-simple.vs  animation/skinning.hlsl
 fxc /T vs_5_1 /E VS_Skinning_GBuffer /Fo skin-gbuffer.vs  animation/skinning.hlsl
 
-fxc /T vs_5_1 /E VS_Basic_Simple /Fo blendshape-simple.vs  common/basic.hlsl
-fxc /T vs_5_1 /E VS_Basic_GBuffer /Fo blendshape-gbuffer.vs  common/basic.hlsl
+fxc /T vs_5_1 /E VS_BlendShape_Simple /Fo blendshape-simple.vs  animation/blendshape.hlsl
+fxc /T vs_5_1 /E VS_BlendShape_GBuffer /Fo blendshape-gbuffer.vs  animation/blendshape.hlsl
 
 
 fxc /T vs_5_1 /E VS /Fo quad.vs  common/quad.hlsl

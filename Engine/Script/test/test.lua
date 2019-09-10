@@ -4,7 +4,7 @@ print("initialize scripting engine")
 objects = {}
 setmetatable(objects, { __mode = 'v' })
 
--- table only to store gameobjects
+-- table only to store gameobjects or exported tables
 entities = {}
 
 -- scripts to store scripts template

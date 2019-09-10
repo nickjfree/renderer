@@ -88,7 +88,7 @@ int BlendShape::OnCreateComplete(Variant & Parameter)
         ShapeCount_++;
     }
     // reserve vector size
-    BlendShapes_.Resize(ShapeCount_);
+    BlendShapes_.Resize(ShapeCount_, 1);
     // defer owner parameter
     OwnerParameter_ = Parameter;
     return 0;

@@ -3,7 +3,7 @@
 #include "Core\StringTable.h"
 
 USING_ALLOCATER(RenderObject);
-RenderObject::RenderObject() : BlendShape_(nullptr), BlendShapeDesc_(nullptr)
+RenderObject::RenderObject() : BlendShape_(nullptr)
 {
     Type = Node::RENDEROBJECT;
 }
@@ -11,9 +11,6 @@ RenderObject::RenderObject() : BlendShape_(nullptr), BlendShapeDesc_(nullptr)
 
 RenderObject::~RenderObject()
 {
-    if (BlendShapeDesc_) {
-        delete BlendShapeDesc_;
-    }
 }
 
 int RenderObject::SetModel(Model* model_) {
@@ -104,22 +101,11 @@ void RenderObject::SetMatrixPalette(Matrix4x4 * palette_, unsigned int NumMatrix
     palette.Size = sizeof(Matrix4x4) * NumMatrix_;
 }
 
-void RenderObject::SetBlendShapeWeights(float * indics, float * weights,   unsigned int count) 
-{
-    BlendShapeDesc_->num_weiths = count;
-    for (int i = 0; i < count; i++) {
-        BlendShapeDesc_->entries[i].index = indics[i];
-        BlendShapeDesc_->entries[i].weight = weights[i];
-    }
-    blendshape_.Size = count * sizeof(BSWeight) + 4 * sizeof(float);
+void RenderObject::SetBlendShapeDesc(BSDesc * desc) {
+    blendshape_.Data = desc;
+    blendshape_.Size = sizeof(BSWeight) * (int)desc->num_weiths + sizeof(float) * 4;
 }
 
 void RenderObject::SetBlendShape(BlendShape * Shape) {
     BlendShape_ = Shape;
-    if (!BlendShapeDesc_) {
-        BlendShapeDesc_ = new BSDesc;
-        BlendShapeDesc_->num_shapes = Shape->ShapeCount_;
-        BlendShapeDesc_->buffer_stride = Shape->ShapeStride_;
-        blendshape_.Data = BlendShapeDesc_;
-    }
 }

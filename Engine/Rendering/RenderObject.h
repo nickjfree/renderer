@@ -33,8 +33,6 @@ protected:
     ShaderParameterArray blendshape_;
     // blendshape
     BlendShape * BlendShape_;
-    // blendshape description data
-    BSDesc * BlendShapeDesc_;
 public:
     RenderObject();
     virtual ~RenderObject();
@@ -51,10 +49,10 @@ public:
     virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);
     // set matrix palette
     void SetMatrixPalette(Matrix4x4 * palette, unsigned int NumMatrix);
+    // set blendshape desc
+    void SetBlendShapeDesc(BSDesc * desc);
     // set blendshap data
     void SetBlendShape(BlendShape * Shape);
-    // set blendshape parameters
-    void SetBlendShapeWeights(float * indics, float * weights, unsigned int count);
 };
 
 #endif

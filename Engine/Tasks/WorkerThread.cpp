@@ -54,7 +54,7 @@ int WorkerThread::Start() {
 
 
 int WorkerThread::Terminate() {
-    TerminateThread(hThread, -1);
+    // TerminateThread(hThread, -1);
     return 0;
 }
 

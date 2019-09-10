@@ -22,7 +22,7 @@ private:
     unsigned int hash(const char * buff);
 
 public:
-    StringHash() {};
+    StringHash(): value(0) {};
     StringHash(const char * buff);
     StringHash(const StringHash& rh) { value = rh.value; };
     inline operator int() const;

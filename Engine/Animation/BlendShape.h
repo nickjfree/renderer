@@ -19,7 +19,7 @@ typedef struct BSWeight
     // shape weight
     float weight;
     // padding
-    float padding0;
+    int used;
     // padding
     float padding1;
 }BSWeight;

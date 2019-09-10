@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ExampleBrowser">
+      <UniqueIdentifier>{D5459597-C113-899D-AAA7-F9C396146502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RobotSimulator">
+      <UniqueIdentifier>{4B8EFD60-375C-F166-20F0-618D0C5DCDCB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SharedMemory">
+      <UniqueIdentifier>{754556CF-61A8-E573-0A2E-1E2AF66FB1F6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdPartyLibs">
+      <UniqueIdentifier>{9AF1E211-86BF-D617-6F53-473E5BC0B27C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdPartyLibs\glad">
+      <UniqueIdentifier>{E1D42825-4D36-0633-D6A3-4CE542043DF2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\examples\RobotSimulator\MinitaurSetup.h">
+      <Filter>RobotSimulator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\RobotSimulator\b3RobotSimulatorClientAPI.h">
+      <Filter>RobotSimulator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\SharedMemory\PhysicsClientTCP.h">
+      <Filter>SharedMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\SharedMemory\PhysicsClientTCP_C_API.h">
+      <Filter>SharedMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\SharedMemory\PhysicsClientUDP.h">
+      <Filter>SharedMemory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\SharedMemory\PhysicsClientUDP_C_API.h">
+      <Filter>SharedMemory</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\examples\ExampleBrowser\InProcessExampleBrowser.cpp">
+      <Filter>ExampleBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\RobotSimulator\MinitaurSetup.cpp">
+      <Filter>RobotSimulator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\RobotSimulator\RobotSimulatorMain.cpp">
+      <Filter>RobotSimulator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\RobotSimulator\b3RobotSimulatorClientAPI.cpp">
+      <Filter>RobotSimulator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsClientTCP.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsClientTCP_C_API.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsClientUDP.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsClientUDP_C_API.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsServerExample.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\PhysicsServerExampleBullet2.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\SharedMemory\SharedMemoryInProcessPhysicsC_API.cpp">
+      <Filter>SharedMemory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\examples\ThirdPartyLibs\glad\gl.c">
+      <Filter>ThirdPartyLibs\glad</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

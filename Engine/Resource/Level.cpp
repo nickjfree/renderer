@@ -259,16 +259,24 @@ int Level::InitScript() {
         }
         if (Object->GetName() == "Plane") {
             PhysicsObject * Physics = new PhysicsObject(context);
+            // test blendshape
+            Animator * animator = new Animator(context);
+            Object->AddComponent(animator);
             // creat convext hulls for collision shape
             MeshRenderer * render = (MeshRenderer *)Object->GetComponent("Renderer");
             // set test model and blendshapes
             Model * model = GetModel(4);
             BlendShape * shape = GetBlendShape(0);
             render->SetModel(model);
-            render->SetBlendShape(shape);
+            // test blendshape
+            animator->SetBlendShape(shape);
             float test_weights[3] = { 0.5f, 0.5f, 1.0f };
             float test_indics[3] = { 0, 1, 2};
-            render->SetBlendShapeWeights(test_indics, test_weights, 3);
+            for (auto i = 0; i < 3; i++) {
+                animator->SetBlendShapeWeight(i, test_weights[i]);
+            }
+
+            // render->SetBlendShapeWeights(test_indics, test_weights, 3);
             //render->SetTransparente();
         }
         if (Object->GetName() == "Player") {

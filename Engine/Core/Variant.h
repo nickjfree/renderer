@@ -15,7 +15,7 @@ public:
     template <class T>	inline T& as() {
         return (T&)data;
     };
-    Variant() {};
+	Variant() : data{0} {};
     ~Variant() {};
 };
 

@@ -23,7 +23,6 @@ void MeshRenderer::Init() {
 }
 
 int MeshRenderer::OnAttach(GameObject * GameObj) {
-    SubscribeTo(Owner, 200);
     Scene * scene = GameObj->GetScene();
     // Notify partition
     Event * Evt = Event::Create();
@@ -47,15 +46,6 @@ int MeshRenderer::OnDestroy(GameObject * GameObj) {
     Evt->Recycle();
     // call base destroy
     Renderer::OnDestroy(GameObj);
-    return 0;
-}
-
-int MeshRenderer::HandleEvent(Event * Ev) {
-    // test code for now
-    if (Ev->EventId == 200) {
-        Model * model = Ev->EventParam[hash_string::model].as<Model*>();
-        renderObject->SetModel(model);
-    }
     return 0;
 }
 

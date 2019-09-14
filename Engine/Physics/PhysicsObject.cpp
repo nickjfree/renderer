@@ -122,8 +122,8 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
         InvertCenter.Translate(CenterOffset * -1.0f);
     }
     if (!Shape) {
+		Shape = new CollisionShape();
         if (Clusters) {
-            Shape = new CollisionShape();
             btCompoundShape * Compound = new btCompoundShape();
             for (int i = 0; i < Clusters; i++) {
                 btConvexHullShape * Convex = new btConvexHullShape(ConvexHulls[i].VBuffer, ConvexHulls[i].VNum);
@@ -136,17 +136,17 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
                 trans.setOrigin(c);
                 Compound->addChildShape(trans, Convex);
             }
-            Shape->Shapes.Compound = Compound;
-            model->SetUserData(Shape);
+            Shape->Shapes.Compound = Compound;       
         }
         else {
             // use box shape as default shape
-            Shape = new CollisionShape();
             AABB& aabb = model->GetMesh(0)->GetAABB();
             Vector3& extent = aabb.InitExtents;
             Shape->Shapes.Box = new btBoxShape(btVector3(extent.x, extent.y, extent.z));
             CenterOffset = Vector3(0, 0, 0);
         }
+		// set shape to model
+		model->SetUserData(Shape);
     }
     // this shape is shared by many physics objects
     Shape->Shared = 1;

@@ -3,7 +3,7 @@
 
 USING_ALLOCATER(GameObject)
 
-GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_) {
+GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_), Parent(nullptr), Root(nullptr) {
     Sibling.Owner = this;
     Children.Owner = this;
 }

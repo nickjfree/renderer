@@ -38,13 +38,16 @@ function test_create()
 	py:CreateShapeFromModel(md)
 	g:AddComponent(py)
 	engine.print(g:GetObjectId())
-	-- g:Destroy()
-	--engine.collectgarbage()	
+	g:Destroy()
+	engine.collectgarbage()	
 end
 
 
 
 function update(ms)
+
+    test_create()
+
 	if (active ~= true)
 	then
 		return

@@ -58,6 +58,16 @@ int MeshRenderer::Load(void * Raw, Level * level) {
     return sizeof(RenderEntry);
 }
 
+int MeshRenderer::Save(Serializer* saveFile, Level* level) {
+	RenderEntry Entry;
+	strcpy_s(Entry.Info.TypeName, "Renderer");
+	Entry.ModelIndex = renderObject->GetModel()->LevelId;
+	Entry.MaterialIndex = renderObject->GetMaterial()->LevelId;
+	Entry.pad1 = Entry.pad2 = 0;
+	saveFile->Write(&Entry, sizeof(Entry));
+	return 0;
+}
+
 int MeshRenderer::OnTransform(GameObject * GameObj) {
     // set init position
     renderObject->SetPosition(GameObj->GetWorldTranslation());

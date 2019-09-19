@@ -8,7 +8,7 @@ GameObject::GameObject(Context * context_) : Dirty(0), EventNode(context_), Pare
     Children.Owner = this;
 }
 
-GameObject::GameObject(Context * context_, String& Name) : Dirty(0), EventNode(context_) {
+GameObject::GameObject(Context * context_, const String& Name) : Dirty(0), EventNode(context_) {
     this->Name = Name;
     Sibling.Owner = this;
     Children.Owner = this;
@@ -128,7 +128,7 @@ void GameObject::Roll(float rad) {
     MakeDirty();
 }
 
-Component * GameObject::CreateComponent(String& type) {
+Component * GameObject::CreateComponent(const String& type) {
     Component * comp = (Component*)context->CreateObject(type);
     return comp;
 }
@@ -146,7 +146,7 @@ bool GameObject::AddComponent(Component * component) {
     }
 }
 
-GameObject * GameObject::CreateGameObject(String& Name) {
+GameObject * GameObject::CreateGameObject(const String& Name) {
     GameObject * SubObject = new GameObject(context, Name);
     SubObject->Sibling.InsertAfter(&Children);
     SubObject->Root = Root;
@@ -156,10 +156,6 @@ GameObject * GameObject::CreateGameObject(String& Name) {
     // insert to scene
     Root->AddGameObject(SubObject);
     return SubObject;
-}
-
-GameObject * GameObject::CreateGameObject(char * Name) {
-    return CreateGameObject((String&)String(Name));
 }
 
 void GameObject::Destroy() {
@@ -257,4 +253,20 @@ void GameObject::MakeClean() {
         // notity component
         NotifyTransform();
     }
+}
+
+int GameObject::Save(Serializer* levelFile, Level* level) {
+	ObjectEntry Entry{};
+	strcpy_s(Entry.Name, Name.ToStr());
+	Entry.Position = GlobalTranslate;
+	Entry.Rotation = GlobalRotation;
+	Entry.Scale = Vector3(1, 1, 1);
+	Entry.NumComponents = Components.Size();
+	// write gameobject entry
+	levelFile->Write(&Entry, sizeof(Entry));
+
+	for (auto iter = Components.Begin(); iter != Components.End(); iter++) {
+
+	}
+	return 0;
 }

@@ -36,6 +36,8 @@ public:
     virtual int OnDestroy(GameObject * GameObj);
     // load from raw filedata and level interface
     virtual int Load(void * Raw, Level * level);
+	// save to raw data
+	virtual int Save(Serializer* levelFile, Level * level);
 };
 
 #endif

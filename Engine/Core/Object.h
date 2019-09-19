@@ -5,6 +5,7 @@
 #include "Str.h"
 #include "Context.h"
 #include "Allocater.h"
+#include "..//IO/Serializer.h"
 
 // typedefine 
 
@@ -19,7 +20,10 @@ protected:
     unsigned int RefCount;
     unsigned int ObjectId;
 public:
+	// destroyed flag
     bool Destroyed;
+	// id in level
+	int LevelId;
 public:
     Object(Context * context_);
     virtual ~Object();

@@ -11,7 +11,7 @@
 #include "Container\HashMap.h"
 #include "Container\Vector.h"
 #include "LevelDesc.h"
-
+#include "..\\IO\Serializer.h"
 
 typedef struct BoneInfo {
     int parent;
@@ -76,11 +76,8 @@ private:
     int Loaded;
     // scene
     Scene * scene;
-
-    Mesh * mesh;
-    Mesh * light_mesh;
-    Material * material;
-    Material * light_material;
+	// serializer
+	Serializer Serializer_;
 
 private:
     int InitGameObjects();
@@ -120,6 +117,8 @@ public:
     void Update(int ms);
     // list models on console
     void ListModels();
+	// save level
+	void Save(const String& file);
 };
 
 #endif

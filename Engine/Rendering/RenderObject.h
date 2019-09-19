@@ -44,6 +44,8 @@ public:
     void SetTransparent();
     // get model
     Model * GetModel() const { return model; }
+	// get material
+	Material* GetMaterial() const{ return material; }
     // get render mesh
     virtual int GetRenderMesh(int Stage, int Lod) const;
     virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera * Camera, RenderContext * Context);

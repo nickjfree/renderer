@@ -37,6 +37,8 @@ public:
     virtual int MeshRenderer::OnTransform(GameObject * GameObj);
     // load
     virtual int Load(void * Raw, Level * level);
+	// save
+	virtual int Save(Serializer* saveFile, Level* level);
     // set model
     void SetModel(Model * model) { renderObject->SetModel(model); }
     // set material

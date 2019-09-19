@@ -137,6 +137,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="IO\FileLoader.h" />
     <ClInclude Include="IO\ResourceLoader.h" />
     <ClInclude Include="IO\Deserializer.h" />
+    <ClInclude Include="IO\Serializer.h" />
     <ClInclude Include="Math\Collision.h" />
     <ClInclude Include="Math\LinearMath.h" />
     <ClInclude Include="Misc\h3d\h3d.h" />
@@ -255,6 +256,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="IO\FileLoader.cpp" />
     <ClCompile Include="IO\ResourceLoader.cpp" />
     <ClCompile Include="IO\Deserializer.cpp" />
+    <ClCompile Include="IO\Serializer.cpp" />
     <ClCompile Include="Math\LinearMath.cpp" />
     <ClCompile Include="Physics\GLDebuger\GLDebugDrawer.cpp" />
     <ClCompile Include="Physics\GLDebuger\GLDebugFont.cpp" />

@@ -2,7 +2,7 @@
 #include <Windows.h>
 
 
-Object::Object(Context * context_) :RefCount(1), context(context_), ObjectId(-1), Destroyed(0) {
+Object::Object(Context * context_) :RefCount(1), context(context_), ObjectId(-1), Destroyed(0), LevelId(-1) {
 }
 
 
@@ -30,4 +30,3 @@ unsigned int Object::GetObjectId() const {
 void Object::SetObjectId(unsigned int id) {
     ObjectId = id;
 }
-

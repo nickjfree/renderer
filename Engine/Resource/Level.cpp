@@ -180,6 +180,8 @@ int Level::OnCreateComplete(Variant& Parameter) {
 int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
     GPUResource * resource = (GPUResource*)Sub;
     int Index = Param.as<int>();
+	// set level id for resource
+	resource->LevelId = Index;
     if (resource->ResourceType == R_MESH) {
         printf("finish  mesh %s\n", resource->GetUrl().ToStr());
         Meshs[Index] = (Mesh*)resource;
@@ -346,4 +348,9 @@ void Level::ListModels() {
         Model * model = Models[i];
         printf("%d\t%s\n", i, model->GetName());
     }
+}
+
+void Level::Save(const String& file) {
+	Serializer_.Create(file);
+	Serializer_.Close();
 }

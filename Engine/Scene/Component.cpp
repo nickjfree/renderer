@@ -35,6 +35,10 @@ int Component::Load(void * Raw, Level * level) {
     return 0;
 }
 
+int Component::Save(Serializer* levelFile, Level* level) {
+	return 0;
+}
+
 int Component::OnTransform(GameObject * GameObj) {
     return 0;
 }

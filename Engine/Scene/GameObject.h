@@ -24,7 +24,7 @@ class GameObject : public EventNode
     DECLAR_ALLOCATER(GameObject)
 public:
     GameObject(Context * context_);
-    GameObject(Context * context, String& Name);
+    GameObject(Context * context, const String& Name);
     ~GameObject();
 
     // get global transform of the gameobject
@@ -73,10 +73,9 @@ public:
     // create and add a component with template argument
     template <class T> 	T* CreateComponent();
     // create component, but not add it to the gameobject
-    Component * CreateComponent(String& type);
+    Component * CreateComponent(const String& type);
     // create sub gameobject
-    GameObject * CreateGameObject(String& Name);
-    GameObject * CreateGameObject(char * Name);
+    GameObject * CreateGameObject(const String& Name);
     // attach subobject
     void Attach(GameObject * Sub);
     // Get parent
@@ -97,6 +96,8 @@ public:
     int SendEvent(int Event);
     // update
     int Update(int Delta);
+	//  save
+	int Save(Serializer* levelFile, Level* level);
 protected:
     // name
     String Name;

@@ -55,6 +55,8 @@ private:
     void Remove(KeyValue* kv) {
         kv->Prev->Next = kv->Next;
         kv->Next->Prev = kv->Prev;
+		// destruct kv
+		delete kv;
     }
 
 public:
@@ -67,6 +69,7 @@ public:
         Mask = HashSize - 1;
     }
     virtual ~HashMap() {
+		// release all the entries
 
     }
 

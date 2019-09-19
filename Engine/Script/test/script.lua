@@ -37,7 +37,7 @@ function test_create()
 	py = engine.scene:CreateComponent("PhysicsObject")
 	py:CreateShapeFromModel(md)
 	g:AddComponent(py)
-	engine.print(g:GetObjectId())
+	-- engine.print(g:GetObjectId())
 	g:Destroy()
 	engine.collectgarbage()	
 end

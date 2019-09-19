@@ -16,7 +16,7 @@ GameObject::GameObject(Context * context_, const String& Name) : Dirty(0), Event
 
 
 GameObject::~GameObject() {
-    printf_s("destruct game object %d \n", ObjectId);
+    //printf_s("destruct game object %d \n", ObjectId);
 }
 
 

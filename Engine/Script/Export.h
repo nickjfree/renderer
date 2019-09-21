@@ -10,6 +10,7 @@
 #include "Input\InputSystem.h"
 #include "Physics\PhysicsObject.h"
 #include "Animation\Animator.h"
+#include "Resource\ResourceCache.h"
 
 
 // proxy Scene
@@ -87,5 +88,10 @@ BEGIN_PROXY(Animator)
 	METHOD(GetBlendingNode, &Animator::GetBlendingNode)
 	METHOD(SetBlendShapeWeight, (void (Animator::*)(const String&, float))&Animator::SetBlendShapeWeight)
 END_PROXY()
+
+//BEGIN_PROXY(ResourceCache)
+//	METHOD(AsyncLoadResource, &ResourceCache::AsyncLoadResource)
+//	METHOD(AsyncUnLoadResource, &ResourceCache::AsyncUnLoadResource)
+//END_PROXY()
 
 #endif 

@@ -202,6 +202,12 @@ namespace D3D12API {
         //Rasterizer status
         virtual int CreateRasterizerStatus(R_RASTERIZER_DESC* Desc);
 
+
+		// resource destrcutors
+		
+		// destroy geometry data. free gpu resource
+		virtual int DestroyGeometry(int Id);
+
         // set 
         virtual void SetRenderTargets(int Count, int * Targets);
 

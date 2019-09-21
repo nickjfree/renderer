@@ -55,8 +55,9 @@ private:
     void Remove(KeyValue* kv) {
         kv->Prev->Next = kv->Next;
         kv->Next->Prev = kv->Prev;
-		// destruct kv
-		delete kv;
+		// destruct kv, call destructor explicitly
+		kv->~KeyValue();
+		Alloc.Free(kv);
     }
 
 public:

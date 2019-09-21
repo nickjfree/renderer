@@ -75,6 +75,10 @@ public:
         Iter.ptr = &Head;
         return Iter;
     }
+
+	bool Empty() {
+		return Begin() == End();
+	}
 };
 
 
@@ -87,7 +91,12 @@ template <class T> List<T>::List() {
 
 
 template <class T> List<T>::~List() {
-    // waht to do?  destruct nodes and decref?
+    //  destruct all node
+	auto iter = Begin();
+	while (iter != End()) {
+		Remove(iter);
+		iter = Begin();
+	}
 }
 
 template <class T> void List<T>::Insert(T * Item) {

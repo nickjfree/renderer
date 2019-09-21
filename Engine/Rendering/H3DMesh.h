@@ -32,6 +32,8 @@ public:
     virtual int OnSerialize(Deserializer& deserializer);
     virtual int OnLoadComplete(Variant& Data);
     virtual int OnCreateComplete(Variant& Data);
+	virtual int AsyncUnLoad();
+	virtual int OnDestroy(Variant& Data);
 };
 
 

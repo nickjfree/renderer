@@ -4,6 +4,8 @@
 #include "Tasks\Task.h"
 #include "Resource\Resource.h"
 #include "Resource\FileMappingLoader.h"
+#include "Resource\ResourceCache.h"
+
 /*
     Resource Loading task
 */
@@ -15,7 +17,9 @@ class ResourceTask : public Task
 public:
     Resource * resource;
     Resource * caller;
+	ResourceCache* cache;
     Variant Param;
+	bool Unload;
 public:
     ResourceTask();
     virtual ~ResourceTask();

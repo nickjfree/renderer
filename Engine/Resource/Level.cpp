@@ -136,6 +136,7 @@ int Level::OnSerialize(Deserializer& deserializer) {
     DepCount += 1;  // add 1 skeleton
     DepCount += 2;  // and 2 animation
     DepCount += 1;  // and 1 blendshape
+	DepCount += 1;  // and 1 test load
     return 0;
 }
 
@@ -174,6 +175,10 @@ int Level::OnCreateComplete(Variant& Parameter) {
     Param.as<int>() = 0;
     BlendShapes.PushBack(empty_blendshape);
     Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
+
+	// test load
+	Param.as<int>() = NumMeshes;
+	Cache->AsyncLoadResource("Mesh\\chip.pack\\resistor\\0", this, Param);
     return 0;
 }
 
@@ -340,6 +345,10 @@ void Level::Update(int ms) {
     PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
     //// for debug hack. this shold be done with camera scripts to set debug window view
     Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
+	// unload test
+	Variant Param{};
+	auto cache = context->GetSubsystem<ResourceCache>();
+	cache->AsyncUnLoadResource("Mesh\\chip.pack\\resistor\\0", this, Param);
 }
 
 void Level::ListModels() {

@@ -1441,3 +1441,14 @@ void D3D12Render::ShowPerformanceInfo() {
     SetWindowTextA(hWnd, WindowTitle);
     Performance.DrawCallCount = 0;
 }
+
+
+int D3D12Render::DestroyGeometry(int Id) {
+	if (Id != -1) {
+		auto Item = Geometries.GetItem(Id);
+		Item.IndexResource->Release();
+		Item.VertexResource->Release();
+		Geometries.MarkFree(Id);
+	}
+	return 0;
+}

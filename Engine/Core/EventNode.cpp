@@ -76,6 +76,10 @@ int EventNode::RemoveEventHandler(int EventId, EventNode* Handler) {
             if (*HandlerIter == Handler) {
                 Handlers.Remove(HandlerIter);
                 Handler->DecRef();
+				if (Handlers.Empty()) {
+					// remove key
+					EventChannel.Erase(EventId);
+				}
                 return 0;
             }
         }

@@ -75,3 +75,8 @@ EXPORT_CLASS(Animator)
 	EXPORT(Animator, GetBlendingNode)
 	EXPORT(Animator, SetBlendShapeWeight)
 END_EXPORT()
+
+//EXPORT_CLASS(ResourceCache)
+//	EXPORT(ResourceCache, AsyncLoadResource)
+//	EXPORT(ResourceCache, AsyncUnLoadResource)
+//END_EXPORT()

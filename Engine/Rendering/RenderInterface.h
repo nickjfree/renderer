@@ -23,14 +23,21 @@ public:
     virtual int Initialize(int Widthm, int Height) { return 0; }
     /* Resource Creation  */
 
-        // create texture2d. with or without initial data.
+    // create texture2d. with or without initial data.
     virtual int CreateTexture2D(R_TEXTURE2D_DESC* Desc, void * RawData, int Size, int DataFlag) { return -1; };
+
+	// destroy texture 2D
+	virtual int DestroyTexture2D(int Id) { return -1; };
 
     // create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
     virtual int CreateGeometry(void * VBuffer, unsigned int VBSize, unsigned int VertexSize, void * IBuffer, unsigned int IBSize, R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top) {
         Debug("creategeometry\n");
         return -1;
     }
+
+	// destroy geometry data. free gpu resource
+	virtual int DestroyGeometry(int Id) { return 0; };
+
     // create constant buffer
     virtual int CreateConstantBuffer(unsigned int Size) { return -1; }
     // create just a buffer. may be used for ComputeShader and CUDA
@@ -119,6 +126,7 @@ public:
     virtual int IssueQuery(R_QUERY query, void *Result, unsigned int Len) { return 0; }
     // end query
     virtual void EndQuery() {}
+
 };
 
 #endif

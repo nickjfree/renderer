@@ -30,13 +30,14 @@ void Resource::AddOwner(Resource * owner) {
     Owner.Insert(owner);
 }
 
+void Resource::RemoveOwner(Resource* owner) {
+	Owner.Remove(owner);
+}
+
 int Resource::NotifyOwner(int Message, Variant& Param) {
-    auto Iter = Owner.Begin();
-    while (Iter != Owner.End()) {
-        Resource * owner = *Iter;
+	for(auto iter = Owner.Begin();  iter != Owner.End(); iter++) {
+        Resource * owner = *iter;
         owner->OnSubResource(Message, this, Param);
-        Owner.Remove(Iter);
-        Iter = Owner.Begin();
     }
     return 0;
 }

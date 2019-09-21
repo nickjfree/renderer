@@ -205,3 +205,15 @@ void H3DMesh::ComputeConvexHull() {
     NumConvex = static_cast<int>(nClusters);
 }
 
+
+int H3DMesh::AsyncUnLoad() {
+	// free data in read from file
+	DeSerial.Release();
+	// delete geometry id from renderer
+	renderinterface->DestroyGeometry(id);
+	return 0;
+}
+
+int H3DMesh::OnDestroy(Variant& Data) {
+	return 0;
+}

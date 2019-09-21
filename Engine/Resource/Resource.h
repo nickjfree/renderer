@@ -60,12 +60,13 @@ public:
     enum Status {
         S_LOADING,
         S_ACTIVED,
-        S_UNLOADING
+        S_UNLOADING,
+		S_DESTORYED,
     };
 
     enum Message {
         RM_LOAD,
-        RM_UNLOAD
+        RM_UNLOAD,
     };
     int ResourceType;
 public:
@@ -79,7 +80,9 @@ public:
     void SetLoader(ResourceLoader * loader) { Loader = loader; };
     // add parent resource, resource that depende on this resource
     void AddOwner(Resource * Owner);
-    // notify owner 
+	// remove parent
+	void RemoveOwner(Resource* Owner);
+	// notify owner 
     int NotifyOwner(int Message, Variant& Param);
     // set resource url
     void SetUrl(String& URL);
@@ -96,10 +99,12 @@ public:
     // on resource create complete(main thread)
     virtual int OnCreateComplete(Variant& Data) { NotifyOwner(RM_LOAD, Data); return 0; };
     virtual int AsyncUnLoad() { return 0; };
-    virtual int OnDestory(Variant& Data) { return 0; };
+    virtual int OnDestroy(Variant& Data) { return 0; };
     virtual int OnUnLoadComplete(Variant& Data) { return 0; };
     // on sub resource create complete(main thread)
     virtual int OnSubResource(int Message, Resource * Sub, Variant& Param) { return 0; };
+
+
 };
 
 #endif

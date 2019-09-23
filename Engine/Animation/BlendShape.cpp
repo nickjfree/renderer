@@ -68,8 +68,6 @@ int BlendShape::OnSubResource(int Message, Resource * Sub, Variant & Param)
         };
         // create buffer in gpu, for blending shader resource
         id = renderinterface->CreateBuffer(&desc);
-        // notify 
-        NotifyOwner(RM_LOAD, OwnerParameter_);
     }
     return 0;
 }
@@ -89,8 +87,6 @@ int BlendShape::OnCreateComplete(Variant & Parameter)
     }
     // reserve vector size
     BlendShapes_.Resize(ShapeCount_, 1);
-    // defer owner parameter
-    OwnerParameter_ = Parameter;
     return 0;
 }
 

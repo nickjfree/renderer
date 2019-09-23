@@ -98,7 +98,6 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 
 
 int H3DMesh::OnCreateComplete(Variant& Data) {
-    NotifyOwner(RM_LOAD, Data);
     return 0;
 }
 

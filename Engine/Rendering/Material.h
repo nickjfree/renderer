@@ -31,8 +31,6 @@ private:
     xml_document<> * xml_doc;
     // raw xml data
     void * RawXML;
-    // param
-    Variant OwnerParameter;
 public:
     Material(Context * context);
     ~Material();
@@ -45,6 +43,7 @@ public:
     virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);
     Dict& GetParameter() { return Parameters; }
     Shader * GetShader() { return ShaderProgram; }
+	virtual int OnDestroy(Variant& Data);
 };
 
 #endif

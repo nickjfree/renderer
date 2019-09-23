@@ -346,9 +346,7 @@ void Level::Update(int ms) {
     //// for debug hack. this shold be done with camera scripts to set debug window view
     Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
 	// unload test
-	Variant Param{};
-	auto cache = context->GetSubsystem<ResourceCache>();
-	cache->AsyncUnLoadResource("Mesh\\chip.pack\\resistor\\0", this, Param);
+	// Clear();
 }
 
 void Level::ListModels() {
@@ -362,4 +360,25 @@ void Level::ListModels() {
 void Level::Save(const String& file) {
 	Serializer_.Create(file);
 	Serializer_.Close();
+}
+
+void Level::Clear() {
+	// get resource_cache
+	Variant Param{};
+	auto cache = context->GetSubsystem<ResourceCache>();
+	// clear model
+	for (auto iter = Models.Begin(); iter != Models.End(); iter++) {
+		delete * iter;
+	}
+	// clear mesh
+	for (auto iter = Meshs.Begin(); iter != Meshs.End(); iter++) {
+		auto resource = *iter;
+		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
+	}
+	// clear materials
+	for (auto iter = Materials.Begin(); iter != Materials.End(); iter++) {
+		auto resource = *iter;
+		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
+	}
+	Loaded = 0;
 }

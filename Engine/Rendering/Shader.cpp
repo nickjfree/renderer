@@ -218,8 +218,6 @@ int Shader::OnCreateComplete(Variant& Parameter) {
             //printf("Depth %d, Rasterizer %d Blend %d\n", pass.DepthStencil, pass.Rasterizer, pass.Blend);
         }
     }
-    // notify owner. materials
-    NotifyOwner(RM_LOAD, Parameter);
     return 0;
 }
 

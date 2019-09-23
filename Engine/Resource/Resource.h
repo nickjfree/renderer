@@ -45,6 +45,7 @@ protected:
     int DepCount;
     // serializer and deserializer
     Deserializer DeSerial;
+
 public:
     DECLAR_ALLOCATER(Resource);
     enum Type {
@@ -69,6 +70,8 @@ public:
         RM_UNLOAD,
     };
     int ResourceType;
+	// param
+	Variant OwnerParameter;
 public:
     Resource(Context* context);
     virtual ~Resource();
@@ -97,13 +100,15 @@ public:
     // on raw data parse complete(worker thread)
     virtual int OnLoadComplete(Variant& Data) { return 0; };
     // on resource create complete(main thread)
-    virtual int OnCreateComplete(Variant& Data) { NotifyOwner(RM_LOAD, Data); return 0; };
+    virtual int OnCreateComplete(Variant& Data) { return 0; };
+	// do unload
     virtual int AsyncUnLoad() { return 0; };
+	// called when unload finished
     virtual int OnDestroy(Variant& Data) { return 0; };
-    virtual int OnUnLoadComplete(Variant& Data) { return 0; };
     // on sub resource create complete(main thread)
     virtual int OnSubResource(int Message, Resource * Sub, Variant& Param) { return 0; };
-
+	// update status, notify owner if depcount==0
+	int UpdateStatus();
 
 };
 

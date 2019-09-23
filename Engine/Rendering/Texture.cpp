@@ -15,7 +15,6 @@ Texture::~Texture()
 
 
 int Texture::OnCreateComplete(Variant& Parameter) {
-    NotifyOwner(RM_LOAD, Parameter);
     return 0;
 }
 

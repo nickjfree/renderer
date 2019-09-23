@@ -38,7 +38,16 @@ int Resource::NotifyOwner(int Message, Variant& Param) {
 	for(auto iter = Owner.Begin();  iter != Owner.End(); iter++) {
         Resource * owner = *iter;
         owner->OnSubResource(Message, this, Param);
+		owner->UpdateStatus();
     }
     return 0;
 }
 
+
+int Resource::UpdateStatus() {
+	if (DepCount == 0) {
+		SetAsyncStatus(Resource::S_ACTIVED);
+		NotifyOwner(Resource::RM_LOAD, OwnerParameter);
+	}
+	return 0;
+}

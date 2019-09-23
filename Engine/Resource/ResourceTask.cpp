@@ -23,19 +23,23 @@ int ResourceTask::Work() {
 		resource->SetDeserializer(std::move(deserializer));
 		// on load complete
 		resource->OnLoadComplete(Param);
+
 	} else {
 		// do unload task
 		resource->AsyncUnLoad();
-
 	}
     return 0;
 }
 
 int ResourceTask::Complete() {
 	if (!Unload) {
-		//resource->OnLoadComplete(Param);
-		resource->SetAsyncStatus(Resource::S_ACTIVED);
+		// save owner param
+		resource->OwnerParameter = Param;
 		resource->OnCreateComplete(Param);
+		// update status, notify owner if depcount==0
+		resource->UpdateStatus();
+		
+		printf_s("resource %s created\n", resource->GetUrl().ToStr());
 	} else {
 		// unload complete
 		resource->SetAsyncStatus(Resource::S_DESTORYED);
@@ -45,6 +49,8 @@ int ResourceTask::Complete() {
 		cache->RemoveResource(resource);
 		// delete resource
 		delete resource;
+
+		printf_s("resource %s destroyed\n", resource->GetUrl().ToStr());
 	}
 
     return 0;

@@ -83,6 +83,10 @@ int ResourceCache::AsyncUnLoadResource(const String& URL, Resource* Caller, Vari
 	if (iter != Resources.End()) {
 		// found
 		Resource* sub = *iter;
+		if (sub->ResourceType == Resource::R_SHADER) {
+			// do not unload shaders
+			return 1;
+		}
 		if (sub->GetAsyncStatus() == Resource::S_ACTIVED) {
 			// resource actived, unload it
 			printf("cache unloading %s\n", URL.ToStr());

@@ -43,6 +43,9 @@ public:
     // create just a buffer. may be used for ComputeShader and CUDA
     virtual int CreateBuffer(R_BUFFER_DESC* desc) { return -1; }
 
+	// Destroy buffer
+	virtual int DestroyBuffer(int Id) { return -1; }
+
     // create input layout
     virtual int CreateInputLayout(R_INPUT_ELEMENT * Element, int Count, void * ShaderCode, int Size) { return -1; };
     // create shaders 

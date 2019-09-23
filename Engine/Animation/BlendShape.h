@@ -62,9 +62,6 @@ public:
     // shape count
     int ShapeCount_;
     
-private:
-    // 
-    Variant OwnerParameter_;
 public:
     BlendShape(Context * context);
     virtual ~BlendShape();

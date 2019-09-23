@@ -1452,3 +1452,36 @@ int D3D12Render::DestroyGeometry(int Id) {
 	}
 	return 0;
 }
+
+
+int D3D12Render::DestroyBuffer(int Id) {
+	if (Id != -1) {
+		auto Item = Buffers.GetItem(Id);
+		if (Item.MultiResource) {
+			for (auto i = 0; i < NUM_FRAMES; i++) {
+				Item.BufferResource[i]->Release();
+			}
+		} else {
+			Item.BufferResource[0]->Release();
+		}
+		Buffers.MarkFree(Id);
+	}
+	return 0;
+}
+// destroy texture
+
+int D3D12Render::DestroyTexture(int Id) {
+	if (Id != -1) {
+		auto Item = Textures.GetItem(Id);
+		if (Item.MultiResource) {
+			for (auto i = 0; i < NUM_FRAMES; i++) {
+				Item.Texture[i]->Release();
+			}
+		}
+		else {
+			Item.Texture[0]->Release();
+		}
+		Textures.MarkFree(Id);
+	}
+	return 0;
+}

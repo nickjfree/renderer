@@ -207,6 +207,12 @@ namespace D3D12API {
 		
 		// destroy geometry data. free gpu resource
 		virtual int DestroyGeometry(int Id);
+		// destroy buffer
+
+		virtual int DestroyBuffer(int Id);
+		// destroy texture
+
+		virtual int DestroyTexture(int Id);
 
         // set 
         virtual void SetRenderTargets(int Count, int * Targets);

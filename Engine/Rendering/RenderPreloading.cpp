@@ -1,6 +1,7 @@
 #include "RenderPreloading.h"
 
 
+USING_ALLOCATER(RenderPreloading)
 
 RenderPreloading::RenderPreloading(Context * context) : GPUResource(context)
 {

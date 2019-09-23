@@ -99,13 +99,21 @@ int Material::OnSubResource(int Message, Resource * Sub, Variant& Param) {
         DepCount--;
     }
     //printf("remain depcount %d\n", DepCount);
-    if (!DepCount) {
-        //printf("finish material\n");
-        NotifyOwner(RM_LOAD, OwnerParameter);
-    }
     return 0;
 }
 
 int Material::Compile(BatchCompiler * Compiler, int Stage, int Lod) {
     return 0;
+}
+
+
+int Material::OnDestroy(Variant& Data) {
+	// unload all textures 
+	auto cache = context->GetSubsystem<ResourceCache>();
+	for (auto iter = Dependencies.Begin(); iter != Dependencies.End(); iter++) {
+		auto kv = *iter;
+		cache->AsyncUnLoadResource(kv.key, this, Data);
+	}
+	DeSerial.Release();
+	return 0;
 }

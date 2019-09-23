@@ -119,6 +119,8 @@ public:
     void ListModels();
 	// save level
 	void Save(const String& file);
+	// unload resource
+	void Clear();
 };
 
 #endif

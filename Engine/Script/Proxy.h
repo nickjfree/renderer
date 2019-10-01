@@ -3,7 +3,7 @@
 
 #include "LuaStack.h"
 #include "../Core/Object.h"
-#include <typeinfo.h>
+//#include <typeinfo.h>
 
 template <typename T, typename FuncType = T>
 struct MemberFunctor;

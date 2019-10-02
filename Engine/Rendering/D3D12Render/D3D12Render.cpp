@@ -1470,7 +1470,7 @@ int D3D12Render::DestroyBuffer(int Id) {
 }
 // destroy texture
 
-int D3D12Render::DestroyTexture(int Id) {
+int D3D12Render::DestroyTexture2D(int Id) {
 	if (Id != -1) {
 		auto Item = Textures.GetItem(Id);
 		if (Item.MultiResource) {

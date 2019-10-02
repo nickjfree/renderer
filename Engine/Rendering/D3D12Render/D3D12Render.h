@@ -212,7 +212,7 @@ namespace D3D12API {
 		virtual int DestroyBuffer(int Id);
 		// destroy texture
 
-		virtual int DestroyTexture(int Id);
+		virtual int DestroyTexture2D(int Id);
 
         // set 
         virtual void SetRenderTargets(int Count, int * Targets);

@@ -30,18 +30,25 @@ ResourceCache::~ResourceCache()
 
 void ResourceCache::DoAsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter) {
     // create resource from url
-    Resource * resource = CreateResource(URL);
+	auto iter = Resources.Find(URL);
+	Resource * resource = nullptr;
+	if (iter != Resources.End()) {
+		resource = *iter;
+	} else {
+		resource = CreateResource(URL);
+	}
     if (resource) {
         WorkQueue * Queue = context->GetSubsystem<WorkQueue>();
         resource->SetAsyncStatus(Resource::S_LOADING);
         if (Caller) {
-            resource->AddOwner(Caller);
+            resource->AddOwner(Caller, Parameter);
         }
         Resources[URL] = resource;
         ResourceTask * task = ResourceTask::Create();
         task->resource = resource;
         task->Param = Parameter;
 		task->cache = this;
+		task->Unload = false;
         Queue->QueueTask(task);
     }
 }
@@ -53,19 +60,23 @@ int ResourceCache::AsyncLoadResource(const String& URL, Resource * Caller, Varia
         Resource * sub = *Iter;
         if (Caller) {
             if (sub->GetAsyncStatus() == Resource::S_ACTIVED) {
-				// already loaded, just notify the caller
+				// already loaded, just notify the caller and add owner
+				sub->AddOwner(Caller, Param);
                 Caller->OnSubResource(Resource::RM_LOAD, sub, Param);
 			} else if (sub->GetAsyncStatus() == Resource::S_LOADING) {
-				// loading nothing to be done
+				// loading nothing to be done, add owner
+				sub->AddOwner(Caller, Param);
 			} else if (sub->GetAsyncStatus() == Resource::S_DESTORYED) {
 				printf("cache loading %s\n", URL.ToStr());
 				DoAsyncLoadResource(URL, Caller, Param);
 			} else if (sub->GetAsyncStatus() == Resource::S_UNLOADING) {
 				// resource is UNLOADING, but we want it to be S_ACTIVED
-				// TODO: fix it
+				auto pending = new Resource::PendingLoad();
+				pending->Caller = Caller;
+				pending->Param = Param;
+				pending->Message = Resource::RM_LOAD;
+				sub->PendingOperations.Insert(pending);
 			}
-			// add owner
-			sub->AddOwner(Caller);
         }
     }
     else {
@@ -85,6 +96,7 @@ int ResourceCache::AsyncUnLoadResource(const String& URL, Resource* Caller, Vari
 		Resource* sub = *iter;
 		if (sub->ResourceType == Resource::R_SHADER) {
 			// do not unload shaders
+			sub->RemoveOwner(Caller);
 			return 1;
 		}
 		if (sub->GetAsyncStatus() == Resource::S_ACTIVED) {
@@ -92,10 +104,15 @@ int ResourceCache::AsyncUnLoadResource(const String& URL, Resource* Caller, Vari
 			printf("cache unloading %s\n", URL.ToStr());
 			DoAsyncUnLoadResource(sub, Caller, Parameter);
 		} else if (sub->GetAsyncStatus() == Resource::S_UNLOADING || sub->GetAsyncStatus() == Resource::S_DESTORYED) {
+			sub->RemoveOwner(Caller);
 			// already unloading nothing to be done
 		} else if (sub->GetAsyncStatus() == Resource::S_LOADING) {
 			// resource is LOADING, but we want it to be DESTORYED
-			// TODO: fix it
+			auto pending = new Resource::PendingLoad();
+			pending->Caller = Caller;
+			pending->Param = Parameter;
+			pending->Message = Resource::RM_UNLOAD;
+			sub->PendingOperations.Insert(pending);
 		}
 
 	}
@@ -166,8 +183,10 @@ Resource * ResourceCache::CreateResource(const String& URL) {
 }
 
 void ResourceCache::RemoveResource(Resource * resource) {
+	// remove it
 	auto Iter = Resources.Find(resource->GetUrl());
 	Resources.Erase(resource->GetUrl());
+	delete resource;
 }
 
 Resource *  ResourceCache::GetResource(const String& URL) {

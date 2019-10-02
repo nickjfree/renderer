@@ -35,6 +35,9 @@ int HashIndex::Resize(int HashSize, int IndexSize) {
         int * newIndex = new int[IndexSize];
         memcpy(newIndex, IndexEntry, sizeof(int)* this->IndexSize);
         memset(newIndex + IndexSize, -1, IndexSize - this->IndexSize);
+		if (IndexEntry) {
+			delete IndexEntry;
+		}
         IndexEntry = newIndex;
         this->IndexSize = IndexSize;
     }

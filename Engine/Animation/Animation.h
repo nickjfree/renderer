@@ -27,7 +27,6 @@ private:
     Vector<AnimationTrack> Tracks;
     Vector<AnimationClip> Clips;
     // up to 8 animation layers
-    AnimationStage * Stages[ANIMATION_LAYERS];
 
 public:
     Animation(Context * context);
@@ -36,6 +35,8 @@ public:
     virtual int OnSerialize(Deserializer& serializer);
     // on raw data parse complete(worker thread)
     virtual int OnLoadComplete(Variant& Data) { DeSerial.Release(); return 0; };
+	// on destroy
+	virtual int OnDestroy(Variant& Param);
     // get clip
     AnimationClip * GetAnimationClip(int Index) { return &Clips[Index]; };
 };

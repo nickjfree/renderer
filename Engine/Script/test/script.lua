@@ -11,7 +11,7 @@ function on_start()
 	gameobject:Subscribe(1025, "on_test")
 	gameobject:Subscribe(1026, "test_create")
 	position = gameobject:GetTranslation()
-	engine.print("on_start")
+	--engine.print("on_start")
 end
 
 

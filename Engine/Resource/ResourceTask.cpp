@@ -34,7 +34,6 @@ int ResourceTask::Work() {
 int ResourceTask::Complete() {
 	if (!Unload) {
 		// save owner param
-		resource->OwnerParameter = Param;
 		resource->OnCreateComplete(Param);
 		// update status, notify owner if depcount==0
 		resource->UpdateStatus();
@@ -43,13 +42,14 @@ int ResourceTask::Complete() {
 	} else {
 		// unload complete
 		resource->SetAsyncStatus(Resource::S_DESTORYED);
+		// handle pending load
+		auto has_pending = resource->HandlePendingLoad();
 		// on destroy
 		resource->OnDestroy(Param);
 		// remove resource from cache
-		cache->RemoveResource(resource);
-		// delete resource
-		delete resource;
-
+		if (!has_pending) {
+			cache->RemoveResource(resource);
+		}
 		printf_s("resource %s destroyed\n", resource->GetUrl().ToStr());
 	}
 

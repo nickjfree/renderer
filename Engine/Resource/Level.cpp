@@ -136,7 +136,7 @@ int Level::OnSerialize(Deserializer& deserializer) {
     DepCount += 1;  // add 1 skeleton
     DepCount += 2;  // and 2 animation
     DepCount += 1;  // and 1 blendshape
-	DepCount += 1;  // and 1 test load
+	//DepCount += 1;  // and 1 test load
     return 0;
 }
 
@@ -176,9 +176,7 @@ int Level::OnCreateComplete(Variant& Parameter) {
     BlendShapes.PushBack(empty_blendshape);
     Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
 
-	// test load
-	Param.as<int>() = NumMeshes;
-	Cache->AsyncLoadResource("Mesh\\chip.pack\\resistor\\0", this, Param);
+	
     return 0;
 }
 
@@ -346,7 +344,7 @@ void Level::Update(int ms) {
     //// for debug hack. this shold be done with camera scripts to set debug window view
     Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
 	// unload test
-	// Clear();
+	//Clear();
 }
 
 void Level::ListModels() {
@@ -380,5 +378,26 @@ void Level::Clear() {
 		auto resource = *iter;
 		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
 	}
+	// clear skeletons
+	for (auto iter = Skeletons.Begin(); iter != Skeletons.End(); iter++) {
+		auto resource = *iter;
+		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
+	}
+	// clear aniamtions
+	for (auto iter = Animations.Begin(); iter != Animations.End(); iter++) {
+		auto resource = *iter;
+		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
+	}
+	// clear blendshapes
+	for (auto iter = BlendShapes.Begin(); iter != BlendShapes.End(); iter++) {
+		auto resource = *iter;
+		cache->AsyncUnLoadResource(resource->GetUrl(), this, Param);
+	}
 	Loaded = 0;
 }
+
+int Level::OnDestroy(Variant& Data) {
+	Clear();
+	return 0;
+}
+

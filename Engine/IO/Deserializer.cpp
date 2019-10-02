@@ -38,6 +38,8 @@ Deserializer::Deserializer(const String& URL) : NeedClear(true) {
 }
 
 Deserializer& Deserializer::operator=(Deserializer&& rh) {
+	// release self befoen accepting new data
+	Release();
     Data = rh.Data;
     Size = rh.Size;
     NeedClear = rh.NeedClear;
@@ -49,6 +51,8 @@ Deserializer& Deserializer::operator=(Deserializer&& rh) {
 }
 
 Deserializer::Deserializer(Deserializer&& rh) {
+	// release self befoen accepting new data
+	Release();
     Data = rh.Data;
     Size = rh.Size;
     NeedClear = rh.NeedClear;

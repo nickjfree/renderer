@@ -33,3 +33,9 @@ int Texture::OnSerialize(Deserializer& deserializer) {
     */
     return 0;
 }
+
+// destroy texture
+int Texture::OnDestroy(Variant& Param) {
+	renderinterface->DestroyTexture2D(id);
+	return 0;
+}

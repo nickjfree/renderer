@@ -63,7 +63,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalOptions>DXGUID.lib d3d11.lib dxgi.lib D3Dcompiler.lib DirectXTK.lib  d3d12.lib BulletDynamics.lib  BulletCollision.lib LinearMath.lib HACD.lib OpenGL32.lib 
 Glu32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalLibraryDirectories>F:\proj\Game11\Game\bullet3-2.88\build3\vs2010\x64\Debug;F:\proj\Game11\Game\DirectXTK-aug2019\Bin\Desktop_2019_Win10\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\proj\Game11\Game\bullet3-2.88\build3\vs2010\x64\Debug;F:\proj\Game11\Game\DirectXTK-aug2019\Bin\Desktop_2019_Win10\x64\Debug;F:\proj\game11\game\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(ProjectDir)shaders\compile_shaders.bat</Command>

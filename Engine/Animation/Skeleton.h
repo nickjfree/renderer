@@ -42,6 +42,8 @@ public:
 
     virtual int OnSerialize(Deserializer& serializer);
 
+	virtual int OnDestroy(Variant& Param);
+
 };
 
 #endif

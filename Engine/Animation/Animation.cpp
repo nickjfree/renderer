@@ -51,3 +51,11 @@ int Animation::OnSerialize(Deserializer& serializer) {
     }
     return 0;
 }
+
+
+int Animation::OnDestroy(Variant& Param) {
+	Tracks.Empty();
+	Clips.Empty();
+	DeSerial.Release();
+	return 0;
+}

@@ -20,6 +20,7 @@ public:
     virtual int OnSerialize(Deserializer& deserializer);
     virtual int OnLoadComplete(Variant& Parameter);
     virtual int OnCreateComplete(Variant& Parameter);
+	virtual int OnDestroy(Variant& Param);
 };
 
 #endif

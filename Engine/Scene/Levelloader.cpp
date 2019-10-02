@@ -19,16 +19,30 @@ LevelLoader::~LevelLoader()
 
 int LevelLoader::Update(int ms) {
     // test code
+
+
+
     static int flag = 0;
     ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
     String LevelUrl = "Level\\levels\\desktop.level\\0";
     if (!flag) {
-        Variant Param;
+		Variant Param{};
         Cache->AsyncLoadResource(LevelUrl, NULL, Param);
-        flag = 1;
+		flag = 1;
+		return 0;
     }
     // try to get that resource 
     Level * level = Cache->Get<Level>(LevelUrl);
+	//if (level && level->GetAsyncStatus() == Resource::S_ACTIVED) {
+	//	printf("Level %s loaded\n", level->GetUrl().ToStr());
+	//	// unload it
+	//	Variant Param{};
+	//	Cache->AsyncUnLoadResource(LevelUrl, NULL, Param);
+	//}
+	//if (!level || level->GetAsyncStatus() == Resource::S_DESTORYED) {
+	//	Variant Param{};
+	//	Cache->AsyncLoadResource(LevelUrl, NULL, Param);
+	//}
     if (level) {
         level->Update(ms);
     }

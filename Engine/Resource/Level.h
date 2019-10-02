@@ -121,6 +121,8 @@ public:
 	void Save(const String& file);
 	// unload resource
 	void Clear();
+	// ondestroyed
+	virtual int OnDestroy(Variant& Data);
 };
 
 #endif

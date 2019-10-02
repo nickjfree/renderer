@@ -73,6 +73,8 @@ public:
     virtual int OnCreateComplete(Variant& Parameter);
     // on raw data parse complete(worker thread)
     virtual int OnLoadComplete(Variant& Data);
+	// on destroy
+	virtual int OnDestroy(Variant& Param);
 };
 
 #endif

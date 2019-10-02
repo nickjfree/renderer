@@ -65,8 +65,8 @@ CommandContext * CommandContext::Alloc(ID3D12Device * Device, D3D12_COMMAND_LIST
 }
 
 void CommandContext::Reset() {
-    CommandAllocator->Reset();
-    CommandList->Reset(CommandAllocator, NULL);
+	CommandAllocator->Reset();
+	CommandList->Reset(CommandAllocator, NULL);
 }
 
 UINT64 CommandContext::Finish(bool WaitForFence) {
@@ -80,7 +80,9 @@ UINT64 CommandContext::Finish(bool WaitForFence) {
     }
     // put context to retired set
     CommandContext * Context = this;
+	mutex.Acquire();
     Retired[Type].Insert(this);
+	mutex.Release();
     return FenceValue;
 }
 

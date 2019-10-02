@@ -79,7 +79,6 @@ int Material::OnCreateComplete(Variant& Parameter) {
         // char * tmp = (char*)kv.key;
         Cache->AsyncLoadResource(kv.key, this, kv.Value);
     }
-    OwnerParameter = Parameter;
     return 0;
 }
 
@@ -114,6 +113,9 @@ int Material::OnDestroy(Variant& Data) {
 		auto kv = *iter;
 		cache->AsyncUnLoadResource(kv.key, this, Data);
 	}
+	// free xml node
+	xml_doc->clear();
+	delete xml_doc;
 	DeSerial.Release();
 	return 0;
 }

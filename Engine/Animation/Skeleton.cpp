@@ -35,3 +35,10 @@ int Skeleton::OnSerialize(Deserializer& serializer) {
 
     return 0;
 }
+
+
+int Skeleton::OnDestroy(Variant& Param) {
+	Bones.Empty();
+	DeSerial.Release();
+	return 0;
+}

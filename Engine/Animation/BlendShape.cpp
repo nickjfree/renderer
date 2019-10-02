@@ -35,6 +35,8 @@ int BlendShape::OnSerialize(Deserializer& deserializer)
         DepCount++;
         node = node->next_sibling();
     }
+	xml_doc->clear();
+	delete xml_doc;
     return 0;
 }
 
@@ -68,12 +70,17 @@ int BlendShape::OnSubResource(int Message, Resource * Sub, Variant & Param)
         };
         // create buffer in gpu, for blending shader resource
         id = renderinterface->CreateBuffer(&desc);
+		// free buffer
+		delete[] buffer;
     }
     return 0;
 }
 
 int BlendShape::OnCreateComplete(Variant & Parameter)
 {
+
+	// reserve vector size
+	BlendShapes_.Resize(DepCount, 1);
     // async load subresource, blendshapes
     ResourceCache * cache = context->GetSubsystem<ResourceCache>();
     for (auto iter = Dependencies.Begin(); iter != Dependencies.End(); iter++) {
@@ -85,11 +92,24 @@ int BlendShape::OnCreateComplete(Variant & Parameter)
         // add shap count
         ShapeCount_++;
     }
-    // reserve vector size
-    BlendShapes_.Resize(ShapeCount_, 1);
     return 0;
 }
 
 int BlendShape::OnLoadComplete(Variant& Data) {
     return 0;
+}
+
+int BlendShape::OnDestroy(Variant& Param) {
+	// release uav buffer
+	renderinterface->DestroyBuffer(id);
+	// unload all sub mesh
+	auto cache = context->GetSubsystem<ResourceCache>();
+
+	for (auto iter = Dependencies.Begin(); iter != Dependencies.End(); iter++) {
+		auto& kv = *iter;
+		cache->AsyncUnLoadResource(kv.key, nullptr, Param);
+	}
+
+	
+	return 0;
 }

@@ -50,6 +50,7 @@ public:
     int Destroy(void);
     int ToUsedItem(ItemHeader * Header);
     void * GetNext(void * Object);
+	int Count() { return m_UsedItemNum; };
 };
 
 

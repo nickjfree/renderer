@@ -109,8 +109,11 @@ void D3D12Render::InitD3D12() {
     if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pFactory)))) {
         return;
     }
-    pFactory->EnumAdapters(0, &pAdapter);
+    pFactory->EnumAdapters(1, &pAdapter);
     pAdapter->QueryInterface(IID_PPV_ARGS(&pAdapter3));
+
+	DXGI_ADAPTER_DESC desc{};
+	pAdapter->GetDesc(&desc);
     pAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &videoMemoryInfo);
     // create device
     if (FAILED(D3D12CreateDevice(pAdapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&Device)))) {

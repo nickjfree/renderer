@@ -33,19 +33,19 @@ int LevelLoader::Update(int ms) {
     }
     // try to get that resource 
     Level * level = Cache->Get<Level>(LevelUrl);
-	//if (level && level->GetAsyncStatus() == Resource::S_ACTIVED) {
-	//	printf("Level %s loaded\n", level->GetUrl().ToStr());
-	//	// unload it
-	//	Variant Param{};
-	//	Cache->AsyncUnLoadResource(LevelUrl, NULL, Param);
-	//}
-	//if (!level || level->GetAsyncStatus() == Resource::S_DESTORYED) {
-	//	Variant Param{};
-	//	Cache->AsyncLoadResource(LevelUrl, NULL, Param);
-	//}
-    if (level) {
+	if (level && level->GetAsyncStatus() == Resource::S_ACTIVED) {
+		printf("Level %s loaded\n", level->GetUrl().ToStr());
+		// unload it
+		Variant Param{};
+		Cache->AsyncUnLoadResource(LevelUrl, NULL, Param);
+	}
+	if (!level || level->GetAsyncStatus() == Resource::S_DESTORYED) {
+		Variant Param{};
+		Cache->AsyncLoadResource(LevelUrl, NULL, Param);
+	}
+ /*   if (level) {
         level->Update(ms);
-    }
+    }*/
     return 0;
 }
 

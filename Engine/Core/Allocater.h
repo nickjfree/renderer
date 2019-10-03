@@ -16,6 +16,7 @@ public:
     ~Allocater() {};
     void * Alloc();
     void   Free(void * ptr);
+	int Count();
 };
 
 template <class T, int align>
@@ -39,6 +40,12 @@ void Allocater<T, align>::Free(void * ptr)
 {
     int id = *(int*)((char*)ptr - sizeof(int));
     m_ObjectContainer->ReleaseOne(id);
+}
+
+template <class T, int align>
+int Allocater<T, align>::Count()
+{
+	return m_ObjectContainer->Count();
 }
 
 #endif

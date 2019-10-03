@@ -107,7 +107,7 @@ int BlendShape::OnDestroy(Variant& Param) {
 
 	for (auto iter = Dependencies.Begin(); iter != Dependencies.End(); iter++) {
 		auto& kv = *iter;
-		cache->AsyncUnLoadResource(kv.key, nullptr, Param);
+		cache->AsyncUnLoadResource(kv.key, this, Param);
 	}
 
 	

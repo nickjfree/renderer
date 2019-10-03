@@ -42,6 +42,7 @@ void Resource::RemoveOwner(Resource* owner) {
 		auto notice = *iter;
 		if (notice->Caller == owner) {
 			Owner.Remove(notice);
+			int count = notice->get_object_count();
 			delete notice;
 			return;
 		}

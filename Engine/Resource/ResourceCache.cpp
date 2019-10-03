@@ -125,6 +125,7 @@ void ResourceCache::DoAsyncUnLoadResource(Resource * resource, Resource* Caller,
 	WorkQueue* Queue = context->GetSubsystem<WorkQueue>();
 	// remove owner
 	resource->RemoveOwner(Caller);
+
 	//  check dependences
 	if (resource->Owner.Empty()) {
 		resource->SetAsyncStatus(Resource::S_UNLOADING);

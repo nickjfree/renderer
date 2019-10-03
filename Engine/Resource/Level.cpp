@@ -213,11 +213,11 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
     if (!DepCount) {
         // init level
         printf("mesh create complete\nnow, create the scene\n");
-        InitModel();
-        InitLevel();
-        InitGameObjects();
-        CreateScene();
-        InitScript();
+        //InitModel();
+        //InitLevel();
+        //InitGameObjects();
+        //CreateScene();
+        //InitScript();
         Loaded = 1;
     }
     printf("-------decount %d\n", DepCount);

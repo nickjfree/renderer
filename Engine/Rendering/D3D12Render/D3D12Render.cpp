@@ -109,7 +109,7 @@ void D3D12Render::InitD3D12() {
     if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pFactory)))) {
         return;
     }
-    pFactory->EnumAdapters(1, &pAdapter);
+    pFactory->EnumAdapters(0, &pAdapter);
     pAdapter->QueryInterface(IID_PPV_ARGS(&pAdapter3));
 
 	DXGI_ADAPTER_DESC desc{};

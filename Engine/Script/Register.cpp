@@ -33,6 +33,14 @@ EXPORT_CLASS(Scene)
 	GC(Scene)
 END_EXPORT()
 
+
+EXPORT_CLASS(LevelLoader)
+	EXPORT(LevelLoader, LoadLevel)
+	EXPORT(LevelLoader, UnloadLevel)
+	GC(LevelLoader)
+END_EXPORT()
+
+
 EXPORT_CLASS(Level)
 	EXPORT(Level, GetModel)
 	EXPORT(Level, GetMaterial)

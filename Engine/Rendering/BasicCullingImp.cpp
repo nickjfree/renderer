@@ -1,14 +1,17 @@
 #include "BasicCullingImp.h"
 
 
-BasicCullingImp::BasicCullingImp() {
+
+BasicCullingImp::BasicCullingImp(){
     if (!Root)
         Root = new Node();
 }
 
-
 BasicCullingImp::~BasicCullingImp()
 {
+	if (Root) {
+		delete Root;
+	}
 }
 
 int BasicCullingImp::Query(Frustum& Fr, Vector<Node*>& Result, int Type) {

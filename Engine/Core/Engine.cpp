@@ -35,10 +35,10 @@ int Engine::InitSubsystems() {
     RenderingSystem * Render = context->RegisterSubsystem<RenderingSystem>();
     // Level
     LevelLoader * Level = context->RegisterSubsystem<LevelLoader>();
+	// input
+	InputSystem* Input = context->RegisterSubsystem<InputSystem>();
     // scripting
     ScriptingSystem * Script = context->RegisterSubsystem<ScriptingSystem>();
-    // input
-    InputSystem * Input = context->RegisterSubsystem<InputSystem>();
     // physics
     PhysicsSystem * Physics = context->RegisterSubsystem<PhysicsSystem>();
     // animation

@@ -47,8 +47,6 @@ private:
     unsigned int frames;
     // Spatial
     Spatial * spatial;
-    // main camera
-    RenderingCamera * MainCamera;
     // renderinterface
     RenderInterface * Interface;
     // render context
@@ -92,7 +90,9 @@ public:
     // get renderqueue
     RenderQueue * GetRenderQueue() { return RenderQueue_; }
     // set main camera
-    void AddCamera(RenderingCamera * Camera) { MainCamera = Camera; 	Control->AddCamera(MainCamera); }
+    void AddCamera(RenderingCamera * Camera) { Control->AddCamera(Camera); }
+	// remove camera
+	void RemoveCamera(RenderingCamera* Camera) { Control->RemoveCamera(Camera); }
     // preloading
     // preloading resource
     void PreloadingResource();

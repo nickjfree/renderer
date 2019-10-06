@@ -5,6 +5,7 @@
 
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
+#include "Scene\Levelloader.h"
 #include "Rendering\Model.h"
 #include "Rendering\MeshRenderer.h"
 #include "Input\InputSystem.h"
@@ -17,6 +18,12 @@
 BEGIN_PROXY(Scene)
 	METHOD(CreateGameObject, &Scene::CreateGameObject)
 	METHOD(CreateComponent, &Scene::CreateComponent)
+END_PROXY()
+
+// proxy levelloader
+BEGIN_PROXY(LevelLoader)
+	METHOD(LoadLevel, &LevelLoader::LoadLevel)
+	METHOD(UnloadLevel, &LevelLoader::UnloadLevel)
 END_PROXY()
 
 // proxy Level

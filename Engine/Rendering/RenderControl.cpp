@@ -79,6 +79,13 @@ int RenderControl::AddCamera(RenderingCamera * Camera) {
 }
 
 int RenderControl::RemoveCamera(RenderingCamera * Camera) {
-
+	for (int i = 0; i < Cameras.Size(); i++) {
+		if (Cameras[i] == Camera) {
+			for (auto j = i; j < Cameras.Size() - 1; j++) {
+				Cameras[j] = Cameras[j + 1];
+			}
+			Cameras.PopBack();
+		}
+	}
     return 0;
 }

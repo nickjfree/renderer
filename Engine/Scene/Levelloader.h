@@ -12,7 +12,8 @@ class LevelLoader : public System
 {
     OBJECT(LevelLoader);
 private:
-    Scene * scene;
+	// actived levels
+	List<Level> levels_;
 public:
     LevelLoader(Context * context);
     virtual ~LevelLoader();
@@ -24,6 +25,12 @@ public:
 
     // event hander
     virtual int HandleEvent(Event * event);
+
+	// load level
+	int LoadLevel(const String& path);
+
+	// unload level
+	int UnloadLevel(const String& path);
 };
 
 #endif

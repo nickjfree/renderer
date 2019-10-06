@@ -43,6 +43,7 @@ void ScriptingSystem::InitEnvironment() {
     REGISTER_CLASS(LuaState, GameObject);
     REGISTER_CLASS(LuaState, Scene);
     REGISTER_CLASS(LuaState, Level);
+	REGISTER_CLASS(LuaState, LevelLoader);
     REGISTER_CLASS(LuaState, Model);
     REGISTER_CLASS(LuaState, Material);
     REGISTER_CLASS(LuaState, MeshRenderer);
@@ -58,6 +59,23 @@ int ScriptingSystem::Initialize() {
     context->SubscribeFor(this, 400);
     // register objects
     context->RegisterObject<Script>();
+	// load the initilization scripts
+	int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
+	if (ret) {
+		printf("Couldn't load file: %s\n", lua_tostring(LuaState, -1));
+	}
+	ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
+	if (ret) {
+		printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
+	}
+	// push Input
+	LuaStack::Push(LuaState, context->GetSubsystem<InputSystem>());
+	lua_setglobal(LuaState, "input");
+	// push levelloader
+	LuaStack::Push(LuaState, context->GetSubsystem<LevelLoader>());
+	lua_setglobal(LuaState, "loader");
+	// run debug console
+	RunDebugConsole();
     return 0;
 }
 
@@ -71,16 +89,6 @@ int ScriptingSystem::HandleEvent(Event *Evt) {
 
 void ScriptingSystem::OnLevelLoaded(Level * level) {
     printf("Level %zx loaded\n", reinterpret_cast<size_t>(level));
-    // load the initilization scripts
-    int ret = luaL_loadfile(LuaState, "F:\\proj\\Game11\\Game\\Engine\\Script\\test\\test.lua");
-    if (ret) {
-        printf("Couldn't load file: %s\n", lua_tostring(LuaState, -1));
-    }
-    ret = lua_pcall(LuaState, 0, LUA_MULTRET, 0);
-    if (ret) {
-        printf("eror pcall: %s\n", lua_tostring(LuaState, -1));
-    }
-
     //push scene
     Scene * scene = level->GetScene();
     LuaStack::Push(LuaState, scene);
@@ -88,11 +96,6 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
     // push level
     LuaStack::Push(LuaState, level);
     lua_setglobal(LuaState, "level");
-    // push Input
-    LuaStack::Push(LuaState, context->GetSubsystem<InputSystem>());
-    lua_setglobal(LuaState, "input");
-    // run debug console
-    RunDebugConsole();
     return;
 }
 

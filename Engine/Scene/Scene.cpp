@@ -35,3 +35,8 @@ int Scene::Update(int ms) {
     Destroyed.Empty();
     return 0;
 }
+
+
+bool Scene::IsEmpty() {
+	return Objects.Empty();
+}

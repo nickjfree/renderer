@@ -24,6 +24,8 @@ public:
     void AddGameObject(GameObject * obj);
     // update the scene. clear all dirty objects
     int Update(int ms);
+	// is empty
+	bool IsEmpty();
 };
 
 #endif

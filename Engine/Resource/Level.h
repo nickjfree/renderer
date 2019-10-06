@@ -54,14 +54,10 @@ private:
     Vector<Skeleton*> Skeletons;
     // blendshapes
     Vector<BlendShape*> BlendShapes;
-
     // game objects
     Vector<GameObject*> GameObjects;
-
     // test
     GameObject * MainCamera;
-
-
     // level infos
     int NumMeshes;
     MeshEntry * MeshEntries;
@@ -71,17 +67,19 @@ private:
     ModelEntry * ModelEntries;
     int NumObjects;
     ObjectEntry * ObjectEntries;
-
     // loaded
     int Loaded;
+	// destorying
+	int Destorying;
     // scene
     Scene * scene;
 	// serializer
 	Serializer Serializer_;
-
+public:
+	// destroyed frames
+	int DestroyedFrames;
 private:
     int InitGameObjects();
-    int InitLevel();
     int InitModel();
     size_t CreateGameobject(ObjectEntry * Entry);
     int CreateComponent(GameObject * Object, ComponentEntry * ComponentData);
@@ -121,6 +119,8 @@ public:
 	void Save(const String& file);
 	// unload resource
 	void Clear();
+	// destroy level
+	void Destroy();
 	// ondestroyed
 	virtual int OnDestroy(Variant& Data);
 };

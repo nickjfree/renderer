@@ -26,7 +26,7 @@
 USING_ALLOCATER(Level);
 
 
-Level::Level(Context * context) : Resource(context), Loaded(0) {
+Level::Level(Context * context) : Resource(context), Loaded(0), DestroyedFrames(0), Destorying(0) {
 }
 
 
@@ -73,23 +73,16 @@ int Level::InitGameObjects() {
     return 0;
 }
 
-int Level::InitLevel() {
-    scene = new Scene(context);
-    // Add a partition method
-    BasicPartition * Tree = new BasicPartition(context);
-    //		Tree->Construct(CRect2D(-100.0f, -100.0f, 100.0f, 100.0f), 10);
-    scene->AddComponent(Tree);
-    Tree->SubscribeTo(scene, EV_NODE_ADD);
-    Tree->SubscribeTo(scene, EV_NODE_REMOVE);
-    return 0;
-}
-
 int Level::CreateScene() {
-
+	scene = new Scene(context);
+	// Add a partition method
+	BasicPartition* Tree = new BasicPartition(context);
+	scene->AddComponent(Tree);
+	Tree->SubscribeTo(scene, EV_NODE_ADD);
+	Tree->SubscribeTo(scene, EV_NODE_REMOVE);
+	// create objects
+	InitGameObjects();
     int Objects = GameObjects.Size();
-    for (int i = 0; i < Objects; i++) {
-        // do nothing now
-    }
     MainCamera = scene->CreateGameObject("MainCamera");
     Camera * camera = new Camera(context);
     MainCamera->AddComponent(camera);
@@ -213,11 +206,9 @@ int Level::OnSubResource(int Message, Resource * Sub, Variant& Param) {
     if (!DepCount) {
         // init level
         printf("mesh create complete\nnow, create the scene\n");
-        //InitModel();
-        //InitLevel();
-        //InitGameObjects();
-        //CreateScene();
-        //InitScript();
+        InitModel();
+        CreateScene();
+        InitScript();
         Loaded = 1;
     }
     printf("-------decount %d\n", DepCount);
@@ -327,6 +318,7 @@ void Level::Update(int ms) {
     if (!Loaded) {
         return;
     }
+	// update
     float speed = 0.5f / 1000.0f;
     for (auto Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
         GameObject * Object = *Iter;
@@ -343,8 +335,15 @@ void Level::Update(int ms) {
     PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
     //// for debug hack. this shold be done with camera scripts to set debug window view
     Physics->SetDebugView(MainCamera->GetLook(), MainCamera->GetUp(), MainCamera->GetRight(), MainCamera->GetWorldTranslation());
-	// unload test
-	//Clear();
+	// level is destroying
+	if (Destorying && !Destroyed) {
+		if (scene->IsEmpty()) {
+			// safe to delete
+			scene->Destroy();
+			delete scene;
+			Destroyed = true;
+		}
+	}
 }
 
 void Level::ListModels() {
@@ -358,6 +357,15 @@ void Level::ListModels() {
 void Level::Save(const String& file) {
 	Serializer_.Create(file);
 	Serializer_.Close();
+}
+
+// destor all gameobjects
+void Level::Destroy() {
+	for (auto iter = GameObjects.Begin(); iter != GameObjects.End(); iter++) {
+		auto gameobject = *iter;
+		gameobject->Destroy();
+	}
+	Destorying = 1;
 }
 
 void Level::Clear() {
@@ -397,6 +405,7 @@ void Level::Clear() {
 }
 
 int Level::OnDestroy(Variant& Data) {
+	// clear resource
 	Clear();
 	return 0;
 }

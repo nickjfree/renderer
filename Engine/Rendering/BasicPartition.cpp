@@ -1,6 +1,8 @@
 #include "BasicPartition.h"
 #include "RenderingSystem.h"
 
+USING_ALLOCATER(BasicPartition)
+
 BasicPartition::BasicPartition(Context * context) :PartitionMethod(context)
 {
     BasicCulling = new BasicCullingImp();
@@ -11,6 +13,7 @@ BasicPartition::BasicPartition(Context * context) :PartitionMethod(context)
 
 BasicPartition::~BasicPartition()
 {
+	delete BasicCulling;
 }
 
 int BasicPartition::OnAttach(GameObject * GameObj) {

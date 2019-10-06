@@ -4,7 +4,7 @@
 
 USING_ALLOCATER(Camera);
 
-Camera::Camera(Context * context) :Component(context)
+Camera::Camera(Context * context): Component(context)
 {
     RenderCamera = new RenderingCamera();
     RenderingSystem * Render = context->GetSubsystem<RenderingSystem>();
@@ -14,6 +14,9 @@ Camera::Camera(Context * context) :Component(context)
 
 Camera::~Camera()
 {
+	RenderingSystem* Render = context->GetSubsystem<RenderingSystem>();
+	Render->RemoveCamera(RenderCamera);
+	delete RenderCamera;
 }
 
 void Camera::Enable() {

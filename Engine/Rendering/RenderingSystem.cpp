@@ -9,7 +9,7 @@
 #include "Rendering\Light.h"
 
 
-RenderingSystem::RenderingSystem(Context * context) : System(context), frames(0), MainCamera(0)
+RenderingSystem::RenderingSystem(Context * context) : System(context), frames(0)
 {
 }
 
@@ -81,13 +81,10 @@ int RenderingSystem::Initialize() {
 }
 
 int RenderingSystem::Update(int ms) {
-    if (!MainCamera) {
-        return -1;
-    }
     // MainCamera->Update(ms);
     // rendercontrol takes over the rendering process
     //disable rendering
-    Control->Execute();
+  //  Control->Execute();
     return 0;
 }
 

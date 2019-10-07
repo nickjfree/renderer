@@ -55,8 +55,9 @@ void ScriptingSystem::InitEnvironment() {
 
 int ScriptingSystem::Initialize() {
     InitEnvironment();
-    // subscribe to level load events
-    context->SubscribeFor(this, 400);
+    // subscribe to level load/unload events
+    context->SubscribeFor(this, EV_LEVEL_LOAD);
+	context->SubscribeFor(this, EV_LEVEL_UNLOAD);
     // register objects
     context->RegisterObject<Script>();
 	// load the initilization scripts
@@ -80,10 +81,14 @@ int ScriptingSystem::Initialize() {
 }
 
 int ScriptingSystem::HandleEvent(Event *Evt) {
-    if (Evt->EventId == 400) {
+    if (Evt->EventId == EV_LEVEL_LOAD) {
         Level * level = Evt->EventParam[hash_string::Level].as<Level*>();
         OnLevelLoaded(level);
     }
+	if (Evt->EventId == EV_LEVEL_UNLOAD) {
+		Level* level = Evt->EventParam[hash_string::Level].as<Level*>();
+		OnLevelUnloaded(level);
+	}
     return 0;
 }
 
@@ -98,6 +103,15 @@ void ScriptingSystem::OnLevelLoaded(Level * level) {
     lua_setglobal(LuaState, "level");
     return;
 }
+
+void ScriptingSystem::OnLevelUnloaded(Level* level) {
+	// set gloabal level and scene to nil
+	lua_pushnil(LuaState);
+	lua_setglobal(LuaState, "scene");
+	lua_pushnil(LuaState);
+	lua_setglobal(LuaState, "level");
+}
+
 
 void ScriptingSystem::GetConsoleInput() {
     ConsoleTask * task = ConsoleTask::Create();

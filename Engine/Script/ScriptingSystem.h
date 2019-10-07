@@ -31,6 +31,8 @@ private:
     void InitEnvironment();
     // on level loaded
     void OnLevelLoaded(Level * level);
+	// on level unloaded
+	void OnLevelUnloaded(Level* level);
     // run interactive debug console
     void RunDebugConsole();
     // get console input

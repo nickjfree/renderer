@@ -222,7 +222,7 @@ int Level::InitScript() {
     }
     // send event to scripting subsystem
     Event * event = Event::Create();
-    event->EventId = 400;
+    event->EventId = EV_LEVEL_LOAD;
     event->EventParam[hash_string::Level].as<Level *>() = this;
     context->BroadCast(event);
     event->Recycle();
@@ -366,6 +366,13 @@ void Level::Destroy() {
 		gameobject->Destroy();
 	}
 	Destorying = 1;
+	// send level destoryed event
+		// send event to scripting subsystem
+	Event* event = Event::Create();
+	event->EventId = EV_LEVEL_UNLOAD;
+	event->EventParam[hash_string::Level].as<Level*>() = this;
+	context->BroadCast(event);
+	event->Recycle();
 }
 
 void Level::Clear() {

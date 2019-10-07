@@ -81,10 +81,9 @@ int RenderingSystem::Initialize() {
 }
 
 int RenderingSystem::Update(int ms) {
-    // MainCamera->Update(ms);
     // rendercontrol takes over the rendering process
     //disable rendering
-  //  Control->Execute();
+    Control->Execute();
     return 0;
 }
 
@@ -94,10 +93,6 @@ int RenderingSystem::Shutdown() {
 }
 
 void RenderingSystem::SetSpatial(Spatial * spatial_) {
-    if (spatial)
-    {
-        delete spatial;
-    }
     spatial = spatial_;
     Control->spatial = spatial;
 }

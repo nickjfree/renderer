@@ -6,8 +6,6 @@ USING_ALLOCATER(BasicPartition)
 BasicPartition::BasicPartition(Context * context) :PartitionMethod(context)
 {
     BasicCulling = new BasicCullingImp();
-    RenderingSystem * Render = context->GetSubsystem<RenderingSystem>();
-    Render->SetSpatial(BasicCulling);
 }
 
 
@@ -17,6 +15,8 @@ BasicPartition::~BasicPartition()
 }
 
 int BasicPartition::OnAttach(GameObject * GameObj) {
+	RenderingSystem* Render = context->GetSubsystem<RenderingSystem>();
+	Render->SetSpatial(BasicCulling);
     return 0;
 }
 

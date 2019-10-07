@@ -16,6 +16,9 @@
 #define EV_NODE_ADD    300
 #define EV_NODE_REMOVE 301
 
+#define EV_LEVEL_LOAD   400
+#define EV_LEVEL_UNLOAD 401
+
 
 
 

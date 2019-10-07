@@ -53,7 +53,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;_WINDOWS;RENDER_D3D12;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;_WINDOWS;RENDER_D3D12;DEBUG_PHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.88\src;F:\proj\Game11\Game\bullet3-2.88\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

@@ -3,7 +3,7 @@
 #include "PrepassStage.h"
 #include "PostpassStage.h"
 #include "ShadowMapStage.h"
-
+#include "Opcode.h"
 
 RenderControl::RenderControl(RenderContext * Context_) :Context(Context_)
 {
@@ -38,12 +38,18 @@ int RenderControl::Initialize() {
 int RenderControl::Execute() {
     int numCamera = Cameras.Size();
 
-
-
-    while (numCamera--) {
-        RenderingCamera * cam = Cameras[numCamera];
-        StartCamera(cam);
-    }
+	if (!numCamera) {
+		printf("no camera\n");
+		char cmd[] = { OP_RENDER_TARGET, 1, 0, 0, 0, 0, OP_PRESENT, OP_END_EXECUTE };
+		RenderQueue_->PushCommand(R_STAGE_PRESENT, cmd);
+		RenderQueue_->Execute(RenderProcesser_);
+		return 1;
+	} 
+	
+	while (numCamera--) {
+		RenderingCamera* cam = Cameras[numCamera];
+		StartCamera(cam);
+	}
 
     // wait for tasks finish
     int Count = Events.Size();

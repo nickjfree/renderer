@@ -31,17 +31,10 @@ int LevelLoader::Update(int ms) {
 		return 0;
     }
   //  // try to get that resource 
-  //  Level * level = Cache->Get<Level>(LevelUrl);
-	//if (level && level->GetAsyncStatus() == Resource::S_ACTIVED) {
-	//	printf("Level %s loaded\n", level->GetUrl().ToStr());
-	//	// unload it
-	//	Variant Param{};
-	//	Cache->AsyncUnLoadResource(LevelUrl, NULL, Param);
-	//}
-	//if (!level || level->GetAsyncStatus() == Resource::S_DESTORYED) {
-	//	Variant Param{};
-	//	Cache->AsyncLoadResource(LevelUrl, NULL, Param);
-	//}
+    Level * level = Cache->Get<Level>(LevelUrl);
+	if (levels_.Empty()) {
+		LoadLevel(LevelUrl);
+	}
 
 	for (auto iter = levels_.Begin(); iter != levels_.End(); iter++) {
 		auto level = *iter;
@@ -92,6 +85,8 @@ int LevelLoader::LoadLevel(const String& path) {
 int LevelLoader::UnloadLevel(const String& path) {
 	auto cache = context->GetSubsystem<ResourceCache>();
 	auto level = cache->Get<Level>(path);
-	level->Destroy();
+	if (level) {
+		level->Destroy();
+	}
 	return 0;
 }

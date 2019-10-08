@@ -1142,6 +1142,7 @@ void D3D12Render::ClearRenderTarget() {
 
 void D3D12Render::Present() {
     if (!NumTargets || CurrentTargets[0]) {
+		printf("target zero %d %d\n", NumTargets, CurrentTargets[0]);
         return;
     }
     CommandContext * Context = CurrentCommandContext;

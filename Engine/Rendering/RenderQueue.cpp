@@ -1,4 +1,5 @@
 #include "RenderQueue.h"
+#include "Opcode.h"
 #include <memory>
 
 RenderQueue::RenderQueue()
@@ -30,6 +31,8 @@ void * RenderQueue::PopCommand(int Stage) {
 }
 
 int RenderQueue::Execute(RenderProcesser * Processer) {
+	// set a present cmd
+	//PushCommand(R_STAGE_PRESENT, Presnet);
     // execte all command buffers
     for (int Stage = 0; Stage < R_STAGE_MAX; Stage++) {
         void * CommandBuffer = CommandBuffers[Stage];

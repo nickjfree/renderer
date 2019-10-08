@@ -16,6 +16,8 @@
 
 #define R_STAGE_POST     0xA0
 
+#define R_STAGE_PRESENT  0xFE
+
 
 /*
     renderqueue, a collection of command buffers

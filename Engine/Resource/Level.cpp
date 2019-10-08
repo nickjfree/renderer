@@ -254,7 +254,7 @@ int Level::InitScript() {
             Object->AddComponent(script);
         }
         if (Object->GetName() == "Plane") {
-            PhysicsObject * Physics = new PhysicsObject(context);
+           
             // test blendshape
             Animator * animator = new Animator(context);
             Object->AddComponent(animator);

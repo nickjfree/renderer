@@ -14,6 +14,8 @@ class LevelLoader : public System
 private:
 	// actived levels
 	List<Level> levels_;
+	// test frames
+	int test_frames;
 public:
     LevelLoader(Context * context);
     virtual ~LevelLoader();

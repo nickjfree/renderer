@@ -206,7 +206,7 @@ void H3DMesh::ComputeConvexHull() {
 
 
 int H3DMesh::AsyncUnLoad() {
-	// free data in read from file
+	// free data in cpu mem
 	DeSerial.Release();
 	// delete geometry id from renderer
 	renderinterface->DestroyGeometry(id);

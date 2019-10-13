@@ -55,7 +55,6 @@ int EventNode::AddEventHandler(int EventId, EventNode* Handler) {
     Handler->AddRef();
     EventChannel[EventId].Insert(Handler);
     EventRegistry * Item = new EventRegistry();
-	printf("11111111111 item count %d \n", Item->get_object_count());
     Item->Link.Owner = Item;
     Item->Node = Handler;
     Item->EventId = EventId;

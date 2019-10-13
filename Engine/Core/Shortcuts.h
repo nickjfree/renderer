@@ -58,4 +58,5 @@
 			static const String& GetLoaderTypeNameStatic() { static const String TypeName(#TypeName); return TypeName; } \
 			virtual const String& GetLoaderTypeName() { return GetLoaderTypeNameStatic(); }
 
+
 #endif

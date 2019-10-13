@@ -67,7 +67,7 @@ int ResourceCache::AsyncLoadResource(const String& URL, Resource * Caller, Varia
 				// loading nothing to be done, add owner
 				sub->AddOwner(Caller, Param);
 			} else if (sub->GetAsyncStatus() == Resource::S_DESTORYED) {
-				printf("cache loading %s\n", URL.ToStr());
+				//printf("cache loading %s\n", URL.ToStr());
 				DoAsyncLoadResource(URL, Caller, Param);
 			} else if (sub->GetAsyncStatus() == Resource::S_UNLOADING) {
 				// resource is UNLOADING, but we want it to be S_ACTIVED
@@ -82,7 +82,7 @@ int ResourceCache::AsyncLoadResource(const String& URL, Resource * Caller, Varia
     else {
         // load this resource
         // TODO : check resource usage,and free some resource
-        printf("cache loading %s\n", URL.ToStr());
+        //printf("cache loading %s\n", URL.ToStr());
         DoAsyncLoadResource(URL, Caller, Param);
         // 
     }
@@ -101,7 +101,7 @@ int ResourceCache::AsyncUnLoadResource(const String& URL, Resource* Caller, Vari
 		}
 		if (sub->GetAsyncStatus() == Resource::S_ACTIVED) {
 			// resource actived, unload it
-			printf("cache unloading %s\n", URL.ToStr());
+			//printf("cache unloading %s\n", URL.ToStr());
 			DoAsyncUnLoadResource(sub, Caller, Parameter);
 		} else if (sub->GetAsyncStatus() == Resource::S_UNLOADING || sub->GetAsyncStatus() == Resource::S_DESTORYED) {
 			sub->RemoveOwner(Caller);

@@ -135,6 +135,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Input\InputHandler.h" />
     <ClInclude Include="Input\InputSystem.h" />
     <ClInclude Include="IO\FileLoader.h" />
+    <ClInclude Include="IO\FileMapping.h" />
     <ClInclude Include="IO\ResourceLoader.h" />
     <ClInclude Include="IO\Deserializer.h" />
     <ClInclude Include="IO\Serializer.h" />
@@ -254,6 +255,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Input\InputHandler.cpp" />
     <ClCompile Include="Input\InputSystem.cpp" />
     <ClCompile Include="IO\FileLoader.cpp" />
+    <ClCompile Include="IO\FileMapping.cpp" />
     <ClCompile Include="IO\ResourceLoader.cpp" />
     <ClCompile Include="IO\Deserializer.cpp" />
     <ClCompile Include="IO\Serializer.cpp" />

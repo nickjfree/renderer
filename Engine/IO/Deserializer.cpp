@@ -1,6 +1,7 @@
 #include "Deserializer.h"
 #include "stdio.h"
 #include "windows.h"
+#include <type_traits>
 
 Deserializer::Deserializer() : Data(0), Size(0), NeedClear(false) {
 }
@@ -10,7 +11,7 @@ Deserializer::~Deserializer() {
     Release();
 }
 
-Deserializer::Deserializer(void * Data_) : NeedClear(false) {
+Deserializer::Deserializer(void * Data_) : NeedClear(false), Size(0) {
     Data = Data_;
 }
 
@@ -37,12 +38,19 @@ Deserializer::Deserializer(const String& URL) : NeedClear(true) {
     Size = FileLen;
 }
 
-Deserializer& Deserializer::operator=(Deserializer&& rh) {
+Deserializer::Deserializer(FileMapping& mapping, void* Data_): NeedClear(false) {
+	mapping_ = mapping;
+	Data = Data_;
+	Size = 0;
+}
+
+Deserializer& Deserializer::operator=(Deserializer&& rh) noexcept {
 	// release self befoen accepting new data
 	Release();
     Data = rh.Data;
     Size = rh.Size;
     NeedClear = rh.NeedClear;
+	mapping_ = std::move(rh.mapping_);
     // rh is not need to clear
     rh.NeedClear = false;
     rh.Data = nullptr;
@@ -50,7 +58,7 @@ Deserializer& Deserializer::operator=(Deserializer&& rh) {
     return *this;
 }
 
-Deserializer::Deserializer(Deserializer&& rh) {
+Deserializer::Deserializer(Deserializer&& rh) noexcept {
 	// release self befoen accepting new data
 	Release();
     Data = rh.Data;
@@ -67,6 +75,7 @@ void Deserializer::Release() {
     if (NeedClear) {
         delete Data;
     }
+	mapping_.Release();
     NeedClear = false;
     Data = nullptr;
     Size = 0;

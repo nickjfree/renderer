@@ -3,45 +3,14 @@
 
 
 FileMappingLoader::FileMappingLoader(Context * context) : ResourceLoader(context) {
-    memset(m_Mapping, 0, sizeof(FileMapping) * MAX_PACK_MAPPING);
 }
 
 FileMappingLoader::~FileMappingLoader(void)
 {
 }
 
-void * FileMappingLoader::GetMappingBase(const char * FileName)
-{
-    MapMutex.Acquire();
-    FileMapping * Mapping = NULL;
-    for (int i = 0; i < MAX_PACK_MAPPING; i++)
-    {
-        if (m_Mapping[i].FileName && !strcmp(m_Mapping[i].FileName, FileName) && m_Mapping[i].Ref)
-        {
-            m_Mapping[i].Ref++;
-            MapMutex.Release();
-            return m_Mapping[i].Data;
-        }
-        if (!m_Mapping[i].Ref)
-        {
-            // find a empty mapping field
-            Mapping = &m_Mapping[i];
-        }
-    }
-    // the file is't mapped
-    strcpy_s(Mapping->FileName, FileName);
-    Mapping->hFile = CreateFileA(FileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
-    Mapping->hMapping = CreateFileMapping(Mapping->hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-    if (Mapping->hMapping == INVALID_HANDLE_VALUE)
-    {
-        printf("mapping failed------------\n");
-        return NULL;
-    }
-    Mapping->Data = MapViewOfFile(Mapping->hMapping, FILE_MAP_READ, 0, 0, 0);
-    Mapping->Entry = (FileEntry*)((char*)Mapping->Data + 4);
-    Mapping->Ref = 1;
-    MapMutex.Release();
-    return Mapping->Data;
+FileMapping& FileMappingLoader::GetMapping(const char* FileName) {
+	return FileMapping::CreateMapping(FileName);
 }
 
 unsigned int FileMappingLoader::hash(const char * str)
@@ -56,11 +25,13 @@ unsigned int FileMappingLoader::hash(const char * str)
 void * FileMappingLoader::GetFileHeader(void * Base, const char * Name)
 {
     int Index = FindEntry(Name);
+	printf("mapping %s Base: %llx\n", Name, Base);
     FileEntry * Entry = (FileEntry*)((char *)Base + 4);
     while (strcmp(Entry[Index].name, Name))
     {
         Index++;
         Index = Index % MAX_ENTRY;
+		printf("index %d\n", Index);
     }
     void * Header = Entry[Index].offset + (char*)Entry - 4;
     return Header;
@@ -71,42 +42,10 @@ int FileMappingLoader::FindEntry(const char * Name)
     return hash(Name) % MAX_ENTRY;
 }
 
-// decrease ref of mapping
-int FileMappingLoader::PutMappingBase(const char * FileName)
-{
-    FileMapping * Mapping = NULL;
-    MapMutex.Acquire();
-    for (int i = 0; i < MAX_PACK_MAPPING; i++)
-    {
-        if (m_Mapping[i].FileName && !strcmp(m_Mapping[i].FileName, FileName) && m_Mapping[i].Ref)
-        {
-            m_Mapping[i].Ref--;
-            Mapping = &m_Mapping[i];
-            break;
-        }
-    }
-    // ref reach 0 we release it
-    if (!Mapping->Ref)
-    {
-        UnmapViewOfFile(Mapping->Data);
-        CloseHandle(Mapping->hMapping);
-        CloseHandle(Mapping->hFile);
-    }
-    MapMutex.Release();
-    return 0;
-}
-
 Deserializer FileMappingLoader::GetDeserializer(const String& URL) {
     String Paths[3];
     URL.Split('\\', Paths, 3);
-    void * Base = GetMappingBase(Paths[1].ToStr());
-    void * Header = GetFileHeader(Base, Paths[2].ToStr());
-    return Deserializer(Header);
-}
-
-
-void FileMappingLoader::Unload(String& URL) {
-    String Paths[3];
-    URL.Split('\\', Paths, 3);
-    PutMappingBase(Paths[1].ToStr());
+    auto& mapping = GetMapping(Paths[1].ToStr());
+    void * Header = GetFileHeader(mapping.GetData(), Paths[2].ToStr());
+    return Deserializer(mapping, Header);
 }

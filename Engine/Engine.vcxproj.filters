@@ -404,6 +404,9 @@
     <ClInclude Include="IO\Serializer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IO\FileMapping.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -818,6 +821,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="IO\Serializer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IO\FileMapping.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

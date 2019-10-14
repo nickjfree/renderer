@@ -34,6 +34,21 @@ int Light::Load(void * Raw, Level * level) {
     return sizeof(LightEntry);
 }
 
+int Light::Save(Serializer* levelFile, Level* level) {
+	LightEntry Entry{};
+	strcpy_s(Entry.Info.TypeName, "Light");
+	Entry.MaterialIndex = renderLight->GetMaterial()->LevelId;
+	Entry.ModelIndex = renderLight->GetModel()->LevelId;
+	Entry.Radius = renderLight->GetRadius();
+	Entry.Color = renderLight->GetColor();
+	Entry.Direction = renderLight->GetDirection();
+	Entry.Type = renderLight->GetLightType();
+	Entry.Intensity = renderLight->GetIntensity();
+	levelFile->Write(&Entry);
+	return 0;
+}
+
+
 int Light::OnAttach(GameObject * GameObj) {
     SubscribeTo(Owner, 200);
     Scene * scene = GameObj->GetScene();

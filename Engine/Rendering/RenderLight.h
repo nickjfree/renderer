@@ -59,6 +59,14 @@ public:
     float GetRadius() const { return Radius; }
     // get spot angle
     float GetSpotAngle() const { return SpotAngle; }
+	// get color
+	const Vector3& GetColor() const { return Color; }
+	// get direction
+	const Vector3& GetDirection() const { return Direction; }
+	// get intensity
+	float GetIntensity() const { return Intensity; }
+	// get type
+	int GetLightType() const { return LightType; }
     // get shadow casting
     int GetShadowCasting() const { return ShadowCast; }
     // get Light Camera

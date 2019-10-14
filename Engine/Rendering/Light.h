@@ -59,6 +59,8 @@ public:
     void SetMaterial(Material * material) { renderLight->SetMaterial(material); }
     // load
     virtual int Load(void * Raw, Level * level);
+	// save
+	virtual int Save(Serializer* levelFile, Level* level);
 };
 
 #endif

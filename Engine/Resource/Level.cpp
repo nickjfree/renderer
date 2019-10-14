@@ -39,6 +39,7 @@ int Level::InitModel() {
         Model * model = new Model(context);
         model->SetMesh(GetMesh(Entry->MeshGroup[0]), 0);
         model->SetName(Entry->Name);
+		model->LevelId = i;
         Models.PushBack(model);
     }
     return 0;
@@ -355,7 +356,48 @@ void Level::ListModels() {
 }
 
 void Level::Save(const String& file) {
+	// create file
 	Serializer_.Create(file);
+	LevelHeader Header{};
+	Header.Version = 0;
+	// write mesh entris
+	Header.NumEntries = NumMeshes;
+	Serializer_.Write(&Header);
+	MeshEntry mesh{};
+	for (auto iter = Meshs.Begin(); iter != Meshs.End(); iter++) {
+		auto item = *iter;
+		strcpy_s(mesh.Url, item->GetUrl().ToStr());
+		Serializer_.Write(&mesh);
+	}
+	// write material entris
+	Header.NumEntries = NumMaterials;
+	Serializer_.Write(&Header);
+	MatrialEntry material{};
+	for (auto iter = Materials.Begin(); iter != Materials.End(); iter++) {
+		auto item = *iter;
+		strcpy_s(material.Url, item->GetUrl().ToStr());
+		Serializer_.Write(&material);
+	}
+	// write models
+	Header.NumEntries = NumModels;
+	Serializer_.Write(&Header);
+	ModelEntry model{};
+	for (auto iter = Models.Begin(); iter != Models.End(); iter++) {
+		auto item = *iter;
+		model.MeshGroup[0] = item->GetMesh(0)->LevelId;
+		strcpy_s(model.Name, item->GetName());
+		Serializer_.Write(&model);
+	}
+	// write objects
+	Header.NumEntries = NumObjects;
+	Serializer_.Write(&Header);
+	for (auto iter = GameObjects.Begin(); iter != GameObjects.End(); iter++) {
+		auto gameobject = *iter;
+		if (gameobject->GetName() != "MainCamera") {
+			gameobject->Save(&Serializer_, this);
+		}
+	}
+	// close file
 	Serializer_.Close();
 }
 

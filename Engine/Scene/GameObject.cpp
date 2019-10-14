@@ -261,12 +261,20 @@ int GameObject::Save(Serializer* levelFile, Level* level) {
 	Entry.Position = GlobalTranslate;
 	Entry.Rotation = GlobalRotation;
 	Entry.Scale = Vector3(1, 1, 1);
-	Entry.NumComponents = Components.Size();
+	Entry.NumComponents = 0;
+
+	for (auto iter = Components.Begin(); iter != Components.End(); iter++) {
+		auto component = *iter;
+		if (component->GetBaseTypeName() == "Renderer" || component->GetBaseTypeName() == "Light") {
+			Entry.NumComponents++;
+		}
+	}
 	// write gameobject entry
 	levelFile->Write(&Entry, sizeof(Entry));
 
 	for (auto iter = Components.Begin(); iter != Components.End(); iter++) {
-
+		auto component = *iter;
+		component->Save(levelFile, level);
 	}
 	return 0;
 }

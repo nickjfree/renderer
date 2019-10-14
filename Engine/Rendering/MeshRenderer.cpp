@@ -64,7 +64,7 @@ int MeshRenderer::Save(Serializer* saveFile, Level* level) {
 	Entry.ModelIndex = renderObject->GetModel()->LevelId;
 	Entry.MaterialIndex = renderObject->GetMaterial()->LevelId;
 	Entry.pad1 = Entry.pad2 = 0;
-	saveFile->Write(&Entry, sizeof(Entry));
+	saveFile->Write(&Entry);
 	return 0;
 }
 

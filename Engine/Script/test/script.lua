@@ -46,7 +46,7 @@ end
 
 function update(ms)
 
-    test_create()
+    -- test_create()
 
 	if (active ~= true)
 	then

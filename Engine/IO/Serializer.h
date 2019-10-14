@@ -24,6 +24,9 @@ public:
 
 	// write data
 	void Write(void* data, unsigned int len);
+	// write structure 
+	template <class T>
+	void Write(T* data);
 
 	// flush
 	void Flush();
@@ -32,5 +35,9 @@ public:
 	void Close();
 };
 
+template <class T>
+void Serializer::Write(T* data) {
+	WriteFile(hFile, data, sizeof(T), NULL, NULL);
+}
 
 #endif

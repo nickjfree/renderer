@@ -37,7 +37,6 @@ END_EXPORT()
 EXPORT_CLASS(LevelLoader)
 	EXPORT(LevelLoader, LoadLevel)
 	EXPORT(LevelLoader, UnloadLevel)
-	GC(LevelLoader)
 END_EXPORT()
 
 
@@ -46,11 +45,11 @@ EXPORT_CLASS(Level)
 	EXPORT(Level, GetMaterial)
 	EXPORT(Level, GetScene)
 	EXPORT(Level, ListModels)
-	GC(Level)
+	EXPORT(Level, Save)
 END_EXPORT()
 
 EXPORT_CLASS(Model)
-GC(Model)
+	GC(Model)
 END_EXPORT()
 
 EXPORT_CLASS(MeshRenderer)
@@ -77,11 +76,13 @@ END_EXPORT()
 
 EXPORT_CLASS(BlendingNode)
 	EXPORT(BlendingNode, SetParameter)
+	GC(PhysicsObject)
 END_EXPORT()
 
 EXPORT_CLASS(Animator)
 	EXPORT(Animator, GetBlendingNode)
 	EXPORT(Animator, SetBlendShapeWeight)
+	GC(PhysicsObject)
 END_EXPORT()
 
 //EXPORT_CLASS(ResourceCache)

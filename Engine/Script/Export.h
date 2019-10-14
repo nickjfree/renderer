@@ -32,6 +32,7 @@ BEGIN_PROXY(Level)
 	METHOD(GetMaterial, &Level::GetMaterial)
 	METHOD(GetScene, &Level::GetScene)
 	METHOD(ListModels, &Level::ListModels)
+	METHOD(Save, &Level::Save)
 END_PROXY()
 
 // proxy GameObject

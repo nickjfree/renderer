@@ -8,14 +8,51 @@ USING_ALLOCATER(PhysicsObject)
 
 
 
-void CollisionShape::CreateFromConvexData(int Clusters, unsigned int * VNum, unsigned int * INum, float ** VBuffer, unsigned int ** IBuffer, Vector3 * Centers) {
+void CollisionShape::CreateFromConvexData(int Clusters, MeshConvex * ConvexHulls, Vector3& CenterOffset) {
+	btCompoundShape* Compound = new btCompoundShape();
+	for (int i = 0; i < Clusters; i++) {
+		btConvexHullShape* Convex = new btConvexHullShape(ConvexHulls[i].VBuffer, ConvexHulls[i].VNum);
+		//Convex->setMargin(0.0001);
+		btTransform trans;
+		trans.setIdentity();
+		Vector3& Center = ConvexHulls[i].Center;
+		Vector3 LocalCenter = Center - CenterOffset;
+		btVector3 c = btVector3(LocalCenter.x, LocalCenter.y, LocalCenter.z);
+		trans.setOrigin(c);
+		Compound->addChildShape(trans, Convex);
+	}
+	Shapes.Compound = Compound;
+}
+
+int CollisionShape::AddRef() {
+	return InterlockedIncrement(&ref);
+}
+
+int CollisionShape::DecRef() {
+	auto ret = InterlockedDecrement(&ref);
+	if (ret == 0) {
+		// free resource used by this shape
+		auto shape = Shapes.Compound;
+		if (shape) {
+			if (shape->isCompound()) {
+				for (auto i = 0; i < shape->getNumChildShapes(); i++) {
+					auto child = shape->getChildShape(i);
+					shape->removeChildShapeByIndex(i);
+					delete child;
+				}
+			} else {
+				delete shape;
+			}
+		}
+		// delete this
+		delete this;
+	}
+	return ret;
 }
 
 
 
-
-
-PhysicsObject::PhysicsObject(Context * context) :Component(context), Shape(0), ObjectType(0) {
+PhysicsObject::PhysicsObject(Context * context) : Component(context), Shape(0), ObjectType(0), rigidBody(nullptr), MotionState(nullptr) {
     // create a default rigitbody
     Physics = context->GetSubsystem<PhysicsSystem>();
     World = Physics->GetWorld();
@@ -121,22 +158,12 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
         CenterOffset = CenterOffset * (1.0f / Clusters);
         InvertCenter.Translate(CenterOffset * -1.0f);
     }
+	// try create the shape
     if (!Shape) {
 		Shape = new CollisionShape();
+		Shape->ref = 0;
         if (Clusters) {
-            btCompoundShape * Compound = new btCompoundShape();
-            for (int i = 0; i < Clusters; i++) {
-                btConvexHullShape * Convex = new btConvexHullShape(ConvexHulls[i].VBuffer, ConvexHulls[i].VNum);
-                //Convex->setMargin(0.0001);
-                btTransform trans;
-                trans.setIdentity();
-                Vector3 & Center = ConvexHulls[i].Center;
-                Vector3 LocalCenter = Center - CenterOffset;
-                btVector3 c = btVector3(LocalCenter.x, LocalCenter.y, LocalCenter.z);
-                trans.setOrigin(c);
-                Compound->addChildShape(trans, Convex);
-            }
-            Shape->Shapes.Compound = Compound;       
+			Shape->CreateFromConvexData(Clusters, ConvexHulls, CenterOffset);
         }
         else {
             // use box shape as default shape
@@ -150,6 +177,7 @@ void PhysicsObject::CreateShapeFromModel(Model * model) {
     }
     // this shape is shared by many physics objects
     Shape->Shared = 1;
+	Shape->AddRef();
 }
 
 void PhysicsObject::SetObjectType(PhysicsObject::Type type) {
@@ -158,8 +186,8 @@ void PhysicsObject::SetObjectType(PhysicsObject::Type type) {
 
 void PhysicsObject::Clear() {
     // clear all resource used by this one
-    if (!Shape->Shared) {
-        delete Shape->Shapes.Compound;
+    if (Shape && !Shape->Shared) {
+        delete Shape->Shapes.Box;
         delete Shape;
     }
     delete MotionState;
@@ -169,5 +197,8 @@ void PhysicsObject::Clear() {
 int PhysicsObject::OnDestroy(GameObject * GameObj) {
     World->removeRigidBody(rigidBody);
     Component::OnDestroy(GameObj);
+	// remove shape
+	Shape->DecRef();
+	Shape = nullptr;
     return 0;
 }

@@ -13,13 +13,15 @@ class PhysicsSystem;
     using bullet physics
 */
 typedef struct CollisionShape {
+	// ref
+	unsigned int ref;
     enum ShapeType {
         BOX = 1,
         SPHERE = 2,
         COMPOUND = 3,
     };
     // the collisionShape type
-    ShapeType Type;
+    // ShapeType Type;
     int Shared;
     // the shapes
     union CollisionShapes {
@@ -28,9 +30,15 @@ typedef struct CollisionShape {
         btCapsuleShape * Capsule;
         btCompoundShape * Compound;
     };
+	// btCollistionShapes
     CollisionShapes Shapes;
+	// create convexhull physics obj for physics engine
+    void CreateFromConvexData(int Clusters, MeshConvex* Convex, Vector3& CenterOffset);
+	// addref
+	int AddRef();
+	// decref
+	int DecRef();
 
-    void CreateFromConvexData(int Clusters, unsigned int * VNum, unsigned int * INum, float ** VBuffer, unsigned int ** IBuffer, Vector3 * Centers);
 } CollisionShape;
 
 
@@ -63,7 +71,7 @@ public:
         KINEMATIC = 2,
     };
     // object type
-    int ObjectType;
+	int ObjectType;
 public:
     PhysicsObject(Context * context);
     virtual ~PhysicsObject();

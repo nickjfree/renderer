@@ -21,6 +21,9 @@ BatchCompiler::BatchCompiler()
     PrevLayout = -1;
     for (int i = 0; i < 32; i++) {
         PreTextures[i] = -1;
+		PreUAVs[i] = -1;
+		PreShaderBuffers[i] = -1;
+		PreUAVBuffers[i] = -1;
     }
 }
 
@@ -119,10 +122,10 @@ int BatchCompiler::SetShaderResourceBuffer(int Slot, int Buffer) {
     *(unsigned char *)Offset++ = Slot;
     *(int *)Offset = Buffer;
     Offset += sizeof(int);
-    if (PreTextures[Slot] != Buffer) {
+    if (PreShaderBuffers[Slot] != Buffer) {
         Instancing = 0;
     }
-    PreTextures[Slot] = Buffer;
+	PreShaderBuffers[Slot] = Buffer;
     return sizeof(char) + sizeof(char) + sizeof(int);
 }
 
@@ -135,10 +138,10 @@ int BatchCompiler::SetUnordedAccessBuffer(int Slot, int Buffer) {
     *(unsigned char *)Offset++ = Slot;
     *(int *)Offset = Buffer;
     Offset += sizeof(int);
-    if (PreUAVs[Slot] != Buffer) {
+    if (PreUAVBuffers[Slot] != Buffer) {
         Instancing = 0;
     }
-    PreUAVs[Slot] = Buffer;
+	PreUAVBuffers[Slot] = Buffer;
     return sizeof(char) + sizeof(char) + sizeof(int);
 }
 

@@ -90,7 +90,7 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
     Box = AABB(Center, Vector3(d, d, d));
     // calc convex hull
 #ifndef _DEBUG
-    //ComputeConvexHull();
+    ComputeConvexHull();
 #endif 
     return 0;
 }
@@ -214,5 +214,13 @@ int H3DMesh::AsyncUnLoad() {
 }
 
 int H3DMesh::OnDestroy(Variant& Data) {
+	// delete convex data
+	if (NumConvex) {
+		for (auto i = 0; i < NumConvex; i++) {
+			delete ConvexHulls[i].VBuffer;
+			delete ConvexHulls[i].IBuffer;
+		}
+		delete[] ConvexHulls;
+	}
 	return 0;
 }

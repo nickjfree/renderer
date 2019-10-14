@@ -1,10 +1,14 @@
 #include "FileMapping.h"
 
 
-List<FileMapping> FileMapping::Mappings_;
+List<MappingInfo> FileMapping::Mappings_;
 Mutex FileMapping::Lock_;
 
 FileMapping::FileMapping(): mapping_(nullptr) {
+}
+
+
+FileMapping::FileMapping(MappingInfo * info): mapping_(info) {
 
 }
 
@@ -16,21 +20,16 @@ FileMapping::~FileMapping() {
 
 
 void FileMapping::Destory() {
-	Lock_.Acquire();
 	printf("unmapping file %s\n", mapping_->FileName);
+	
 	UnmapViewOfFile(mapping_->Data);
 	CloseHandle(mapping_->hMapping);
 	CloseHandle(mapping_->hFile);
 	// delete mapping info
 	delete mapping_;
 	// remove control info from list
-	for (auto iter = Mappings_.Begin(); iter != Mappings_.End(); iter++) {
-		auto mapping = *iter;
-		if (mapping->mapping_ == mapping_) {
-			Mappings_.Remove(iter);
-			break;
-		}
-	}
+	Lock_.Acquire();
+	Mappings_.Remove(mapping_);
 	Lock_.Release();
 }
 
@@ -75,24 +74,22 @@ FileMapping& FileMapping::operator=(FileMapping&& rh) noexcept {
 	return *this;
 }
 
-FileMapping& FileMapping::CreateMapping(const char* path) {
+FileMapping FileMapping::CreateMapping(const char* path) {
 	Lock_.Acquire();
-	auto& mapping = _CreateMapping(path);
-	printf("mapping data %llx\n", mapping.mapping_->Data);
+	auto mapping = _CreateMapping(path);
 	Lock_.Release();
 	return mapping;
 }
 
-FileMapping& FileMapping::_CreateMapping(const char* path) {
+FileMapping FileMapping::_CreateMapping(const char* path) {
 	
 	
 
 	for (auto iter = Mappings_.Begin(); iter != Mappings_.End(); iter++) {
 		auto mapping = *iter;
-		if (mapping && !strcmp(mapping->GetFileName(), path)) {
+		if (mapping && !strcmp(mapping->FileName, path)) {
 			// found return it
-			printf("mapping data old %llx\n", mapping->mapping_->Data);
-			return *mapping;
+			return FileMapping(mapping);
 		}
 	}
 	// not found, ceate new one
@@ -101,20 +98,16 @@ FileMapping& FileMapping::_CreateMapping(const char* path) {
 	mappinginfo->hFile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
 	mappinginfo->hMapping = CreateFileMapping(mappinginfo->hFile, NULL, PAGE_READONLY, 0, 0, NULL);
 	// new file mapping ref is 0
-	mappinginfo->ref = 0;
+	mappinginfo->ref = 1;
 	if (mappinginfo->hMapping == INVALID_HANDLE_VALUE || mappinginfo->hMapping == NULL)
 	{
 		printf("mapping failed------------\n");
-		return FileMapping();
+		return FileMapping(nullptr);
 	}
 	mappinginfo->Data = MapViewOfFile(mappinginfo->hMapping, FILE_MAP_READ, 0, 0, 0);
-	// create a new one
-	auto mapping = new FileMapping();
-	mapping->mapping_ = mappinginfo;
 	// insert to list
-	Mappings_.Insert(mapping);
-	printf("mapping data new %llx\n", mapping->mapping_->Data);
-	return *mapping;
+	Mappings_.Insert(mappinginfo);
+	return FileMapping(mappinginfo);;
 }
 
 void * FileMapping::GetData() const {

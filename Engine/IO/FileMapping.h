@@ -26,14 +26,15 @@ private:
 	void Destory();
 	// static values for keep track of mappings
 	static Mutex Lock_;
-	static List<FileMapping> Mappings_;
+	static List<MappingInfo> Mappings_;
 	// create mapping
-	static FileMapping& _CreateMapping(const char* path);
+	static FileMapping _CreateMapping(const char* path);
 public:
 	FileMapping();
+	FileMapping(MappingInfo * info);
 	~FileMapping();
 	// create mapping
-	static FileMapping& CreateMapping(const char* path);
+	static FileMapping CreateMapping(const char* path);
 	// copy constructor
 	FileMapping(const FileMapping& rh);
 	// assign 

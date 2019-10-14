@@ -37,6 +37,8 @@ private:
     int PrevRasterizer;
     int PreTextures[32];
     int PreUAVs[32];
+	int PreShaderBuffers[32];
+	int PreUAVBuffers[32];
     // buffer
     char * CommandBuffer;
     // buffer pointer

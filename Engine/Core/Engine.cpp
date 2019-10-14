@@ -56,6 +56,7 @@ int Engine::Update(int ms) {
     InputSystem * Input = context->GetSubsystem<InputSystem>();
     PhysicsSystem * Physics = context->GetSubsystem<PhysicsSystem>();
     AnimationSystem * Anime = context->GetSubsystem<AnimationSystem>();
+
     Queue->Update(ms);
     Level->Update(ms);
     Anime->Update(ms);

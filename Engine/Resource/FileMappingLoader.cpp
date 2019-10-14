@@ -9,7 +9,7 @@ FileMappingLoader::~FileMappingLoader(void)
 {
 }
 
-FileMapping& FileMappingLoader::GetMapping(const char* FileName) {
+FileMapping FileMappingLoader::GetMapping(const char* FileName) {
 	return FileMapping::CreateMapping(FileName);
 }
 
@@ -25,7 +25,6 @@ unsigned int FileMappingLoader::hash(const char * str)
 void * FileMappingLoader::GetFileHeader(void * Base, const char * Name)
 {
     int Index = FindEntry(Name);
-	printf("mapping %s Base: %llx\n", Name, Base);
     FileEntry * Entry = (FileEntry*)((char *)Base + 4);
     while (strcmp(Entry[Index].name, Name))
     {
@@ -45,7 +44,7 @@ int FileMappingLoader::FindEntry(const char * Name)
 Deserializer FileMappingLoader::GetDeserializer(const String& URL) {
     String Paths[3];
     URL.Split('\\', Paths, 3);
-    auto& mapping = GetMapping(Paths[1].ToStr());
+    auto mapping = GetMapping(Paths[1].ToStr());
     void * Header = GetFileHeader(mapping.GetData(), Paths[2].ToStr());
     return Deserializer(mapping, Header);
 }

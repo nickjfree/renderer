@@ -29,7 +29,7 @@ private:
 public:
     FileMappingLoader(Context * context);
     ~FileMappingLoader(void);
-	FileMapping& GetMapping(const char* FileName);
+	FileMapping GetMapping(const char* FileName);
 private:
     unsigned int hash(const char * str);
 public:

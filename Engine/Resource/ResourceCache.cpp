@@ -185,7 +185,6 @@ Resource * ResourceCache::CreateResource(const String& URL) {
 
 void ResourceCache::RemoveResource(Resource * resource) {
 	// remove it
-	auto Iter = Resources.Find(resource->GetUrl());
 	Resources.Erase(resource->GetUrl());
 	delete resource;
 }

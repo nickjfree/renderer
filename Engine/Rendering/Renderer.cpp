@@ -3,13 +3,13 @@
 
 USING_ALLOCATER(Renderer);
 
-Renderer::Renderer(Context * context) : Component(context) {
+Renderer::Renderer(Context* context) : Component(context) {
 }
 
 
 Renderer::~Renderer() {
 }
 
-int Renderer::OnTransform(GameObject * GameObj) {
-    return 0;
+int Renderer::OnTransform(GameObject* GameObj) {
+	return 0;
 }

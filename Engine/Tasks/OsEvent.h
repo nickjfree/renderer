@@ -7,26 +7,26 @@
 #include "Core\Shortcuts.h"
 
 /*
-    win32 event
+	win32 event
 */
 
 #define EVENT_MAX_JOIN 256
 
 class OsEvent
 {
-    DECLAR_ALLOCATER(OsEvent);
-    DECLAR_RECYCLE(OsEvent);
-    friend 	OsEvent;
+	DECLAR_ALLOCATER(OsEvent);
+	DECLAR_RECYCLE(OsEvent);
+	friend 	OsEvent;
 private:
-    HANDLE hEvent;
+	HANDLE hEvent;
 public:
-    OsEvent();
-    OsEvent(bool manual);
-    ~OsEvent();
-    void Pulse();
-    void Set();
-    void Reset();
-    static int Join(int Count, OsEvent ** Events, bool reset);
+	OsEvent();
+	OsEvent(bool manual);
+	~OsEvent();
+	void Pulse();
+	void Set();
+	void Reset();
+	static int Join(int Count, OsEvent** Events, bool reset);
 
 };
 

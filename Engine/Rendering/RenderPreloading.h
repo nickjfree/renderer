@@ -10,9 +10,9 @@ class RenderPreloading : public GPUResource {
 	BASEOBJECT(RenderPreloading);
 	DECLAR_ALLOCATER(RenderPreloading)
 public:
-    RenderPreloading(Context * context);
-    virtual ~RenderPreloading();
-    virtual int OnSubResource(int Message, Resource * Sub, Variant& Param);
+	RenderPreloading(Context* context);
+	virtual ~RenderPreloading();
+	virtual int OnSubResource(int Message, Resource* Sub, Variant& Param);
 };
 
 #endif

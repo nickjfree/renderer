@@ -10,15 +10,15 @@ class InputSystem;
 class InputHandler {
 
 private:
-    // KEYMAPPINGS
-    InputSystem * Input;
+	// KEYMAPPINGS
+	InputSystem* Input;
 
 private:
 public:
-    InputHandler(InputSystem * Input);
-    virtual ~InputHandler();
-    // handle messages
-    int OnWindowsMessage(int msg, size_t lParam, size_t wParam);
+	InputHandler(InputSystem* Input);
+	virtual ~InputHandler();
+	// handle messages
+	int OnWindowsMessage(int msg, size_t lParam, size_t wParam);
 };
 
 #endif 

@@ -11,21 +11,21 @@
 class HashIndex
 {
 private:
-    int * HashEntry;
-    int * IndexEntry;
-    int HashSize;
-    int IndexSize;
-    int HashMask;
+	int* HashEntry;
+	int* IndexEntry;
+	int HashSize;
+	int IndexSize;
+	int HashMask;
 public:
-    HashIndex();
-    HashIndex(int HashSize, int IndexSize);
-    int Add(int key, int index);
-    int First(int key);
-    int Next(int index);
-    int Remove(int key, int index);
-    int Reset();
-    int Resize(int HashSize, int IndexSize);
-    virtual ~HashIndex();
+	HashIndex();
+	HashIndex(int HashSize, int IndexSize);
+	int Add(int key, int index);
+	int First(int key);
+	int Next(int index);
+	int Remove(int key, int index);
+	int Reset();
+	int Resize(int HashSize, int IndexSize);
+	virtual ~HashIndex();
 
 };
 

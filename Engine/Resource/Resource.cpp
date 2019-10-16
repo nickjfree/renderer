@@ -18,23 +18,23 @@ Resource::~Resource()
 
 
 Deserializer Resource::AsyncLoad() {
-    printf("asyncload %s\n", URL.ToStr());
-    return Loader->GetDeserializer(URL);
+	printf("asyncload %s\n", URL.ToStr());
+	return Loader->GetDeserializer(URL);
 }
 
 void Resource::SetUrl(String& url) {
-    URL = url;
-    String Paths[3];
-    URL.Split('\\', Paths, 3);
-    Pack = Paths[1];
-    File = Paths[2];
+	URL = url;
+	String Paths[3];
+	URL.Split('\\', Paths, 3);
+	Pack = Paths[1];
+	File = Paths[2];
 }
 
-void Resource::AddOwner(Resource * owner, Variant& Parameter) {
+void Resource::AddOwner(Resource* owner, Variant& Parameter) {
 	auto notice = new CallerNotice();
 	notice->Caller = owner;
 	notice->Param = Parameter;
-    Owner.Insert(notice);
+	Owner.Insert(notice);
 }
 
 void Resource::RemoveOwner(Resource* owner) {
@@ -50,13 +50,13 @@ void Resource::RemoveOwner(Resource* owner) {
 }
 
 int Resource::NotifyOwner(int Message) {
-	for(auto iter = Owner.Begin();  iter != Owner.End(); iter++) {
+	for (auto iter = Owner.Begin(); iter != Owner.End(); iter++) {
 		auto notice = *iter;
-        Resource * owner = notice->Caller;
-        owner->OnSubResource(Message, this, notice->Param);
+		Resource* owner = notice->Caller;
+		owner->OnSubResource(Message, this, notice->Param);
 		owner->UpdateStatus();
-    }
-    return 0;
+	}
+	return 0;
 }
 
 
@@ -79,11 +79,13 @@ int Resource::HandlePendingLoad() {
 	auto iter = PendingOperations.Begin();
 	while (iter != PendingOperations.End()) {
 		auto pending = *iter;
-		if (pending->Message == Resource::RM_LOAD && AsyncStatus != Resource::S_UNLOADING ) {
+		if (pending->Message == Resource::RM_LOAD && AsyncStatus != Resource::S_UNLOADING) {
 			cache->AsyncLoadResource(GetUrl(), pending->Caller, pending->Param);
-		} else if (pending->Message == Resource::RM_UNLOAD && AsyncStatus == Resource::S_LOADING) {
+		}
+		else if (pending->Message == Resource::RM_UNLOAD && AsyncStatus == Resource::S_LOADING) {
 			cache->AsyncUnLoadResource(GetUrl(), pending->Caller, pending->Param);
-		} else {
+		}
+		else {
 			break;
 		}
 		// operation applied, remove it

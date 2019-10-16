@@ -19,7 +19,7 @@ public:
 	Serializer(const String& filePath);
 	// destructor
 	~Serializer();
-    // create
+	// create
 	void Create(const String& filePath);
 
 	// write data

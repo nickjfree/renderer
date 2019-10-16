@@ -12,54 +12,54 @@
 
 
 /*
-    Animator Component
+	Animator Component
 */
 
-class Animator : public Component 
+class Animator : public Component
 {
 	OBJECT(Animator);
-    BASEOBJECT(Animator);
-    DECLAR_ALLOCATER(Animator);
+	BASEOBJECT(Animator);
+	DECLAR_ALLOCATER(Animator);
 
 private:
-    // test stage
-    AnimationStage * Stage;
-    // test blending node
-    BlendingNode * BlendNode;
-    // skeleton
-    Skeleton * skeleton;
-    // blendshape
-    BlendShape * BlendShape_;
-    // blendshape description
-    BSDesc BlendShapeDescStage_;
-    BSDesc BlendShapeDesc_;
+	// test stage
+	AnimationStage* Stage;
+	// test blending node
+	BlendingNode* BlendNode;
+	// skeleton
+	Skeleton* skeleton;
+	// blendshape
+	BlendShape* BlendShape_;
+	// blendshape description
+	BSDesc BlendShapeDescStage_;
+	BSDesc BlendShapeDesc_;
 
 public:
-    Animator(Context * context);
-    virtual ~Animator();
-    // Set Stage
-    void SetAnimationStage(int Layer, AnimationClip * Clip, unsigned char StartBone, float Scale = 1.0f);
-    // Set blending node
-    void SetBlendingNode(BlendingNode * Node);
-    // Set Skeleton
-    void SetSkeleton(Skeleton * Skeleton) { skeleton = Skeleton; }
-    // Set blendshape
-    void SetBlendShape(BlendShape * blendshape);
-    // Set blendshape weight by mesh name
-    void SetBlendShapeWeight(const String& name, float weight);
-    // Set blendshape weight by mesh id
-    void SetBlendShapeWeight(int index, float weight);
-    // get blending node
-    BlendingNode * GetBlendingNode() const;
+	Animator(Context* context);
+	virtual ~Animator();
+	// Set Stage
+	void SetAnimationStage(int Layer, AnimationClip* Clip, unsigned char StartBone, float Scale = 1.0f);
+	// Set blending node
+	void SetBlendingNode(BlendingNode* Node);
+	// Set Skeleton
+	void SetSkeleton(Skeleton* Skeleton) { skeleton = Skeleton; }
+	// Set blendshape
+	void SetBlendShape(BlendShape* blendshape);
+	// Set blendshape weight by mesh name
+	void SetBlendShapeWeight(const String& name, float weight);
+	// Set blendshape weight by mesh id
+	void SetBlendShapeWeight(int index, float weight);
+	// get blending node
+	BlendingNode* GetBlendingNode() const;
 	// list bendshapes
 	void ListBlendShapes() const;
-	
+
 	// update
-    void Update(float time);
-    // on attach
-    virtual int OnAttach(GameObject * GameObj);
-    // on destroy
-    virtual int OnDestroy(GameObject * GameObj);
+	void Update(float time);
+	// on attach
+	virtual int OnAttach(GameObject* GameObj);
+	// on destroy
+	virtual int OnDestroy(GameObject* GameObj);
 };
 
 #endif

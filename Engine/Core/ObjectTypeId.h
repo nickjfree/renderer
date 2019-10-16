@@ -6,13 +6,13 @@ A type-class for a certain class, only the id is usefull
 */
 class ObjectTypeId {
 private:
-    static unsigned int TypeId;
-    unsigned int InstanceId;
-    unsigned int ClassId;
+	static unsigned int TypeId;
+	unsigned int InstanceId;
+	unsigned int ClassId;
 public:
-    ObjectTypeId();
-    ~ObjectTypeId();
-    unsigned int GetId();
+	ObjectTypeId();
+	~ObjectTypeId();
+	unsigned int GetId();
 };
 
 #endif

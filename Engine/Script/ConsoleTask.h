@@ -6,19 +6,19 @@
 
 class ConsoleTask : public Task {
 
-    DECLAR_ALLOCATER(ConsoleTask);
-    DECLAR_RECYCLE(ConsoleTask);
+	DECLAR_ALLOCATER(ConsoleTask);
+	DECLAR_RECYCLE(ConsoleTask);
 
 public:
-    // script code line
-    char * buffer;
-    // system
-    ScriptingSystem * Scripting;
+	// script code line
+	char* buffer;
+	// system
+	ScriptingSystem* Scripting;
 public:
-    ConsoleTask();
-    virtual ~ConsoleTask();
-    virtual int Work();
-    virtual int Complete();
+	ConsoleTask();
+	virtual ~ConsoleTask();
+	virtual int Work();
+	virtual int Complete();
 };
 
 #endif

@@ -4,8 +4,8 @@
 class BinarySerializer
 {
 public:
-    BinarySerializer();
-    ~BinarySerializer();
+	BinarySerializer();
+	~BinarySerializer();
 };
 
 #endif

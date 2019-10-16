@@ -6,14 +6,14 @@
 
 class Semaphore {
 private:
-    HANDLE semaphore;
+	HANDLE semaphore;
 public:
-    // acquire 
-    void Acquire();
-    // release
-    void Release();
-    Semaphore(int MaxCount);
-    virtual ~Semaphore();
+	// acquire 
+	void Acquire();
+	// release
+	void Release();
+	Semaphore(int MaxCount);
+	virtual ~Semaphore();
 };
 
 #endif 

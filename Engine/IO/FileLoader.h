@@ -3,16 +3,16 @@
 
 #include "ResourceLoader.h"
 /*
-    FileLoader. load whole file into memory
+	FileLoader. load whole file into memory
 */
 class FileLoader : public ResourceLoader
 {
-    OBJECT(FileLoader);
-    BASEOBJECT(ResourceLoader);
+	OBJECT(FileLoader);
+	BASEOBJECT(ResourceLoader);
 public:
-    FileLoader(Context * context);
-    ~FileLoader();
-    Deserializer GetDeserializer(const String& URL);
+	FileLoader(Context* context);
+	~FileLoader();
+	Deserializer GetDeserializer(const String& URL);
 };
 
 #endif

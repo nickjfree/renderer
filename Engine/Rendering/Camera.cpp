@@ -4,11 +4,11 @@
 
 USING_ALLOCATER(Camera);
 
-Camera::Camera(Context * context): Component(context)
+Camera::Camera(Context* context) : Component(context)
 {
-    RenderCamera = new RenderingCamera();
-    RenderingSystem * Render = context->GetSubsystem<RenderingSystem>();
-    Render->AddCamera(RenderCamera);
+	RenderCamera = new RenderingCamera();
+	RenderingSystem* Render = context->GetSubsystem<RenderingSystem>();
+	Render->AddCamera(RenderCamera);
 }
 
 
@@ -27,14 +27,14 @@ void Camera::Disable() {
 
 }
 
-int Camera::HandleEvent(Event * Ev) {
+int Camera::HandleEvent(Event* Ev) {
 
-    return 0;
+	return 0;
 }
 
-int Camera::OnTransform(GameObject * GameObj) {
-    // set init position
-    RenderCamera->SetTransform(GameObj->GetWorldTranslation());
-    RenderCamera->SetRotation(GameObj->GetWorldRotation());
-    return 0;
+int Camera::OnTransform(GameObject* GameObj) {
+	// set init position
+	RenderCamera->SetTransform(GameObj->GetWorldTranslation());
+	RenderCamera->SetRotation(GameObj->GetWorldRotation());
+	return 0;
 }

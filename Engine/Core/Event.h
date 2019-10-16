@@ -11,7 +11,7 @@
 
 
 /*
-    Event codes
+	Event codes
 */
 #define EV_NODE_ADD    300
 #define EV_NODE_REMOVE 301
@@ -37,15 +37,15 @@
 
 class Event
 {
-    DECLAR_ALLOCATER(Event);
-    DECLAR_RECYCLE(Event);
+	DECLAR_ALLOCATER(Event);
+	DECLAR_RECYCLE(Event);
 public:
-    int EventId;
-    Dict EventParam;
+	int EventId;
+	Dict EventParam;
 public:
-    Event();
-    virtual ~Event();
-    Variant& operator[] (String& buff);
+	Event();
+	virtual ~Event();
+	Variant& operator[] (String& buff);
 };
 
 /*

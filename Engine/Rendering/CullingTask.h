@@ -9,31 +9,31 @@
 #include "Core\Shortcuts.h"
 
 /*
-    Task for querying visible objects from scene and then generating command buffer from them
+	Task for querying visible objects from scene and then generating command buffer from them
 */
 
 class CullingTask : public Task
 {
-    DECLAR_ALLOCATER(CullingTask);
-    DECLAR_RECYCLE(CullingTask);
+	DECLAR_ALLOCATER(CullingTask);
+	DECLAR_RECYCLE(CullingTask);
 public:
-    // renderview 
-    RenderView * renderview;
-    // spatial, from which to cull
-    Spatial * spatial;
-    // objects type
-    int ObjectType;
-    // event
-    OsEvent * Event;
-    // render context
-    RenderContext * Context;
+	// renderview 
+	RenderView* renderview;
+	// spatial, from which to cull
+	Spatial* spatial;
+	// objects type
+	int ObjectType;
+	// event
+	OsEvent* Event;
+	// render context
+	RenderContext* Context;
 public:
-    CullingTask();
-    ~CullingTask();
+	CullingTask();
+	~CullingTask();
 
-    virtual int Work();
+	virtual int Work();
 
-    virtual int Complete();
+	virtual int Complete();
 };
 
 #endif

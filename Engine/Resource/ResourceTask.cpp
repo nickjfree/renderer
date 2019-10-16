@@ -3,7 +3,7 @@
 USING_ALLOCATER(ResourceTask);
 USING_RECYCLE(ResourceTask);
 
-ResourceTask::ResourceTask(): Unload(false)
+ResourceTask::ResourceTask() : Unload(false)
 {
 }
 
@@ -24,11 +24,12 @@ int ResourceTask::Work() {
 		// on load complete
 		resource->OnLoadComplete(Param);
 
-	} else {
+	}
+	else {
 		// do unload task
 		resource->AsyncUnLoad();
 	}
-    return 0;
+	return 0;
 }
 
 int ResourceTask::Complete() {
@@ -37,9 +38,10 @@ int ResourceTask::Complete() {
 		resource->OnCreateComplete(Param);
 		// update status, notify owner if depcount==0
 		resource->UpdateStatus();
-		
+
 		printf_s("resource %s created\n", resource->GetUrl().ToStr());
-	} else {
+	}
+	else {
 		// unload complete
 		resource->SetAsyncStatus(Resource::S_DESTORYED);
 		// handle pending load
@@ -53,5 +55,5 @@ int ResourceTask::Complete() {
 		printf_s("resource %s destroyed\n", resource->GetUrl().ToStr());
 	}
 
-    return 0;
+	return 0;
 }

@@ -7,23 +7,23 @@
 #include "RenderContext.h"
 
 /*
-    CPU resource base
+	CPU resource base
 */
 class GPUResource : public Resource
 {
-    OBJECT(GPUResource);
-    BASEOBJECT(Resource);
+	OBJECT(GPUResource);
+	BASEOBJECT(Resource);
 protected:
-    // render api interface
-    RenderInterface * renderinterface;
-    // render context
-    RenderContext * rendercontext;
-    // resource id in GPU
-    int id;
+	// render api interface
+	RenderInterface* renderinterface;
+	// render context
+	RenderContext* rendercontext;
+	// resource id in GPU
+	int id;
 public:
-    GPUResource(Context * context);
-    ~GPUResource();
-    int GetId() { return id; }
+	GPUResource(Context* context);
+	~GPUResource();
+	int GetId() { return id; }
 };
 
 #endif

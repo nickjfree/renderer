@@ -2,8 +2,8 @@
 #define __WORKER_THREAD__
 
 /*
-    worker thread for processing async tasks.
-    Resource loading. animation and some physics
+	worker thread for processing async tasks.
+	Resource loading. animation and some physics
 */
 #include <Windows.h>
 #include "WorkQueue.h"
@@ -13,27 +13,27 @@
 class WorkerThread
 {
 protected:
-    // thread handle
-    HANDLE hThread;
-    // DWORD thread id
-    DWORD ThreadId;
-    // working flag
-    bool Working;
-    // thread index
-    int Index;
-    // task finish
-    int TaskFinish;
-    // Work queue
-    WorkQueue * Queue;
+	// thread handle
+	HANDLE hThread;
+	// DWORD thread id
+	DWORD ThreadId;
+	// working flag
+	bool Working;
+	// thread index
+	int Index;
+	// task finish
+	int TaskFinish;
+	// Work queue
+	WorkQueue* Queue;
 public:
-    static int WINAPI ThreadEntry(WorkerThread * Thread);
+	static int WINAPI ThreadEntry(WorkerThread* Thread);
 public:
-    WorkerThread(WorkQueue * Queue, int Index);
-    virtual ~WorkerThread();
-    virtual void WorkFunction(void * Param);
-    int Start();
-    int Terminate();
-    int Stop();
+	WorkerThread(WorkQueue* Queue, int Index);
+	virtual ~WorkerThread();
+	virtual void WorkFunction(void* Param);
+	int Start();
+	int Terminate();
+	int Stop();
 };
 
 #endif

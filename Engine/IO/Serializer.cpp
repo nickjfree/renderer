@@ -2,11 +2,11 @@
 #include "Serializer.h"
 
 
-Serializer::Serializer(): hFile(INVALID_HANDLE_VALUE) {
+Serializer::Serializer() : hFile(INVALID_HANDLE_VALUE) {
 
 }
 
-Serializer::Serializer(const String& filePath){
+Serializer::Serializer(const String& filePath) {
 	Create(filePath);
 }
 
@@ -22,7 +22,7 @@ void Serializer::Create(const String& filePath) {
 }
 
 
-void Serializer::Write(void* data, unsigned int len) 
+void Serializer::Write(void* data, unsigned int len)
 {
 	WriteFile(hFile, data, len, NULL, NULL);
 }

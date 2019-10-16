@@ -10,25 +10,25 @@
 #include "Container\RecyclePool.h"
 
 /*
-    render object base spatial class
+	render object base spatial class
 */
 
 class Spatial
 {
 protected:
-    Node * Root;
+	Node* Root;
 public:
-    // insert
-    virtual int Add(RenderObject* RenderObj);
-    //remove
-    virtual int Remove(RenderObject* RenderObj);
-    // query by frustum
-    virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Type);
-    // query by aabb
-    virtual int Query(AABB& Box, Vector<Node*>& Result, int Type);
+	// insert
+	virtual int Add(RenderObject* RenderObj);
+	//remove
+	virtual int Remove(RenderObject* RenderObj);
+	// query by frustum
+	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Type);
+	// query by aabb
+	virtual int Query(AABB& Box, Vector<Node*>& Result, int Type);
 public:
-    Spatial();
-    ~Spatial();
+	Spatial();
+	~Spatial();
 };
 
 #endif

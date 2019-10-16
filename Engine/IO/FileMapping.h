@@ -12,11 +12,11 @@ typedef struct  MappingInfo
 	unsigned int   ref;
 	HANDLE         hFile;
 	HANDLE         hMapping;
-	void *         Data;
+	void* Data;
 	char           FileName[256];
 }MappingInfo;
 
-class FileMapping 
+class FileMapping
 {
 
 private:
@@ -31,7 +31,7 @@ private:
 	static FileMapping _CreateMapping(const char* path);
 public:
 	FileMapping();
-	FileMapping(MappingInfo * info);
+	FileMapping(MappingInfo* info);
 	~FileMapping();
 	// create mapping
 	static FileMapping CreateMapping(const char* path);
@@ -42,9 +42,9 @@ public:
 	// move
 	FileMapping& operator=(FileMapping&& rh) noexcept;
 	// get data
-	void * GetData() const;
+	void* GetData() const;
 	// get filename
-	const char * GetFileName() const { return mapping_->FileName; }
+	const char* GetFileName() const { return mapping_->FileName; }
 	// release map
 	void Release();
 };

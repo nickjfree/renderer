@@ -7,26 +7,26 @@
 #include "Resource\ResourceCache.h"
 
 /*
-    Resource Loading task
+	Resource Loading task
 */
 
 class ResourceTask : public Task
 {
-    DECLAR_ALLOCATER(ResourceTask);
-    DECLAR_RECYCLE(ResourceTask);
+	DECLAR_ALLOCATER(ResourceTask);
+	DECLAR_RECYCLE(ResourceTask);
 public:
-    Resource * resource;
-    Resource * caller;
+	Resource* resource;
+	Resource* caller;
 	ResourceCache* cache;
-    Variant Param;
+	Variant Param;
 	bool Unload;
 public:
-    ResourceTask();
-    virtual ~ResourceTask();
+	ResourceTask();
+	virtual ~ResourceTask();
 
-    virtual int Work();
+	virtual int Work();
 
-    virtual int Complete();
+	virtual int Complete();
 };
 
 #endif

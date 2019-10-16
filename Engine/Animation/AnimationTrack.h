@@ -7,31 +7,31 @@
 class Animation;
 
 /*
-    keyframe of a bone/node
+	keyframe of a bone/node
 */
 typedef struct KeyFrame {
-    Vector3 Translation;
-    Quaternion Rotation;
-    float Scale;
-    int BoneId;
-    float Time;
+	Vector3 Translation;
+	Quaternion Rotation;
+	float Scale;
+	int BoneId;
+	float Time;
 }KeyFrame;
 
 
 /*
-    aniamtion track of a bone/node
+	aniamtion track of a bone/node
 */
 class AnimationTrack {
 
-    friend Animation;
+	friend Animation;
 
 private:
-    Vector<KeyFrame> Frames;
+	Vector<KeyFrame> Frames;
 public:
-    AnimationTrack();
-    ~AnimationTrack();
+	AnimationTrack();
+	~AnimationTrack();
 
-    void Sample(float time, int start, int end, KeyFrame ** left, KeyFrame ** right, float * alpha);
+	void Sample(float time, int start, int end, KeyFrame** left, KeyFrame** right, float* alpha);
 
 };
 

@@ -14,30 +14,30 @@ class GameObject;
 class Component : public EventNode
 {
 
-    DECLAR_ALLOCATER(Component);
-    OBJECT(Component);
-    BASEOBJECT(Component);
+	DECLAR_ALLOCATER(Component);
+	OBJECT(Component);
+	BASEOBJECT(Component);
 protected:
-    GameObject * Owner;
+	GameObject* Owner;
 public:
-    Component(Context * context_);
-    virtual ~Component();
-    unsigned int GetStringHash();
-    // Get set gameobject
-    void SetOwner(GameObject * Owner);
-    GameObject * GetOwner();
-    // broadcast event to parent gameobject
-    int BroadCast(Event * Evt);
-    // on add to gameobject
-    virtual int OnAttach(GameObject * GameObj);
-    // on transform
-    virtual int OnTransform(GameObject * GameObj);
-    // on gameobejct destory
-    virtual int OnDestroy(GameObject * GameObj);
-    // load from raw filedata and level interface
-    virtual int Load(void * Raw, Level * level);
+	Component(Context* context_);
+	virtual ~Component();
+	unsigned int GetStringHash();
+	// Get set gameobject
+	void SetOwner(GameObject* Owner);
+	GameObject* GetOwner();
+	// broadcast event to parent gameobject
+	int BroadCast(Event* Evt);
+	// on add to gameobject
+	virtual int OnAttach(GameObject* GameObj);
+	// on transform
+	virtual int OnTransform(GameObject* GameObj);
+	// on gameobejct destory
+	virtual int OnDestroy(GameObject* GameObj);
+	// load from raw filedata and level interface
+	virtual int Load(void* Raw, Level* level);
 	// save to raw data
-	virtual int Save(Serializer* levelFile, Level * level);
+	virtual int Save(Serializer* levelFile, Level* level);
 };
 
 #endif

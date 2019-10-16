@@ -11,24 +11,24 @@
 class AnimationSystem : public System
 {
 
-    BASEOBJECT(System);
-    OBJECT(AnimationSystem);
+	BASEOBJECT(System);
+	OBJECT(AnimationSystem);
 
 private:
-    // all the animators
-    List<Animator> Animators;
-    // destroyed animator
-    Vector<Animator*> Destroyed;
+	// all the animators
+	List<Animator> Animators;
+	// destroyed animator
+	Vector<Animator*> Destroyed;
 public:
-    AnimationSystem(Context * context);
-    virtual ~AnimationSystem();
+	AnimationSystem(Context* context);
+	virtual ~AnimationSystem();
 
-    // add animator
-    void AddAnimator(Animator * animator);
-    // remove animator
-    void RemoveAnimator(Animator * animator);
-    // update
-    virtual int Update(int ms);
+	// add animator
+	void AddAnimator(Animator* animator);
+	// remove animator
+	void RemoveAnimator(Animator* animator);
+	// update
+	virtual int Update(int ms);
 };
 
 

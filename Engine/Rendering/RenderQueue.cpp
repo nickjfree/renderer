@@ -4,7 +4,7 @@
 
 RenderQueue::RenderQueue()
 {
-    memset(CommandBuffers, 0, sizeof(void*)*R_STAGE_MAX);
+	memset(CommandBuffers, 0, sizeof(void*) * R_STAGE_MAX);
 }
 
 
@@ -13,34 +13,34 @@ RenderQueue::~RenderQueue()
 }
 
 
-int RenderQueue::PushCommand(int Stage, void * Commands) {
-    if (!Commands || Stage >= R_STAGE_MAX || Stage < 0) {
-        return -1;
-    }
-    CommandBuffers[Stage] = Commands;
-    return Stage;
+int RenderQueue::PushCommand(int Stage, void* Commands) {
+	if (!Commands || Stage >= R_STAGE_MAX || Stage < 0) {
+		return -1;
+	}
+	CommandBuffers[Stage] = Commands;
+	return Stage;
 }
 
-void * RenderQueue::PopCommand(int Stage) {
-    if (Stage < 0 || Stage >= R_STAGE_MAX) {
-        return 0;
-    }
-    void * ret = CommandBuffers[Stage];
-    CommandBuffers[Stage] = 0;
-    return ret;
+void* RenderQueue::PopCommand(int Stage) {
+	if (Stage < 0 || Stage >= R_STAGE_MAX) {
+		return 0;
+	}
+	void* ret = CommandBuffers[Stage];
+	CommandBuffers[Stage] = 0;
+	return ret;
 }
 
-int RenderQueue::Execute(RenderProcesser * Processer) {
+int RenderQueue::Execute(RenderProcesser* Processer) {
 	// set a present cmd
 	//PushCommand(R_STAGE_PRESENT, Presnet);
-    // execte all command buffers
-    for (int Stage = 0; Stage < R_STAGE_MAX; Stage++) {
-        void * CommandBuffer = CommandBuffers[Stage];
-        if (CommandBuffer) {
-            Processer->Execute(CommandBuffer);
-            // clear command buffer pointer. so old commands won't run again in the next frame 
-            CommandBuffers[Stage] = 0;
-        }
-    }
-    return 0;
+	// execte all command buffers
+	for (int Stage = 0; Stage < R_STAGE_MAX; Stage++) {
+		void* CommandBuffer = CommandBuffers[Stage];
+		if (CommandBuffer) {
+			Processer->Execute(CommandBuffer);
+			// clear command buffer pointer. so old commands won't run again in the next frame 
+			CommandBuffers[Stage] = 0;
+		}
+	}
+	return 0;
 }

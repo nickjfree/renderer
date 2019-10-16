@@ -12,10 +12,10 @@ class Context;
 class ObjectFactory
 {
 public:
-    ObjectFactory() {}
-    ~ObjectFactory() {}
-    virtual void * CreateObject(Context * context) = 0;
-    virtual void DestoryObject(void * Object) = 0;
+	ObjectFactory() {}
+	~ObjectFactory() {}
+	virtual void* CreateObject(Context* context) = 0;
+	virtual void DestoryObject(void* Object) = 0;
 };
 
 
@@ -23,16 +23,16 @@ template <class T>
 class ObjectFactoryImp : public ObjectFactory
 {
 public:
-    ObjectFactoryImp() {}
-    ~ObjectFactoryImp() {}
-    virtual void * CreateObject(Context * context) {
-        return new T(context);
-    }
+	ObjectFactoryImp() {}
+	~ObjectFactoryImp() {}
+	virtual void* CreateObject(Context* context) {
+		return new T(context);
+	}
 
-    virtual void DestoryObject(void * Object) {
-        T * obj = (T*)Object;
-        delete obj;
-    }
+	virtual void DestoryObject(void* Object) {
+		T* obj = (T*)Object;
+		delete obj;
+	}
 };
 
 

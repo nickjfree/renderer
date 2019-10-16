@@ -4,14 +4,14 @@
 
 #include "Spatial.h"
 /*
-    Quadtree implementation
+	Quadtree implementation
 */
 
 
 class QuadTreeImp : public Spatial {
 public:
-    QuadTreeImp();
-    ~QuadTreeImp();
+	QuadTreeImp();
+	~QuadTreeImp();
 };
 
 #endif

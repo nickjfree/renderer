@@ -6,21 +6,21 @@
 
 class AnimationCache {
 
-    DECLAR_ALLOCATER(AnimationCache);
-    DECLAR_RECYCLE(AnimationCache);
+	DECLAR_ALLOCATER(AnimationCache);
+	DECLAR_RECYCLE(AnimationCache);
 
 public:
-    // interpolated result
-    Vector<KeyFrame> Result;
-    // previous key frame
-    Vector<KeyFrame> Prev;
-    // Matrix palette
-    Matrix4x4 Palette[NUM_BONES];
+	// interpolated result
+	Vector<KeyFrame> Result;
+	// previous key frame
+	Vector<KeyFrame> Prev;
+	// Matrix palette
+	Matrix4x4 Palette[NUM_BONES];
 public:
-    AnimationCache();
-    ~AnimationCache();
-    // genaration matrix palette
-    void GeneratePalette(Skeleton * skeleton);
+	AnimationCache();
+	~AnimationCache();
+	// genaration matrix palette
+	void GeneratePalette(Skeleton* skeleton);
 
 };
 

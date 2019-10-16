@@ -3,7 +3,7 @@
 
 #include "RenderProcesser.h"
 /*
-    render stage defines
+	render stage defines
 */
 #define R_STAGE_MAX      0xFF
 #define R_STAGE_SHADOW   0x00
@@ -20,22 +20,22 @@
 
 
 /*
-    renderqueue, a collection of command buffers
+	renderqueue, a collection of command buffers
 */
 
 class RenderQueue
 {
 private:
-    void * CommandBuffers[R_STAGE_MAX];
+	void* CommandBuffers[R_STAGE_MAX];
 public:
-    RenderQueue();
-    virtual ~RenderQueue();
-    // add render commands to certain bucket
-    int PushCommand(int Stage, void * Commands);
-    // out queue
-    void * PopCommand(int Stage);
-    // execute
-    virtual int Execute(RenderProcesser * Processer);
+	RenderQueue();
+	virtual ~RenderQueue();
+	// add render commands to certain bucket
+	int PushCommand(int Stage, void* Commands);
+	// out queue
+	void* PopCommand(int Stage);
+	// execute
+	virtual int Execute(RenderProcesser* Processer);
 };
 
 

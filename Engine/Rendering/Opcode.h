@@ -3,14 +3,14 @@
 
 
 /*
-    render target
+	render target
 */
 #define OP_RENDER_TARGET 0x01
 #define OP_DEPTH_STENCIL 0x02
 
 
 /*
-    shaders
+	shaders
 */
 #define OP_SHADER_VS  0x03
 #define OP_SHADER_GS  0x04
@@ -20,14 +20,14 @@
 #define OP_SHADER_PS  0x08
 
 /*
-    constant
+	constant
 */
 #define OP_SET_CONSTANT 0x09
 #define OP_UP_CONSTANT  0x0a
 #define OP_UP_ARRAY     0x19
 
 /*
-    render stats
+	render stats
 */
 #define OP_DEPTH_STAT  0x0b
 #define OP_RASTER_STAT 0x0c
@@ -35,34 +35,34 @@
 
 
 /*
-    textures
+	textures
 */
 #define OP_TEXTURE 0x0e
 
 /*
-    shader buffer resource
+	shader buffer resource
 */
 
 #define OP_BUFFER 0x1a
 /*
-    shader buffer uav
+	shader buffer uav
 */
 
 #define OP_UAVBUF 0x1b
 /*
-    shader texture uav
+	shader texture uav
 */
 
 #define OP_UAVTEX 0x1c
 
 /*
-    geometry
+	geometry
 */
 #define OP_RENDER_GEO 0x0f
 #define OP_QUAD       0x17
 #define OP_INSTANCE   0x18
 /*
-    frame ops
+	frame ops
 */
 #define OP_CLEAR_TARGET 0x10
 #define OP_END_TARGET   0x11
@@ -71,12 +71,12 @@
 #define OP_PRESENT 0x16
 
 /*
-    layout
+	layout
 */
 #define OP_INPUT_LAYOUT 0x13
 
 /*
-    viewport
+	viewport
 */
 #define OP_VIEWPORT 0x14
 

@@ -10,65 +10,65 @@
 #include "BatchCompiler.h"
 
 /*
-    spatial tree node
+	spatial tree node
 */
 typedef AABB CullingObject;
 
 class Node
 {
-    DECLAR_ALLOCATER(Node);
-    friend Node;
+	DECLAR_ALLOCATER(Node);
+	friend Node;
 protected:
-    // positions
-    Vector3 Position;
-    // rotation
-    Quaternion Rotation;
-    // up right look vector
-    Vector3 Up;
+	// positions
+	Vector3 Position;
+	// rotation
+	Quaternion Rotation;
+	// up right look vector
+	Vector3 Up;
 
-    Vector3 Right;
+	Vector3 Right;
 
-    Vector3 Look;
+	Vector3 Look;
 
-    // AABB
-    CullingObject CullingObj;
-    // subnode of this node
-    LinkList<Node> SubNodes;
-    // sibline node
-    LinkList<Node> Sibling;
-    // node type
-    int Type;
-    // world matrix
-    Matrix4x4 Transform;
+	// AABB
+	CullingObject CullingObj;
+	// subnode of this node
+	LinkList<Node> SubNodes;
+	// sibline node
+	LinkList<Node> Sibling;
+	// node type
+	int Type;
+	// world matrix
+	Matrix4x4 Transform;
 public:
-    enum {
-        NODE = 1,
-        RENDEROBJECT = 2,
-        LIGHT = 4,
-        REFLECT = 8,
-        PORTAL = 16,
-        TRANS = 32,
-        POST
-    };
+	enum {
+		NODE = 1,
+		RENDEROBJECT = 2,
+		LIGHT = 4,
+		REFLECT = 8,
+		PORTAL = 16,
+		TRANS = 32,
+		POST
+	};
 
 private:
-    // update culling object
-    void SyncCullingObject();
+	// update culling object
+	void SyncCullingObject();
 
 public:
-    Node();
-    virtual ~Node();
-    CullingObject& GetCullingObject() { return CullingObj; }
-    int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
-    void AddChild(Node * Child);
-    void Remove(Node * Child);
-    virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
-    Matrix4x4& GetWorldMatrix();
-    virtual int Compile(BatchCompiler * Compiler, int Stage, int Lod);
-    void SetPosition(Vector3& Position_);
-    void SetRotation(Quaternion& Rot);
-    Vector3& GetPosition() { return Position; }
-    Quaternion& GetRotation() { return Rotation; }
+	Node();
+	virtual ~Node();
+	CullingObject& GetCullingObject() { return CullingObj; }
+	int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
+	void AddChild(Node* Child);
+	void Remove(Node* Child);
+	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
+	Matrix4x4& GetWorldMatrix();
+	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod);
+	void SetPosition(Vector3& Position_);
+	void SetRotation(Quaternion& Rot);
+	Vector3& GetPosition() { return Position; }
+	Quaternion& GetRotation() { return Rotation; }
 };
 
 

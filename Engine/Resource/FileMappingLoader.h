@@ -22,21 +22,21 @@ typedef struct FileEntry
 
 class FileMappingLoader : public ResourceLoader
 {
-    OBJECT(FileMappingLoader);
-    BASEOBJECT(ResourceLoader);
+	OBJECT(FileMappingLoader);
+	BASEOBJECT(ResourceLoader);
 private:
 
 public:
-    FileMappingLoader(Context * context);
-    ~FileMappingLoader(void);
+	FileMappingLoader(Context* context);
+	~FileMappingLoader(void);
 	FileMapping GetMapping(const char* FileName);
 private:
-    unsigned int hash(const char * str);
+	unsigned int hash(const char* str);
 public:
-    void * GetFileHeader(void  * Base, const char * Name);
-    virtual Deserializer GetDeserializer(const String&  URL);
+	void* GetFileHeader(void* Base, const char* Name);
+	virtual Deserializer GetDeserializer(const String& URL);
 private:
-    int FindEntry(const char * Name);
+	int FindEntry(const char* Name);
 
 };
 

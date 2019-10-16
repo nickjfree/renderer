@@ -4,11 +4,11 @@
 List<MappingInfo> FileMapping::Mappings_;
 Mutex FileMapping::Lock_;
 
-FileMapping::FileMapping(): mapping_(nullptr) {
+FileMapping::FileMapping() : mapping_(nullptr) {
 }
 
 
-FileMapping::FileMapping(MappingInfo * info): mapping_(info) {
+FileMapping::FileMapping(MappingInfo* info) : mapping_(info) {
 
 }
 
@@ -21,7 +21,7 @@ FileMapping::~FileMapping() {
 
 void FileMapping::Destory() {
 	printf("unmapping file %s\n", mapping_->FileName);
-	
+
 	UnmapViewOfFile(mapping_->Data);
 	CloseHandle(mapping_->hMapping);
 	CloseHandle(mapping_->hFile);
@@ -45,7 +45,7 @@ void FileMapping::Release() {
 	}
 }
 
-FileMapping::FileMapping(const FileMapping& rh): mapping_(nullptr) {
+FileMapping::FileMapping(const FileMapping& rh) : mapping_(nullptr) {
 	if (rh.mapping_) {
 		mapping_ = rh.mapping_;
 		auto ret = InterlockedIncrement(&mapping_->ref);
@@ -82,8 +82,8 @@ FileMapping FileMapping::CreateMapping(const char* path) {
 }
 
 FileMapping FileMapping::_CreateMapping(const char* path) {
-	
-	
+
+
 
 	for (auto iter = Mappings_.Begin(); iter != Mappings_.End(); iter++) {
 		auto mapping = *iter;
@@ -110,6 +110,6 @@ FileMapping FileMapping::_CreateMapping(const char* path) {
 	return FileMapping(mappinginfo);;
 }
 
-void * FileMapping::GetData() const {
+void* FileMapping::GetData() const {
 	return mapping_->Data;
 }

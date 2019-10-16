@@ -69,7 +69,7 @@ subject to the following restrictions:
 
 class DemoApplication;
 
-int glutmain(int argc, char **argv, int width, int height, const char* title, DemoApplication* demoApp);
+int glutmain(int argc, char** argv, int width, int height, const char* title, DemoApplication* demoApp);
 
 #if defined(BT_USE_DOUBLE_PRECISION)
 #define btglLoadMatrix glLoadMatrixd

@@ -3,7 +3,7 @@
 
 
 /*
-    Resource Loader
+	Resource Loader
 */
 
 #include "Core\System.h"
@@ -18,30 +18,30 @@
 
 class ResourceCache : public System
 {
-    OBJECT(ResourceCache);
+	OBJECT(ResourceCache);
 private:
-    FileMappingLoader * Loader;
-    // resource cache
-    HashMap<String, Resource *, CACHE_SIZE> Resources;
-    // registered resource types
-    HashMap<String, ObjectFactory *> ResourceFactorys;
-    // registered resource loaders
-    HashMap<String, ResourceLoader*> ResourceLoaderFac;
+	FileMappingLoader* Loader;
+	// resource cache
+	HashMap<String, Resource*, CACHE_SIZE> Resources;
+	// registered resource types
+	HashMap<String, ObjectFactory*> ResourceFactorys;
+	// registered resource loaders
+	HashMap<String, ResourceLoader*> ResourceLoaderFac;
 private:
-    void DoAsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter);
-	void DoAsyncUnLoadResource(Resource * resource, Resource* Caller, Variant& Parameter);
+	void DoAsyncLoadResource(const String& URL, Resource* Caller, Variant& Parameter);
+	void DoAsyncUnLoadResource(Resource* resource, Resource* Caller, Variant& Parameter);
 public:
-    ResourceCache(Context * context);
-    virtual ~ResourceCache();
-    virtual int Initialize();
-    int AsyncLoadResource(const String& URL, Resource * Caller, Variant& Parameter);
+	ResourceCache(Context* context);
+	virtual ~ResourceCache();
+	virtual int Initialize();
+	int AsyncLoadResource(const String& URL, Resource* Caller, Variant& Parameter);
 	int AsyncUnLoadResource(const String& URL, Resource* Caller, Variant& Parameter);
-    template <class T> int RegisterResource();
-    template <class T> int RegisterLoader();
-    Resource * CreateResource(const String& URL);
-    template <class T> 	inline  T* Get(const String& URL) { return (T*)GetResource(URL); }
-    Resource * GetResource(const String& URL);
-	void RemoveResource(Resource * resource);
+	template <class T> int RegisterResource();
+	template <class T> int RegisterLoader();
+	Resource* CreateResource(const String& URL);
+	template <class T> 	inline  T* Get(const String& URL) { return (T*)GetResource(URL); }
+	Resource* GetResource(const String& URL);
+	void RemoveResource(Resource* resource);
 };
 
 #endif

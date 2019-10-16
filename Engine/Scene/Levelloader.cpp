@@ -8,7 +8,7 @@
 #include "Rendering\Light.h"
 
 
-LevelLoader::LevelLoader(Context * context) : System(context)
+LevelLoader::LevelLoader(Context* context) : System(context)
 {
 }
 
@@ -18,21 +18,21 @@ LevelLoader::~LevelLoader()
 }
 
 int LevelLoader::Update(int ms) {
-    // test code
+	// test code
 
 
 
-    static int flag = 0;
-    ResourceCache * Cache = context->GetSubsystem<ResourceCache>();
-    //String LevelUrl = "Level\\levels\\desktop.level\\0";
+	static int flag = 0;
+	ResourceCache* Cache = context->GetSubsystem<ResourceCache>();
+	//String LevelUrl = "Level\\levels\\desktop.level\\0";
 	String LevelUrl = "Level\\levels\\test.level\\0";
-    if (!flag) {
+	if (!flag) {
 		LoadLevel(LevelUrl);
 		flag = 1;
 		return 0;
-    }
-  //  // try to get that resource 
-    Level * level = Cache->Get<Level>(LevelUrl);
+	}
+	//  // try to get that resource 
+	Level* level = Cache->Get<Level>(LevelUrl);
 	if (levels_.Empty()) {
 		test_frames = 0;
 		LoadLevel(LevelUrl);
@@ -48,7 +48,8 @@ int LevelLoader::Update(int ms) {
 				//UnloadLevel(LevelUrl);
 			}
 			// end test
-		} else {
+		}
+		else {
 			level->DestroyedFrames++;
 		}
 	}
@@ -62,21 +63,22 @@ int LevelLoader::Update(int ms) {
 			levels_.Remove(iter);
 			cache->AsyncUnLoadResource(level->GetUrl(), nullptr, param);
 			iter = levels_.Begin();
-		} else {
+		}
+		else {
 			iter++;
 		}
 	}
-    return 0;
+	return 0;
 }
 
-int LevelLoader::HandleEvent(Event * event) {
-    return 0;
+int LevelLoader::HandleEvent(Event* event) {
+	return 0;
 }
 
 int LevelLoader::Initialize() {
-    context->RegisterObject<MeshRenderer>();
-    context->RegisterObject<Light>();
-    return 0;
+	context->RegisterObject<MeshRenderer>();
+	context->RegisterObject<Light>();
+	return 0;
 }
 
 // load level

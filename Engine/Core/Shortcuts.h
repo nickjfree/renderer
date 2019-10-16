@@ -42,7 +42,7 @@
 		virtual const String& GetTypeName() { return GetTypeNameStatic(); } \
 		virtual const String& GetBaseTypeName() { return GetBaseTypeNameStatic(); } \
 	//	virtual unsigned int GetObjectId() { return ObjectId==-1?ObjectId=Class.GetId():ObjectId; };
-        //operator int() { return (int)this; } \
+		//operator int() { return (int)this; } \
 
 #define UUID() \
 	public: \

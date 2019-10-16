@@ -15,5 +15,5 @@ Event::~Event()
 }
 
 Variant& Event::operator[] (String& buff) {
-    return EventParam[buff];
+	return EventParam[buff];
 }

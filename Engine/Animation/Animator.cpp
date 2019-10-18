@@ -27,12 +27,12 @@ void Animator::Update(float time) {
 		// set palette
 		Cache->GeneratePalette(skeleton);
 		renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
+		// apply root motion
+		Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(BlendNode->GetMotionDelta(), BlendNode->GetRotationDelta());
+		Tanslation = Tanslation * Owner->GetTransform();
+		Owner->SetTransform(Tanslation);
+		//Owner->SetRotation(Stage->RootRotation);
 	}
-	// apply root motion
-	//Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(Stage->MotionDelta, Quaternion());
-	//Tanslation = Tanslation * Owner->GetTransform();
-	//Owner->SetTransform(Tanslation);
-	//Owner->SetRotation(Stage->RootRotation);
 	// apply blendshape description to renderer
 	if (BlendShape_) {
 		// pack blendshape weight buffer

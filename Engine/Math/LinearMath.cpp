@@ -20,7 +20,7 @@ Vector3 Vector3::RotateBy(Matrix4x4& rh) {
 
 
 
-void Matrix4x4::Tranform(Vector3& Position, Quaternion& rotation) {
+void Matrix4x4::Tranform(const Vector3& Position, const Quaternion& rotation) {
 	//matrix = XMMatrixTransformation(Position.vector, Quaternion().quaternion, Vector3(1, 1, 1).vector, Position.vector, rotation.quaternion, Position.vector);
 
 	XMMATRIX world = XMMatrixRotationQuaternion(rotation.quaternion);

@@ -142,7 +142,7 @@ __declspec(align(16)) struct Vector3 {
 		return XMVectorGetX(XMVector3LengthSq(vector));
 	}
 
-	inline static Vector3 Lerp(Vector3& lh, Vector3& rh, float a) {
+	inline static Vector3 Lerp(const Vector3& lh, const Vector3& rh, float a) {
 		Vector3 Result;
 		Result.vector = XMVectorLerp(lh.vector, rh.vector, a);
 		return Result;
@@ -152,7 +152,7 @@ __declspec(align(16)) struct Vector3 {
 	/*
 		static functions
 	*/
-	inline static float Distance(Vector3& lh, Vector3& rh) {
+	inline static float Distance(const Vector3& lh, const Vector3& rh) {
 		XMVECTOR result = XMVectorSubtract(lh.vector, rh.vector);
 		return XMVectorGetX(XMVector3Length(result));
 	}
@@ -190,7 +190,7 @@ __declspec(align(16)) struct Quaternion {
 		return result;
 	}
 
-	inline static Quaternion Slerp(Quaternion& lh, Quaternion& rh, float a) {
+	inline static Quaternion Slerp(const Quaternion& lh, const Quaternion& rh, float a) {
 		Quaternion Result;
 		Result.quaternion = XMQuaternionSlerp(lh.quaternion, rh.quaternion, a);
 		return Result;
@@ -203,6 +203,12 @@ __declspec(align(16)) struct Quaternion {
 
 	void RotationAxis(Vector3& Vector, float angle) {
 		quaternion = XMQuaternionRotationAxis(Vector.vector, angle);
+	}
+
+	Quaternion Quaternion::Inverse() {
+		Quaternion result;
+		result.quaternion = XMQuaternionInverse(quaternion);
+		return result;
 	}
 
 	void FromMatrix(Matrix4x4& m);
@@ -244,7 +250,7 @@ __declspec(align(16)) struct Matrix4x4 {
 		matrix = XMMatrixIdentity();
 	}
 
-	void Tranform(Vector3& Position, Quaternion& rh);
+	void Tranform(const Vector3& Position, const Quaternion& rh);
 
 	void Scale(Vector3& Scale) {
 		matrix = XMMatrixScalingFromVector(Scale.vector);
@@ -310,7 +316,7 @@ __declspec(align(16)) struct Matrix4x4 {
 		return *(Matrix4x4*)&View;
 	}
 
-	inline static Matrix4x4 FormPositionRotation(Vector3& Position, Quaternion& Rotation) {
+	inline static Matrix4x4 FormPositionRotation(const Vector3& Position, const Quaternion& Rotation) {
 		Matrix4x4 Ret;
 		Ret.Tranform(Position, Rotation);
 		return Ret;

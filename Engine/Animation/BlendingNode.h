@@ -24,7 +24,9 @@ public:
 	// length
 	float Duration;
 	// motion delta
-
+	Vector3 MotionDelta;
+	// rotation delta
+	Quaternion RotationDelta;
 public:
 	BlendingNode(Context* context);
 	~BlendingNode();
@@ -40,6 +42,10 @@ public:
 	virtual AnimationCache* GetAnimationCache();
 	// Set Parameters
 	void SetParameter(const String& Name, float Value);
+	// get motion delta from prev update
+	virtual const Vector3& GetMotionDelta() const;
+	// get rotation delta from prev update
+	virtual const Quaternion& GetRotationDelta() const;
 };
 
 class BinaryBlendingNode : public BlendingNode
@@ -72,6 +78,10 @@ public:
 	virtual int Apply();
 	// GetAnimationCache
 	virtual AnimationCache* GetAnimationCache();
+	// get motion delta from prev update
+	virtual const Vector3& GetMotionDelta() const;
+	// get rotation delta from prev update
+	virtual const Quaternion& GetRotationDelta() const;
 };
 
 #endif

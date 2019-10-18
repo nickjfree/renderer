@@ -298,7 +298,7 @@ int Level::InitScript() {
 			// blend by 0.5
 			BinaryBlendingNode* blend = new BinaryBlendingNode(context);
 			blend->AddNodes(walk, run, true);
-			blend->SetAlpha(0.5);
+			blend->SetAlpha(0.1f);
 
 			animator->SetSkeleton(skeleton);
 			animator->SetBlendingNode(blend);

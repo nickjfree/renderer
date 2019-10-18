@@ -22,8 +22,12 @@ public:
 	float EndTime;
 	// total translation in position
 	Vector3 Tanslation;
-	// start rootmotion
+	// total rotaion in position
+	Quaternion Rotation;
+	// start rootmotion or tanslation
 	Vector3 RootStart;
+	// start rotaion
+	Quaternion RotationStart;
 	// animation source data of this clip
 	Animation* Source;
 	// name

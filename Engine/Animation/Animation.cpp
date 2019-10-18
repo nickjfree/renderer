@@ -42,8 +42,12 @@ int Animation::OnSerialize(Deserializer& serializer) {
 		Clip.Source = this;
 		ha_frame* start = keyframes + raw_clip.start;
 		ha_frame* end = keyframes + raw_clip.end;
+		// translation
 		Clip.Tanslation = Tracks[0].Frames[raw_clip.end].Translation - Tracks[0].Frames[raw_clip.start].Translation;
 		Clip.RootStart = Tracks[0].Frames[raw_clip.start].Translation;
+		// rotation
+		Clip.Rotation = Tracks[0].Frames[raw_clip.start].Rotation.Inverse() * Tracks[0].Frames[raw_clip.end].Rotation;
+		Clip.RotationStart = Tracks[0].Frames[raw_clip.start].Rotation;
 		Clip.TimeOffset = (float)start->time;
 		Clip.EndTime = (float)end->time;
 		Clip.Name = raw_clip.name;

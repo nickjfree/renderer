@@ -49,6 +49,14 @@ void BlendingNode::SetParameter(const String& Name, float Value) {
 	Parameters[Name].as<float>() = Value;
 }
 
+const Vector3& BlendingNode::GetMotionDelta() const {
+	return AnimStage->MotionDelta;
+}
+
+const Quaternion& BlendingNode::GetRotationDelta() const {
+	return AnimStage->RotationDelta;
+}
+
 BinaryBlendingNode::BinaryBlendingNode(Context* context) : BlendingNode(context), Alpha(0.5f) {
 	Cache = AnimationCache::Create();
 }
@@ -113,10 +121,22 @@ int BinaryBlendingNode::Apply() {
 		frame.Scale = frameA.Scale;
 		frame.Time = frameA.Time;
 	}
+	// calculate root motion 
+	MotionDelta = Vector3::Lerp(NodeA->GetMotionDelta(), NodeB->GetMotionDelta(), Alpha);
+	RotationDelta = Quaternion::Slerp(NodeA->GetRotationDelta(), NodeB->GetRotationDelta(), Alpha);
 	return 0;
 }
 
 // GetAnimationCache
 AnimationCache* BinaryBlendingNode::GetAnimationCache() {
 	return Cache;
+}
+
+const Vector3& BinaryBlendingNode::GetMotionDelta() const {
+	// just return it
+	return MotionDelta;
+}
+
+const Quaternion& BinaryBlendingNode::GetRotationDelta() const {
+	return RotationDelta;
 }

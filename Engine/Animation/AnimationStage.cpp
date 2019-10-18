@@ -14,24 +14,30 @@ AnimationStage::~AnimationStage() {
 void AnimationStage::SetAnimationClip(AnimationClip* Clip_) {
 	Clip = Clip_;
 	RootMotion = Clip_->RootStart;
+	RootRotation = Clip->RotationStart;
 	Duration = Clip_->EndTime - Clip_->TimeOffset;
 }
 
 void AnimationStage::Advance(float time) {
 	Time += (time * Scale);
-	float Range = Clip->EndTime - Clip->TimeOffset;
-	int Loop = (int)(Time / Range);
+	auto Range = Clip->EndTime - Clip->TimeOffset;
+	auto Loop = (int)(Time / Range);
 	if (Loop) {
 		Time -= Loop * Range;
 		RootMotion = RootMotion - Clip->Tanslation * (float)Loop;
+	}
+	while (Loop--) {
+		RootRotation = RootRotation * Clip->Rotation.Inverse();
 	}
 }
 
 
 void AnimationStage::Apply() {
 	Clip->Sample(Time, Cache);
-	Vector3& CurrentRootMotion = Cache->Result[0].Translation;
+	// motion delta
+	MotionDelta = Cache->Result[0].Translation - RootMotion;
+	RootMotion = Cache->Result[0].Translation;;
+	// rotaton delta
+	RotationDelta = RootRotation.Inverse() * Cache->Result[0].Rotation;
 	RootRotation = Cache->Result[0].Rotation;
-	MotionDelta = CurrentRootMotion - RootMotion;
-	RootMotion = CurrentRootMotion;
 }

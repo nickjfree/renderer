@@ -38,8 +38,8 @@ function test_create()
 	py:CreateShapeFromModel(md)
 	g:AddComponent(py)
 	-- engine.print(g:GetObjectId())
-	g:Destroy()
-	engine.collectgarbage()	
+	--g:Destroy()
+	--engine.collectgarbage()	
 end
 
 

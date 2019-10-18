@@ -20,13 +20,15 @@ private:
 	AnimationCache* Cache;
 	// previous position and translation
 	Vector3 RootMotion;
+	// root motion rotation
+	Quaternion RootRotation;
 	// start bone
 	unsigned char StartBone;
 public:
 	// motion delta of this frame
 	Vector3 MotionDelta;
-	// root motion rotation
-	Quaternion RootRotation;
+	// rotation delta
+	Quaternion RotationDelta;
 	// float duration
 	float Duration;
 	// actived

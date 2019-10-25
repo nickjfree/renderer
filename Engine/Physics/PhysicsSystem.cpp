@@ -113,7 +113,7 @@ int PhysicsSystem::Initialize() {
 	collisionConfiguration = new btDefaultCollisionConfiguration();
 
 	///use the default collision dispatcher. For parallel processing you can use a diffent dispatcher (see Extras/BulletMultiThreaded)
-	dispatcher = new	btCollisionDispatcher(collisionConfiguration);
+	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 
 	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
 	overlappingPairCache = new btDbvtBroadphase();
@@ -164,6 +164,8 @@ int PhysicsSystem::Initialize() {
 int PhysicsSystem::Update(int ms) {
 	// do simulation
 	dynamicsWorld->stepSimulation(ms / 60.0f, 2);
+	// detect collision
+	DetectCollision();
 	// update every component
 	for (auto Iter = Objects.Begin(); Iter != Objects.End(); Iter++) {
 		PhysicsObject* obj = *Iter;
@@ -203,3 +205,15 @@ void PhysicsSystem::RemovePhysicsObject(PhysicsObject* object) {
 	object->DecRef();
 }
 
+void PhysicsSystem::DetectCollision() {
+	auto numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
+	for (int i = 0; i < numManifolds; i++)
+	{
+		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+		const auto* obA = contactManifold->getBody0();
+		const auto* obB = contactManifold->getBody1();
+		
+		printf("collission\n");
+
+	}
+}

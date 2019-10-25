@@ -100,6 +100,7 @@ int PhysicsObject::OnAttach(GameObject* GameObj) {
 	Physics->AddPhysicsObject(this);
 	// add to world
 	World->addRigidBody(rigidBody);
+
 	return 0;
 }
 

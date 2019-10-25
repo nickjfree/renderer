@@ -10,6 +10,7 @@
 
 #include "btBulletCollisionCommon.h"
 #include "btBulletDynamicsCommon.h"
+#include "BulletDynamics/Character/btKinematicCharacterController.h"
 //#include "PhysicsObject.h"
 
 class PhysicsObject;
@@ -51,6 +52,8 @@ private:
 	void EnableDebug(HWND hWnd, HDC* hDC, HGLRC* hRC);
 	// draw debug
 	void DrawDebug();
+	// detect collision
+	void DetectCollision();
 public:
 	PhysicsSystem(Context* context);
 	// desctructor

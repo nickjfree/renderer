@@ -2,6 +2,7 @@
 #include "AnimationSystem.h"
 #include "Rendering\Renderer.h"
 #include "Rendering\MeshRenderer.h"
+#include "Physics/CharacterController.h"
 
 
 USING_ALLOCATER(Animator)
@@ -27,11 +28,22 @@ void Animator::Update(float time) {
 		// set palette
 		Cache->GeneratePalette(skeleton);
 		renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
-		// apply root motion
-		Matrix4x4 Tanslation = Matrix4x4::FormPositionRotation(BlendNode->GetMotionDelta(), BlendNode->GetRotationDelta());
-		Tanslation = Tanslation * Owner->GetTransform();
-		Owner->SetTransform(Tanslation);
-		//Owner->SetRotation(Stage->RootRotation);
+		// apply root motion, get translation delta
+		Matrix4x4 Transform = Matrix4x4::FormPositionRotation(BlendNode->GetMotionDelta(), BlendNode->GetRotationDelta());
+		// get position delta in model space
+		Vector3 PositionDelta = BlendNode->GetMotionDelta();
+		Quaternion RotationDelta = BlendNode->GetRotationDelta();
+		// to world space
+		PositionDelta = PositionDelta * Owner->GetWorldRotation();
+		// set postion delta and rotation delta for charactr controller
+		auto Controller = (CharacterController*)Owner->GetComponent("CharactorController");
+
+		Controller->SetWalkDirection(PositionDelta);
+		Controller->SetRotationDirection(RotationDelta);
+
+		// Transform = Transform * Owner->GetTransform();
+		// Owner->SetTransform(Transform);
+
 	}
 	// apply blendshape description to renderer
 	if (BlendShape_) {

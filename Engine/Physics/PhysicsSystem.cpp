@@ -1,5 +1,6 @@
 #include "PhysicsSystem.h"
 #include "PhysicsObject.h"
+#include "CharacterController.h"
 #include "GLDebuger\GLDebugDrawer.h"
 #include <gl\GL.h>
 #include <gl\GLU.h>
@@ -121,6 +122,10 @@ int PhysicsSystem::Initialize() {
 	///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
 	solver = new btSequentialImpulseConstraintSolver;
 
+	// init the ghostpair callback
+	ghostPairCallback = new btGhostPairCallback();
+	overlappingPairCache->getOverlappingPairCache()->setInternalGhostPairCallback(ghostPairCallback);
+	// create physics world
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
@@ -154,6 +159,7 @@ int PhysicsSystem::Initialize() {
 	}
 	// register PhysicsObject
 	context->RegisterObject<PhysicsObject>();
+	context->RegisterObject<CharacterController>();
 	// debug window
 #ifdef DEBUG_PHYSICS
 	CreateDebugWindow();
@@ -213,7 +219,7 @@ void PhysicsSystem::DetectCollision() {
 		const auto* obA = contactManifold->getBody0();
 		const auto* obB = contactManifold->getBody1();
 		
-		printf("collission\n");
+		//printf("collission\n");
 
 	}
 }

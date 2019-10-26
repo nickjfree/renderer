@@ -11,6 +11,7 @@
 #include "btBulletCollisionCommon.h"
 #include "btBulletDynamicsCommon.h"
 #include "BulletDynamics/Character/btKinematicCharacterController.h"
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 //#include "PhysicsObject.h"
 
 class PhysicsObject;
@@ -30,10 +31,14 @@ private:
 	///btDbvtBroadphase is a good general purpose broadphase. You can also try out btAxis3Sweep.
 	btBroadphaseInterface* overlappingPairCache;
 
-	///the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
+	// the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
 	btSequentialImpulseConstraintSolver* solver;
-
+	
+	// the world
 	btDiscreteDynamicsWorld* dynamicsWorld;
+
+	// ghostobect callback
+	btGhostPairCallback* ghostPairCallback;
 
 	// a list to keep track of all the physics objects
 	List<PhysicsObject> Objects;

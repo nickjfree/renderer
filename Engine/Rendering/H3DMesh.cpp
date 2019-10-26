@@ -90,7 +90,7 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	Box = AABB(Center, Vector3(d, d, d));
 	// calc convex hull
 #ifndef _DEBUG
-	//ComputeConvexHull();
+	ComputeConvexHull();
 #endif 
 	return 0;
 }

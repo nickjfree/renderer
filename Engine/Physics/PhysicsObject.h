@@ -49,7 +49,7 @@ class PhysicsObject : public Component {
 	OBJECT(PhysicsObject);
 	BASEOBJECT(PhysicsObject);
 
-private:
+protected:
 	// shape
 	CollisionShape* Shape;
 	// motion state

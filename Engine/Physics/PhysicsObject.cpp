@@ -126,13 +126,11 @@ int PhysicsObject::Update(int ms) {
 	Owner->SetTransform(InvertCenter * Transform);
 	// Owner->SetRotation(Rotation);
 	// Owner->SetTranslation(Position);
-
-
 	return 0;
 }
 
 int PhysicsObject::OnTransform(GameObject* object) {
-	if (rigidBody->isKinematicObject()) {
+	if (rigidBody && rigidBody->isKinematicObject()) {
 		Vector3 Position = object->GetWorldTranslation();
 		Quaternion Rotation = object->GetWorldRotation();
 		// offset to real position of physics object

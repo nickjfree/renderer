@@ -76,7 +76,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;DEBUG_PHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.88\src;F:\proj\Game11\Game\bullet3-2.88\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

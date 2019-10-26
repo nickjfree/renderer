@@ -88,7 +88,11 @@ void CharacterController::SetCeterOffset(Vector3& offset) {
 
 
 void CharacterController::SetWalkDirection(Vector3& Walk) {
-	Controller_->setWalkDirection(btVector3(Walk.x, 0.0f, Walk.z));
+
+	btQuaternion& quaternion = GhostOBject_->getWorldTransform().getRotation();
+	Quaternion Rotation(quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w());
+	Vector3 Direction = Walk * Rotation;
+	Controller_->setWalkDirection(btVector3(Direction.x, 0.0f, Direction.z));
 }
 
 void CharacterController::SetRotationDirection(Quaternion& Rotation) {

@@ -33,8 +33,6 @@ void Animator::Update(float time) {
 		// get position delta in model space
 		Vector3 PositionDelta = BlendNode->GetMotionDelta();
 		Quaternion RotationDelta = BlendNode->GetRotationDelta();
-		// to world space
-		PositionDelta = PositionDelta * Owner->GetWorldRotation();
 		// set postion delta and rotation delta for charactr controller
 		auto Controller = (CharacterController*)Owner->GetComponent("CharactorController");
 

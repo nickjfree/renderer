@@ -34,7 +34,7 @@ void Animator::Update(float time) {
 		Vector3 PositionDelta = BlendNode->GetMotionDelta();
 		Quaternion RotationDelta = BlendNode->GetRotationDelta();
 		// set postion delta and rotation delta for charactr controller
-		auto Controller = (CharacterController*)Owner->GetComponent("CharactorController");
+		auto Controller = (CharacterController*)Owner->GetComponent("CharacterController");
 
 		Controller->SetWalkDirection(PositionDelta);
 		Controller->SetRotationDirection(RotationDelta);

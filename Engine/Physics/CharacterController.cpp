@@ -6,7 +6,10 @@
 
 USING_ALLOCATER(CharacterController)
 
-CharacterController::CharacterController(Context* context) : PhysicsObject(context) {
+CharacterController::CharacterController(Context* context) : PhysicsObject(context), Controller_(nullptr), GhostOBject_(nullptr), 
+	Height_(2.0f), StepHeight_(0.1f), Width_(0.5)
+
+{
 
 }
 
@@ -19,24 +22,27 @@ CharacterController::~CharacterController() {
 int CharacterController::OnAttach(GameObject* GameObj) {
 	// get init position and rotation
 	Vector3 Position = GameObj->GetWorldTranslation();
+	Quaternion Rotation = GameObj->GetWorldRotation();
 	// offset center of mass to physics center
 	Position = CenterOffset + Position;
 	btVector3 position = btVector3(Position.x, Position.y, Position.z);
-	btTransform transform = btTransform(btQuaternion::getIdentity(), position);
+	btTransform transform = btTransform(btQuaternion(Rotation.x, Rotation.y, Rotation.z, Rotation.w), position);
 	// create capsule
 	Shape = new CollisionShape();
-	Shape->Shapes.Capsule = new btCapsuleShape(0.5f, 10);
+	Shape->Shapes.Capsule = new btCapsuleShape(5.0f, 10);
 	Shape->Shared = 0;
 	// shape should has refcount == 1
 	Shape->AddRef();
 	// create ghost object
 	GhostOBject_ = new btPairCachingGhostObject();
 	GhostOBject_->setCollisionShape(Shape->Shapes.Capsule);
-	GhostOBject_->setWorldTransform(transform);
 	// set collision flag
 	GhostOBject_->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 	//  create charactercontroller
 	Controller_ = new btKinematicCharacterController(GhostOBject_, Shape->Shapes.Capsule, StepHeight_);
+	Controller_->setGravity(btVector3(0, -10, 0));
+	// set transform, must be called after btKinematicCharacterController creation
+	GhostOBject_->setWorldTransform(transform);
 	// add to world
 	Physics->AddPhysicsObject(this);
 	// add controller and ghost object to world
@@ -64,8 +70,7 @@ int CharacterController::OnDestroy(GameObject* GameObj) {
 int CharacterController::Update(int ms) {
 	// only deals with rigide bodies, read btTransform and set to gameobject
 
-	btTransform transform;
-	MotionState->getWorldTransform(transform);
+	btTransform transform = GhostOBject_->getWorldTransform();
 	btVector3& position = transform.getOrigin();
 	btQuaternion& quaternion = transform.getRotation();
 	Vector3 Position = Vector3(position.x(), position.y(), position.z());

@@ -18,6 +18,7 @@
 
 #include "Script\Script.h"
 #include "Physics\PhysicsObject.h"
+#include "Physics/CharacterController.h"
 #include "Animation\Animator.h"
 #include "Animation\AnimationClip.h"
 #include "Animation\BlendShape.h"
@@ -277,13 +278,11 @@ int Level::InitScript() {
 			//render->SetTransparente();
 		}
 		if (Object->GetName() == "Player") {
-			PhysicsObject* Physics = new PhysicsObject(context);
+			CharacterController* Character = new CharacterController(context);
 			// creat convext hulls for collision shape
 			MeshRenderer* render = (MeshRenderer*)Object->GetComponent("Renderer");
 			Model* model = render->GetModel();
-			Physics->CreateShapeFromModel(model);
-			Physics->SetObjectType(PhysicsObject::KINEMATIC);
-			Object->AddComponent(Physics);
+			Object->AddComponent(Character);
 			// set animation component
 			Animator* animator = new Animator(context);
 			Animation* animetion_walk = GetAnimation(0);
@@ -298,7 +297,7 @@ int Level::InitScript() {
 			// blend by 0.5
 			BinaryBlendingNode* blend = new BinaryBlendingNode(context);
 			blend->AddNodes(walk, run, true);
-			blend->SetAlpha(0.6f);
+			blend->SetAlpha(0.0f);
 
 			animator->SetSkeleton(skeleton);
 			animator->SetBlendingNode(blend);

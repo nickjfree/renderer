@@ -81,7 +81,8 @@ int CharacterController::Update(int ms) {
 	Rotation.w = quaternion.w();
 	Matrix4x4 Transform = Matrix4x4::FormPositionRotation(Position, Rotation);
 	// set to gameobject, the invert is used to offset back to gameobject root
-	Owner->SetTransform(InvertCenter * Transform);
+	// Owner->SetTransform(InvertCenter * Transform);
+	Owner->SetTranslation(Position);
 	return 0;
 }
 
@@ -100,8 +101,7 @@ void CharacterController::SetWalkDirection(Vector3& Walk) {
 	Controller_->setWalkDirection(btVector3(Direction.x, 0.0f, Direction.z));
 }
 
-void CharacterController::SetRotationDirection(Quaternion& Rotation) {
-	btMatrix3x3 orn = GhostOBject_->getWorldTransform().getBasis();
-	orn *= btMatrix3x3(btQuaternion(Rotation.x, Rotation.y, Rotation.z, Rotation.w));
+void CharacterController::SetRotation(Quaternion& Rotation) {
+	auto orn = btMatrix3x3(btQuaternion(Rotation.x, Rotation.y, Rotation.z, Rotation.w));
 	GhostOBject_->getWorldTransform().setBasis(orn);
 }

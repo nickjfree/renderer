@@ -34,6 +34,10 @@ private:
 	BSDesc BlendShapeDescStage_;
 	BSDesc BlendShapeDesc_;
 
+	// motion status
+	Vector3 PrevPosition_;
+	Matrix4x4 ReferenceTransform_;
+	
 public:
 	Animator(Context* context);
 	virtual ~Animator();

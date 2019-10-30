@@ -46,7 +46,7 @@ public:
 	// set walk direction
 	void SetWalkDirection(Vector3& Walk);
 	// set rotation
-	void SetRotationDirection(Quaternion& Rotation);
+	void SetRotation(Quaternion& Rotation);
 
 };
 

@@ -131,7 +131,9 @@ __declspec(align(16)) struct Vector3 {
 	}
 
 	void Normalize() {
+		w = 0;
 		vector = XMVector3Normalize(vector);
+		w = 1;
 	}
 
 	float Length() {
@@ -155,6 +157,13 @@ __declspec(align(16)) struct Vector3 {
 	inline static float Distance(const Vector3& lh, const Vector3& rh) {
 		XMVECTOR result = XMVectorSubtract(lh.vector, rh.vector);
 		return XMVectorGetX(XMVector3Length(result));
+	}
+
+	inline static Vector3 Cross(const Vector3& lh, const Vector3& rh) {
+		Vector3 Result;
+		Result.vector = XMVector3Cross(lh.vector, rh.vector);
+		Result.Normalize();
+		return Result;
 	}
 
 };
@@ -248,6 +257,34 @@ __declspec(align(16)) struct Matrix4x4 {
 
 	void Identity() {
 		matrix = XMMatrixIdentity();
+	}
+
+	// snape look and right to XZ plane
+	void SnapeXZ() {
+
+		Quaternion Rotation;
+		Rotation.FromMatrix(*this);
+
+		Vector3 Look = Vector3(0, 0, 1) * Rotation;
+		Vector3 Up = Vector3(0, 1, 0) * Rotation;
+		Vector3 Right = Vector3(1, 0, 0) * Rotation;
+
+		Vector3 Translation = Vector3(0, 0, 0) * (*this);
+
+		// projection look to xz plane
+		Look.y = 0;
+		Look.Normalize();
+		// up is always the UP
+		Up = Vector3(0, 1, 0);
+		// get right
+		Right = Vector3::Cross(Up, Look);
+		
+		matrix = XMMATRIX(
+			Right.x, Right.y, Right.z, 0,
+			Up.x, Up.y, Up.z, 0,
+			Look.x, Look.y, Look.z, 0,
+			Translation.x, Translation.y, Translation.z, 1
+		);
 	}
 
 	void Tranform(const Vector3& Position, const Quaternion& rh);

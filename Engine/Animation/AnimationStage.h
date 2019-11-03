@@ -19,20 +19,21 @@ private:
 	// the animation cache
 	AnimationCache* Cache;
 	// previous position and translation
-	Vector3 RootMotion;
-	// root motion rotation
-	Quaternion RootRotation;
+	Matrix4x4 PrevTransform;
+	// start frame transform
+	Matrix4x4 StartTransform;
+	// end frame transform
+	Matrix4x4 EndTransform;
+	// delta transform, motion between frames
+	Matrix4x4 Motion;
 	// start bone
 	unsigned char StartBone;
 public:
-	// motion delta of this frame
-	Vector3 MotionDelta;
-	// rotation delta
-	Quaternion RotationDelta;
 	// float duration
 	float Duration;
 	// actived
 	bool Actived;
+
 public:
 	AnimationStage();
 	~AnimationStage();
@@ -47,6 +48,8 @@ public:
 	void Advance(float time);
 	// applly
 	void Apply();
+	// get motion
+	Matrix4x4& GetMotion() { return Motion; }
 	// get cache
 	AnimationCache* GetAnimationCache() { return Cache; };
 

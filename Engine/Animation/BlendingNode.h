@@ -42,10 +42,8 @@ public:
 	virtual AnimationCache* GetAnimationCache();
 	// Set Parameters
 	void SetParameter(const String& Name, float Value);
-	// get motion delta from prev update
-	virtual const Vector3& GetMotionDelta() const;
-	// get rotation delta from prev update
-	virtual const Quaternion& GetRotationDelta() const;
+	// get motion
+	virtual Matrix4x4& GetMotion() { return AnimStage->GetMotion();  }
 };
 
 class BinaryBlendingNode : public BlendingNode
@@ -65,6 +63,8 @@ protected:
 	AnimationCache* Cache;
 	// sync cycle or not 
 	bool SyncCycle;
+	// motion
+	Matrix4x4 Motion;
 public:
 	BinaryBlendingNode(Context* context);
 	~BinaryBlendingNode();
@@ -78,10 +78,8 @@ public:
 	virtual int Apply();
 	// GetAnimationCache
 	virtual AnimationCache* GetAnimationCache();
-	// get motion delta from prev update
-	virtual const Vector3& GetMotionDelta() const;
-	// get rotation delta from prev update
-	virtual const Quaternion& GetRotationDelta() const;
+	// get motion
+	virtual Matrix4x4& GetMotion();
 };
 
 #endif

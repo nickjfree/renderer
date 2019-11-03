@@ -28,6 +28,10 @@ public:
 	Vector3 RootStart;
 	// start rotaion
 	Quaternion RotationStart;
+	// root end
+	Vector3 RootEnd;
+	// rotation end
+	Quaternion RotationEnd;
 	// animation source data of this clip
 	Animation* Source;
 	// name

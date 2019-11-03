@@ -24,7 +24,7 @@ void AnimationCache::GeneratePalette(Skeleton* skeleton) {
 		Vector3& Translation = Result[BoneId].Translation;
 		Quaternion& Rotation = Result[BoneId].Rotation;
 		if (!BoneId) {
-			Palette[BoneId] = Matrix4x4::FormPositionRotation(Identity, NoRotation);
+			Palette[BoneId] = Matrix4x4::FormPositionRotation(Identity, Rotation);
 		}
 		else {
 			Palette[BoneId] = Matrix4x4::FormPositionRotation(Translation, Rotation);

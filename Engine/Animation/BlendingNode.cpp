@@ -49,13 +49,6 @@ void BlendingNode::SetParameter(const String& Name, float Value) {
 	Parameters[Name].as<float>() = Value;
 }
 
-const Vector3& BlendingNode::GetMotionDelta() const {
-	return AnimStage->MotionDelta;
-}
-
-const Quaternion& BlendingNode::GetRotationDelta() const {
-	return AnimStage->RotationDelta;
-}
 
 BinaryBlendingNode::BinaryBlendingNode(Context* context) : BlendingNode(context), Alpha(0.5f) {
 	Cache = AnimationCache::Create();
@@ -121,9 +114,6 @@ int BinaryBlendingNode::Apply() {
 		frame.Scale = frameA.Scale;
 		frame.Time = frameA.Time;
 	}
-	// calculate root motion 
-	MotionDelta = Vector3::Lerp(NodeA->GetMotionDelta(), NodeB->GetMotionDelta(), Alpha);
-	RotationDelta = Quaternion::Slerp(NodeA->GetRotationDelta(), NodeB->GetRotationDelta(), Alpha);
 	return 0;
 }
 
@@ -132,11 +122,22 @@ AnimationCache* BinaryBlendingNode::GetAnimationCache() {
 	return Cache;
 }
 
-const Vector3& BinaryBlendingNode::GetMotionDelta() const {
-	// just return it
-	return MotionDelta;
-}
+// get motion
+Matrix4x4& BinaryBlendingNode::GetMotion() { 
+	Matrix4x4& MotionA = NodeA->GetMotion();
+	Matrix4x4& MotionB = NodeB->GetMotion();
+	
+	Vector3 TranslationA = Vector3(0, 0, 0) * MotionA;
+	Vector3 TranslationB = Vector3(0, 0, 0) * MotionB;
 
-const Quaternion& BinaryBlendingNode::GetRotationDelta() const {
-	return RotationDelta;
+	Quaternion RotationA, RotationB;
+	RotationA.FromMatrix(MotionA);
+	RotationB.FromMatrix(MotionB);
+	
+	Vector3 Translation = Vector3::Lerp(TranslationA, TranslationB, Alpha);
+	Quaternion Rotation = Quaternion::Slerp(RotationA, RotationB, Alpha);
+
+	Motion = Matrix4x4::FormPositionRotation(Translation, Rotation);
+
+	return Motion;
 }

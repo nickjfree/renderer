@@ -13,21 +13,29 @@ AnimationStage::~AnimationStage() {
 
 void AnimationStage::SetAnimationClip(AnimationClip* Clip_) {
 	Clip = Clip_;
-	RootMotion = Clip_->RootStart;
-	RootRotation = Clip->RotationStart;
 	Duration = Clip_->EndTime - Clip_->TimeOffset;
+
+	// get start and end root transform. snape to xz plane
+	StartTransform = PrevTransform = Matrix4x4::FormPositionRotation(Clip_->RootStart, Clip_->RotationStart);
+	StartTransform.SnapeXZ();
+	PrevTransform.SnapeXZ();
+	EndTransform = Matrix4x4::FormPositionRotation(Clip_->RootEnd, Clip_->RotationEnd);
+	EndTransform.SnapeXZ();
 }
 
 void AnimationStage::Advance(float time) {
 	Time += (time * Scale);
 	auto Range = Clip->EndTime - Clip->TimeOffset;
 	auto Loop = (int)(Time / Range);
-	if (Loop) {
-		Time -= Loop * Range;
-		RootMotion = RootMotion - Clip->Tanslation * (float)Loop;
-	}
 	while (Loop--) {
-		RootRotation = RootRotation * Clip->Rotation.Inverse();
+		Time -= Range;
+		// adjust prev transform, set it to a litte bit ahead of the start frame
+		//  x * end = prev  
+		//  prev =  x * start 
+		Matrix4x4 InverseEndTrans;
+		Matrix4x4::Inverse(EndTransform, &InverseEndTrans);
+		Matrix4x4 RemainTransform = PrevTransform * InverseEndTrans;
+		PrevTransform = RemainTransform * StartTransform;
 	}
 }
 
@@ -35,9 +43,19 @@ void AnimationStage::Advance(float time) {
 void AnimationStage::Apply() {
 	Clip->Sample(Time, Cache);
 	// motion delta
-	MotionDelta = Cache->Result[0].Translation - RootMotion;
-	RootMotion = Cache->Result[0].Translation;;
-	// rotaton delta
-	RotationDelta = RootRotation.Inverse() * Cache->Result[0].Rotation;
-	RootRotation = Cache->Result[0].Rotation;
+	Matrix4x4 CurrentTransform = Matrix4x4::FormPositionRotation(Cache->Result[0].Translation, Cache->Result[0].Rotation);
+	Matrix4x4 RootTransform = CurrentTransform;
+	RootTransform.SnapeXZ();
+	Matrix4x4 InvertRoot;
+	Matrix4x4::Inverse(RootTransform, &InvertRoot);
+	// delta * snapedxz  = current
+	Matrix4x4 RelativedToRoot = CurrentTransform * InvertRoot;
+	Cache->Result[0].Rotation.FromMatrix(RelativedToRoot);
+	// extract motion.  only adrress the rotation in XZ plane
+
+	// Motion * PrevTransform = CurrentTransform
+	Matrix4x4 Inverse;
+	Matrix4x4::Inverse(PrevTransform, &Inverse);
+	Motion = RootTransform * Inverse;
+	PrevTransform = RootTransform;
 }

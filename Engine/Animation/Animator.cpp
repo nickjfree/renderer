@@ -29,30 +29,19 @@ void Animator::Update(float time) {
 		Cache->GeneratePalette(skeleton);
 		renderer->SetMatrixPalette(Cache->Palette, Cache->Result.Size());
 		// apply root motion, get translation delta
-		//Matrix4x4 Transform = Matrix4x4::FormPositionRotation(BlendNode->GetMotionDelta(), BlendNode->GetRotationDelta());
-		//// get position delta in model space
-		//Vector3 PositionDelta = BlendNode->GetMotionDelta();
-		//Quaternion RotationDelta = BlendNode->GetRotationDelta();
-		// set postion delta and rotation delta for charactr controller
+		// set postion delta and rotation for charactr controller
 		auto Controller = (CharacterController*)Owner->GetComponent("CharacterController");
+		// get delta transformation from prev-updated pos
+		auto& Motion = BlendNode->GetMotion();
+		Matrix4x4 CurrentTrans = Owner->GetTransform();
+		Matrix4x4 TargetTrans = Motion * CurrentTrans;
+		Vector3 Walk = Vector3(0, 0, 0) * TargetTrans - Vector3(0, 0, 0) * CurrentTrans;
+		Quaternion Rotation;
+		Rotation.FromMatrix(TargetTrans);
 
-		// get tranlation delta
-		auto Walk = Cache->Result[0].Translation - PrevPosition_;
-		Walk = Walk * ReferenceTransform_;
+		// update character controller and node
 		Controller->SetWalkDirection(Walk);
-		// get reference rotation
-		Quaternion RefRotaion;
-		RefRotaion.FromMatrix(ReferenceTransform_);
-
-		// Controller->SetRotation(RefRotaion * Cache->Result[0].Rotation);
-		Owner->SetRotation(RefRotaion * Cache->Result[0].Rotation);
-		// save curent motion
-		PrevPosition_ = Cache->Result[0].Translation;
-	
-
-		// Transform = Transform * Owner->GetTransform();
-		//Owner->SetTranslation(Cache->Result[0].Translation);
-
+		Owner->SetRotation(Rotation);
 	}
 	// apply blendshape description to renderer
 	if (BlendShape_) {
@@ -94,9 +83,6 @@ int Animator::OnAttach(GameObject* GameObj) {
 
 	AnimationSystem* animationSys = context->GetSubsystem<AnimationSystem>();
 	animationSys->AddAnimator(this);
-
-	ReferenceTransform_ = GameObj->GetTransform();
-	PrevPosition_ = GameObj->GetWorldTranslation();
 	return 0;
 }
 

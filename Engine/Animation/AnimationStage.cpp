@@ -2,7 +2,7 @@
 
 
 
-AnimationStage::AnimationStage() : Scale(1.0f), Time(0.0f), StartBone(0) {
+AnimationStage::AnimationStage() : Scale(1.0f), Time(0.0f), StartBone(0), Actived(0), Clip(nullptr), Duration(0) {
 	Cache = AnimationCache::Create();
 }
 

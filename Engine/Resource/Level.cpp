@@ -251,9 +251,9 @@ int Level::InitScript() {
 			Object->AddComponent(Physics);
 
 			// add scripts to all for test
-			Script* script = new Script(context);
-			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
-			Object->AddComponent(script);
+			//Script* script = new Script(context);
+			//script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
+			//Object->AddComponent(script);
 		}
 		if (Object->GetName() == "Plane") {
 
@@ -297,7 +297,7 @@ int Level::InitScript() {
 			// blend by 0.5
 			BinaryBlendingNode* blend = new BinaryBlendingNode(context);
 			blend->AddNodes(walk, run, true);
-			blend->SetAlpha(0.1f);
+			blend->SetAlpha(1.0f);
 
 			animator->SetSkeleton(skeleton);
 			animator->SetBlendingNode(blend);

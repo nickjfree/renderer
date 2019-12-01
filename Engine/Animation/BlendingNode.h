@@ -41,7 +41,7 @@ public:
 	// GetAnimationCache
 	virtual AnimationCache* GetAnimationCache();
 	// Set Parameters
-	void SetParameter(const String& Name, float Value);
+	virtual void SetParameter(const String& Name, float Value);
 	// get motion
 	virtual Matrix4x4& GetMotion() { return AnimStage->GetMotion();  }
 };
@@ -49,7 +49,7 @@ public:
 class BinaryBlendingNode : public BlendingNode
 {
 	BASEOBJECT(BlendingNode);
-	OBJECT(BlendingNode);
+	OBJECT(BinaryBlendingNode);
 
 protected:
 	// animation stages
@@ -81,5 +81,43 @@ public:
 	// get motion
 	virtual Matrix4x4& GetMotion();
 };
+
+class BlendingNode3 : public BlendingNode
+{
+	BASEOBJECT(BlendingNode);
+	OBJECT(BlendingNode);
+
+protected:
+	// the 3 nodes to blending,   -x 0 +x => left, center, right
+	BlendingNode* Nodes_[3];
+	// scale factor
+	float Scale;
+	// AnimationCache
+	AnimationCache* Cache;
+	// sync cycle or not 
+	bool SyncCycle;
+	// alpha
+	float Alpha;
+	// motion
+	Matrix4x4 Motion;
+
+public:
+	// constructor
+	BlendingNode3(Context* context);
+	// destructor
+	~BlendingNode3();
+	// add 3 nodes
+	void AddNodes(BlendingNode* Nodes[3],  bool Sync);
+	// advance
+	virtual int Advance(float time);
+	// apply
+	virtual int Apply();
+	// GetAnimationCache
+	virtual AnimationCache* GetAnimationCache();
+	// get motion
+	virtual Matrix4x4& GetMotion();
+};
+
+
 
 #endif

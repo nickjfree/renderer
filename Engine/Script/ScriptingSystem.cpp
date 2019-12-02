@@ -7,7 +7,7 @@
 #include "Animation\Animator.h"
 
 
-ScriptingSystem::ScriptingSystem(Context* context) : System(context) {
+ScriptingSystem::ScriptingSystem(Context* context) : System(context), DebugBuffer(), LuaState() {
 }
 
 
@@ -51,6 +51,8 @@ void ScriptingSystem::InitEnvironment() {
 	REGISTER_CLASS(LuaState, PhysicsObject);
 	REGISTER_CLASS(LuaState, Animator);
 	REGISTER_CLASS(LuaState, BlendingNode);
+	REGISTER_CLASS(LuaState, BinaryBlendingNode);
+	REGISTER_CLASS(LuaState, BlendingNode3);
 }
 
 int ScriptingSystem::Initialize() {

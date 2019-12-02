@@ -129,7 +129,7 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	DepCount += NumMeshes;
 	DepCount += NumMaterials;
 	DepCount += 1;  // add 1 skeleton
-	DepCount += 2;  // and 2 animation
+	DepCount += 3;  // and 3 animation
 	DepCount += 1;  // and 1 blendshape
 	//DepCount += 1;  // and 1 test load
 	return 0;
@@ -162,10 +162,13 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	// for test submiting animation loading task
 	Param.as<int>() = 0;
 	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource("Animation\\keyframe\\human_walk.ha", this, Param);
+	Cache->AsyncLoadResource("Animation\\keyframe\\human_walking.ha", this, Param);
 	Param.as<int>() = 1;
 	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource("Animation\\keyframe\\human_run.ha", this, Param);
+	Cache->AsyncLoadResource("Animation\\keyframe\\human_left_turn.ha", this, Param);
+	Param.as<int>() = 2;
+	Animations.PushBack(empty_animation);
+	Cache->AsyncLoadResource("Animation\\keyframe\\human_right_turn.ha", this, Param);
 	// load blendshape
 	Param.as<int>() = 0;
 	BlendShapes.PushBack(empty_blendshape);
@@ -285,19 +288,24 @@ int Level::InitScript() {
 			Object->AddComponent(Character);
 			// set animation component
 			Animator* animator = new Animator(context);
-			Animation* animetion_walk = GetAnimation(0);
-			Animation* animetion_run = GetAnimation(1);
+			Animation* animation_walk = GetAnimation(0);
+			Animation* animation_left_turn = GetAnimation(1);
+			Animation* animation_right_turn = GetAnimation(2);
 			Skeleton* skeleton = GetSkeleton(0);
 			// walk node
 			BlendingNode* walk = new BlendingNode(context);
-			walk->SetAnimationClip(animetion_walk, 0);
-			// run node
-			BlendingNode* run = new BlendingNode(context);
-			run->SetAnimationClip(animetion_run, 0);
+			walk->SetAnimationClip(animation_walk, 0);
+			// left node
+			BlendingNode* left = new BlendingNode(context);
+			left->SetAnimationClip(animation_left_turn, 0);
+			// right node
+			BlendingNode* right = new BlendingNode(context);
+			right->SetAnimationClip(animation_right_turn, 0);
 			// blend by 0.5
-			BinaryBlendingNode* blend = new BinaryBlendingNode(context);
-			blend->AddNodes(walk, run, true);
-			blend->SetAlpha(1.0f);
+			auto * blend = new BlendingNode3(context);
+			BlendingNode* Nodes[3] = { left, walk, right };
+			blend->AddNodes(Nodes, true);
+			blend->SetParameter("x", 0);
 
 			animator->SetSkeleton(skeleton);
 			animator->SetBlendingNode(blend);

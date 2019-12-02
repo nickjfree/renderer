@@ -85,7 +85,7 @@ public:
 class BlendingNode3 : public BlendingNode
 {
 	BASEOBJECT(BlendingNode);
-	OBJECT(BlendingNode);
+	OBJECT(BlendingNode3);
 
 protected:
 	// the 3 nodes to blending,   -x 0 +x => left, center, right

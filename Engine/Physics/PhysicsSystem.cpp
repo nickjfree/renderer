@@ -169,7 +169,7 @@ int PhysicsSystem::Initialize() {
 
 int PhysicsSystem::Update(int ms) {
 	// do simulation
-	dynamicsWorld->stepSimulation(ms / 60.0f, 2);
+	dynamicsWorld->stepSimulation(ms / 1000.0f, 1);
 	// detect collision
 	DetectCollision();
 	// update every component

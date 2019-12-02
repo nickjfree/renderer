@@ -1,10 +1,10 @@
 -- test script for the "human" in the scene
 name = "human"
-id = 1337
-speed = 0.01
-rspeed = 0.1 * (3.1415926 / 180.0)
 position = {x=0, y=1, z =0}
 active = false
+
+acc = 0.001
+x = 0
 
 function on_start()
 	-- subscribe to event id 1025
@@ -64,16 +64,27 @@ function update(ms)
 
 	local blending_node = get_blendnode()
 
-	-- strife 
-	local p = engine.input:GetAction(4)
-	local n = engine.input:GetAction(3)
-	if (p ~= 0)
+	-- right 
+	local right = engine.input:GetAction(4)
+	local left = engine.input:GetAction(3)
+	if (right ~= 0)
 	then
-		blending_node:SetParameter("x", 0.5)
+		x = x + acc * ms
+	end
+	-- left
+	if (left ~= 0)
+	then
+		x = x + -acc * ms
 	end
 	-- always walk forward
-	if (p == 0 and n == 0)
+	if (right == 0 and left == 0)
 	then
-		blending_node:SetParameter("x", 0)
+		if (x > 0)
+		then
+			x = x + -acc * ms
+		else 
+			x = x + acc * ms
+		end
 	end
+	blending_node:SetParameter("x", x)
 end

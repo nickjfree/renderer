@@ -51,7 +51,7 @@ void AnimationStage::Apply() {
 	// delta * snapedxz  = current
 	Matrix4x4 RelativedToRoot = CurrentTransform * InvertRoot;
 	Cache->Result[0].Rotation.FromMatrix(RelativedToRoot);
-	// extract motion.  only adrress the rotation in XZ plane
+	// extract motion.  only address the rotation in XZ plane
 
 	// Motion * PrevTransform = CurrentTransform
 	Matrix4x4 Inverse;

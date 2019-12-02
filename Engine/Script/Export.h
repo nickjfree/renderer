@@ -92,6 +92,15 @@ BEGIN_PROXY(BlendingNode)
 METHOD(SetParameter, &BlendingNode::SetParameter)
 END_PROXY()
 
+BEGIN_PROXY(BinaryBlendingNode)
+METHOD(SetParameter, &BinaryBlendingNode::SetParameter)
+END_PROXY()
+
+BEGIN_PROXY(BlendingNode3)
+METHOD(SetParameter, &BlendingNode3::SetParameter)
+END_PROXY()
+
+
 BEGIN_PROXY(Animator)
 METHOD(GetBlendingNode, &Animator::GetBlendingNode)
 METHOD(SetBlendShapeWeight, (void (Animator::*)(const String&, float))& Animator::SetBlendShapeWeight)

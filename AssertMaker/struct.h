@@ -13,12 +13,13 @@ typedef struct BoneInfo {
     aiMatrix4x4 offsetMatrix;
 }BoneInfo;
 
-
+#pragma pack(1)
 typedef struct BoneEntry {
     unsigned char parent;
     aiMatrix4x4 offsetMatrix;
     char name[32];
 }BoneEntry;
+#pragma pack()
 
 typedef struct NodeData {
     aiNode * Node;

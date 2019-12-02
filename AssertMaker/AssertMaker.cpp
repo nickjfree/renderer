@@ -20,6 +20,7 @@ using namespace h3d;
 
 
 
+
 void SaveH3d(aiMesh *Mesh, char* Name)
 {
     char FileName[256] = {};
@@ -340,7 +341,7 @@ void ExtractMeshToH3d(aiScene * scene)
             printf("extracting mesh %s\n", name);
             // save to files
             SaveH3d(scene->mMeshes[i], (char*)name);
-            // SaveH3dCharacter(scene->mMeshes[i], (char*)name);
+            //SaveH3dCharacter(scene->mMeshes[i], (char*)name);
         }
     }
 }
@@ -424,12 +425,12 @@ void ExtractAnimeMesh(aiScene * scene) {
     anime_header.NumFrames = 0;
     anime_header.NumClips = 1;
     anime_header.OffsetFrames = sizeof(ha_header) + sizeof(ha_clip) * anime_header.NumClips;
-    HANDLE hAnime = CreateFileA("..\\Engine\\keyframe\\human_run.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
+    HANDLE hAnime = CreateFileA("human.ha", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, 0, NULL);
     WriteFile(hAnime, &anime_header, sizeof(ha_header), &write, NULL);
     // write clips info
     ha_clip clip;
     clip.start = 0;
-    clip.end = 30;
+    clip.end = 28;
     strcpy_s(clip.name, "walk");
     clip.looped = 1;
     WriteFile(hAnime, &clip, sizeof(ha_clip), &write, NULL);
@@ -569,8 +570,8 @@ bool DoTheImportThing(const std::string& pFile) {
         return false;
     }  // Now we can access the file's contents.   
     printf("scene load success\n");
-    ExtractMeshToH3d(scene);
-    //ExtractAnimeMesh(scene);
+    // ExtractMeshToH3d(scene);
+    ExtractAnimeMesh(scene);
     // We're done. Everything will be cleaned up by the importer destructor  
     return true;
 }
@@ -581,12 +582,14 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     //DoTheImportThing("human_2.fbx");
     
-    DoTheImportThing("C:\\Users\\nick12\\Downloads\\POLYWINK_IPHONEX_ANIMATION_SAMPLE_PHOTOREAL\\face.fbx");
+     // DoTheImportThing("C:\\Users\\nick12\\Downloads\\POLYWINK_IPHONEX_ANIMATION_SAMPLE_PHOTOREAL\\face.fbx");
 
     //DoTheImportThing("jawOpen.fbx");
     //DoTheImportThing("tongueOut.fbx");
     //DoTheImportThing("eyeBlinkLeft.fbx");
     //DoTheImportThing("neutral.fbx");
+
+	DoTheImportThing("human_right_turn.fbx");
     return 0;
 }
 

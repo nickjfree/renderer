@@ -41,6 +41,7 @@ void Animator::Update(float time) {
 
 		// update character controller and node
 		Controller->SetWalkDirection(Walk);
+		// Owner->SetTranslation(Owner->GetTranslation() + Walk);
 		Owner->SetRotation(Rotation);
 	}
 	// apply blendshape description to renderer

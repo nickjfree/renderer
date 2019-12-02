@@ -76,13 +76,23 @@ END_EXPORT()
 
 EXPORT_CLASS(BlendingNode)
 EXPORT(BlendingNode, SetParameter)
-GC(PhysicsObject)
+GC(BlendingNode)
+END_EXPORT()
+
+EXPORT_CLASS(BinaryBlendingNode)
+EXPORT(BinaryBlendingNode, SetParameter)
+GC(BinaryBlendingNode)
+END_EXPORT()
+
+EXPORT_CLASS(BlendingNode3)
+EXPORT(BlendingNode3, SetParameter)
+GC(BlendingNode3)
 END_EXPORT()
 
 EXPORT_CLASS(Animator)
 EXPORT(Animator, GetBlendingNode)
 EXPORT(Animator, SetBlendShapeWeight)
-GC(PhysicsObject)
+GC(Animator)
 END_EXPORT()
 
 //EXPORT_CLASS(ResourceCache)

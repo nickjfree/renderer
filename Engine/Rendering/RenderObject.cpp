@@ -3,7 +3,7 @@
 #include "Core\StringTable.h"
 
 USING_ALLOCATER(RenderObject);
-RenderObject::RenderObject() : BlendShape_(nullptr)
+RenderObject::RenderObject() : BlendShape_(nullptr), DeformableBufferId(-1), BottomLevelASId(-1)
 {
 	Type = Node::RENDEROBJECT;
 }
@@ -57,9 +57,18 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	// per-object position
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
+	// get geometry
+	int Geometry = GetRenderMesh(Stage, Lod);
 	// if there is a skinning matrix
 	if (palette.Size) {
 		StageParameter["gSkinMatrix"].as<ShaderParameterArray>() = palette;
+		// deformabled buffer
+		if (Stage == 0 && DeformableBufferId != -1) {
+			StageParameter["gDeformableBuffer"].as<unsigned int>() = DeformableBufferId;
+		}
+		else if (Stage == 0 && Geometry != -1) {
+			BottomLevelASId = Context->GetRenderInterface()->CreateBottomLevelAS(Geometry, true, &DeformableBufferId);
+		}
 	}
 	// if there are  blend shapes
 	if (BlendShape_) {
@@ -81,7 +90,6 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 		Instance = shader->IsInstance(Stage);
 	}
 	// prepare batch
-	int Geometry = GetRenderMesh(Stage, Lod);
 	if (Geometry != -1) {
 		if (Instance) {
 			unsigned char InstanceBuffer[64 * 4];

@@ -66,7 +66,8 @@ int BlendShape::OnSubResource(int Message, Resource* Sub, Variant& Param)
 			(R_CPU_ACCESS)0,
 			(R_MISC)0,
 			VertexStride_,
-			buffer
+			buffer,
+			0
 		};
 		// create buffer in gpu, for blending shader resource
 		id = renderinterface->CreateBuffer(&desc);

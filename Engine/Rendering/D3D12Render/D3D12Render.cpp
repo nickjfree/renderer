@@ -120,6 +120,8 @@ void D3D12Render::InitD3D12() {
 		printf("Failed to create D3D12Device\n");
 		return;
 	}
+	// get rtx device
+	Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
 	// create all command queues.
 	InitQueues();
 	InitDescriptorHeaps();
@@ -220,6 +222,13 @@ void D3D12Render::InitDescriptorHeaps() {
 			// buffer srv heap
 			Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 			CpuBufferSRVHeaps[i].PushBack(Heap);
+			// blas uav
+			Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+			CpuBLASUAVHeaps[i].PushBack(Heap);
+			// blas srv
+			Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+			CpuBLASSRVHeaps[i].PushBack(Heap);
+
 		}
 		// create render target heaps
 		DescriptorHeap* Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -567,69 +576,88 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
 	D3DBuffer Buffer = {};
 
 	// no multi resource and multi frame
-	Buffer.MultiFrame = 0;
-	Buffer.MultiResource = 0;
-	// create buffer in gpu memory
-	Device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(desc->Size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		nullptr,
-		IID_PPV_ARGS(&Buffer.BufferResource[0]));
+	int NumFrames = 1;
+	int NumResource = 1;
+	if (desc->Deformable) {
+		Buffer.MultiFrame = 1;
+		Buffer.MultiResource = 1;
+		NumFrames = NUM_FRAMES;
+		NumResource = NUM_FRAMES;
+	} else {
+		Buffer.MultiFrame = 0;
+		Buffer.MultiResource = 0;
+		NumFrames = 1;
+		NumResource = 1;
+	}
+
 	// create uav
 	int Id = Buffers.AddItem(Buffer);
 
+	// create resource
+	for (auto n = 0; n < NumResource; n++) {
+		// create buffer in gpu memory
+		Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(desc->Size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			nullptr,
+			IID_PPV_ARGS(&Buffer.BufferResource[n]));
+	
+		// upload cpu data to this buffer
+		if (desc->CPUData) {
+			CommandContext* Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+			// assum we will only use it as UAV buffer
+			ID3D12Resource* Upload;
+			Context->InitializeVetexBuffer(Buffer.BufferResource[n], desc->CPUData, desc->Size, &Upload);
+			// wait upload complete
+			Context->Finish(true);
+			// free upload buffer
+			Upload->Release();
+		}
+	}
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
 	int HeapIndex = Id / MAX_DESCRIPTOR_SIZE;
 
-	// upload cpu data to this buffer
-	if (desc->CPUData) {
-		CommandContext* Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
-		// assum we will only use it as UAV buffer
-		ID3D12Resource* Upload;
-		Context->InitializeVetexBuffer(Buffer.BufferResource[0], desc->CPUData, desc->Size, &Upload);
-		// wait upload complete
-		Context->Finish(true);
-		// free upload buffer
-		Upload->Release();
-	}
+	for (auto n = 0; n < NumFrames; n++) {
+		// create uav for this buffer
+		D3D12_CPU_DESCRIPTOR_HANDLE handle;
+		D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
+		D3D12_UNORDERED_ACCESS_VIEW_DESC udesc = {};
+		// srv desc
+		vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		vdesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
+		vdesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 
-	// create uav for this buffer
-	D3D12_CPU_DESCRIPTOR_HANDLE handle;
-	D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
-	D3D12_UNORDERED_ACCESS_VIEW_DESC udesc = {};
-	int NumFrames = 1;
-	// srv desc
-	vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	vdesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
-	vdesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+		vdesc.Buffer.FirstElement = 0;
+		vdesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
+		vdesc.Buffer.StructureByteStride = desc->StructureByteStride;
+		vdesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
 
-	vdesc.Buffer.FirstElement = 0;
-	vdesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
-	vdesc.Buffer.StructureByteStride = desc->StructureByteStride;
-	vdesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+		// uav desc
+		udesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		udesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
+		udesc.Buffer.FirstElement = 0;
+		udesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
+		udesc.Buffer.StructureByteStride = desc->StructureByteStride;
+		udesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-	// uav desc
-	udesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-	udesc.Format = (DXGI_FORMAT)FORMAT_UNKNOWN;
-	udesc.Buffer.FirstElement = 0;
-	udesc.Buffer.NumElements = desc->Size / desc->StructureByteStride;
-	udesc.Buffer.StructureByteStride = desc->StructureByteStride;
-	udesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-
-	for (int i = 0; i < NumFrames; i++) {
+		int ResourceIndex = 0;
+		if (Buffer.MultiResource) {
+			ResourceIndex = n;
+		}
 		// srv
-		handle = CpuBufferSRVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
-		Device->CreateShaderResourceView(Buffer.BufferResource[i], &vdesc, handle);
-		Buffer.SRV[i] = handle;
+		handle = CpuBufferSRVHeaps[n][HeapIndex]->GetCpuHandle(HeapSlot);
+		Device->CreateShaderResourceView(Buffer.BufferResource[ResourceIndex], &vdesc, handle);
+		Buffer.SRV[n] = handle;
 		// uav
-		handle = CpuBufferUAVHeaps[i][HeapIndex]->GetCpuHandle(HeapSlot);
-		Device->CreateUnorderedAccessView(Buffer.BufferResource[i], NULL, &udesc, handle);
-		Buffer.UAV[i] = handle;
+		handle = CpuBufferUAVHeaps[n][HeapIndex]->GetCpuHandle(HeapSlot);
+		Device->CreateUnorderedAccessView(Buffer.BufferResource[ResourceIndex], NULL, &udesc, handle);
+		Buffer.UAV[n] = handle;
 		// store the state
-		Buffer.State[i].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
+		Buffer.State[ResourceIndex].CurrentState = D3D12_RESOURCE_STATE_COPY_DEST;
 	}
+	// update buffer
 	Buffers[Id] = Buffer;
 	return Id;
 }
@@ -676,6 +704,75 @@ int D3D12Render::CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int
 	Geometry.IBV.SizeInBytes = INum * sizeof(WORD);
 	// Add to linear buffer
 	int Id = Geometries.AddItem(Geometry);
+	return Id;
+}
+
+
+int D3D12Render::CreateBottomLevelAS(int GeometryId, bool Deformable, int* BufferId) {
+	D3DBottomLevelAS Blas{};
+	Blas.GeometryId = GeometryId;
+	Blas.Deformable = Deformable;
+	// initial state: dirty
+	Blas.Dirty = 1;
+	D3DGeometry& Geometry = Geometries.GetItem(GeometryId);
+	// input
+	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+	geometryDesc.Triangles.IndexBuffer = Geometry.IndexResource->GetGPUVirtualAddress();
+	geometryDesc.Triangles.IndexCount = Geometry.INum;
+	geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+	geometryDesc.Triangles.Transform3x4 = 0;
+	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+	geometryDesc.Triangles.VertexCount = Geometry.VSize / Geometry.VBSize;
+	geometryDesc.Triangles.VertexBuffer.StartAddress = Geometry.VertexResource->GetGPUVirtualAddress();
+	geometryDesc.Triangles.VertexBuffer.StrideInBytes = Geometry.VBSize;
+	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS bottomLevelInputs = {};
+	bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	bottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+	bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+	bottomLevelInputs.pGeometryDescs = &geometryDesc;
+	bottomLevelInputs.NumDescs = 1;
+
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo = {};
+	
+	// get resource size needed
+	rtxDevice->GetRaytracingAccelerationStructurePrebuildInfo(&bottomLevelInputs, &bottomLevelPrebuildInfo);
+
+	auto Id = BottomLevelAS.AddItem(Blas);
+
+	// create resource: scratch, blas and deformable buffer
+	for (auto i = 0; i < NUM_FRAMES; i++) {
+		// create scratch buffer
+		Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(bottomLevelPrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr,
+			IID_PPV_ARGS(&Blas.Scrach[i]));
+		// create blas buffer
+		Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr,
+			IID_PPV_ARGS(&Blas.BLAS[i]));
+		Blas.BLASState[i].CurrentState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+	}
+	// blas has deformable mesh 
+	if (Deformable) {
+		R_BUFFER_DESC desc = {};
+		desc.Size = Geometry.VSize;
+		desc.StructureByteStride = Geometry.VBSize;
+		desc.Deformable = true;
+		desc.CPUData = nullptr;
+		Blas.BufferId = CreateBuffer(&desc);
+		*BufferId = Blas.BufferId;
+	}
+	BottomLevelAS[Id] = Blas;
 	return Id;
 }
 
@@ -989,6 +1086,7 @@ void D3D12Render::SetUnorderedAccessBuffer(int StartSlot, int* Buffers_, int Cou
 		}
 	}
 }
+
 
 void D3D12Render::SetBuffer(int StartSlot, int* Buffers_, int Count) {
 	for (int i = 0; i < Count; i++) {

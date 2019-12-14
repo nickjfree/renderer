@@ -100,11 +100,33 @@ namespace D3D12API {
 		unsigned char StencilRef;
 	}D3DRenderState;
 
-	// quad vertext
+	// quad vertex
 	typedef struct BasicVertex {
 		float x, y, z;
 		float u, v;
 	}BasicVertex;
+
+	// bottom level acceleration structure
+	typedef struct D3DBottomLevelAS {
+		// referenced geometry
+		int GeometryId;
+		// referenced deformable buffer
+		int BufferId;
+
+		int MultiFrame;
+		int MultiResource;
+		// static or dynamic as
+		bool Deformable;
+		// dirty
+		bool Dirty;
+		// resources
+		ID3D12Resource* BLAS[NUM_FRAMES];
+		ID3D12Resource* Scrach[NUM_FRAMES];
+		ID3D12Resource* Deformed[NUM_FRAMES];
+		// resource state
+		D3DResourceState BLASState[NUM_FRAMES];
+	}D3DBottomLevelAS;
+
 }
 
 #endif

@@ -79,6 +79,7 @@ enum R_MISC {
 /*
 	buffer description
 */
+
 typedef struct R_BUFFER_DESC {
 	unsigned int Size;
 	R_RESOURCE_USAGE   Usage;
@@ -87,28 +88,9 @@ typedef struct R_BUFFER_DESC {
 	R_MISC             MiscFlags;
 	unsigned int       StructureByteStride;
 	void* CPUData;
+	bool Deformable;
 }R_BUFFER_DESC;
 
-
-
-/*
-	2d  texture description
-*/
-
-/*
-typedef struct TEXTURE2D_DESC {
-UINT             Width;
-UINT             Height;
-UINT             MipLevels;
-UINT             ArraySize;
-FORMAT      Format;
-SAMPLE_DESC SampleDesc;
-USAGE      Usage;
-UINT             BindFlags;
-UINT             CPUAccessFlags;
-UINT             MiscFlags;
-} TEXTURE2D_DESC;
-*/
 
 
 /*

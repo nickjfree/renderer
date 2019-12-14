@@ -142,8 +142,11 @@ void CommandContext::InitializeVetexBuffer(ID3D12Resource* DestResource, void* B
 	UpdateSubresources(CommandList, DestResource, uploadHeap,
 		0, 0, 1, &Data);
 	// resource barrier
+	auto state = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		|D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER
+		|D3D12_RESOURCE_STATE_COPY_SOURCE;
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
-		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+		D3D12_RESOURCE_STATE_COPY_DEST, state));
 	// return temp upload head
 	*Upload = uploadHeap;
 }
@@ -168,8 +171,11 @@ void CommandContext::InitializeIndexBuffer(ID3D12Resource* DestResource, void* B
 	UpdateSubresources(CommandList, DestResource, uploadHeap,
 		0, 0, 1, &Data);
 	// resource barrier
+	auto state = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
+		| D3D12_RESOURCE_STATE_INDEX_BUFFER
+		| D3D12_RESOURCE_STATE_COPY_SOURCE;
 	CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(DestResource,
-		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER));
+		D3D12_RESOURCE_STATE_COPY_DEST, state));
 	// return upload heap
 	*Upload = uploadHeap;
 }

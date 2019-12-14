@@ -10,6 +10,9 @@ cbuffer ArrayAnime: register(b3)
     float4x4  gSkinMatrix[128];
 }
 
+// uav deformable buffer. transformed vertext stored in this buffer
+RWStructuredBuffer<VS_Input_Skinning> gDeformableBuffer     : register( u0 );
+
 /*
     bone transformation in local space
 */

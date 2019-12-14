@@ -373,8 +373,6 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 				rwbu.Slot = bind_desc.BindPoint;
 				RenderPass->RWBufferUnits.PushBack(rwbu);
 			}
-
-
 		}
 	}
 	// get buffers. tbuffer. typed and structured buffer.

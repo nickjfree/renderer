@@ -35,8 +35,14 @@ public:
 		return -1;
 	}
 
+	// create bottom level as
+	virtual int CreateBottomLevelAS(int GeometryId, bool Deformable, int* BufferId) { return -1; };
+	
 	// destroy geometry data. free gpu resource
 	virtual int DestroyGeometry(int Id) { return 0; };
+
+	// destroy bottom level as. free gpu resource
+	virtual int DestroyBottomLevelAS(int Id) { return 0; };
 
 	// create constant buffer
 	virtual int CreateConstantBuffer(unsigned int Size) { return -1; }

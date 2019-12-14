@@ -43,6 +43,8 @@ namespace D3D12API {
 		static const UINT FrameCount = NUM_FRAMES;
 		// D3D12 device and somte other interfaces
 		ID3D12Device* Device;
+		// rtx device
+		ID3D12Device5* rtxDevice;
 		IDXGIAdapter* pAdapter;
 		IDXGIAdapter3* pAdapter3;
 		IDXGISwapChain3* SwapChain;
@@ -66,6 +68,7 @@ namespace D3D12API {
 		LinearBuffer<D3DRenderShader, 512> Shaders;
 		LinearBuffer<D3DConstant, 128> Constants;
 		LinearBuffer<D3DRenderState, 128> RenderState;
+		LinearBuffer<D3DBottomLevelAS, 8192> BottomLevelAS;
 		// constant buffer heaps
 		Vector<Heap*> UsedConstHeaps;
 		// current heaps
@@ -80,8 +83,12 @@ namespace D3D12API {
 		Vector<DescriptorHeap*> CpuTextureUAVHeaps[NUM_FRAMES];
 		// UAV Heaps for buffer
 		Vector<DescriptorHeap*> CpuBufferUAVHeaps[NUM_FRAMES];
+		// UAV Heaps for deformed blas
+		Vector<DescriptorHeap*> CpuBLASUAVHeaps[NUM_FRAMES];
 		// SRV Heaps for buffer
 		Vector<DescriptorHeap*> CpuBufferSRVHeaps[NUM_FRAMES];
+		// SRV Heaps for deformaed blas
+		Vector<DescriptorHeap*> CpuBLASSRVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap*> GpuSamplerHeaps;
 		// null descriptor Heaps
@@ -186,6 +193,8 @@ namespace D3D12API {
 		// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
 		virtual int CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int VertexSize, void* IBuffer, unsigned int IBSize,
 			R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top);
+		// create bottom level as
+		virtual int CreateBottomLevelAS(int GeometryId, bool Deformable, int* BufferId);
 
 		virtual int CreateInputLayout(R_INPUT_ELEMENT* Element, int Count, void* ShaderCode, int Size);
 		virtual int CreateVertexShader(void* ByteCode, unsigned int Size, int flag);

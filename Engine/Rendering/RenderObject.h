@@ -33,6 +33,10 @@ protected:
 	ShaderParameterArray blendshape_;
 	// blendshape
 	BlendShape* BlendShape_;
+	// deformale buffer id
+	int DeformableBufferId;
+	// blas id
+	int BottomLevelASId;
 public:
 	RenderObject();
 	virtual ~RenderObject();

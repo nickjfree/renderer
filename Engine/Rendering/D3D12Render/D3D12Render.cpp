@@ -924,7 +924,7 @@ void D3D12Render::SetDepthStencil(int Depth) {
 }
 
 void D3D12Render::SetRenderTargets(int Count, int* Targets) {
-	//	printf("set rendertarget %d %d\n", Count, Targets[0]);
+	//printf("set rendertarget %d %d\n", Count, Targets[0]);
 	CurrentPSO.NumRTV = Count;
 	NumTargets = Count;
 	for (int i = 0; i < Count; i++) {

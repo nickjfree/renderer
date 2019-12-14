@@ -36,8 +36,8 @@ namespace D3D12API {
 	public:
 		// operator int
 		operator int() const;
-		bool operator == (PSOCache& rh);
-		bool operator != (PSOCache& rh);
+		bool operator == (const PSOCache& rh);
+		bool operator != (const PSOCache& rh);
 		PSOCache();
 		virtual ~PSOCache();
 	};

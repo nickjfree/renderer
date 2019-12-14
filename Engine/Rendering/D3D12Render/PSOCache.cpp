@@ -32,7 +32,7 @@ PSOCache::operator int() const {
 	}
 }
 
-bool PSOCache::operator==(PSOCache& rh) {
+bool PSOCache::operator==(const PSOCache& rh) {
 	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
 		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
@@ -43,7 +43,7 @@ bool PSOCache::operator==(PSOCache& rh) {
 	return false;
 }
 
-bool PSOCache::operator!=(PSOCache& rh) {
+bool PSOCache::operator!=(const PSOCache& rh) {
 	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
 		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {

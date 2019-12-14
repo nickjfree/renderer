@@ -5,6 +5,7 @@
 #include "d3d11.h"
 #include "d3d12.h"
 #include "Rendering\RenderInterface.h"
+#include "Container/Vector.h"
 
 namespace D3D12API {
 
@@ -38,7 +39,6 @@ namespace D3D12API {
 		D3DResourceState State[NUM_FRAMES];
 	}D3DTexture;
 
-
 	/*
 		Geometry
 	*/
@@ -51,8 +51,10 @@ namespace D3D12API {
 		unsigned int INum;
 		unsigned int VBSize;
 		R_PRIMITIVE_TOPOLOGY Top;
+		// blas list. 1 for static obejects many for deformable objects
+		Vector<int> UsedBlas;
+		Vector<int> FreeBlas;
 	}D3DGeometry;
-
 	/*
 		Buffer
 	*/

@@ -715,6 +715,14 @@ int D3D12Render::CreateBottomLevelAS(int GeometryId, bool Deformable, int* Buffe
 	// initial state: dirty
 	Blas.Dirty = 1;
 	D3DGeometry& Geometry = Geometries.GetItem(GeometryId);
+	if (!Deformable && Geometry.UsedBlas.Size() ) {
+		// static objects
+		return Geometry.UsedBlas[0];
+	} else if (Deformable && Geometry.FreeBlas.Size()) {
+		auto Id = Geometry.FreeBlas.PopBack();
+		Geometry.UsedBlas.PushBack(Id);
+		return Id;
+	}
 	// input
 	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
 	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -773,6 +781,9 @@ int D3D12Render::CreateBottomLevelAS(int GeometryId, bool Deformable, int* Buffe
 		*BufferId = Blas.BufferId;
 	}
 	BottomLevelAS[Id] = Blas;
+
+	// Add to geometry
+	Geometry.UsedBlas.PushBack(Id);
 	return Id;
 }
 

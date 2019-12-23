@@ -25,6 +25,8 @@ CommandContext::CommandContext(ID3D12Device* Device_, D3D12_COMMAND_LIST_TYPE ty
 }
 
 CommandContext::~CommandContext() {
+	CommandList->Release();
+	CommandAllocator->Release();
 }
 
 
@@ -71,7 +73,7 @@ void CommandContext::Reset() {
 
 UINT64 CommandContext::Finish(bool WaitForFence) {
 	D3D12Render* Render = D3D12Render::GetRender();
-	CommandQueue* Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	CommandQueue* Queue = Render->GetQueue(Type);
 	CommandList->Close();
 	ID3D12CommandList* pCommandList[1] = { CommandList };
 	FenceValue = Queue->ExecuteCommandList(1, pCommandList);

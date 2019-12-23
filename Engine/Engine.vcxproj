@@ -148,6 +148,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Physics\GLDebuger\GlutStuff.h" />
     <ClInclude Include="Physics\PhysicsObject.h" />
     <ClInclude Include="Physics\PhysicsSystem.h" />
+    <ClInclude Include="RaytracingScene.h" />
     <ClInclude Include="Rendering\BasicCullingImp.h" />
     <ClInclude Include="Rendering\BasicPartition.h" />
     <ClInclude Include="Rendering\BatchCompiler.h" />
@@ -162,6 +163,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\D3D12Render\DescriptorHeap.h" />
     <ClInclude Include="Rendering\D3D12Render\Heap.h" />
     <ClInclude Include="Rendering\D3D12Render\PSOCache.h" />
+    <ClInclude Include="Rendering\D3D12Render\RaytracingScene.h" />
     <ClInclude Include="Rendering\D3D12Render\RootSignature.h" />
     <ClInclude Include="Rendering\D3D12Render\Structs.h" />
     <ClInclude Include="Rendering\Light.h" />
@@ -278,6 +280,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\D3D12Render\DescriptorHeap.cpp" />
     <ClCompile Include="Rendering\D3D12Render\Heap.cpp" />
     <ClCompile Include="Rendering\D3D12Render\PSOCache.cpp" />
+    <ClCompile Include="Rendering\D3D12Render\RaytracingScene.cpp" />
     <ClCompile Include="Rendering\D3D12Render\RootSignature.cpp" />
     <ClCompile Include="Rendering\Light.cpp" />
     <ClCompile Include="Rendering\PostpassStage.cpp" />

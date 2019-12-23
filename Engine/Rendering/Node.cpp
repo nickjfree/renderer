@@ -3,7 +3,7 @@
 
 USING_ALLOCATER(Node);
 
-Node::Node() :Type(Node::NODE)
+Node::Node() :Type(Node::NODE), DeformableBuffer(-1), RaytracingGeometry(-1)
 {
 	SubNodes.Owner = this;
 	Sibling.Owner = this;

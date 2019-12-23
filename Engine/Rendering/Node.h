@@ -40,6 +40,11 @@ protected:
 	int Type;
 	// world matrix
 	Matrix4x4 Transform;
+	// raytracing geometry id
+	int RaytracingGeometry;
+	// deforamble buffer id
+	int DeformableBuffer;
+
 public:
 	enum {
 		NODE = 1,

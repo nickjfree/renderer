@@ -3,7 +3,7 @@
 #include "Core\StringTable.h"
 
 USING_ALLOCATER(RenderObject);
-RenderObject::RenderObject() : BlendShape_(nullptr), DeformableBufferId(-1), BottomLevelASId(-1)
+RenderObject::RenderObject() : BlendShape_(nullptr)
 {
 	Type = Node::RENDEROBJECT;
 }
@@ -63,11 +63,11 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	if (palette.Size) {
 		StageParameter["gSkinMatrix"].as<ShaderParameterArray>() = palette;
 		// deformabled buffer
-		if (Stage == 0 && DeformableBufferId != -1) {
-			StageParameter["gDeformableBuffer"].as<unsigned int>() = DeformableBufferId;
+		if (Stage == 0 && DeformableBuffer != -1) {
+			StageParameter["gDeformableBuffer"].as<unsigned int>() = DeformableBuffer;
 		}
 		else if (Stage == 0 && Geometry != -1) {
-			BottomLevelASId = Context->GetRenderInterface()->CreateBottomLevelAS(Geometry, true, &DeformableBufferId);
+			RaytracingGeometry = Context->GetRenderInterface()->CreateRaytracingGeometry(Geometry, true, &DeformableBuffer);
 		}
 	}
 	// if there are  blend shapes

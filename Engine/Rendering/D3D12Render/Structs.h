@@ -120,7 +120,7 @@ namespace D3D12API {
 		// static or dynamic as
 		bool Deformable;
 		// dirty
-		bool Dirty;
+		bool Dirty[NUM_FRAMES];
 		// resources
 		ID3D12Resource* BLAS[NUM_FRAMES];
 		ID3D12Resource* Scrach[NUM_FRAMES];

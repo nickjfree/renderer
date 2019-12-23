@@ -1,6 +1,7 @@
 #ifndef __RENDER_DESC_H__
 #define __RENDER_DESC_H__
 
+#include "../Math/LinearMath.h"
 
 
 /*
@@ -513,5 +514,22 @@ enum R_STAGE
 	R_POST = 6,
 	R_MAXSTAGE
 };
+
+/* raytracing */
+typedef struct RaytracingInstance
+{
+	// matrix
+	Matrix4x4 Transform;
+    // raytracing geometry
+	int RtGeometry;
+	// int flag
+	int Flag;
+	// reserved
+	int Reserved1;
+	// reserved
+	int Reserved2;
+}RaytracingInstance;
+
+
 
 #endif

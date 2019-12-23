@@ -194,7 +194,9 @@ namespace D3D12API {
 		virtual int CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int VertexSize, void* IBuffer, unsigned int IBSize,
 			R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top);
 		// create bottom level as
-		virtual int CreateBottomLevelAS(int GeometryId, bool Deformable, int* BufferId);
+		virtual int CreateRaytracingGeometry(int GeometryId, bool Deformable, int* BufferId);
+		// add raytracing instance
+		virtual int AddRaytracingInstance(RaytracingInstance& instance);
 
 		virtual int CreateInputLayout(R_INPUT_ELEMENT* Element, int Count, void* ShaderCode, int Size);
 		virtual int CreateVertexShader(void* ByteCode, unsigned int Size, int flag);

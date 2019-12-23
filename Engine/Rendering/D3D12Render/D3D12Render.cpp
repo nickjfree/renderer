@@ -708,12 +708,12 @@ int D3D12Render::CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int
 }
 
 
-int D3D12Render::CreateBottomLevelAS(int GeometryId, bool Deformable, int* BufferId) {
+int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* BufferId) {
 	D3DBottomLevelAS Blas{};
 	Blas.GeometryId = GeometryId;
 	Blas.Deformable = Deformable;
-	// initial state: dirty
-	Blas.Dirty = 1;
+	// initial state:  dirty
+	memset(Blas.Dirty, 1, sizeof(Blas.Dirty));
 	D3DGeometry& Geometry = Geometries.GetItem(GeometryId);
 	if (!Deformable && Geometry.UsedBlas.Size() ) {
 		// static objects
@@ -1519,6 +1519,14 @@ void D3D12Render::Quad() {
 	Performance.DrawCallCount++;
 	//	printf("Quad\n");
 }
+
+
+int D3D12Render::AddRaytracingInstance(RaytracingInstance& instance) {
+
+	auto RtGeometry = BottomLevelAS.GetItem(instance.RtGeometry);
+	return 0;
+}
+
 
 R_PRIMITIVE_TOPOLOGY_TYPE D3D12Render::GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology) {
 	if (topology == R_PRIMITIVE_TOPOLOGY_UNDEFINED) {

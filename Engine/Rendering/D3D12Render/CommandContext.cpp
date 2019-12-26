@@ -90,14 +90,27 @@ UINT64 CommandContext::Finish(bool WaitForFence) {
 
 UINT64 CommandContext::Flush(bool WaitForFence) {
 	D3D12Render* Render = D3D12Render::GetRender();
-	CommandQueue* Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	CommandQueue* Queue = Render->GetQueue(Type);
 	ID3D12CommandList* pCommandList[1] = { CommandList };
 	CommandList->Close();
 	FenceValue = Queue->ExecuteCommandList(1, pCommandList);
+	// rest commandlist
+	CommandList->Reset(CommandAllocator, NULL);
 	if (WaitForFence) {
 		Queue->Wait(FenceValue);
 	}
 	return FenceValue;
+}
+
+UINT64 CommandContext::WaitQueue(D3D12_COMMAND_LIST_TYPE WaitType, UINT64 FenceValue) {
+	D3D12Render* Render = D3D12Render::GetRender();
+	CommandQueue* QueueToWait = Render->GetQueue(WaitType);
+	CommandQueue* Queue = Render->GetQueue(Type);
+	// flush current command list
+	auto RetFenceValue = Flush(0);
+	// wait for other GPU queue
+	Queue->WaitQueue(QueueToWait, FenceValue);
+	return RetFenceValue;
 }
 
 

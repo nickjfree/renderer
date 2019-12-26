@@ -39,7 +39,7 @@ public:
 	virtual int CreateRaytracingGeometry(int GeometryId, bool Deformable, int* BufferId) { return -1; };
 	
 	// add raytracing instance
-	virtual int AddRaytracingInstance(RaytracingInstance& instance) { return -1; };
+	virtual int AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) { return -1; };
 
 	// destroy geometry data. free gpu resource
 	virtual int DestroyGeometry(int Id) { return 0; };

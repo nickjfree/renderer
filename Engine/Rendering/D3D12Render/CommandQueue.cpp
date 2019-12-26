@@ -21,6 +21,8 @@ CommandQueue::CommandQueue(ID3D12Device* Device_, D3D12_COMMAND_LIST_TYPE Type) 
 		// event
 		FenceEvent[i] = CreateEvent(0, 0, 0, 0);
 	}
+	// set queue type
+	Type_ = Type;
 }
 
 CommandQueue::~CommandQueue() {
@@ -33,6 +35,13 @@ void CommandQueue::Wait(UINT64 FenceValue_) {
 	UINT64 FenceToWait = FenceValue_;
 	Fence->SetEventOnCompletion(FenceToWait, FenceEvent[Index]);
 	WaitForSingleObject(FenceEvent[Index], -1);
+}
+
+/*
+	wait for another queue's fence with FenceValue
+*/
+void CommandQueue::WaitQueue(CommandQueue* Queue, UINT64 FenceValue) {
+	CmdQueue->Wait(Queue->Fence, FenceValue);
 }
 
 void CommandQueue::IdleGpu() {

@@ -49,6 +49,8 @@ namespace D3D12API {
 		UINT64 Flush(bool WaitForFence);
 		// finish command list and retire
 		UINT64 Finish(bool WaitForFence);
+		// wait for another queue's fence value
+		UINT64 WaitQueue(D3D12_COMMAND_LIST_TYPE WaitType, UINT64 FenceValue);
 		// set descriptorheaps. typicaly. 2 frame buffers, 2-3 descriptor heaps
 		void SetDescriptorHeaps(ID3D12DescriptorHeap* Heaps);
 		// get commandlist

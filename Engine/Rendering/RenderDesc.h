@@ -516,19 +516,19 @@ enum R_STAGE
 };
 
 /* raytracing */
-typedef struct RaytracingInstance
+typedef struct R_RAYTRACING_INSTANCE
 {
 	// matrix
 	Matrix4x4 Transform;
     // raytracing geometry
 	int RtGeometry;
+	// int Matertial id
+	int MaterialId;
 	// int flag
 	int Flag;
 	// reserved
-	int Reserved1;
-	// reserved
-	int Reserved2;
-}RaytracingInstance;
+	int Reserved;
+}R_RAYTRACING_INSTANCE;
 
 
 

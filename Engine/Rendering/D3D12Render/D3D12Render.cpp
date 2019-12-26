@@ -195,6 +195,11 @@ void D3D12Render::InitD3D12() {
 	InitRootSignature();
 	// init current commandcontext
 	SwapCommandContext();
+	// init raytracing scene
+	for (int i = 0; i < NUM_FRAMES; i++) {
+		rtScene[i] = new RaytracingScene();
+	}
+
 }
 
 void D3D12Render::InitQueues() {
@@ -1258,6 +1263,12 @@ void D3D12Render::Present() {
 	ID3D12GraphicsCommandList* commandlist = CurrentCommandContext->GetGraphicsCommandList();
 	// flush resource barriers
 	FlushResourceBarriers();
+
+	// begin build raytracing scene in compute queue
+	BuildRaytracingScene();
+	// wait for the scene in graphic queue
+	WaitRaytracingScene();
+
 	// Indicate that the back buffer will be used as present.
 	D3D12_RESOURCE_BARRIER barrier = {};
 	// Indicate that the back buffer will now be used to present.
@@ -1267,6 +1278,7 @@ void D3D12Render::Present() {
 	commandlist->ResourceBarrier(1, &barrier);
 	D3DTexture& texture = Textures.GetItem(0);
 	texture.State[FrameIndex].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
+	// test code. test async compute function
 
 	UINT64 FenceValue = Context->Finish(0);
 	// retire all used constan heaps
@@ -1521,7 +1533,7 @@ void D3D12Render::Quad() {
 }
 
 
-int D3D12Render::AddRaytracingInstance(RaytracingInstance& instance) {
+int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
 	auto RtGeometry = BottomLevelAS.GetItem(instance.RtGeometry);
 	return 0;
@@ -1606,4 +1618,22 @@ int D3D12Render::DestroyTexture2D(int Id) {
 		Textures.MarkFree(Id);
 	}
 	return 0;
+}
+
+// build raytracing scene
+void D3D12Render::BuildRaytracingScene() {
+	auto Scene = rtScene[FrameIndex];
+	// allocate compute context
+	auto computeContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	Scene->BuildTopLevelAccelerationStructure(computeContext);
+	// then build bottom level for next frame
+	Scene->BuildBottomLevelAccelerationStructure(computeContext);
+}
+
+// wait raytracing scene
+void D3D12Render::WaitRaytracingScene() {
+	auto Scene = rtScene[FrameIndex];
+	// wait for compute queue with the FenceValue at the time rtScene was built. 
+	// the current recorded graphic command list will be excuted after this call
+	Scene->WaitScene(CurrentCommandContext);
 }

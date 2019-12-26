@@ -19,6 +19,7 @@
 #include "DescriptorHeap.h"
 #include "PSOCache.h"
 #include "RootSignature.h"
+#include "RaytracingScene.h"
 
 
 namespace D3D12API {
@@ -91,6 +92,8 @@ namespace D3D12API {
 		Vector<DescriptorHeap*> CpuBLASSRVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap*> GpuSamplerHeaps;
+		// raytracing scene
+		RaytracingScene * rtScene[NUM_FRAMES];
 		// null descriptor Heaps
 		DescriptorHeap* NullHeap;
 		// Used SRVHeaps
@@ -174,6 +177,10 @@ namespace D3D12API {
 		void FlushRootSignature();
 		// flush rendertargets
 		void FlushRenderTargets();
+		// build raytracing scene
+		void BuildRaytracingScene();
+		// wait raytracing scene
+		void WaitRaytracingScene();
 		// update performance info
 		void ShowPerformanceInfo();
 		// get topology_type by topology
@@ -196,7 +203,7 @@ namespace D3D12API {
 		// create bottom level as
 		virtual int CreateRaytracingGeometry(int GeometryId, bool Deformable, int* BufferId);
 		// add raytracing instance
-		virtual int AddRaytracingInstance(RaytracingInstance& instance);
+		virtual int AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance);
 
 		virtual int CreateInputLayout(R_INPUT_ELEMENT* Element, int Count, void* ShaderCode, int Size);
 		virtual int CreateVertexShader(void* ByteCode, unsigned int Size, int flag);

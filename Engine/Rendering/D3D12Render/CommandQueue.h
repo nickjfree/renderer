@@ -14,7 +14,7 @@ namespace D3D12API {
 		// queue
 		ID3D12CommandQueue* CmdQueue;
 		// type
-		D3D12_COMMAND_LIST_TYPE Type;
+		D3D12_COMMAND_LIST_TYPE Type_;
 		// device
 		ID3D12Device* Device;
 		// fence
@@ -37,6 +37,8 @@ namespace D3D12API {
 		UINT64 ExecuteCommandList(int Num, ID3D12CommandList** CommandLists);
 		// is fence complete
 		bool FenceComplete(UINT64 FenceValue);
+		// gpu wait
+		void WaitQueue(CommandQueue * Queue, UINT64 FenceValue);
 	};
 
 }

@@ -2,7 +2,7 @@
 #define __D3D12_STRUCT__
 
 
-#include "d3d11.h"
+//#include "d3d11.h"
 #include "d3d12.h"
 #include "Rendering\RenderInterface.h"
 #include "Container/Vector.h"

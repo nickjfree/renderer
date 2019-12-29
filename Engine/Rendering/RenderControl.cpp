@@ -3,6 +3,7 @@
 #include "PrepassStage.h"
 #include "PostpassStage.h"
 #include "ShadowMapStage.h"
+#include "RaytracingStage.h"
 #include "Opcode.h"
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -30,6 +31,9 @@ int RenderControl::Initialize() {
 	LightPrePass->Stages.PushBack(Stage);
 	// initialize post pass
 	Stage = new PostpassStage(Context);
+	LightPrePass->Stages.PushBack(Stage);
+	// initialize raytracing stage
+	Stage = new RaytracingStage(Context);
 	LightPrePass->Stages.PushBack(Stage);
 	RenderPath[LIGHT_PRE] = LightPrePass;
 	return 0;

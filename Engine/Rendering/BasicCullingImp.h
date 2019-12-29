@@ -20,6 +20,8 @@ public:
 	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Type);
 	// query by aabb
 	virtual int Query(AABB& Box, Vector<Node*>& Result, int Type);
+	// query by type
+	virtual int Query(Vector<Node*>& Result, int Type);
 };
 
 

@@ -521,7 +521,7 @@ typedef struct R_RAYTRACING_INSTANCE
 	// matrix
 	Matrix4x4 Transform;
     // raytracing geometry
-	int RtGeometry;
+	int rtGeometry;
 	// int Matertial id
 	int MaterialId;
 	// int flag

@@ -23,6 +23,11 @@ int BasicCullingImp::Query(AABB& Box, Vector<Node*>& Result, int Type) {
 	return 0;
 }
 
+int BasicCullingImp::Query(Vector<Node*>& Result, int Type) {
+	Root->Query(Result, Type);
+	return 0;
+}
+
 // insert
 int BasicCullingImp::Add(RenderObject* RenderObj) {
 	CullingObject& cul_obj = RenderObj->GetCullingObject();

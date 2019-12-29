@@ -49,6 +49,8 @@ public:
 	// get render mesh
 	virtual int GetRenderMesh(int Stage, int Lod) const;
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
+	// update raytracing
+	virtual int UpdateRaytracingStructure(RenderContext* Context);
 	// set matrix palette
 	void SetMatrixPalette(Matrix4x4* palette, unsigned int NumMatrix);
 	// set blendshape desc

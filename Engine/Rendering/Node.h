@@ -8,11 +8,14 @@
 #include "Math\LinearMath.h"
 #include "Container\Vector.h"
 #include "BatchCompiler.h"
+#include "RenderingCamera.h"
 
 /*
 	spatial tree node
 */
 typedef AABB CullingObject;
+
+class RenderingCamera;
 
 class Node
 {
@@ -67,9 +70,13 @@ public:
 	int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
 	void AddChild(Node* Child);
 	void Remove(Node* Child);
+	// query by frustum and types
 	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
+	// query only by types
+	virtual int Query(Vector<Node*>& Result, int Types);
 	Matrix4x4& GetWorldMatrix();
-	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod);
+	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
+	virtual int UpdateRaytracingStructure(RenderContext* Context);
 	void SetPosition(Vector3& Position_);
 	void SetRotation(Quaternion& Rot);
 	Vector3& GetPosition() { return Position; }

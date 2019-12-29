@@ -416,6 +416,12 @@
     <ClInclude Include="Rendering\D3D12Render\RaytracingScene.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\ReuseHeap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RaytracingStage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -839,6 +845,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\D3D12Render\RaytracingScene.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\ReuseHeap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\RaytracingStage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

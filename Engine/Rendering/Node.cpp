@@ -51,8 +51,27 @@ int Node::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside) {
 	return 0;
 }
 
+int Node::Query(Vector<Node*>& Result, int Types) {
+	if (Type & Types) {
+		Node* node = this;
+		Result.PushBack(node);
+	}
+	// sub nodes
+	for (auto Iter = SubNodes.Begin(); Iter != SubNodes.End(); Iter++) {
+		auto sub = *Iter;
+		sub->Query(Result, Types);
+	}
+	return 0;
+}
 
-int Node::Compile(BatchCompiler* Compiler, int Stage, int Lod) {
+int Node::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context) {
+	return 0;
+}
+
+/*
+	update  raytracing infos need for raytracing. bottom level as, top level as. and shader tables
+*/
+int Node::UpdateRaytracingStructure(RenderContext* Context) {
 	return 0;
 }
 

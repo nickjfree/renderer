@@ -197,7 +197,7 @@ void D3D12Render::InitD3D12() {
 	SwapCommandContext();
 	// init raytracing scene
 	for (int i = 0; i < NUM_FRAMES; i++) {
-		rtScene[i] = new RaytracingScene();
+		rtScene[i] = new RaytracingScene(Device);
 	}
 
 }
@@ -756,7 +756,8 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 	auto Id = BottomLevelAS.AddItem(Blas);
 
 	// create resource: scratch, blas and deformable buffer
-	for (auto i = 0; i < NUM_FRAMES; i++) {
+	auto ResourceCount = Deformable ? NUM_FRAMES : 1;
+	for (auto i = 0; i < ResourceCount; i++) {
 		// create scratch buffer
 		Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -775,8 +776,9 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 			IID_PPV_ARGS(&Blas.BLAS[i]));
 		Blas.BLASState[i].CurrentState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
 	}
-	// blas has deformable mesh 
+	// create bottom level as
 	if (Deformable) {
+		// blas has deformable mesh. we don't create it directly. build it later in rtScenen->BuildBottomLevelAccelerationStructure()
 		R_BUFFER_DESC desc = {};
 		desc.Size = Geometry.VSize;
 		desc.StructureByteStride = Geometry.VBSize;
@@ -784,6 +786,29 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 		desc.CPUData = nullptr;
 		Blas.BufferId = CreateBuffer(&desc);
 		*BufferId = Blas.BufferId;
+	} else {
+		// static geometry. create it directly
+		auto cmdContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+		auto rtCommandList = cmdContext->GetRaytracingCommandList();
+
+		// get build desc
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+		buildDesc.DestAccelerationStructureData = Blas.BLAS[0]->GetGPUVirtualAddress();
+		buildDesc.ScratchAccelerationStructureData = Blas.Scrach[0]->GetGPUVirtualAddress();
+		buildDesc.SourceAccelerationStructureData = 0;
+		buildDesc.Inputs = bottomLevelInputs;
+		rtCommandList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
+		// uav
+		auto UAVBarrier = CD3DX12_RESOURCE_BARRIER::UAV(Blas.BLAS[0]);
+		rtCommandList->ResourceBarrier(1, &UAVBarrier);
+		// wait for build complete
+		cmdContext->Finish(1);
+		// scratch buffer can be released
+		Blas.Scrach[0]->Release();
+		Blas.Scrach[0] = nullptr;
+		// clear diry flag
+		Blas.Dirty[0] = false;
 	}
 	BottomLevelAS[Id] = Blas;
 
@@ -1535,7 +1560,16 @@ void D3D12Render::Quad() {
 
 int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
-	auto RtGeometry = BottomLevelAS.GetItem(instance.RtGeometry);
+	auto rtGeometry = BottomLevelAS.GetItem(instance.rtGeometry);
+	// get rtScene of current frame
+	auto Scene = rtScene[FrameIndex];
+	if (!rtGeometry.Deformable) {
+		// static geometry
+		if (!rtGeometry.Dirty[0]) {
+			// add to rtScenen for builind
+			Scene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+		}
+	}
 	return 0;
 }
 

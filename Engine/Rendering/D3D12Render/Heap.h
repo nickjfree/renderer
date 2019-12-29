@@ -29,7 +29,7 @@ namespace D3D12API {
 		// current offset
 		int CurrentOffset;
 		// max size
-		int MaxSize;
+		UINT64 MaxSize;
 		// align
 		int Align;
 		// FenceValue
@@ -50,17 +50,21 @@ namespace D3D12API {
 		Heap();
 		virtual ~Heap();
 		// init
-		virtual void Init(ID3D12Device* Device, int MaxSize, int Type);
+		virtual void Init(ID3D12Device* Device, UINT64 MaxSize, int Type, D3D12_RESOURCE_STATES State = D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAGS Flag = D3D12_RESOURCE_FLAG_NONE);
 		// alloc
 		static Heap* Alloc(ID3D12Device* Device, int Type);
 		// Sub Alloc return mapped cpu data
-		void* SubAlloc(int Size);
+		void* SubAlloc(UINT64 Size);
 		// Get Gpu pointer
 		D3D12_GPU_VIRTUAL_ADDRESS GetGpuAddress(void* CpuPointer);
+		// Get CPU addr
+		void* GetCPUAddress(UINT64 Offset);
 		// retire
 		void Retire(UINT64 FenceValue);
 		// free
 		void Release();
+		// get
+		ID3D12Resource* GetResource() { return Buffer; }
 	};
 
 }

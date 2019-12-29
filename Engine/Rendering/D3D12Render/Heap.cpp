@@ -20,8 +20,8 @@ Heap::~Heap() {
 	}
 }
 
-void Heap::Init(ID3D12Device* Device_, int MaxSize_, int Type_) {
-	assert(Type_ == HeapType::CPU);
+void Heap::Init(ID3D12Device* Device_, UINT64 MaxSize_, int Type_, D3D12_RESOURCE_STATES State, D3D12_RESOURCE_FLAGS Flag) {
+	//assert(Type_ == HeapType::CPU);
 	D3D12_HEAP_TYPE HeapType;
 	Device = Device_;
 	Type = Type_;
@@ -36,8 +36,8 @@ void Heap::Init(ID3D12Device* Device_, int MaxSize_, int Type_) {
 	HRESULT result = Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(HeapType),
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(MaxSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ,
+		&CD3DX12_RESOURCE_DESC::Buffer(MaxSize, Flag),
+		State,
 		nullptr,
 		IID_PPV_ARGS(&Buffer));
 	if (Type == HeapType::CPU) {
@@ -80,7 +80,7 @@ Heap* Heap::Alloc(ID3D12Device* Device, int Type) {
 	return heap;
 }
 
-void* Heap::SubAlloc(int Size) {
+void* Heap::SubAlloc(UINT64 Size) {
 	int offset = 0;
 	int AlignedSize = (Size + CONSTANT_ALIGN - 1) & ~(CONSTANT_ALIGN - 1);
 	if (CurrentOffset + Size <= MaxSize) {
@@ -94,6 +94,10 @@ void* Heap::SubAlloc(int Size) {
 D3D12_GPU_VIRTUAL_ADDRESS Heap::GetGpuAddress(void* CpuPointer) {
 	UINT64 offset = (UINT64)CpuPointer - (UINT64)CpuData;
 	return GpuData + offset;
+}
+
+void* Heap::GetCPUAddress(UINT64 Offset) {
+	return (void*)((UINT64)CpuData + Offset);
 }
 
 void Heap::Retire(UINT64 FenceValue_) {

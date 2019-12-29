@@ -26,6 +26,8 @@ namespace D3D12API {
 		ID3D12CommandAllocator* CommandAllocator;
 		// command list
 		ID3D12GraphicsCommandList* CommandList;
+		// rt commandlist
+		ID3D12GraphicsCommandList5* rtCommandList;
 		// Mutex
 		static Mutex mutex;
 	protected:
@@ -55,6 +57,8 @@ namespace D3D12API {
 		void SetDescriptorHeaps(ID3D12DescriptorHeap* Heaps);
 		// get commandlist
 		ID3D12GraphicsCommandList* GetGraphicsCommandList() { return CommandList; }
+		// get rt Command list
+		ID3D12GraphicsCommandList5* GetRaytracingCommandList() { return rtCommandList; }
 		// init texture
 		void InitializeTexture(ID3D12Resource* DestResource, std::vector<D3D12_SUBRESOURCE_DATA>& subresources, ID3D12Resource** Upload);
 		// init vertext buffers

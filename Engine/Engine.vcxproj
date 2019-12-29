@@ -164,6 +164,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\D3D12Render\Heap.h" />
     <ClInclude Include="Rendering\D3D12Render\PSOCache.h" />
     <ClInclude Include="Rendering\D3D12Render\RaytracingScene.h" />
+    <ClInclude Include="Rendering\D3D12Render\ReuseHeap.h" />
     <ClInclude Include="Rendering\D3D12Render\RootSignature.h" />
     <ClInclude Include="Rendering\D3D12Render\Structs.h" />
     <ClInclude Include="Rendering\Light.h" />
@@ -171,6 +172,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\PostpassStage.h" />
     <ClInclude Include="Rendering\PrepassStage.h" />
     <ClInclude Include="Rendering\QuadTreeImp.h" />
+    <ClInclude Include="Rendering\RaytracingStage.h" />
     <ClInclude Include="Rendering\RenderControl.h" />
     <ClInclude Include="Rendering\RenderingCamera.h" />
     <ClInclude Include="Rendering\D3D11Render\D3D11Render.h" />
@@ -281,11 +283,13 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\D3D12Render\Heap.cpp" />
     <ClCompile Include="Rendering\D3D12Render\PSOCache.cpp" />
     <ClCompile Include="Rendering\D3D12Render\RaytracingScene.cpp" />
+    <ClCompile Include="Rendering\D3D12Render\ReuseHeap.cpp" />
     <ClCompile Include="Rendering\D3D12Render\RootSignature.cpp" />
     <ClCompile Include="Rendering\Light.cpp" />
     <ClCompile Include="Rendering\PostpassStage.cpp" />
     <ClCompile Include="Rendering\PrepassStage.cpp" />
     <ClCompile Include="Rendering\QuadTreeImp.cpp" />
+    <ClCompile Include="Rendering\RaytracingStage.cpp" />
     <ClCompile Include="Rendering\RenderControl.cpp" />
     <ClCompile Include="Rendering\RenderingCamera.cpp" />
     <ClCompile Include="Rendering\D3D11Render\D3D11Render.cpp" />

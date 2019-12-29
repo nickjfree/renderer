@@ -103,6 +103,29 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	return Compiled;
 }
 
+int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
+	
+	// get geometry
+	int Geometry = GetRenderMesh(0, 0);
+
+	auto renderInterface = Context->GetRenderInterface();
+	if (Geometry != -1) {
+		if (RaytracingGeometry == -1 && palette.Size == 0) {
+			// create it, static geometry
+			RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
+		}
+		if (RaytracingGeometry != -1) {
+			// add instance
+			R_RAYTRACING_INSTANCE instance = {};
+			instance.Flag = 0;
+			instance.MaterialId = 0;
+			instance.rtGeometry = RaytracingGeometry;
+			instance.Transform = GetWorldMatrix();
+			renderInterface->AddRaytracingInstance(instance);
+		}
+	}
+	return 0;
+}
 
 void RenderObject::SetMatrixPalette(Matrix4x4* palette_, unsigned int NumMatrix_) {
 	palette.Data = palette_;

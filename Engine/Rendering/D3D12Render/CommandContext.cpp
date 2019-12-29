@@ -22,6 +22,7 @@ CommandContext::CommandContext(ID3D12Device* Device_, D3D12_COMMAND_LIST_TYPE ty
 	Type = type;
 	Device->CreateCommandAllocator(type, IID_PPV_ARGS(&CommandAllocator));
 	Device->CreateCommandList(0, type, CommandAllocator, NULL, IID_PPV_ARGS(&CommandList));
+	CommandList->QueryInterface(IID_PPV_ARGS(&rtCommandList));
 }
 
 CommandContext::~CommandContext() {

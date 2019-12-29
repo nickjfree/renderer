@@ -25,3 +25,7 @@ int Spatial::Query(Frustum& Fr, Vector<Node*>& Result, int Type) {
 int Spatial::Query(AABB& Box, Vector<Node*>& Result, int Type) {
 	return 0;
 }
+
+int Spatial::Query(Vector<Node*>& Result, int Type) {
+	return 0;
+}

@@ -58,11 +58,14 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	buildDesc.ScratchAccelerationStructureData = TopLevelScratch->GetResource()->GetGPUVirtualAddress();
 	buildDesc.SourceAccelerationStructureData = 0;
 	buildDesc.Inputs = topLevelInputs;
-	cmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
+	auto i = 1;
+	while (i--) {
+		cmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
 
-	// 5. uav barriar
-	CD3DX12_RESOURCE_BARRIER UAVBarriers[2] = { CD3DX12_RESOURCE_BARRIER::UAV(TopLevelAS->GetResource()),  CD3DX12_RESOURCE_BARRIER::UAV(TopLevelScratch->GetResource())};
-	cmdList->ResourceBarrier(2, UAVBarriers);
+		// 5. uav barriar
+		CD3DX12_RESOURCE_BARRIER UAVBarriers[2] = { CD3DX12_RESOURCE_BARRIER::UAV(TopLevelAS->GetResource()),  CD3DX12_RESOURCE_BARRIER::UAV(TopLevelScratch->GetResource()) };
+		cmdList->ResourceBarrier(2, UAVBarriers);
+	}
 
 	// flush context
 	SceneFenceValue_ = cmdContext->Flush(0);
@@ -72,9 +75,57 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	return SceneFenceValue_;
 }
 
-UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cmdContext) {
-	// do nothing for now
-	// TODO: rebuild all bottom level as for deformable geometries
+UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cmdContext, UINT64 GraphicsFenceValue) {
+	// rebuild all bottom level as for deformable geometries
+	auto cmdList = cmdContext->GetRaytracingCommandList();
+	// wait for frev frame's  graphic work to complete
+	if (GraphicsFenceValue == 0) {
+		// we are the first frame
+		return 0;
+	}
+	// wait for prev graphics work to finish
+	cmdContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_DIRECT, GraphicsFenceValue);
+	for (auto Iter = BottomLevelDesc.Begin(); Iter != BottomLevelDesc.End(); Iter++) {
+		auto& bottoemLevelDesc = *Iter;
+		auto FrameIndex = bottoemLevelDesc.FrameIndex;
+		D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER|D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		//D3D12_RESOURCE_STATES NewState = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		D3D12_RESOURCE_STATES OldState = bottoemLevelDesc.Buffer->State[FrameIndex].CurrentState;
+		if (OldState != NewState) {
+			if (OldState == D3D12_RESOURCE_STATE_COPY_DEST) {
+				// buffer was not deformed 
+				BottomLevelDesc.Empty();
+				return 0;
+			}
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(bottoemLevelDesc.Buffer->BufferResource[FrameIndex], OldState, NewState);
+			ResourceBarriers.PushBack(Barrier);
+			bottoemLevelDesc.Buffer->State[FrameIndex].CurrentState = NewState;
+		}
+	}
+	// submit resource barriers for deformable buffer, uav --> vertex buffer
+	if (ResourceBarriers.Size()) {
+		cmdList->ResourceBarrier(ResourceBarriers.Size(), ResourceBarriers.GetData());
+		ResourceBarriers.Empty();
+	}
+	// build them
+	for (auto Iter = BottomLevelDesc.Begin(); Iter != BottomLevelDesc.End(); Iter++) {
+		auto& bottoemLevelDesc = *Iter;
+		auto FrameIndex = bottoemLevelDesc.FrameIndex;
+		cmdList->BuildRaytracingAccelerationStructure(&bottoemLevelDesc.buildDesc, 0, nullptr);
+		auto Barrier = CD3DX12_RESOURCE_BARRIER::UAV(bottoemLevelDesc.Blas->BLAS[FrameIndex]);
+		ResourceBarriers.PushBack(Barrier);
+		Barrier = CD3DX12_RESOURCE_BARRIER::UAV(bottoemLevelDesc.Blas->Scrach[FrameIndex]);
+		ResourceBarriers.PushBack(Barrier);
+		// clear dirty flag. so the next frame can use it to build the TLAS
+		bottoemLevelDesc.Blas->Dirty[FrameIndex] = false;
+	}
+	// submit uav resource barriers for blas and scratch
+	if (ResourceBarriers.Size()) {
+		cmdList->ResourceBarrier(ResourceBarriers.Size(), ResourceBarriers.GetData());
+		ResourceBarriers.Empty();
+	}
+	// clear deformable geometry
+	BottomLevelDesc.Empty();
 	return cmdContext->Finish(0);
 }
 
@@ -97,6 +148,22 @@ void RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID
 	instance.InstanceID = InstanceID;
 	instance.Flags = Flags;
 	// set transform to indetity
-	instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;
+	Matrix4x4 Trans;
+	Tansform.Tranpose(Tansform, &Trans);
+	memcpy(instance.Transform, &Trans, sizeof(float) * 12);
+	//instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;
 	InstanceDesc.PushBack(instance);
+}
+
+
+void RaytracingScene::RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer* Buffer, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& buildDesc, int FrameIndex) {
+	BottomLevelAsRebuildDesc desc {
+		Blas,
+		Buffer,
+		buildDesc,
+		FrameIndex
+	};
+	BottomLevelDesc.PushBack(desc);
+	// mark blas as dirty
+	Blas->Dirty[FrameIndex] = true;
 }

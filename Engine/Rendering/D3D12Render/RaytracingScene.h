@@ -10,6 +10,17 @@
 
 namespace D3D12API {
 
+	typedef struct BottomLevelAsRebuildDesc {
+		// bottoem level as
+		D3DBottomLevelAS* Blas;
+		// buffer 
+		D3DBuffer* Buffer;
+		// build info
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc;
+		// frame index, resource index to build. one blas per frame. for async build
+		int FrameIndex;
+	}BottomLevelAsRebuildDesc;
+
 
 	class RaytracingScene
 	{
@@ -25,10 +36,11 @@ namespace D3D12API {
 		ReuseHeap* TopLevelScratch;
 		// bottom level as to build
 		// D3D12_RAYTRACING_INSTANCE_DESC
-		Vector<D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC> BottomLevelDesc;
+		Vector<BottomLevelAsRebuildDesc> BottomLevelDesc;
 		// top level instances
 		Vector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDesc;
-
+		// translate resource barriars
+		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
 		// UINT64 FenceValue for top level as
 		UINT64 SceneFenceValue_;
 	public:
@@ -38,12 +50,14 @@ namespace D3D12API {
 		// build scene
 		UINT64 BuildTopLevelAccelerationStructure(CommandContext * cmdContext);
 		// build bottom level as
-		UINT64 BuildBottomLevelAccelerationStructure(CommandContext* cmdContext);
+		UINT64 BuildBottomLevelAccelerationStructure(CommandContext* cmdContext, UINT64 GraphicFenceValue);
 		// wait for scene
 		UINT64 WaitScene(CommandContext* GraphicContext);
 
 		// add instance
 		void AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform);
+		// add bottomlevel as for rebuild
+		void RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer * Buffer, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& buildDesc, int FrameIndex);
 
 	};
 

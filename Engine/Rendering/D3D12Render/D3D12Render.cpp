@@ -10,7 +10,7 @@ using namespace DirectX;
 
 D3D12Render* D3D12Render::thisRender = NULL;
 
-D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlushed(0), Performance({})
+D3D12Render::D3D12Render() : CurrentConstHeap(0), CurrentSRVHeap(0), BarrierFlushed(0), Performance({}), PrevComputeFenceValue(0)
 {
 	//	memset(Targets, 0, sizeof(void*)* 8);
 	thisRender = this;
@@ -252,9 +252,54 @@ void D3D12Render::InitDescriptorHeaps() {
 void D3D12Render::InitRootSignature() {
 	D3DTexture& texture = Textures.GetItem(NullId);
 	D3DBuffer& buffer = Buffers.GetItem(NullUAV);
+
+	// srv and uav null handles
 	D3D12_CPU_DESCRIPTOR_HANDLE nullHandle = texture.Resource[0];
 	D3D12_CPU_DESCRIPTOR_HANDLE nullUAVHandle = buffer.UAV[0];
-	RootSig = new RootSignature(Device, nullHandle, nullUAVHandle);
+
+	// init graphic root signature
+	{
+		CD3DX12_DESCRIPTOR_RANGE1 DescRange[5];
+		// texture materials src t 0-8
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 0, 0);
+		// texture g-buffer srv t 9-13
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 9, 0);
+		// texture misc srv t 14-20
+		DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0);
+		// uavs  u 0-8
+		DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0);
+		// samplers  s 0-2. samplers use static descriptors
+		DescRange[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 3, 0);
+		/*
+			b0  PerObject
+			b1  PerLight
+			b2  PerFrame
+			b3  Animation
+			b4  Misc
+			b5  Not Used
+			table  t0-t8
+			table  t9-t13
+			table  t14-t20
+			table  u0-u7
+			table  s0-s2
+		*/
+		CD3DX12_ROOT_PARAMETER1 RP[16];
+		// constant buffer
+		RP[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0
+		RP[1].InitAsConstantBufferView(1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
+		RP[2].InitAsConstantBufferView(2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b2
+		RP[3].InitAsConstantBufferView(3, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b3
+		RP[4].InitAsConstantBufferView(4, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b4
+		RP[5].InitAsConstantBufferView(5, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b5
+		// tables
+		RP[6].InitAsDescriptorTable(1, &DescRange[0]);
+		RP[7].InitAsDescriptorTable(1, &DescRange[1]);
+		RP[8].InitAsDescriptorTable(1, &DescRange[2]);
+		RP[9].InitAsDescriptorTable(1, &DescRange[3]);
+		RP[10].InitAsDescriptorTable(1, &DescRange[4]);
+
+		RootSig = new RootSignature(Device, RP, 11, nullHandle, nullUAVHandle);
+	}
 }
 
 void D3D12Render::InitSamplers() {
@@ -788,7 +833,7 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 		*BufferId = Blas.BufferId;
 	} else {
 		// static geometry. create it directly
-		auto cmdContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		auto cmdContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 
 		auto rtCommandList = cmdContext->GetRaytracingCommandList();
 
@@ -810,8 +855,19 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 		// clear diry flag
 		Blas.Dirty[0] = false;
 	}
-	BottomLevelAS[Id] = Blas;
 
+	BottomLevelAS[Id] = Blas;
+	// set build desc
+	auto& CreateBlas = BottomLevelAS.GetItem(Id);
+	for (auto i = 0; i < ResourceCount; i++) {
+		if (Deformable) {
+			auto& Buffer = Buffers.GetItem(CreateBlas.BufferId);
+			geometryDesc.Triangles.VertexBuffer.StartAddress = Buffer.BufferResource[i]->GetGPUVirtualAddress();
+		}
+		CreateBlas.geometryDesc[i] = geometryDesc;
+		CreateBlas.inputs[i] = bottomLevelInputs;
+		CreateBlas.inputs[i].pGeometryDescs = &CreateBlas.geometryDesc[i];
+	}
 	// Add to geometry
 	Geometry.UsedBlas.PushBack(Id);
 	return Id;
@@ -1285,6 +1341,9 @@ void D3D12Render::Present() {
 		return;
 	}
 	CommandContext* Context = CurrentCommandContext;
+
+	//Context->Flush(0);
+
 	ID3D12GraphicsCommandList* commandlist = CurrentCommandContext->GetGraphicsCommandList();
 	// flush resource barriers
 	FlushResourceBarriers();
@@ -1390,10 +1449,13 @@ ID3D12PipelineState* D3D12Render::CreatePSO(PSOCache& cache) {
 void D3D12Render::SwapCommandContext() {
 	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	// wait for prev compute to finishe
+	if (PrevComputeFenceValue) {
+		CurrentCommandContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE, PrevComputeFenceValue);
+	}
 	cmdList->SetGraphicsRootSignature(RootSig->Get());
 	// set primitive topology to triangleist
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 	// clear targets and depth
 	NumTargets = 0;
 	TargetDirty = 0;
@@ -1560,7 +1622,7 @@ void D3D12Render::Quad() {
 
 int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
-	auto rtGeometry = BottomLevelAS.GetItem(instance.rtGeometry);
+	auto& rtGeometry = BottomLevelAS.GetItem(instance.rtGeometry);
 	// get rtScene of current frame
 	auto Scene = rtScene[FrameIndex];
 	if (!rtGeometry.Deformable) {
@@ -1569,6 +1631,24 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 			// add to rtScenen for builind
 			Scene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
 		}
+	} else if (rtGeometry.Deformable) {
+		if (!rtGeometry.Dirty[FrameIndex]) {
+			// add to rtScene for build
+			Scene->AddInstance(rtGeometry.BLAS[FrameIndex], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+		}
+		// add geometry of current frame to rtScene for builing
+		// deformable geometry index to build
+		auto DeformGeometryIndex = (FrameIndex - 1) % NUM_FRAMES;
+		auto& Geometry = Geometries.GetItem(rtGeometry.GeometryId);
+		auto& Buffer = Buffers.GetItem(rtGeometry.BufferId);
+
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+		buildDesc.Inputs = rtGeometry.inputs[0];
+		buildDesc.DestAccelerationStructureData = rtGeometry.BLAS[DeformGeometryIndex]->GetGPUVirtualAddress();
+		buildDesc.ScratchAccelerationStructureData = rtGeometry.Scrach[DeformGeometryIndex]->GetGPUVirtualAddress();
+		buildDesc.SourceAccelerationStructureData = 0;
+		// rebuild 
+		Scene->RebuildBottomLevelAs(&rtGeometry, &Buffer, buildDesc, DeformGeometryIndex);
 	}
 	return 0;
 }
@@ -1661,7 +1741,11 @@ void D3D12Render::BuildRaytracingScene() {
 	auto computeContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
 	Scene->BuildTopLevelAccelerationStructure(computeContext);
 	// then build bottom level for next frame
-	Scene->BuildBottomLevelAccelerationStructure(computeContext);
+
+	// get prev graphic task fencevalue
+	auto GraphicsFenceValue = PrevFenceValue[(FrameIndex -1) % NUM_FRAMES];
+	// wait for previouse graphics frame to complete and rebuild bottom level of prev frame.
+	PrevComputeFenceValue = Scene->BuildBottomLevelAccelerationStructure(computeContext, GraphicsFenceValue);
 }
 
 // wait raytracing scene

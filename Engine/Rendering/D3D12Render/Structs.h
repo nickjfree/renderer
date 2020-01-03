@@ -127,6 +127,9 @@ namespace D3D12API {
 		ID3D12Resource* Deformed[NUM_FRAMES];
 		// resource state
 		D3DResourceState BLASState[NUM_FRAMES];
+		// build desc
+		D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc[NUM_FRAMES];
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs[NUM_FRAMES];
 	}D3DBottomLevelAS;
 
 }

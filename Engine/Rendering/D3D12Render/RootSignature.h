@@ -11,7 +11,18 @@
 
 namespace D3D12API {
 
-#define MAX_DESC_TABLE_SIZE 16
+	// max descriptor number in a descriptor table
+	constexpr int MAX_DESC_TABLE_SIZE = 16;
+	// max descriptor number in root signature
+	constexpr int MAX_DESC_TABLE_NUM = 8;
+	// max srv number in rootsig
+	constexpr int MAX_SRV_NUM = 64;
+	// max uav number in rootsig
+	constexpr int MAX_UAV_NUM = 64;
+	// max constant number in rootsig
+	constexpr int MAX_CONSTANT_NUM = 16;
+
+
 	// descriptor table cache
 	typedef struct DescriptorTable {
 		int RootSlot;
@@ -19,6 +30,7 @@ namespace D3D12API {
 		int Start;
 		int End;
 		int TableSize;
+		D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType;
 		int ResourceId[MAX_DESC_TABLE_SIZE];
 		D3D12_CPU_DESCRIPTOR_HANDLE Handles[MAX_DESC_TABLE_SIZE];
 		int Fresh[MAX_DESC_TABLE_SIZE];
@@ -45,33 +57,42 @@ namespace D3D12API {
 	private:
 		// rootsig
 		ID3D12RootSignature* RootSig;
+		// local or global
+		bool Local_;
 		// texture slot
-		DescTableSlot Textures[64];
+		DescTableSlot Textures[MAX_SRV_NUM];
 		// uav slot
-		DescTableSlot UAVs[64];
+		DescTableSlot UAVs[MAX_UAV_NUM];
 		// sampler slot
 		DescTableSlot Samplers[16];
 		// constant slot
-		RootDescriptorSlot Constants[32];
+		RootDescriptorSlot Constants[MAX_CONSTANT_NUM];
 		// cached tables 
-		DescriptorTable DescTables[5];
+		DescriptorTable DescTables[MAX_DESC_TABLE_NUM];
 		// null handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullHandle;
 		// null uav handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle;
+		// staging table count
+		int NumCachedTables;
+		// constant buffer view count
+		int NumConstantBuffers;
 		// table size
 		int TotalTableSize;
 	private:
 		ID3D12Device* Device;
 		// init root signature
-		void InitRootSignature();
+		void InitRootSignature(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
 		// init mapping
-		void InitMapping();
-		// init Cache
-		void InitCache(D3D12_CPU_DESCRIPTOR_HANDLE NullHandle);
-
+		void InitMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
+		//// init Cache
+		//void InitCache(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
+		// init descriptor table cache
+		void InitDescriptorTableCache(int CacheSlot, int rootParameterIndex, D3D12_ROOT_PARAMETER1* rootParameter);
 	public:
-		RootSignature(ID3D12Device* Device, D3D12_CPU_DESCRIPTOR_HANDLE NullHandle, D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle);
+		RootSignature(ID3D12Device* Device, D3D12_ROOT_PARAMETER1 * rootParameters, int numRootParameters,
+			D3D12_CPU_DESCRIPTOR_HANDLE NullHandle, D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle, bool Local=false);
+
 		virtual ~RootSignature();
 		// get root signature
 		ID3D12RootSignature* Get() { return RootSig; }

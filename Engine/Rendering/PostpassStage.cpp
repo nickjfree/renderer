@@ -330,7 +330,6 @@ int PostpassStage::ToneMapping(BatchCompiler* Compiler) {
 	// restore viewport
 	Compiler->SetViewport(0.0f, 0.0f, static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight), 0.0f, 1.0f);
 	Compiler->Quad();
-	Compiler->Present();
 	return 0;
 }
 
@@ -381,7 +380,7 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	HDR(Compiler);
 	// submit to queue
 	// Compiler->SetRenderTargets(1, renderview->Targets);
-
+	Compiler->Present();
 	renderview->QueueCommand();
 	renderview->Recycle();
 	return 0;

@@ -129,6 +129,8 @@ namespace D3D12API {
 		int ViewPortHeight;
 		// previous frame's fence value
 		UINT64 PrevFenceValue[NUM_FRAMES];
+		// previous cumpute fence value
+		UINT64 PrevComputeFenceValue;
 		// barrier flushed
 		bool BarrierFlushed;
 		// windows title

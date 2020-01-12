@@ -83,6 +83,8 @@ protected:
 	int Present(void* data);
 	// instance
 	int Instance(void* data);
+	// build raytracing scene
+	int BuildRaytracingScene(void* data);
 public:
 	RenderProcesser(RenderContext* context);
 	~RenderProcesser();

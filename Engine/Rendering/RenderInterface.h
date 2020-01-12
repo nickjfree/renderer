@@ -124,6 +124,8 @@ public:
 	virtual void Quad() {};
 	// draw rect quad, not that usefull
 	virtual void Rect() {};
+	// build raytracing scene
+	virtual void BuildRaytracingScene() {};
 	// clear depth
 	virtual void ClearDepth(float depth, float stencil) {};
 	// clear target

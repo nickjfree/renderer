@@ -80,5 +80,9 @@
 */
 #define OP_VIEWPORT 0x14
 
+/*
+	raytracing
+*/
+#define OP_BUILD_RTSCENE 0x20
 
 #endif

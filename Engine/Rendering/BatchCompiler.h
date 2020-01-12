@@ -100,6 +100,8 @@ public:
 	int Present();
 	// quad
 	int Quad();
+	// build raytracing scene
+	int BuildRaytracingScene();
 	// instance
 	int Instance(int Geometry, void* InstanceData, int Size);
 	// Get cmd size

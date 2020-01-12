@@ -41,19 +41,25 @@ namespace D3D12API {
 		Vector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDesc;
 		// translate resource barriars
 		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
-		// UINT64 FenceValue for top level as
+		// UINT64 FenceValue for top level as. also fencevalue for retired graphic context
 		UINT64 SceneFenceValue_;
+	protected:
+		// rtscene which are used be previous frame
+		static List<RaytracingScene> RetiredScene;
 	public:
 		RaytracingScene(ID3D12Device* Device);
 		~RaytracingScene();
 
+		// alloc new raytracing scene
+		static RaytracingScene* Alloc(ID3D12Device* Device);
+		// retire raytracing scene
+		void Retire(UINT64 FenceValue);
 		// build scene
 		UINT64 BuildTopLevelAccelerationStructure(CommandContext * cmdContext);
 		// build bottom level as
 		UINT64 BuildBottomLevelAccelerationStructure(CommandContext* cmdContext, UINT64 GraphicFenceValue);
 		// wait for scene
 		UINT64 WaitScene(CommandContext* GraphicContext);
-
 		// add instance
 		void AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform);
 		// add bottomlevel as for rebuild

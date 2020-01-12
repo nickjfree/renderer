@@ -92,8 +92,8 @@ namespace D3D12API {
 		Vector<DescriptorHeap*> CpuBLASSRVHeaps[NUM_FRAMES];
 		// Sampler Heaps
 		Vector<DescriptorHeap*> GpuSamplerHeaps;
-		// raytracing scene
-		RaytracingScene * rtScene[NUM_FRAMES];
+		// current raytracing scene in current frame
+		RaytracingScene * rtScene;
 		// null descriptor Heaps
 		DescriptorHeap* NullHeap;
 		// Used SRVHeaps
@@ -179,8 +179,8 @@ namespace D3D12API {
 		void FlushRootSignature();
 		// flush rendertargets
 		void FlushRenderTargets();
-		// build raytracing scene
-		void BuildRaytracingScene();
+		// setup graphic context
+		void SetupGraphicContext();
 		// wait raytracing scene
 		void WaitRaytracingScene();
 		// update performance info
@@ -282,6 +282,8 @@ namespace D3D12API {
 		virtual void Quad();
 		// draw rect quad, not that usefull
 		virtual void Rect() {};
+		// build raytracing scene
+		virtual void BuildRaytracingScene();
 		// clear depth
 		virtual void ClearDepth(float depth, float stencil);
 		// clear target

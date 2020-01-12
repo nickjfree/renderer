@@ -1,8 +1,12 @@
 
 #include "RaytracingScene.h"
+#include "D3D12Render.h"
 
 using namespace::D3D12API;
 
+
+// retired scene
+List<RaytracingScene> RaytracingScene::RetiredScene;
 
 RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), Device_(Device) {
 	Device_->QueryInterface(IID_PPV_ARGS(&rtDevice_));
@@ -15,7 +19,41 @@ RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), De
 }
 
 RaytracingScene::~RaytracingScene() {
+	if (TopLevelAS) {
+		delete TopLevelAS;
+	}
+	if (TopLevelScratch) {
+		delete TopLevelScratch;
+	}
+	if (InstancesBuffer) {
+		delete InstancesBuffer;
+	}
+}
 
+// alloc new raytracing scene
+RaytracingScene* RaytracingScene::Alloc(ID3D12Device* Device) {
+	
+	RaytracingScene* Result = nullptr;
+	
+	D3D12Render* Render = D3D12Render::GetRender();
+	CommandQueue* Queue = Render->GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+
+	for (auto iter = RetiredScene.Begin(); iter != RetiredScene.End(); iter++) {
+		Result = *iter;
+		if (Queue->FenceComplete(Result->SceneFenceValue_)) {
+			RetiredScene.Remove(iter);
+			Result->SceneFenceValue_ = -1;
+			return Result;
+		}
+	}
+	// no retired scenc founc 
+	Result = new RaytracingScene(Device);
+	return Result;
+}
+// retire raytracing scene
+void RaytracingScene::Retire(UINT64 FenceValue) {
+	SceneFenceValue_ = FenceValue;
+	RetiredScene.Insert(this);
 }
 
 /*
@@ -68,7 +106,7 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	}
 
 	// flush context
-	SceneFenceValue_ = cmdContext->Flush(0);
+	SceneFenceValue_ = cmdContext->Finish(0);
 
 	// clear instances
 	InstanceDesc.Empty();
@@ -81,6 +119,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// wait for frev frame's  graphic work to complete
 	if (GraphicsFenceValue == 0) {
 		// we are the first frame
+		BottomLevelDesc.Empty();
 		return 0;
 	}
 	// wait for prev graphics work to finish
@@ -126,7 +165,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	}
 	// clear deformable geometry
 	BottomLevelDesc.Empty();
-	return cmdContext->Finish(0);
+	return cmdContext->Flush(0);
 }
 
 UINT64 RaytracingScene::WaitScene(CommandContext* GraphicContext) {

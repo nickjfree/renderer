@@ -196,10 +196,7 @@ void D3D12Render::InitD3D12() {
 	// init current commandcontext
 	SwapCommandContext();
 	// init raytracing scene
-	for (int i = 0; i < NUM_FRAMES; i++) {
-		rtScene[i] = new RaytracingScene(Device);
-	}
-
+	rtScene = nullptr;
 }
 
 void D3D12Render::InitQueues() {
@@ -628,17 +625,10 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
 	// no multi resource and multi frame
 	int NumFrames = 1;
 	int NumResource = 1;
-	if (desc->Deformable) {
-		Buffer.MultiFrame = 1;
-		Buffer.MultiResource = 1;
-		NumFrames = NUM_FRAMES;
-		NumResource = NUM_FRAMES;
-	} else {
-		Buffer.MultiFrame = 0;
-		Buffer.MultiResource = 0;
-		NumFrames = 1;
-		NumResource = 1;
-	}
+    Buffer.MultiFrame = 0;
+	Buffer.MultiResource = 0;
+	NumFrames = 1;
+	NumResource = 1;
 
 	// create uav
 	int Id = Buffers.AddItem(Buffer);
@@ -801,7 +791,7 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 	auto Id = BottomLevelAS.AddItem(Blas);
 
 	// create resource: scratch, blas and deformable buffer
-	auto ResourceCount = Deformable ? NUM_FRAMES : 1;
+	auto ResourceCount = 1;
 	for (auto i = 0; i < ResourceCount; i++) {
 		// create scratch buffer
 		Device->CreateCommittedResource(
@@ -1348,9 +1338,7 @@ void D3D12Render::Present() {
 	// flush resource barriers
 	FlushResourceBarriers();
 
-	// begin build raytracing scene in compute queue
-	BuildRaytracingScene();
-	// wait for the scene in graphic queue
+	// test wait for the scene in graphic queue
 	WaitRaytracingScene();
 
 	// Indicate that the back buffer will be used as present.
@@ -1383,6 +1371,11 @@ void D3D12Render::Present() {
 		UsedGpuSRVHeaps[i]->Retire(FenceValue);
 	}
 	UsedGpuSRVHeaps.Empty();
+	// retire current rtscene. so it can be reused
+	if (rtScene) {
+		rtScene->Retire(FenceValue);
+		rtScene = nullptr;
+	}
 	SwapChain->Present(1, 0);
 	// save this FenceValue for later waiting
 	PrevFenceValue[FrameIndex] = FenceValue;
@@ -1624,21 +1617,23 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
 	auto& rtGeometry = BottomLevelAS.GetItem(instance.rtGeometry);
 	// get rtScene of current frame
-	auto Scene = rtScene[FrameIndex];
+	if (!rtScene) {
+		rtScene = RaytracingScene::Alloc(Device);
+	}
 	if (!rtGeometry.Deformable) {
 		// static geometry
 		if (!rtGeometry.Dirty[0]) {
 			// add to rtScenen for builind
-			Scene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+			rtScene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
 		}
 	} else if (rtGeometry.Deformable) {
-		if (!rtGeometry.Dirty[FrameIndex]) {
+		if (!rtGeometry.Dirty[0]) {
 			// add to rtScene for build
-			Scene->AddInstance(rtGeometry.BLAS[FrameIndex], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+			rtScene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
 		}
 		// add geometry of current frame to rtScene for builing
 		// deformable geometry index to build
-		auto DeformGeometryIndex = (FrameIndex - 1) % NUM_FRAMES;
+		auto DeformGeometryIndex = 0;
 		auto& Geometry = Geometries.GetItem(rtGeometry.GeometryId);
 		auto& Buffer = Buffers.GetItem(rtGeometry.BufferId);
 
@@ -1648,7 +1643,7 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 		buildDesc.ScratchAccelerationStructureData = rtGeometry.Scrach[DeformGeometryIndex]->GetGPUVirtualAddress();
 		buildDesc.SourceAccelerationStructureData = 0;
 		// rebuild 
-		Scene->RebuildBottomLevelAs(&rtGeometry, &Buffer, buildDesc, DeformGeometryIndex);
+		rtScene->RebuildBottomLevelAs(&rtGeometry, &Buffer, buildDesc, DeformGeometryIndex);
 	}
 	return 0;
 }
@@ -1736,22 +1731,46 @@ int D3D12Render::DestroyTexture2D(int Id) {
 
 // build raytracing scene
 void D3D12Render::BuildRaytracingScene() {
-	auto Scene = rtScene[FrameIndex];
+
+	if (!rtScene) {
+		// no scene, no need to build scene
+		return;
+	}
 	// allocate compute context
 	auto computeContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
-	Scene->BuildTopLevelAccelerationStructure(computeContext);
-	// then build bottom level for next frame
-
-	// get prev graphic task fencevalue
-	auto GraphicsFenceValue = PrevFenceValue[(FrameIndex -1) % NUM_FRAMES];
+	// get graphic task fencevalue. trigger a graphic context flush
+	auto GraphicsFenceValue = CurrentCommandContext->Flush(0);
+	// graphic context was flushed by previous line, we must reset graphic state
+	SetupGraphicContext();
 	// wait for previouse graphics frame to complete and rebuild bottom level of prev frame.
-	PrevComputeFenceValue = Scene->BuildBottomLevelAccelerationStructure(computeContext, GraphicsFenceValue);
+	PrevComputeFenceValue = rtScene->BuildBottomLevelAccelerationStructure(computeContext, GraphicsFenceValue);
+	// build top level as
+	PrevComputeFenceValue = rtScene->BuildTopLevelAccelerationStructure(computeContext);
 }
 
 // wait raytracing scene
 void D3D12Render::WaitRaytracingScene() {
-	auto Scene = rtScene[FrameIndex];
 	// wait for compute queue with the FenceValue at the time rtScene was built. 
 	// the current recorded graphic command list will be excuted after this call
-	Scene->WaitScene(CurrentCommandContext);
+	if (rtScene) {
+		rtScene->WaitScene(CurrentCommandContext);
+		// graphic context was flushed by previous line, we must reset graphic state
+		SetupGraphicContext();
+	}
+}
+
+
+void D3D12Render::SetupGraphicContext() {
+	auto cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	cmdList->SetGraphicsRootSignature(RootSig->Get());
+	// set primitive topology to triangleist
+	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// reset viewport
+	SetViewPort(0.0f, 0.0f, (float)ViewPortWidth, (float)ViewPortHeight, 0.0f, 1.0f);
+	// force root signature flush
+	BarrierFlushed = true;
+	if (CurrentSRVHeap) {
+		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
+		CurrentSRVHeap = nullptr;
+	}
 }

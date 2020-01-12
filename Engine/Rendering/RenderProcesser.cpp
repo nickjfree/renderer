@@ -35,6 +35,7 @@ RenderProcesser::RenderProcesser(RenderContext* context_) :context(context_)
 	Cmds[OP_PRESENT].cmd = &RenderProcesser::Present;
 	Cmds[OP_QUAD].cmd = &RenderProcesser::RenderQuad;
 	Cmds[OP_INSTANCE].cmd = &RenderProcesser::Instance;
+	Cmds[OP_BUILD_RTSCENE].cmd = &RenderProcesser::BuildRaytracingScene;
 }
 
 
@@ -119,6 +120,12 @@ int RenderProcesser::RenderQuad(void* data) {
 	ip++;
 	// render
 	Interface->Quad();
+	return 1;
+}
+
+int RenderProcesser::BuildRaytracingScene(void* data) {
+	ip++;
+	Interface->BuildRaytracingScene();
 	return 1;
 }
 

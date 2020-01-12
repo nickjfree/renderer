@@ -349,6 +349,9 @@ int PostpassStage::HDR(BatchCompiler* Compiler) {
 		if (Value) {
 			HDRShader = Value->as<Shader*>();
 		}
+		// nothing to do, set retertarget to backbuffer
+		auto Target = 0;
+		Compiler->SetRenderTargets(1, &Target);
 	}
 	return Compiled;
 }
@@ -371,6 +374,9 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	BatchCompiler* Compiler = renderview->Compiler;
 	char* Buffer = (char*)renderview->CommandBuffer;
 	Compiler->SetBuffer(Buffer);
+	// build raytracing scene in compute queue
+	Compiler->BuildRaytracingScene();
+	// continue post process
 	renderview->Compile(Context);
 	// do SSAO
 	SSAO(Compiler);

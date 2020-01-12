@@ -313,6 +313,11 @@ int BatchCompiler::Quad() {
 	return sizeof(char);
 }
 
+int BatchCompiler::BuildRaytracingScene() {
+	*Offset++ = OP_BUILD_RTSCENE;
+	return sizeof(char);
+}
+
 int BatchCompiler::Instance(int Geometry, void* InstanceData, int Size) {
 	if (!Instancing) {
 		Instancing = 1;

@@ -132,6 +132,13 @@ namespace D3D12API {
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs[NUM_FRAMES];
 	}D3DBottomLevelAS;
 
+	// hit group
+	typedef struct D3DHitGroup {
+		// collection
+		ID3D12StateObject* Collection;
+		// shader indentifier 
+		void* ShaderIndentifier;
+	}D3DHitGroup;
 }
 
 #endif

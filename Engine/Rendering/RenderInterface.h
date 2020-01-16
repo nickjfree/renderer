@@ -64,6 +64,11 @@ public:
 	virtual int CreateDomainShader(void* ByteCode, unsigned int Size, int flag) { return -1; };
 	virtual int CreatePixelShader(void* ByteCode, unsigned int Size, int flag) { return -1; };
 	virtual int CreateComputeShader(void* ByteCode, unsigned int Size, int flag) { return -1; };
+
+	/*  Raytracing */
+	// create libarary closest/any/intersect
+	virtual int CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t* HitGroup, const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) { return -1; };
+
 	// Depth stencil status
 	virtual int CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc) { return -1; }
 	// Blend Status

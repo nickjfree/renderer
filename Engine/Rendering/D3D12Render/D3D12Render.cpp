@@ -120,6 +120,9 @@ void D3D12Render::InitD3D12() {
 		printf("Failed to create D3D12Device\n");
 		return;
 	}
+	// check raytracing support
+	D3D12_FEATURE_DATA_D3D12_OPTIONS5  featureData{};
+	Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureData, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
 	// get rtx device
 	Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
 	// create all command queues.
@@ -1020,6 +1023,42 @@ int D3D12Render::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc) {
 	return id;
 }
 
+int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t* HitGroup, const wchar_t * ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) {
+
+	// alloac hit groups
+	auto Item = D3DHitGroup{};
+	// create collection
+	CD3DX12_STATE_OBJECT_DESC raytracingCollection { D3D12_STATE_OBJECT_TYPE_COLLECTION };
+	   
+	auto lib = raytracingCollection.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
+	D3D12_SHADER_BYTECODE libdxil = CD3DX12_SHADER_BYTECODE(ByteCode, Size);
+	lib->SetDXILLibrary(&libdxil);
+	// Define which shader exports to surface from the library.
+	// If no shader exports are defined for a DXIL library subobject, all shaders will be surfaced.
+	{
+		lib->DefineExport(ClosestHit);
+		lib->DefineExport(AnyHit);
+		lib->DefineExport(Intersection);
+	}
+	// Triangle hit group
+	// A hit group specifies closest hit, any hit and intersection shaders to be executed when a ray intersects the geometry's triangle/AABB.
+	auto hitGroup = raytracingCollection.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
+	hitGroup->SetClosestHitShaderImport(ClosestHit);
+	hitGroup->SetAnyHitShaderImport(AnyHit);
+	hitGroup->SetIntersectionShaderImport(Intersection);
+	// gen hotgroup name
+	hitGroup->SetHitGroupExport(HitGroup);
+	hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
+	// create collection
+	rtxDevice->CreateStateObject(raytracingCollection, IID_PPV_ARGS(&Item.Collection));
+
+	ID3D12StateObjectProperties* properties;
+	Item.Collection->QueryInterface(IID_PPV_ARGS(&properties));
+	Item.ShaderIndentifier = properties->GetShaderIdentifier(HitGroup);
+
+	properties->Release();
+	return HitGroups.AddItem(Item);
+}
 
 void D3D12Render::SetBlendStatus(int Blend) {
 	if (Blend >= 0) {

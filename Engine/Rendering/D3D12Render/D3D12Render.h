@@ -103,8 +103,12 @@ namespace D3D12API {
 		DescriptorHeap* CurrentSRVHeap;
 		// PSO Table
 		HashMap<PSOCache, ID3D12PipelineState*> PSOTable;
-		// Root Signature
+		// Graphic Root Signature
 		RootSignature* RootSig;
+		// Compute Global RootSig
+		RootSignature* ComputeRootSig;
+		// Raytracing Local RootSig
+		RootSignature* LocalRootSig;
 		// current PSO
 		PSOCache CurrentPSO;
 		// resource barriar list
@@ -160,6 +164,8 @@ namespace D3D12API {
 		void InitNullTexture();
 		// init null uav
 		void InitNullUAV();
+		// init default shaders
+		void InitDefaultShaders();
 		// create texture dds
 		void CreateTextureDDS(D3DTexture& Texture, void* ddsData, int Size, bool* isCube);
 		// create raw textures

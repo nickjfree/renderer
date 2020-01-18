@@ -11,8 +11,8 @@ RootSignature::RootSignature(ID3D12Device* Device_, D3D12_ROOT_PARAMETER1* rootP
 	Device = Device_;
 	NullHandle = NullHandle_;
 	NullUAVHandle = NullUAVHandle_;
-	InitRootSignature(rootParameters, numRootParameters);
 	Local_ = Local;
+	InitRootSignature(rootParameters, numRootParameters);
 }
 
 

@@ -422,6 +422,9 @@
     <ClInclude Include="Rendering\RaytracingStage.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\DefaultShader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

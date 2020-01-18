@@ -2,7 +2,7 @@
 #include "stdio.h"
 #include "DirectxMath.h"
 #include "DDSTextureLoader12.h"
-
+#include "DefaultShader.h"
 
 
 using namespace D3D12API;
@@ -193,9 +193,15 @@ void D3D12Render::InitD3D12() {
 		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 	}
 	// init rootsigature
+
+	// init null srv descriptor handle
 	InitNullTexture();
+	// init null uav descriptor handle
 	InitNullUAV();
+	// init graphic, compute and local root signatures
 	InitRootSignature();
+	// init raytracing default shaders
+	InitDefaultShaders();
 	// init current commandcontext
 	SwapCommandContext();
 	// init raytracing scene
@@ -300,6 +306,28 @@ void D3D12Render::InitRootSignature() {
 
 		RootSig = new RootSignature(Device, RP, 11, nullHandle, nullUAVHandle);
 	}
+	// init local rootsignuatre
+	{
+		CD3DX12_DESCRIPTOR_RANGE1 DescRange[2];
+		// texture materials src t 0-8
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 2, 1);
+		// uavs  u 0-8
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 1);
+
+		CD3DX12_ROOT_PARAMETER1 RP[16]{};
+		// constant buffer
+		RP[0].InitAsShaderResourceView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t0  vertex buffer
+		RP[1].InitAsShaderResourceView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t1  index buffer
+		RP[2].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0  
+		RP[3].InitAsConstantBufferView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
+		RP[4].InitAsConstantBufferView(2, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b2
+		RP[5].InitAsConstantBufferView(3, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b3
+		// tables
+		RP[6].InitAsDescriptorTable(1, &DescRange[0]);  // t2-t9  srvs
+		RP[7].InitAsDescriptorTable(1, &DescRange[1]);  // u0-u7  uavs
+
+		LocalRootSig = new RootSignature(Device, RP, 8, nullHandle, nullUAVHandle, true);
+	}
 }
 
 void D3D12Render::InitSamplers() {
@@ -368,6 +396,13 @@ void D3D12Render::InitNullUAV() {
 	ResourceBarriers.PushBack(Barrier);
 	buffer.State[0].CurrentState = NewState;
 }
+
+
+void D3D12Render::InitDefaultShaders() {
+	// test code. TODO: remove
+	auto Id = CreateHitGroup((void*)g_pRaytracing, sizeof(g_pRaytracing), L"DefaultHitGroup", L"MyClosestHitShader", nullptr, nullptr);
+}
+
 
 int D3D12Render::Initialize(int Width_, int Height_) {
 	// Create window 
@@ -1036,26 +1071,51 @@ int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t
 	// Define which shader exports to surface from the library.
 	// If no shader exports are defined for a DXIL library subobject, all shaders will be surfaced.
 	{
-		lib->DefineExport(ClosestHit);
-		lib->DefineExport(AnyHit);
-		lib->DefineExport(Intersection);
+		if (ClosestHit) {
+			lib->DefineExport(ClosestHit);
+		}
+		if (AnyHit) {
+			lib->DefineExport(AnyHit);
+		}
+		if (Intersection) {
+			lib->DefineExport(Intersection);
+		}
 	}
 	// Triangle hit group
 	// A hit group specifies closest hit, any hit and intersection shaders to be executed when a ray intersects the geometry's triangle/AABB.
 	auto hitGroup = raytracingCollection.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
 	hitGroup->SetClosestHitShaderImport(ClosestHit);
-	hitGroup->SetAnyHitShaderImport(AnyHit);
-	hitGroup->SetIntersectionShaderImport(Intersection);
+	//hitGroup->SetAnyHitShaderImport(AnyHit);
+	//hitGroup->SetIntersectionShaderImport(Intersection);
 	// gen hotgroup name
 	hitGroup->SetHitGroupExport(HitGroup);
 	hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
+	// Add assosiations
+	{
+		auto localRootSignature = raytracingCollection.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+		localRootSignature->SetRootSignature(LocalRootSig->Get());
+		// Shader association
+		auto rootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+		rootSignatureAssociation->AddExport(HitGroup);
+	}
+	// shader config
+	{
+		 auto shaderConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
+		 shaderConfig->Config(sizeof(float) * 4, sizeof(float) * 2);
+	}
+	// pipeline config
+	{
+		auto pipelineConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
+		pipelineConfig->Config(1);
+	}
+	// pipeline config 
 	// create collection
 	rtxDevice->CreateStateObject(raytracingCollection, IID_PPV_ARGS(&Item.Collection));
 
 	ID3D12StateObjectProperties* properties;
 	Item.Collection->QueryInterface(IID_PPV_ARGS(&properties));
 	Item.ShaderIndentifier = properties->GetShaderIdentifier(HitGroup);
-
 	properties->Release();
 	return HitGroups.AddItem(Item);
 }

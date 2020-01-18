@@ -160,6 +160,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\D3D12Render\D3D12Render.h" />
     <ClInclude Include="Rendering\D3D12Render\d3dx12.h" />
     <ClInclude Include="Rendering\D3D12Render\DDSTextureLoader12.h" />
+    <ClInclude Include="Rendering\D3D12Render\DefaultShader.h" />
     <ClInclude Include="Rendering\D3D12Render\DescriptorHeap.h" />
     <ClInclude Include="Rendering\D3D12Render\Heap.h" />
     <ClInclude Include="Rendering\D3D12Render\PSOCache.h" />

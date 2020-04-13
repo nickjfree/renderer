@@ -233,7 +233,7 @@ bool RootSignature::SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D1
 }
 
 // flush descriptors, constant bindings
-bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged) {
+bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, bool isCompute) {
 	// flush texture bindings
 	// get total need size
 	int TotalTableSize = 0;

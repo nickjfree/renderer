@@ -12,6 +12,11 @@
 #include "IO\FileLoader.h"
 #include "BatchCompiler.h"
 
+/*
+	shader reflection helpers
+*/
+R_FORMAT GetFormat(int Mask, int Type);
+int GetOffset(int Mask);
 
 /*
 	shader parameter
@@ -50,6 +55,15 @@ typedef struct ConstantBuffer {
 	unsigned int Slot;
 	int IsArray;
 }ConstantBuffer;
+
+/*
+	raytracing scene
+*/
+
+typedef struct RtSceneUnit {
+	String Name;
+	unsigned int Slot;
+}RtSceneUnit;
 
 /*
 	texture unit

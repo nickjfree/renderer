@@ -1,15 +1,16 @@
 #include "ResourceCache.h"
-#include "Tasks\WorkQueue.h"
-#include "Resource\ResourceTask.h"
-#include "Rendering\H3DMesh.h"
-#include "Resource\FileMappingLoader.h"
-#include "IO\FileLoader.h"
-#include "Rendering\Material.h"
-#include "Rendering\Texture.h"
-#include "Rendering\Shader.h"
-#include "Resource\Level.h"
-#include "Animation\Skeleton.h"
-#include "Animation\BlendShape.h"
+#include "Tasks/WorkQueue.h"
+#include "Resource/ResourceTask.h"
+#include "Rendering/H3DMesh.h"
+#include "Resource/FileMappingLoader.h"
+#include "IO/FileLoader.h"
+#include "Rendering/Material.h"
+#include "Rendering/Texture.h"
+#include "Rendering/Shader.h"
+#include "Rendering/ShaderLibrary.h"
+#include "Resource/Level.h"
+#include "Animation/Skeleton.h"
+#include "Animation/BlendShape.h"
 
 
 
@@ -214,6 +215,7 @@ int ResourceCache::Initialize() {
 	RegisterResource<Material>();
 	RegisterResource<Texture>();
 	RegisterResource<Shader>();
+	RegisterResource<ShaderLibrary>();
 	RegisterResource<Skeleton>();
 	RegisterResource<Animation>();
 	RegisterResource<BlendShape>();

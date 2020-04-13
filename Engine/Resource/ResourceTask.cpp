@@ -40,8 +40,7 @@ int ResourceTask::Complete() {
 		resource->UpdateStatus();
 
 		printf_s("resource %s created\n", resource->GetUrl().ToStr());
-	}
-	else {
+	} else {
 		// unload complete
 		resource->SetAsyncStatus(Resource::S_DESTORYED);
 		// handle pending load

@@ -3,7 +3,7 @@
 
 
 #include "RenderStage.h"
-
+#include "ShaderLibrary.h"
 
 class RaytracingStage : public RenderStage
 {
@@ -13,8 +13,8 @@ private:
 private:
 	// initialization
 	void Initialize();
-
-
+	// shaderlibraries
+	ShaderLibrary* TestShader;
 public:
 	RaytracingStage(RenderContext* Context);
 	virtual ~RaytracingStage();

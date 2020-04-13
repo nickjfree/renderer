@@ -67,7 +67,12 @@ public:
 
 	/*  Raytracing */
 	// create libarary closest/any/intersect
-	virtual int CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t* HitGroup, const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) { return -1; };
+	virtual int CreateRayTracingShader(void* ByteCode, unsigned int Size,
+		const wchar_t* Raygen, const wchar_t* Miss,
+		const wchar_t* HitGroup,
+		const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) {
+		return -1;
+	};
 
 	// Depth stencil status
 	virtual int CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc) { return -1; }

@@ -15,6 +15,13 @@ RenderContext::~RenderContext() {
 int RenderContext::RegisterConstant(const String& Name, int Slot, unsigned int Size) {
 	ConstantDesc* Constant = Constants[Slot];
 	if (Constant) {
+		// exists
+		if (Size > Constant->Size) {
+			Constant->Size = Size;
+			delete Constant->CPUData;
+			void* CPUData = new char[Size];
+			Constant->CPUData = CPUData;
+		}
 		return 1;
 	}
 	else {

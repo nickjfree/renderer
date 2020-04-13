@@ -27,6 +27,15 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 		//renderObject->Compile();
 		renderObject->UpdateRaytracingStructure(Context);
 	}
+	// let's shoot rays
+	if (TestShader) {
+		//Compiled += Compiler->SetDepthBuffer(-1);
+	} else {
+		Variant* Value = Context->GetResource("ShaderLibrary\\shaders\\test.cso");
+		if (Value) {
+			TestShader = Value->as<ShaderLibrary*>();
+		}
+	}
 	return 0;
 }
 

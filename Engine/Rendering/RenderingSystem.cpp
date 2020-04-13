@@ -52,14 +52,20 @@ void RenderingSystem::PreloadingResource() {
 	// loading hdr shaders
 	Preloadings[1] = "Shader\\shaders\\HDR\\0";
 	Param.as<String*>() = &Preloadings[1];
-	Preloading = new RenderPreloading(context);
+	//Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
 	// loading oit shaders
 	Preloadings[2] = "Shader\\shaders\\OIT\\0";
 	Param.as<String*>() = &Preloadings[2];
-	Preloading = new RenderPreloading(context);
+	//Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);
+	// load test shader library
+	Preloadings[3] = "ShaderLibrary\\shaders\\test.cso";
+	Param.as<String*>() = &Preloadings[3];
+	//Preloading = new RenderPreloading(context);
+	Cache->AsyncLoadResource(Preloadings[3], Preloading, Param);
 
+	// TODO: fix preloading objects leaking
 }
 
 int RenderingSystem::Initialize() {

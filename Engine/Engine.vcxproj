@@ -201,6 +201,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\RenderToTextureStage.h" />
     <ClInclude Include="Rendering\RenderView.h" />
     <ClInclude Include="Rendering\Shader.h" />
+    <ClInclude Include="Rendering\ShaderLibrary.h" />
     <ClInclude Include="Rendering\ShadowMapStage.h" />
     <ClInclude Include="Rendering\Spatial.h" />
     <ClInclude Include="Rendering\Texture.h" />
@@ -312,6 +313,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\RenderToTextureStage.cpp" />
     <ClCompile Include="Rendering\RenderView.cpp" />
     <ClCompile Include="Rendering\Shader.cpp" />
+    <ClCompile Include="Rendering\ShaderLibrary.cpp" />
     <ClCompile Include="Rendering\ShadowMapStage.cpp" />
     <ClCompile Include="Rendering\Spatial.cpp" />
     <ClCompile Include="Rendering\Texture.cpp" />

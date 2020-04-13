@@ -376,8 +376,7 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 		}
 	}
 	// get buffers. tbuffer. typed and structured buffer.
-
-
+	Reflector->Release();
 	return 0;
 }
 

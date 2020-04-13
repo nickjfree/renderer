@@ -400,7 +400,7 @@ void D3D12Render::InitNullUAV() {
 
 void D3D12Render::InitDefaultShaders() {
 	// test code. TODO: remove
-	auto Id = CreateHitGroup((void*)g_pRaytracing, sizeof(g_pRaytracing), L"DefaultHitGroup", L"MyClosestHitShader", nullptr, nullptr);
+	auto Id = CreateRayTracingShader((void*)g_pRaytracing, sizeof(g_pRaytracing), L"MyRaygenShader", L"MyMissShader", L"DefaultHitGroup", L"MyClosestHitShader", nullptr, nullptr);
 }
 
 
@@ -1058,10 +1058,13 @@ int D3D12Render::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc) {
 	return id;
 }
 
-int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t* HitGroup, const wchar_t * ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) {
+int D3D12Render::CreateRayTracingShader(void* ByteCode, unsigned int Size, 
+	const wchar_t * Raygen, const wchar_t * Miss,
+	const wchar_t * HitGroup,
+	const wchar_t * ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection) {
 
 	// alloac hit groups
-	auto Item = D3DHitGroup{};
+	auto Item = D3DRaytracingShader{};
 	// create collection
 	CD3DX12_STATE_OBJECT_DESC raytracingCollection { D3D12_STATE_OBJECT_TYPE_COLLECTION };
 	   
@@ -1080,6 +1083,12 @@ int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t
 		if (Intersection) {
 			lib->DefineExport(Intersection);
 		}
+		if (Raygen) {
+			lib->DefineExport(Raygen);
+		}
+		if (Miss) {
+			lib->DefineExport(Miss);
+		}
 	}
 	// Triangle hit group
 	// A hit group specifies closest hit, any hit and intersection shaders to be executed when a ray intersects the geometry's triangle/AABB.
@@ -1092,12 +1101,22 @@ int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t
 	hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
 	// Add assosiations
 	{
+		// local rs
 		auto localRootSignature = raytracingCollection.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
 		localRootSignature->SetRootSignature(LocalRootSig->Get());
 		// Shader association
-		auto rootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
-		rootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
-		rootSignatureAssociation->AddExport(HitGroup);
+		auto localRootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		localRootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+		localRootSignatureAssociation->AddExport(HitGroup);
+		// global rs
+		auto globalRootSignature = raytracingCollection.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
+		globalRootSignature->SetRootSignature(RootSig->Get());
+		// Shader association
+		auto globalRootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		globalRootSignatureAssociation->SetSubobjectToAssociate(*globalRootSignature);
+		globalRootSignatureAssociation->AddExport(Raygen);
+		globalRootSignatureAssociation->AddExport(Miss);
+		globalRootSignatureAssociation->AddExport(HitGroup);
 	}
 	// shader config
 	{
@@ -1115,9 +1134,12 @@ int D3D12Render::CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t
 
 	ID3D12StateObjectProperties* properties;
 	Item.Collection->QueryInterface(IID_PPV_ARGS(&properties));
-	Item.ShaderIndentifier = properties->GetShaderIdentifier(HitGroup);
-	properties->Release();
-	return HitGroups.AddItem(Item);
+	Item.HitGroupShaderIndentifier = properties->GetShaderIdentifier(HitGroup);
+	Item.RaygenShaderIndentifier = properties->GetShaderIdentifier(Raygen);
+	Item.MissShaderIndentifier = properties->GetShaderIdentifier(Miss);
+	// cleanup
+	properties->Release(); 
+	return RaytracingShaders.AddItem(Item);
 }
 
 void D3D12Render::SetBlendStatus(int Blend) {

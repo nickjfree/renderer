@@ -131,7 +131,6 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	DepCount += 1;  // add 1 skeleton
 	DepCount += 3;  // and 3 animation
 	DepCount += 1;  // and 1 blendshape
-	//DepCount += 1;  // and 1 test load
 	return 0;
 }
 
@@ -173,8 +172,6 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	Param.as<int>() = 0;
 	BlendShapes.PushBack(empty_blendshape);
 	Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
-
-
 	return 0;
 }
 

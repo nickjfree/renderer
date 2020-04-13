@@ -105,7 +105,7 @@ namespace D3D12API {
 		// set sampler
 		bool SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged);
+		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, bool isCompute=false);
 	};
 
 }

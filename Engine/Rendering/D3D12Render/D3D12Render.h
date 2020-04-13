@@ -70,7 +70,7 @@ namespace D3D12API {
 		LinearBuffer<D3DConstant, 128> Constants;
 		LinearBuffer<D3DRenderState, 128> RenderState;
 		LinearBuffer<D3DBottomLevelAS, 8192> BottomLevelAS;
-		LinearBuffer<D3DHitGroup, 8192> HitGroups;
+		LinearBuffer<D3DRaytracingShader, 8192> RaytracingShaders;
 		// constant buffer heaps
 		Vector<Heap*> UsedConstHeaps;
 		// current heaps
@@ -229,7 +229,10 @@ namespace D3D12API {
 		//Rasterizer status
 		virtual int CreateRasterizerStatus(R_RASTERIZER_DESC* Desc);
 		// create libarary closest/any/intersect
-		virtual int CreateHitGroup(void* ByteCode, unsigned int Size, const wchar_t* HitGroup, const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection);
+		virtual int CreateRayTracingShader(void* ByteCode, unsigned int Size,
+			const wchar_t* Raygen, const wchar_t* Miss, 
+			const wchar_t* HitGroup,
+			const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection);
 		// resource destrcutors
 
 		// destroy geometry data. free gpu resource

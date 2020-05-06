@@ -25,7 +25,7 @@ namespace D3D12API {
 		ReuseHeap(ID3D12Device* Device, int MaxSize, int Type, D3D12_RESOURCE_STATES State = D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAGS Flag = D3D12_RESOURCE_FLAG_NONE);
 		~ReuseHeap();
 		// Alloc 
-		void* Alloc(UINT64 Size);
+		void* EnsureSize(UINT64 Size);
 		// get resource
 		ID3D12Resource* GetResource();
 

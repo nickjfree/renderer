@@ -22,6 +22,28 @@ int ShaderLibrary::OnSerialize(Deserializer& deserializer)
 }
 
 
+int ShaderLibrary::AddFunction(char* Name) {
+	
+	auto Function = Name + 2;
+
+	if (strstr(Function, "ClosestHit") == Function) {
+		ClosestHitShaderName = L"ClosestHit";
+	}
+	if (strstr(Function, "Raygen") == Function) {
+		RaygenShaderName = L"Raygen";
+	}
+	if (strstr(Function, "Miss") == Function) {
+		MissShaderName = L"Miss";
+	}
+	if (strstr(Function, "Intersection") == Function) {
+		IntersectionShaderName = L"Intersection";
+	}
+	if (strstr(Function, "AnyHit") == Function) {
+		AnyHitShaderName = L"AnyHit";
+	}
+	return 0;
+}
+
 int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size) 
 {
 	/*
@@ -51,6 +73,8 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 		D3D12_FUNCTION_DESC func{};
 		functionReflection->GetDesc(&func);
 
+		// add function name
+		AddFunction((char*)func.Name);
 		// constans
 		for (UINT i = 0; i < func.ConstantBuffers; i++) {
 			D3D12_SHADER_BUFFER_DESC Description;
@@ -160,6 +184,15 @@ int ShaderLibrary::OnLoadComplete(Variant& Parameter)
 
 int ShaderLibrary::OnCreateComplete(Variant& Parameter)
 {
+	// gen hitgroup name
+	wchar_t HitGroupName[32];
+	swprintf_s(HitGroupName, L"HitGroup_%S", File.ToStr());
+	// create the shader
+	renderinterface->CreateRayTracingShader(DeSerial.Raw(), DeSerial.Length(), RaygenShaderName, MissShaderName, 
+		HitGroupName, ClosestHitShaderName, AnyHitShaderName, IntersectionShaderName);
+
+	// release 
+	DeSerial.Release();
 	return 0;
 }
 

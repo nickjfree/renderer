@@ -428,6 +428,9 @@
     <ClInclude Include="Rendering\ShaderLibrary.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\D3D12Render\ShaderBindingTable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -860,6 +863,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\ShaderLibrary.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Render\ShaderBindingTable.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

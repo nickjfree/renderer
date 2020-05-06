@@ -24,7 +24,7 @@ void ReuseHeap::AllocHeap(UINT64 MaxSize, int Type) {
 	Type_ = Type;
 }
 
-void* ReuseHeap::Alloc(UINT64 Size) {
+void* ReuseHeap::EnsureSize(UINT64 Size) {
 	if (Size <= MaxSize_) {
 		return heap_->GetCPUAddress(0);
 	} else {

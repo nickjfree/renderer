@@ -67,7 +67,7 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	if (InstanceDesc.Size()) {
 
 		auto instanceSize = InstanceDesc.Size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
-		auto CPUData = InstancesBuffer->Alloc(instanceSize);
+		auto CPUData = InstancesBuffer->EnsureSize(instanceSize);
 		memcpy(CPUData, InstanceDesc.GetData(), instanceSize);
 	}
 	// 2. get toplevel size
@@ -85,8 +85,8 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	rtDevice_->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
 
 	// 3. reallocate top level data size
-	TopLevelScratch->Alloc(topLevelPrebuildInfo.ScratchDataSizeInBytes);
-	TopLevelAS->Alloc(topLevelPrebuildInfo.ResultDataMaxSizeInBytes);
+	TopLevelScratch->EnsureSize(topLevelPrebuildInfo.ScratchDataSizeInBytes);
+	TopLevelAS->EnsureSize(topLevelPrebuildInfo.ResultDataMaxSizeInBytes);
 
 	// 4. build top level as
 	auto cmdList = cmdContext->GetRaytracingCommandList();

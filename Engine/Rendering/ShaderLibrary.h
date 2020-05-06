@@ -41,14 +41,15 @@ private:
 	// shader patameters
 	Vector<ShaderParameter> Parameters;
 	// shader names
-	String RaygenShaderName;
-	String MissShaderName;
-	String ClosestHitShaderName;
-	String AnyHitSahderName;
-	String IntersectionShaderName;
+	wchar_t* RaygenShaderName = nullptr;
+	wchar_t* MissShaderName = nullptr;
+	wchar_t* ClosestHitShaderName = nullptr;
+	wchar_t* AnyHitShaderName = nullptr;
+	wchar_t* IntersectionShaderName = nullptr;
 
 private:
-	int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size);
+	int ReflectShader(void* Shader, unsigned int Size);
+	int AddFunction(char* Name);
 public:
 	ShaderLibrary(Context* context);
 

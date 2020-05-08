@@ -134,6 +134,8 @@ public:
 	virtual void Quad() {};
 	// draw rect quad, not that usefull
 	virtual void Rect() {};
+	// trace ray
+	virtual void TraceRay() {};
 	// build raytracing scene
 	virtual void BuildRaytracingScene() {};
 	// clear depth

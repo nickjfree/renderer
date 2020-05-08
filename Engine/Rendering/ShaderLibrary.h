@@ -50,6 +50,7 @@ private:
 private:
 	int ReflectShader(void* Shader, unsigned int Size);
 	int AddFunction(char* Name);
+	Variant* GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext* Context);
 public:
 	ShaderLibrary(Context* context);
 

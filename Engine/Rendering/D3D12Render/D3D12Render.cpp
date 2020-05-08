@@ -219,7 +219,7 @@ void D3D12Render::InitQueues() {
 void D3D12Render::InitDescriptorHeaps() {
 	for (int i = 0; i < NUM_FRAMES; i++) {
 		// create cpu srv heaps
-		int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE;
+		int HeapNum = MAX_TEXTURE_SIZE / MAX_DESCRIPTOR_SIZE + 1;
 		while (HeapNum--) {
 			// texture srv heap
 			DescriptorHeap* Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -239,7 +239,6 @@ void D3D12Render::InitDescriptorHeaps() {
 			// blas srv
 			Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 			CpuBLASSRVHeaps[i].PushBack(Heap);
-
 		}
 		// create render target heaps
 		DescriptorHeap* Heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
@@ -1134,11 +1133,13 @@ int D3D12Render::CreateRayTracingShader(void* ByteCode, unsigned int Size,
 
 	ID3D12StateObjectProperties* properties;
 	Item.Collection->QueryInterface(IID_PPV_ARGS(&properties));
-	Item.HitGroupShaderIndentifier = properties->GetShaderIdentifier(HitGroup);
-	Item.RaygenShaderIndentifier = properties->GetShaderIdentifier(Raygen);
-	Item.MissShaderIndentifier = properties->GetShaderIdentifier(Miss);
+	Item.HitGroupShaderIdentifier = properties->GetShaderIdentifier(HitGroup);
+	Item.RaygenShaderIdentifier = properties->GetShaderIdentifier(Raygen);
+	Item.MissShaderIdentifier = properties->GetShaderIdentifier(Miss);
 	// cleanup
 	properties->Release(); 
+	// rtPipeline state changed
+	StateObjectVersion++;
 	return RaytracingShaders.AddItem(Item);
 }
 
@@ -1453,14 +1454,10 @@ void D3D12Render::Present() {
 	}
 	CommandContext* Context = CurrentCommandContext;
 
+	FlushResourceBarriers();
 	//Context->Flush(0);
 
 	ID3D12GraphicsCommandList* commandlist = CurrentCommandContext->GetGraphicsCommandList();
-	// flush resource barriers
-	FlushResourceBarriers();
-
-	// test wait for the scene in graphic queue
-	WaitRaytracingScene();
 
 	// Indicate that the back buffer will be used as present.
 	D3D12_RESOURCE_BARRIER barrier = {};
@@ -1568,6 +1565,7 @@ void D3D12Render::SwapCommandContext() {
 		CurrentCommandContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE, PrevComputeFenceValue);
 	}
 	cmdList->SetGraphicsRootSignature(RootSig->Get());
+	cmdList->SetComputeRootSignature(RootSig->Get());
 	// set primitive topology to triangleist
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// clear targets and depth
@@ -1602,6 +1600,35 @@ void D3D12Render::FlushRootSignature() {
 		// set sampler descriptor table
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged);
+	}
+	// clear barrierflushed
+	BarrierFlushed = 0;
+}
+
+void D3D12Render::FlushRootComputeSignature() {
+	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	ID3D12DescriptorHeap* Heaps[2];
+	Heaps[1] = GpuSamplerHeaps[0]->Get();
+	int HeapChanged = 0;
+	if (!CurrentSRVHeap) {
+		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		Heaps[0] = CurrentSRVHeap->Get();
+		HeapChanged = 1;
+		cmdList->SetDescriptorHeaps(2, Heaps);
+		// set sampler descriptor table
+		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+	}
+
+	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true)) {
+		// need new heaps
+		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
+		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		HeapChanged = 1;
+		Heaps[0] = CurrentSRVHeap->Get();
+		cmdList->SetDescriptorHeaps(2, Heaps);
+		// set sampler descriptor table
+		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true);
 	}
 	// clear barrierflushed
 	BarrierFlushed = 0;
@@ -1646,6 +1673,26 @@ void D3D12Render::FlushRenderTargets() {
 		ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 		cmdList->OMSetRenderTargets(NumTargets, Targets, 0, &Depth);
 		TargetDirty = 0;
+	}
+}
+
+void D3D12Render::FlushStateObject() {
+	if (rtScene) {
+		if (rtScene->GetStateObjectVersion() != StateObjectVersion) {
+			// create a new pipeline state
+			CD3DX12_STATE_OBJECT_DESC raytracingStateObject{ D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE };
+
+			for(auto ray=0; ray < MAX_RAY_TYPES; ray++) {
+				auto& shader = RaytracingShaders[ray];
+				auto collection = raytracingStateObject.CreateSubobject<CD3DX12_EXISTING_COLLECTION_SUBOBJECT>();
+				collection->SetExistingCollection(shader.Collection);
+			}
+			// create rtstateobject
+			ID3D12StateObject* stateObject;
+			rtxDevice->CreateStateObject(raytracingStateObject, IID_PPV_ARGS(&stateObject));
+			// set to rtscene
+			rtScene->SetStateObject(stateObject, StateObjectVersion);
+		}
 	}
 }
 
@@ -1733,6 +1780,105 @@ void D3D12Render::Quad() {
 	//	printf("Quad\n");
 }
 
+void D3D12Render::TraceRay() {
+	// flush resource barriers
+	FlushResourceBarriers();
+	// flush compute rootsig
+	FlushRootComputeSignature();
+
+	// test wait for the scene in graphic queue
+	WaitRaytracingScene();
+
+	// tracing rays(test)
+	if (rtScene) {
+		// state SBT and flush resource bariers
+		rtScene->StageResources(CurrentCommandContext);
+		// flush rtStateObject
+		FlushStateObject();
+		// trace rays
+
+	}
+}
+
+int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACING_INSTANCE& instance) {
+
+	// add shader recrod for each ray types
+	for (auto ray = 0; ray < MAX_RAY_TYPES; ray++) {
+		// get a shader record
+		auto Record = rtScene->AllocShaderRecord(instance.MaterialId);
+		// fill the hitgroup identifier
+		auto& Shader = RaytracingShaders.GetItem(ray);
+		Record->Identifier = Shader.HitGroupShaderIdentifier;
+		// get raytracing's descriptor heap for local srv uav
+		DescriptorHeap* descHeap = rtScene->GetDescriptorHeap();
+		// set bindings
+		for (auto i = 0; i < instance.NumBindings; i++) {
+			auto binding = instance.Bindings[i];
+
+			int ResourceIndex = 0;
+			int HandleIndex = 0;
+			D3D12_CPU_DESCRIPTOR_HANDLE handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT());
+
+			auto& texture = Textures.GetItem(binding.ResourceId);
+			auto& buffer = Buffers.GetItem(binding.ResourceId);
+
+			switch (binding.BindingType) {
+
+			case R_SRV_TEXTURE:
+				// texture
+				if (texture.MultiFrame) {
+					HandleIndex = FrameIndex;
+				}
+				if (texture.MultiResource) {
+					ResourceIndex = FrameIndex;
+				}
+				handle = texture.Resource[HandleIndex];
+				LocalRootSig->SetTexture(binding.Slot, binding.ResourceId, handle);
+				break;
+			case R_UAV_TEXTURE:
+				// uav-texture
+				if (texture.MultiFrame) {
+					HandleIndex = FrameIndex;
+				}
+				if (texture.MultiResource) {
+					ResourceIndex = FrameIndex;
+				}
+				handle = texture.Resource[HandleIndex];
+				LocalRootSig->SetUAV(binding.Slot, binding.ResourceId, handle);
+				break;
+			case R_SRV_BUFFER:
+				// t-buffer
+				if (buffer.MultiFrame) {
+					HandleIndex = FrameIndex;
+				}
+				if (buffer.MultiResource) {
+					ResourceIndex = FrameIndex;
+				}
+				handle = buffer.SRV[HandleIndex];
+				LocalRootSig->SetTexture(binding.Slot, binding.ResourceId, handle);
+				break;
+			case R_UAV_BUFFER:
+				// uav-buffer
+				if (buffer.MultiFrame) {
+					HandleIndex = FrameIndex;
+				}
+				if (buffer.MultiResource) {
+					ResourceIndex = FrameIndex;
+				}
+				handle = buffer.SRV[HandleIndex];
+				LocalRootSig->SetUAV(binding.Slot, binding.ResourceId, handle);
+				break;
+			case R_VERTEX_BUFFER:
+				break;
+			}
+		}
+		// flush localrootsig to sbt and rtScene's local descriptor heap
+		LocalRootSig->FlushSBT(descHeap, Record);
+	}
+	// add to rtScenen for builind
+	rtScene->AddInstance(rtGeometry->BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+	return 0;
+}
 
 int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
@@ -1744,13 +1890,12 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 	if (!rtGeometry.Deformable) {
 		// static geometry
 		if (!rtGeometry.Dirty[0]) {
-			// add to rtScenen for builind
-			rtScene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+			AddRaytracingInstance(&rtGeometry, instance);
 		}
 	} else if (rtGeometry.Deformable) {
 		if (!rtGeometry.Dirty[0]) {
 			// add to rtScene for build
-			rtScene->AddInstance(rtGeometry.BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+			AddRaytracingInstance(&rtGeometry, instance);
 		}
 		// add geometry of current frame to rtScene for builing
 		// deformable geometry index to build
@@ -1884,6 +2029,7 @@ void D3D12Render::WaitRaytracingScene() {
 void D3D12Render::SetupGraphicContext() {
 	auto cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	cmdList->SetGraphicsRootSignature(RootSig->Get());
+	cmdList->SetComputeRootSignature(RootSig->Get());
 	// set primitive topology to triangleist
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// reset viewport

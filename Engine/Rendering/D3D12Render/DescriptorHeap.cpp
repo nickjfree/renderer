@@ -14,12 +14,18 @@ DescriptorHeap::DescriptorHeap(ID3D12Device* Device_, D3D12_DESCRIPTOR_HEAP_TYPE
 	Device = Device_;
 	Type = type;
 	Flag = flag;
-	Size = MAX_DESCRIPTOR_SIZE;
+	if (type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER) {
+		// sampler heap has 2048 limit
+		Size = 1024;
+	}
+	else {
+		Size = MAX_DESCRIPTOR_SIZE;
+	}
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Flags = Flag;
 	desc.Type = Type;
 	desc.NodeMask = 0;
-	desc.NumDescriptors = MAX_DESCRIPTOR_SIZE;
+	desc.NumDescriptors = Size;
 	HRESULT result = Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&Heap));
 	Current = 0;
 	Increment = Device->GetDescriptorHandleIncrementSize(type);
@@ -35,7 +41,7 @@ DescriptorHeap::DescriptorHeap(ID3D12Device* Device_, D3D12_DESCRIPTOR_HEAP_TYPE
 	NullSRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	NullSRVDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	if (Type == D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV) {
-		for (int i = 0; i < MAX_DESCRIPTOR_SIZE; i++) {
+		for (int i = 0; i < desc.NumDescriptors; i++) {
 			D3D12_CPU_DESCRIPTOR_HANDLE handle = GetCpuHandle(i);
 			Device->CreateShaderResourceView(NULL, &NullSRVDesc, handle);
 		}
@@ -74,6 +80,10 @@ void DescriptorHeap::Retire(UINT64 FenceValue_) {
 		retired = &GpuRetired[Type];
 	}
 	retired->Insert(this);
+}
+
+void DescriptorHeap::Reset() {
+	Current = 0;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::GetCpuHandle(int slot) {

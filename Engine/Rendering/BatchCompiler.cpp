@@ -313,6 +313,11 @@ int BatchCompiler::Quad() {
 	return sizeof(char);
 }
 
+int BatchCompiler::TraceRay() {
+	*Offset++ = OP_TRACERAY;
+	return sizeof(char);
+}
+
 int BatchCompiler::BuildRaytracingScene() {
 	*Offset++ = OP_BUILD_RTSCENE;
 	return sizeof(char);

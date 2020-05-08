@@ -38,6 +38,8 @@ private:
 	int Frames;
 	Shader* HDRShader;
 	Shader* OITShader;
+	// renderviews
+	Vector<RenderView*> RenderViews;
 private:
 	void CreatePingPongBuffer();
 	void CreateHDRBuffer();

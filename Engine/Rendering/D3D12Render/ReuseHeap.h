@@ -1,3 +1,6 @@
+#ifndef __REUSE_HEAP__
+#define __REUSE_HEAP__
+
 
 #include "Heap.h"
 
@@ -32,3 +35,5 @@ namespace D3D12API {
 	};
 
 }
+
+#endif

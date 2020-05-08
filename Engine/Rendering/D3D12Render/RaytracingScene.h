@@ -7,6 +7,9 @@
 #include "Structs.h"
 #include "CommandContext.h"
 #include "ReuseHeap.h"
+#include "ShaderBindingTable.h"
+#include "DescriptorHeap.h"
+#include "ShaderBindingTable.h"
 
 namespace D3D12API {
 
@@ -21,6 +24,12 @@ namespace D3D12API {
 		int FrameIndex;
 	}BottomLevelAsRebuildDesc;
 
+	// rtpipelinestate
+	typedef struct rtStateObject {
+		// pipeline state object
+		ID3D12StateObject* State = nullptr;
+		int Version;
+	}rtStateObject;
 
 	class RaytracingScene
 	{
@@ -41,8 +50,14 @@ namespace D3D12API {
 		Vector<D3D12_RAYTRACING_INSTANCE_DESC> InstanceDesc;
 		// translate resource barriars
 		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
+		// shader binding table
+		ShaderBindingTable* SBT;
+		// descriptor heap
+		DescriptorHeap* ShaderBindingHeap;
 		// UINT64 FenceValue for top level as. also fencevalue for retired graphic context
 		UINT64 SceneFenceValue_;
+		// rtPipelineState
+		rtStateObject stateObject;
 	protected:
 		// rtscene which are used be previous frame
 		static List<RaytracingScene> RetiredScene;
@@ -61,10 +76,19 @@ namespace D3D12API {
 		// wait for scene
 		UINT64 WaitScene(CommandContext* GraphicContext);
 		// add instance
-		void AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform);
+		int AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform);
+		// get descriptor heap
+		DescriptorHeap* GetDescriptorHeap() { return ShaderBindingHeap; }
+		// alloc sbt buffer
+		ShaderRecord* AllocShaderRecord(int MaterialId);
 		// add bottomlevel as for rebuild
 		void RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer * Buffer, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& buildDesc, int FrameIndex);
-
+		// stage resource used by sbt and descriptor heap
+		void StageResources(CommandContext* cmdContext);
+		// get pipeline state version
+		int GetStateObjectVersion() { return stateObject.Version; }
+		// Set pipeline state 
+		void SetStateObject(ID3D12StateObject* StateObject, int version);
 	};
 
 

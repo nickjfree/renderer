@@ -27,6 +27,7 @@ namespace D3D12API {
 #define MAX_TEXTURE_SIZE     8192
 #define MAX_GEOMETRY_SIZE    4096
 #define MAX_RESOURCE_BARRIER 2048
+#define MAX_RAY_TYPES        1
 
 	typedef struct PerformaceInfo {
 		LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
@@ -111,6 +112,8 @@ namespace D3D12API {
 		RootSignature* LocalRootSig;
 		// current PSO
 		PSOCache CurrentPSO;
+		// rtpipelinestate version, inc when raytracing shaders changed
+		int StateObjectVersion = 0;
 		// resource barriar list
 		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
 		// current command context
@@ -184,8 +187,12 @@ namespace D3D12API {
 		int FlushResourceBarriers();
 		// flush rootsig
 		void FlushRootSignature();
+		// flush compute rootsig
+		void FlushRootComputeSignature();
 		// flush rendertargets
 		void FlushRenderTargets();
+		// flush piplinestate
+		void FlushStateObject();
 		// setup graphic context
 		void SetupGraphicContext();
 		// wait raytracing scene
@@ -194,6 +201,8 @@ namespace D3D12API {
 		void ShowPerformanceInfo();
 		// get topology_type by topology
 		R_PRIMITIVE_TOPOLOGY_TYPE GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology);
+		// add instance to rtScene
+		int AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACING_INSTANCE& instance);
 	public:
 		static D3D12Render* GetRender() { return thisRender; }
 		// get queue
@@ -292,6 +301,8 @@ namespace D3D12API {
 		virtual void Quad();
 		// draw rect quad, not that usefull
 		virtual void Rect() {};
+		// trace ray
+		virtual void TraceRay();
 		// build raytracing scene
 		virtual void BuildRaytracingScene();
 		// clear depth

@@ -100,6 +100,8 @@ public:
 	int Present();
 	// quad
 	int Quad();
+	// traceray
+	int TraceRay();
 	// build raytracing scene
 	int BuildRaytracingScene();
 	// instance

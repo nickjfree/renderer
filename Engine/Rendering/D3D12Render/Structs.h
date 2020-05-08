@@ -137,9 +137,9 @@ namespace D3D12API {
 		// collection
 		ID3D12StateObject* Collection;
 		// shader indentifier 
-		void* RaygenShaderIndentifier;
-		void* HitGroupShaderIndentifier;
-		void* MissShaderIndentifier;
+		void* RaygenShaderIdentifier;
+		void* HitGroupShaderIdentifier;
+		void* MissShaderIdentifier;
 	}D3DRaytracingShader;
 }
 

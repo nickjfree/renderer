@@ -16,6 +16,10 @@ RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), De
 	TopLevelScratch = new ReuseHeap(Device_, 1024, Heap::HeapType::GPU, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	// instance resource
 	InstancesBuffer = new ReuseHeap(Device_, 1024, Heap::HeapType::CPU, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
+	// shader biding table
+	SBT = new ShaderBindingTable(Device_);
+	// create descriptor heap
+	ShaderBindingHeap = new DescriptorHeap(Device_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 }
 
 RaytracingScene::~RaytracingScene() {
@@ -28,6 +32,10 @@ RaytracingScene::~RaytracingScene() {
 	if (InstancesBuffer) {
 		delete InstancesBuffer;
 	}
+	// release shader binding table
+	delete SBT;
+	// release descriptor heap
+	delete ShaderBindingHeap;
 }
 
 // alloc new raytracing scene
@@ -43,6 +51,7 @@ RaytracingScene* RaytracingScene::Alloc(ID3D12Device* Device) {
 		if (Queue->FenceComplete(Result->SceneFenceValue_)) {
 			RetiredScene.Remove(iter);
 			Result->SceneFenceValue_ = -1;
+			Result->SBT->Reset();
 			return Result;
 		}
 	}
@@ -181,7 +190,7 @@ UINT64 RaytracingScene::WaitScene(CommandContext* GraphicContext) {
 }
 
 
-void RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform) {
+int RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform) {
 	D3D12_RAYTRACING_INSTANCE_DESC instance = {};
 	instance.AccelerationStructure = BottomLevelAs->GetGPUVirtualAddress();
 	instance.InstanceID = InstanceID;
@@ -191,9 +200,12 @@ void RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID
 	Tansform.Tranpose(Tansform, &Trans);
 	memcpy(instance.Transform, &Trans, sizeof(float) * 12);
 	//instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;
-	InstanceDesc.PushBack(instance);
+	return InstanceDesc.PushBack(instance);
 }
 
+ShaderRecord* RaytracingScene::AllocShaderRecord(int MaterialId) {
+	return SBT->AllocRecord(MaterialId);
+}
 
 void RaytracingScene::RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer* Buffer, D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& buildDesc, int FrameIndex) {
 	BottomLevelAsRebuildDesc desc {
@@ -205,4 +217,16 @@ void RaytracingScene::RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer* Bu
 	BottomLevelDesc.PushBack(desc);
 	// mark blas as dirty
 	Blas->Dirty[FrameIndex] = true;
+}
+
+void RaytracingScene::StageResources(CommandContext* cmdContext) {
+	SBT->Stage(cmdContext);
+}
+
+void RaytracingScene::SetStateObject(ID3D12StateObject* Pipeline, int version) {
+	if (stateObject.State) {
+		stateObject.State->Release();
+	}
+	stateObject.State = Pipeline;
+	stateObject.Version = version;
 }

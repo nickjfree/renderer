@@ -14,7 +14,9 @@
 #define R_STAGE_SHADING  0x13
 #define R_STAGE_HOC      0x14
 
+
 #define R_STAGE_POST     0xA0
+#define R_STAGE_RT       0xA1
 
 #define R_STAGE_PRESENT  0xFE
 

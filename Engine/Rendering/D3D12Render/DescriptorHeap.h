@@ -13,7 +13,7 @@
 
 namespace D3D12API {
 
-#define MAX_DESCRIPTOR_SIZE 1024
+#define MAX_DESCRIPTOR_SIZE 20480
 
 	class DescriptorHeap {
 
@@ -49,6 +49,8 @@ namespace D3D12API {
 		static DescriptorHeap* Alloc(ID3D12Device* Device, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flag);
 		// retire at FenceValue
 		void Retire(UINT64 FenceValue);
+		// reset
+		void Reset();
 		// get heap
 		ID3D12DescriptorHeap* Get() { return Heap; }
 		// get cpu handle

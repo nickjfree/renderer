@@ -45,7 +45,7 @@ void RootSignature::InitMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRo
 			// tables
 			if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
 				// srv tables
-				for (auto index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
 					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
 					Textures[slot].CacheSlot = CacheSlot;
 					Textures[slot].Offset = index;
@@ -58,7 +58,7 @@ void RootSignature::InitMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRo
 			}
 			else if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
 				// uva tables
-				for (auto index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
 					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
 					UAVs[slot].CacheSlot = CacheSlot;
 					UAVs[slot].Offset = index;
@@ -71,7 +71,7 @@ void RootSignature::InitMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRo
 			}
 			else if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER) {
 				// sampler tables
-				for (auto index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
 					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
 					// samplers don't use cache
 					Samplers[slot].CacheSlot = 0;
@@ -149,7 +149,7 @@ void RootSignature::InitDescriptorTableCache(int CacheSlot, int rootParameterInd
 	// get cache
 	DescriptorTable& Table = DescTables[CacheSlot];
 	// init descriptor table cache
-	Table.Dirty = 1;
+	Table.Dirty = 0;
 	Table.RootSlot = rootParameterIndex;
 	Table.Start = MAX_DESC_TABLE_SIZE;
 	Table.End = -1;
@@ -290,7 +290,11 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 				return false;
 			}
 			else {
-				CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
+				if (isCompute) {
+					CommandList->SetComputeRootDescriptorTable(Slot, handle);
+				} else {
+					CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
+				}
 			}
 			// refresh cache
 			DescTable.Dirty = 0;
@@ -305,7 +309,89 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 	// flush constants
 	for (int i = 0; i < NumConstantBuffers; i++) {
 		if (Constants[i].Dirty) {
-			CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+			if (isCompute) {
+				CommandList->SetComputeRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+			} else {
+				CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+			}
+			Constants[i].Dirty = 0;
+		}
+	}
+	return true;
+}
+
+bool D3D12API::RootSignature::FlushSBT(DescriptorHeap* descHeap, ShaderRecord* Record)
+{
+	// flush texture bindings
+// get total need size
+	int TotalTableSize = 0;
+	for (int i = 0; i < NumCachedTables; i++) {
+		DescriptorTable& DescTable = DescTables[i];
+		if (DescTable.Dirty) {
+			TotalTableSize += DescTable.TableSize;
+		}
+	}
+	if (!descHeap->HasSpace(TotalTableSize)) {
+		return false;
+	}
+
+	// flush tables, srvs and uavs
+	for (int i = 0; i < NumCachedTables; i++) {
+		DescriptorTable& DescTable = DescTables[i];
+		int Start = DescTable.Start;
+		int Num = DescTable.TableSize - Start;
+		int Slot = DescTable.RootSlot;
+		if (DescTable.Dirty) {
+			// for local root signature the handles in the cache is invalid. we must set them to null
+			if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
+				// unbind srv
+				for (int n = 0; n < DescTable.TableSize; n++) {
+					if (!DescTable.Fresh[n]) {
+						DescTable.ResourceId[n] = -1;
+						DescTable.Handles[n] = NullHandle;
+					}
+				}
+			}
+			else if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
+				// unbind uav
+				for (int n = 0; n < DescTable.TableSize; n++) {
+					if (!DescTable.Fresh[n]) {
+						DescTable.ResourceId[n] = -1;
+						DescTable.Handles[n] = NullUAVHandle;
+					}
+				}
+			}
+			// flush all the handles in table
+			DescTable.Start = 0;
+			DescTable.End = DescTable.TableSize - 1;
+			D3D12_CPU_DESCRIPTOR_HANDLE* Start = DescTable.Handles + DescTable.Start;
+			unsigned int NumToCopy = DescTable.End - DescTable.Start + 1;
+			unsigned int StartPad = DescTable.Start;
+			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
+			//D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(Start, StartPad, NumToCopy);
+			if (!handle.ptr) {
+				// need new descripterheap
+				return false;
+			}
+			else {
+				// set table pointers in the sbt
+				Record->Params[Slot] = handle.ptr;
+			}
+			// refresh cache
+			DescTable.Dirty = 0;
+			DescTable.Start = DescTable.TableSize;
+			DescTable.End = -1;
+			for (int n = 0; n < DescTable.TableSize; n++) {
+				DescTable.Fresh[n] = 0;
+			}
+		}
+	}
+
+	// flush constants
+	for (int i = 0; i < NumConstantBuffers; i++) {
+		if (Constants[i].Dirty) {
+			// CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+			Record->Params[Constants[i].RootSlot] = Constants[i].desc.BufferLocation;
 			Constants[i].Dirty = 0;
 		}
 	}

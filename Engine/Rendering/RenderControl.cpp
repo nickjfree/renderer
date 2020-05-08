@@ -59,6 +59,7 @@ int RenderControl::Execute() {
 	int Count = Events.Size();
 	OsEvent::Join(Count, &Events[0], 1);
 	Events.Empty();
+	RenderQueue_->Execute(RenderProcesser_);
 	// end stages
 	RenderingPath* path = RenderPath[LIGHT_PRE];
 	int stages = path->Stages.Size();
@@ -66,7 +67,6 @@ int RenderControl::Execute() {
 		RenderStage* Stage = path->Stages[i];
 		Stage->End();
 	}
-	RenderQueue_->Execute(RenderProcesser_);
 	return 0;
 }
 

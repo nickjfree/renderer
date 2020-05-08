@@ -36,6 +36,7 @@ RenderProcesser::RenderProcesser(RenderContext* context_) :context(context_)
 	Cmds[OP_QUAD].cmd = &RenderProcesser::RenderQuad;
 	Cmds[OP_INSTANCE].cmd = &RenderProcesser::Instance;
 	Cmds[OP_BUILD_RTSCENE].cmd = &RenderProcesser::BuildRaytracingScene;
+	Cmds[OP_TRACERAY].cmd = &RenderProcesser::TraceRay;
 }
 
 
@@ -126,6 +127,13 @@ int RenderProcesser::RenderQuad(void* data) {
 int RenderProcesser::BuildRaytracingScene(void* data) {
 	ip++;
 	Interface->BuildRaytracingScene();
+	return 1;
+}
+
+// traceray
+int RenderProcesser::TraceRay(void* data) {
+	ip++;
+	Interface->TraceRay();
 	return 1;
 }
 

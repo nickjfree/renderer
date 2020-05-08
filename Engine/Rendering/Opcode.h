@@ -84,5 +84,6 @@
 	raytracing
 */
 #define OP_BUILD_RTSCENE 0x20
+#define OP_TRACERAY      0x21
 
 #endif

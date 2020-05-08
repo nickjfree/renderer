@@ -516,6 +516,24 @@ enum R_STAGE
 };
 
 /* raytracing */
+enum R_BIDING
+{
+	R_SRV_TEXTURE,
+	R_SRV_BUFFER,
+	R_UAV_BUFFER,
+	R_UAV_TEXTURE,
+	R_VERTEX_BUFFER,
+};
+
+typedef struct R_RESOURCE_BINDING
+{
+	R_BIDING BindingType;
+	int Slot;
+	int ResourceId;
+	int reserved;
+}R_RESOURCE_BINDING;
+
+
 typedef struct R_RAYTRACING_INSTANCE
 {
 	// matrix
@@ -526,8 +544,10 @@ typedef struct R_RAYTRACING_INSTANCE
 	int MaterialId;
 	// int flag
 	int Flag;
-	// reserved
-	int Reserved;
+	// num bindings
+	int NumBindings;
+	// biding
+	R_RESOURCE_BINDING Bindings[16];
 }R_RAYTRACING_INSTANCE;
 
 

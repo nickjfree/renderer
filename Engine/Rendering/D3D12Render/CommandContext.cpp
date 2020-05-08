@@ -27,6 +27,7 @@ CommandContext::CommandContext(ID3D12Device* Device_, D3D12_COMMAND_LIST_TYPE ty
 
 CommandContext::~CommandContext() {
 	CommandList->Release();
+	rtCommandList->Release();
 	CommandAllocator->Release();
 }
 

@@ -4,6 +4,9 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 #include "DescriptorHeap.h"
+#include "ShaderBindingTable.h"
+
+
 
 /*
 	RootSignature
@@ -106,6 +109,8 @@ namespace D3D12API {
 		bool SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
 		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, bool isCompute=false);
+		// flush shader binding tables
+		bool FlushSBT(DescriptorHeap* descHeap, ShaderRecord * Record);
 	};
 
 }

@@ -53,6 +53,7 @@ typedef struct ConstantBuffer {
 	String Name;
 	unsigned int Size;
 	unsigned int Slot;
+	unsigned int Space;
 	int IsArray;
 }ConstantBuffer;
 
@@ -71,6 +72,7 @@ typedef struct RtSceneUnit {
 typedef struct TextureUnit {
 	String Name;
 	unsigned int Slot;
+	unsigned int Space;
 }TextureUnit;
 
 /*
@@ -79,6 +81,7 @@ typedef struct TextureUnit {
 typedef struct BufferUnit {
 	String Name;
 	unsigned int Slot;
+	unsigned int Space;
 }BufferUnit;
 
 /*
@@ -87,6 +90,7 @@ typedef struct BufferUnit {
 typedef struct RWBufferUnit {
 	String Name;
 	unsigned int Slot;
+	unsigned int Space;
 }RWBufferUnit;
 
 /*
@@ -95,6 +99,7 @@ typedef struct RWBufferUnit {
 typedef struct RWTextureUnit {
 	String Name;
 	unsigned int Slot;
+	unsigned int Space;
 }RWTextureUnit;
 
 

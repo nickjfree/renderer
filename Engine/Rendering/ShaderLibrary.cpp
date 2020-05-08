@@ -92,6 +92,7 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 			cb.Name = (char*)Description.Name;
 			cb.Size = Description.Size;
 			cb.Slot = bindDesc.BindPoint;
+			cb.Space = bindDesc.Space;
 			int IsArray = 0;
 			if (!memcmp(cb.Name.ToStr(), "Array", 5)) {
 				IsArray = 1;
@@ -136,6 +137,7 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 				TextureUnit tu;
 				tu.Name = (char*)bindDesc.Name;
 				tu.Slot = bindDesc.BindPoint;
+				tu.Space = bindDesc.Space;
 				TextureUnits.PushBack(tu);
 			}
 			// get buffers. tbuffer. typed and structured buffer.
@@ -143,6 +145,7 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 				BufferUnit bu;
 				bu.Name = (char*)bindDesc.Name;
 				bu.Slot = bindDesc.BindPoint;
+				bu.Space = bindDesc.Space;
 				BufferUnits.PushBack(bu);
 			}
 			// get rwbuffers. unordered textture(buffers).
@@ -157,13 +160,14 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 					RWTextureUnit rwtu;
 					rwtu.Name = (char*)bindDesc.Name;
 					rwtu.Slot = bindDesc.BindPoint;
+					rwtu.Space = bindDesc.Space;
 					// RenderPass->RWTextureUnits.PushBack(rwtu);
 					RWTextureUnits.PushBack(rwtu);
-				}
-				else {
+				} else {
 					RWBufferUnit rwbu;
 					rwbu.Name = (char*)bindDesc.Name;
 					rwbu.Slot = bindDesc.BindPoint;
+					rwbu.Space = bindDesc.Space;
 					RWBufferUnits.PushBack(rwbu);
 				}
 			}	
@@ -196,8 +200,84 @@ int ShaderLibrary::OnCreateComplete(Variant& Parameter)
 	return 0;
 }
 
+Variant* ShaderLibrary::GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext* Context) {
+	auto Iter = Material.Find(Name);
+	if (Iter != Material.End()) {
+		return &(*Iter).Value;
+	}
+	Iter = Object.Find(Name);
+	if (Iter != Object.End()) {
+		return &(*Iter).Value;
+	}
+	return rendercontext->GetResource(Name);
+}
+
+
 int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context)
 {
+	int Compiled = 0;
+	int texture_units = TextureUnits.Size();
+	for (int i = 0; i < texture_units; i++) {
+		TextureUnit* unit = &TextureUnits[i];
+		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		if (Value) {
+			int id = Value->as<int>();
+			Compiled += Compiler->SetTexture(unit->Slot, id);
+		}
+	}
+	// buffers (SRV)
+	int buffer_units = BufferUnits.Size();
+	for (int i = 0; i < buffer_units; i++) {
+		BufferUnit* unit = &BufferUnits[i];
+		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		if (Value) {
+			int id = Value->as<int>();
+			Compiled += Compiler->SetShaderResourceBuffer(unit->Slot, id);
+		}
+	}
+	// rwbuffers (UAV)
+	int rwbuffer_units = RWBufferUnits.Size();
+	for (int i = 0; i < rwbuffer_units; i++) {
+		RWBufferUnit* unit = &RWBufferUnits[i];
+		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		if (Value) {
+			int id = Value->as<int>();
+			Compiled += Compiler->SetUnordedAccessBuffer(unit->Slot, id);
+		}
+	}
+	// rwtextures (UAV)
+	int rwtexture_units = RWTextureUnits.Size();
+	for (int i = 0; i < rwtexture_units; i++) {
+		RWTextureUnit* unit = &RWTextureUnits[i];
+		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		if (Value) {
+			int id = Value->as<int>();
+			Compiled += Compiler->SetUnordedAccessTexture(unit->Slot, id);
+		}
+	}
+	// constants
+	int parameters = Parameters.Size();
+	for (int i = 0; i < parameters; i++) {
+		ShaderParameter* parameter = &Parameters[i];
+		Variant* Value = GetParameter(parameter->Name, MaterialParam, ObjectParameter, Context);
+		if (Value) {
+			if (!parameter->IsArray) {
+				Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);
+			}
+			else {
+				ShaderParameterArray& Array = Value->as<ShaderParameterArray>();
+				Compiler->UpdateArray(parameter->Slot, Array.Size, Array.Data);
+			}
+		}
+	}
+	// update constants
+	int numConstant = Constants.Size();
+	for (int i = 0; i < numConstant; i++) {
+		ConstantBuffer* cons = &Constants[i];
+		if (!cons->IsArray) {
+			Compiled += Compiler->UpdateConstant(cons->Slot);
+		}
+	}
 	return 0;
 }
 

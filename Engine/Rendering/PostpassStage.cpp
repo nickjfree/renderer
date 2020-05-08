@@ -388,12 +388,19 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	// Compiler->SetRenderTargets(1, renderview->Targets);
 	Compiler->Present();
 	renderview->QueueCommand();
-	renderview->Recycle();
+
+	RenderViews.PushBack(renderview);
 	return 0;
 }
 
 int PostpassStage::End() {
 	// set time
 	Time = GetCurrentTime();
+
+	int Size = RenderViews.Size();
+	while (Size--) {
+		auto view = RenderViews.PopBack();
+		view->Recycle();
+	}
 	return 0;
 }

@@ -85,5 +85,6 @@
 */
 #define OP_BUILD_RTSCENE 0x20
 #define OP_TRACERAY      0x21
+#define OP_TLAS          0x22
 
 #endif

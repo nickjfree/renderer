@@ -20,6 +20,7 @@ RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), De
 	SBT = new ShaderBindingTable(Device_);
 	// create descriptor heap
 	ShaderBindingHeap = new DescriptorHeap(Device_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	TlasHeap = new DescriptorHeap(Device_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 }
 
 RaytracingScene::~RaytracingScene() {
@@ -36,6 +37,7 @@ RaytracingScene::~RaytracingScene() {
 	delete SBT;
 	// release descriptor heap
 	delete ShaderBindingHeap;
+	delete TlasHeap;
 }
 
 // alloc new raytracing scene
@@ -50,8 +52,7 @@ RaytracingScene* RaytracingScene::Alloc(ID3D12Device* Device) {
 		Result = *iter;
 		if (Queue->FenceComplete(Result->SceneFenceValue_)) {
 			RetiredScene.Remove(iter);
-			Result->SceneFenceValue_ = -1;
-			Result->SBT->Reset();
+			Result->Reset();
 			return Result;
 		}
 	}
@@ -63,6 +64,14 @@ RaytracingScene* RaytracingScene::Alloc(ID3D12Device* Device) {
 void RaytracingScene::Retire(UINT64 FenceValue) {
 	SceneFenceValue_ = FenceValue;
 	RetiredScene.Insert(this);
+}
+
+void RaytracingScene::Reset() {
+	SBT->Reset();
+	SceneFenceValue_ = -1;
+	BottomLevelDesc.Empty();
+	InstanceDesc.Empty();
+	ShaderBindingHeap->Reset();
 }
 
 /*
@@ -97,7 +106,14 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	TopLevelScratch->EnsureSize(topLevelPrebuildInfo.ScratchDataSizeInBytes);
 	TopLevelAS->EnsureSize(topLevelPrebuildInfo.ResultDataMaxSizeInBytes);
 
-	// 4. build top level as
+	// 4. create shader resource view
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+	desc.RaytracingAccelerationStructure.Location = TopLevelAS->GetResource()->GetGPUVirtualAddress();
+	desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	Device_->CreateShaderResourceView(nullptr, &desc, TlasHeap->GetCpuHandle(0));
+
+	// 5. build top level as
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
@@ -109,11 +125,10 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	while (i--) {
 		cmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
 
-		// 5. uav barriar
+		// 6. uav barriar
 		CD3DX12_RESOURCE_BARRIER UAVBarriers[2] = { CD3DX12_RESOURCE_BARRIER::UAV(TopLevelAS->GetResource()),  CD3DX12_RESOURCE_BARRIER::UAV(TopLevelScratch->GetResource()) };
 		cmdList->ResourceBarrier(2, UAVBarriers);
 	}
-
 	// flush context
 	SceneFenceValue_ = cmdContext->Finish(0);
 
@@ -194,6 +209,7 @@ int RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID,
 	D3D12_RAYTRACING_INSTANCE_DESC instance = {};
 	instance.AccelerationStructure = BottomLevelAs->GetGPUVirtualAddress();
 	instance.InstanceID = InstanceID;
+	instance.InstanceMask = 1;
 	instance.Flags = Flags;
 	// set transform to indetity
 	Matrix4x4 Trans;
@@ -229,4 +245,21 @@ void RaytracingScene::SetStateObject(ID3D12StateObject* Pipeline, int version) {
 	}
 	stateObject.State = Pipeline;
 	stateObject.Version = version;
+}
+
+
+void RaytracingScene::TraceRay(CommandContext* cmdContext, int rayIndex, D3DShaderIdetifier& raygenIdentifier, D3DShaderIdetifier& missIdentifier, unsigned int Width, unsigned int Height, unsigned int Depth) {
+	SBT->UpdateRay(rayIndex, raygenIdentifier, missIdentifier);
+	// stage all resource to GPU
+	StageResources(cmdContext);
+
+	D3D12_DISPATCH_RAYS_DESC rayDesc = SBT->GetDesc();
+	rayDesc.Width = Width;
+	rayDesc.Height = Height;
+	rayDesc.Depth = 1;
+
+	// tracerays
+	auto cmdList = cmdContext->GetRaytracingCommandList();
+	cmdList->SetPipelineState1(stateObject.State);
+	cmdList->DispatchRays(&rayDesc);
 }

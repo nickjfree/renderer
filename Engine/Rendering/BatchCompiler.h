@@ -72,6 +72,8 @@ public:
 	int SetUnordedAccessBuffer(int Slot, int Buffer);
 	// set UnorderedAccessTexture
 	int SetUnordedAccessTexture(int Slot, int Texture);
+	// set toplevel as 
+	int SetTopLevelAS(int Slot);
 	// set depth
 	int SetDepthStencil(int Id);
 	// set rasterizer

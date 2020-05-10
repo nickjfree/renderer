@@ -221,7 +221,7 @@ bool RootSignature::SetUAV(int slot, int id, D3D12_CPU_DESCRIPTOR_HANDLE handle)
 
 // set constant
 bool RootSignature::SetConstantBuffer(int slot, D3D12_CONSTANT_BUFFER_VIEW_DESC* ConstBufferView) {
-	Constants[slot].desc = *ConstBufferView;
+	Constants[slot].constDesc = *ConstBufferView;
 	Constants[slot].Dirty = 1;
 	return true;
 }
@@ -310,9 +310,9 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 	for (int i = 0; i < NumConstantBuffers; i++) {
 		if (Constants[i].Dirty) {
 			if (isCompute) {
-				CommandList->SetComputeRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+				CommandList->SetComputeRootConstantBufferView(Constants[i].RootSlot, Constants[i].constDesc.BufferLocation);
 			} else {
-				CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
+				CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].constDesc.BufferLocation);
 			}
 			Constants[i].Dirty = 0;
 		}
@@ -391,7 +391,7 @@ bool D3D12API::RootSignature::FlushSBT(DescriptorHeap* descHeap, ShaderRecord* R
 	for (int i = 0; i < NumConstantBuffers; i++) {
 		if (Constants[i].Dirty) {
 			// CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].desc.BufferLocation);
-			Record->Params[Constants[i].RootSlot] = Constants[i].desc.BufferLocation;
+			Record->Params[Constants[i].RootSlot] = Constants[i].constDesc.BufferLocation;
 			Constants[i].Dirty = 0;
 		}
 	}

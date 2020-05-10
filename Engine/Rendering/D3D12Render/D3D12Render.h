@@ -266,6 +266,8 @@ namespace D3D12API {
 		virtual void SetTexture(int StartSlot, int* Texture, int Count);
 		// set buffer as srv
 		virtual void SetBuffer(int StartSlot, int* Buffers, int Count);
+		// set tlas
+		virtual void SetTopLevelAS(int Slot);
 		// set input layout
 		virtual void SetInputLayout(int Id);
 		// set vertex shader

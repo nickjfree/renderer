@@ -24,6 +24,8 @@ namespace D3D12API {
 	constexpr int MAX_UAV_NUM = 64;
 	// max constant number in rootsig
 	constexpr int MAX_CONSTANT_NUM = 16;
+	// max root srv num
+	constexpr int MAX_ROOT_SRV_NUM = 16;
 
 
 	// descriptor table cache
@@ -51,7 +53,8 @@ namespace D3D12API {
 		int RootSlot;
 		int Dirty;
 		union {
-			D3D12_CONSTANT_BUFFER_VIEW_DESC desc;
+			D3D12_CONSTANT_BUFFER_VIEW_DESC constDesc;
+			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		};
 	} RootDescriptorSlot;
 

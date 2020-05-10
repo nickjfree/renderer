@@ -37,6 +37,7 @@ RenderProcesser::RenderProcesser(RenderContext* context_) :context(context_)
 	Cmds[OP_INSTANCE].cmd = &RenderProcesser::Instance;
 	Cmds[OP_BUILD_RTSCENE].cmd = &RenderProcesser::BuildRaytracingScene;
 	Cmds[OP_TRACERAY].cmd = &RenderProcesser::TraceRay;
+	Cmds[OP_TLAS].cmd = &RenderProcesser::SetTopLevelAS;
 }
 
 
@@ -74,7 +75,7 @@ int RenderProcesser::Execute(void* CommandBuffer) {
 
 
 int RenderProcesser::EndBuffer(void* data) {
-	//printf("%s\n", __FUNCTION__);
+	// printf("%s\n", __FUNCTION__);
 	ip++;
 	return 0;
 }
@@ -117,7 +118,7 @@ int RenderProcesser::Instance(void* data) {
 }
 
 int RenderProcesser::RenderQuad(void* data) {
-	//printf("%s\n", __FUNCTION__);
+	// printf("%s\n", __FUNCTION__);
 	ip++;
 	// render
 	Interface->Quad();
@@ -125,6 +126,8 @@ int RenderProcesser::RenderQuad(void* data) {
 }
 
 int RenderProcesser::BuildRaytracingScene(void* data) {
+	// printf("%s\n", __FUNCTION__);
+
 	ip++;
 	Interface->BuildRaytracingScene();
 	return 1;
@@ -209,6 +212,14 @@ int RenderProcesser::SetUnordedAccessTexture(void* data) {
 	p += 1;
 	int Id = *(int*)p;
 	Interface->SetUnorderedAccessTexture(slot, &Id, 1);
+	return 1;
+}
+
+int RenderProcesser::SetTopLevelAS(void* data) {
+	ip += 2;
+	unsigned char* p = (unsigned char*)data;
+	int slot = *p;
+	Interface->SetTopLevelAS(slot);
 	return 1;
 }
 

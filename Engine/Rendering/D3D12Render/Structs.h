@@ -132,14 +132,19 @@ namespace D3D12API {
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS inputs[NUM_FRAMES];
 	}D3DBottomLevelAS;
 
+	// shader idetifier
+	typedef struct D3DShaderIdetifier {
+		unsigned char Identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
+	}D3DShaderIdetifier;
+
 	// hit group and raygen miss
 	typedef struct D3DRaytracingShader {
 		// collection
 		ID3D12StateObject* Collection;
 		// shader indentifier 
-		void* RaygenShaderIdentifier;
-		void* HitGroupShaderIdentifier;
-		void* MissShaderIdentifier;
+		D3DShaderIdetifier RaygenShaderIdentifier;
+		D3DShaderIdetifier HitGroupShaderIdentifier;
+		D3DShaderIdetifier MissShaderIdentifier;
 	}D3DRaytracingShader;
 }
 

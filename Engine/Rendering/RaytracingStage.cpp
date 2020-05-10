@@ -56,6 +56,9 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 		compiler->SetBuffer((char*)renderview->CommandBuffer);
 
 		auto compiled = 0;
+		// build raytracing scene in compute queue
+		compiler->BuildRaytracingScene();
+
 		compiled += compiler->SetDepthBuffer(-1);
 
 		Parameter["RenderTarget"].as<int>() = rtTarget;

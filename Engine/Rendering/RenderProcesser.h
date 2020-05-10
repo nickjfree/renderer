@@ -55,6 +55,8 @@ protected:
 	int SetUnordedAccessBuffer(void* data);
 	// set UnorderedAccessTexture (uav)
 	int SetUnordedAccessTexture(void* data);
+	// set tlas (srv)
+	int SetTopLevelAS(void* data);
 	// set depth
 	int SetDepthStencil(void* data);
 	// set rasterizer

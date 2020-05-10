@@ -374,8 +374,6 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	BatchCompiler* Compiler = renderview->Compiler;
 	char* Buffer = (char*)renderview->CommandBuffer;
 	Compiler->SetBuffer(Buffer);
-	// build raytracing scene in compute queue
-	Compiler->BuildRaytracingScene();
 	// continue post process
 	renderview->Compile(Context);
 	// do SSAO
@@ -386,6 +384,7 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	HDR(Compiler);
 	// submit to queue
 	// Compiler->SetRenderTargets(1, renderview->Targets);
+	// present
 	Compiler->Present();
 	renderview->QueueCommand();
 

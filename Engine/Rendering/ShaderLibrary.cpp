@@ -216,6 +216,7 @@ Variant* ShaderLibrary::GetParameter(String& Name, Dict& Material, Dict& Object,
 int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context)
 {
 	int Compiled = 0;
+	// textures (SRV)
 	int texture_units = TextureUnits.Size();
 	for (int i = 0; i < texture_units; i++) {
 		TextureUnit* unit = &TextureUnits[i];
@@ -254,6 +255,12 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 			int id = Value->as<int>();
 			Compiled += Compiler->SetUnordedAccessTexture(unit->Slot, id);
 		}
+	}
+	// tlas (SRV)
+	int rtscene_units = RtSceneUnits.Size();
+	for (int i = 0; i < rtscene_units; i++) {
+		auto unit = &RtSceneUnits[i];
+		Compiled += Compiler->SetTopLevelAS(unit->Slot);
 	}
 	// constants
 	int parameters = Parameters.Size();

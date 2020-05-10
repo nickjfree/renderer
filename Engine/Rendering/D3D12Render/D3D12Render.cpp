@@ -308,7 +308,7 @@ void D3D12Render::InitRootSignature() {
 	// init local rootsignuatre
 	{
 		CD3DX12_DESCRIPTOR_RANGE1 DescRange[2];
-		// texture materials src t 0-8
+		// texture materials src t 3-10
 		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 2, 1);
 		// uavs  u 0-8
 		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 1);
@@ -319,13 +319,11 @@ void D3D12Render::InitRootSignature() {
 		RP[1].InitAsShaderResourceView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t1  index buffer
 		RP[2].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0  
 		RP[3].InitAsConstantBufferView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
-		RP[4].InitAsConstantBufferView(2, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b2
-		RP[5].InitAsConstantBufferView(3, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b3
 		// tables
-		RP[6].InitAsDescriptorTable(1, &DescRange[0]);  // t2-t9  srvs
-		RP[7].InitAsDescriptorTable(1, &DescRange[1]);  // u0-u7  uavs
+		RP[4].InitAsDescriptorTable(1, &DescRange[0]);  // t2-t9  srvs
+		RP[5].InitAsDescriptorTable(1, &DescRange[1]);  // u0-u7  uavs
 
-		LocalRootSig = new RootSignature(Device, RP, 8, nullHandle, nullUAVHandle, true);
+		LocalRootSig = new RootSignature(Device, RP, 6, nullHandle, nullUAVHandle, true);
 	}
 }
 
@@ -399,7 +397,7 @@ void D3D12Render::InitNullUAV() {
 
 void D3D12Render::InitDefaultShaders() {
 	// test code. TODO: remove
-	auto Id = CreateRayTracingShader((void*)g_pRaytracing, sizeof(g_pRaytracing), L"MyRaygenShader", L"MyMissShader", L"DefaultHitGroup", L"MyClosestHitShader", nullptr, nullptr);
+	// auto Id = CreateRayTracingShader((void*)g_pRaytracing, sizeof(g_pRaytracing), L"MyRaygenShader", L"MyMissShader", L"DefaultHitGroup", L"MyClosestHitShader", nullptr, nullptr);
 }
 
 
@@ -1133,9 +1131,9 @@ int D3D12Render::CreateRayTracingShader(void* ByteCode, unsigned int Size,
 
 	ID3D12StateObjectProperties* properties;
 	Item.Collection->QueryInterface(IID_PPV_ARGS(&properties));
-	Item.HitGroupShaderIdentifier = properties->GetShaderIdentifier(HitGroup);
-	Item.RaygenShaderIdentifier = properties->GetShaderIdentifier(Raygen);
-	Item.MissShaderIdentifier = properties->GetShaderIdentifier(Miss);
+	Item.HitGroupShaderIdentifier = *(D3DShaderIdetifier*) properties->GetShaderIdentifier(HitGroup);
+	Item.RaygenShaderIdentifier = *(D3DShaderIdetifier*)properties->GetShaderIdentifier(Raygen);
+	Item.MissShaderIdentifier = *(D3DShaderIdetifier*)properties->GetShaderIdentifier(Miss);
 	// cleanup
 	properties->Release(); 
 	// rtPipeline state changed
@@ -1383,6 +1381,13 @@ void D3D12Render::SetTexture(int StartSlot, int* Texture, int Count) {
 			ResourceBarriers.PushBack(Barrier);
 			texture.State[ResourceIndex].CurrentState = NewState;
 		}
+	}
+}
+
+void D3D12Render::SetTopLevelAS(int Slot) {
+	if (rtScene) {
+		auto handle = rtScene->GetDescriptorHandle();
+		RootSig->SetTexture(Slot, -1, handle);
 	}
 }
 
@@ -1781,22 +1786,23 @@ void D3D12Render::Quad() {
 }
 
 void D3D12Render::TraceRay() {
-	// flush resource barriers
-	FlushResourceBarriers();
+   // test wait for the scene in graphic queue
+	WaitRaytracingScene();
+
 	// flush compute rootsig
 	FlushRootComputeSignature();
 
-	// test wait for the scene in graphic queue
-	WaitRaytracingScene();
-
+	// flush resource barriers
+	FlushResourceBarriers();
 	// tracing rays(test)
 	if (rtScene) {
-		// state SBT and flush resource bariers
-		rtScene->StageResources(CurrentCommandContext);
 		// flush rtStateObject
 		FlushStateObject();
 		// trace rays
 
+		auto Shader = RaytracingShaders.GetItem(0);
+		// dispatch rays
+		rtScene->TraceRay(CurrentCommandContext, 0, Shader.RaygenShaderIdentifier, Shader.MissShaderIdentifier, 3840, 2160, 1);
 	}
 }
 
@@ -1808,7 +1814,7 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 		auto Record = rtScene->AllocShaderRecord(instance.MaterialId);
 		// fill the hitgroup identifier
 		auto& Shader = RaytracingShaders.GetItem(ray);
-		Record->Identifier = Shader.HitGroupShaderIdentifier;
+		Record->ShaderIdentifier = Shader.HitGroupShaderIdentifier;
 		// get raytracing's descriptor heap for local srv uav
 		DescriptorHeap* descHeap = rtScene->GetDescriptorHeap();
 		// set bindings
@@ -1876,7 +1882,7 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 		LocalRootSig->FlushSBT(descHeap, Record);
 	}
 	// add to rtScenen for builind
-	rtScene->AddInstance(rtGeometry->BLAS[0], instance.MaterialId, D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE, instance.Transform);
+	rtScene->AddInstance(rtGeometry->BLAS[0], instance.MaterialId, D3D12_RAYTRACING_INSTANCE_FLAG_TRIANGLE_CULL_DISABLE, instance.Transform);
 	return 0;
 }
 

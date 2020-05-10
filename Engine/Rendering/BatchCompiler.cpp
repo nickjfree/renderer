@@ -161,6 +161,12 @@ int BatchCompiler::SetUnordedAccessTexture(int Slot, int Texture) {
 	return sizeof(char) + sizeof(char) + sizeof(int);
 }
 
+int BatchCompiler::SetTopLevelAS(int Slot) {
+	*Offset++ = OP_TLAS;
+	*(unsigned char*)Offset++ = Slot;
+	return sizeof(char) + sizeof(char);
+}
+
 int BatchCompiler::EndBuffer() {
 	*Offset++ = OP_END_EXECUTE;
 	Instancing = 0;

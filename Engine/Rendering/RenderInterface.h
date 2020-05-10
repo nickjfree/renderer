@@ -96,6 +96,8 @@ public:
 	virtual void SetTexture(int StartSlot, int* Texture, int Count) {};
 	// set buffer as srv
 	virtual void SetBuffer(int StartSlot, int* Buffers, int Count) {};
+	// set top level as
+	virtual void SetTopLevelAS(int Slot) {};
 	// Set Blend 
 	virtual void SetBlendStatus(int Blend) {}
 	// depth and stencil

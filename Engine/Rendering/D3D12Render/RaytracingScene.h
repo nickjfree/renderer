@@ -52,8 +52,10 @@ namespace D3D12API {
 		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
 		// shader binding table
 		ShaderBindingTable* SBT;
-		// descriptor heap
+		// shader binding descriptor heap
 		DescriptorHeap* ShaderBindingHeap;
+		// tlas heap
+		DescriptorHeap* TlasHeap;
 		// UINT64 FenceValue for top level as. also fencevalue for retired graphic context
 		UINT64 SceneFenceValue_;
 		// rtPipelineState
@@ -69,6 +71,8 @@ namespace D3D12API {
 		static RaytracingScene* Alloc(ID3D12Device* Device);
 		// retire raytracing scene
 		void Retire(UINT64 FenceValue);
+		// reset
+		void Reset();
 		// build scene
 		UINT64 BuildTopLevelAccelerationStructure(CommandContext * cmdContext);
 		// build bottom level as
@@ -89,6 +93,10 @@ namespace D3D12API {
 		int GetStateObjectVersion() { return stateObject.Version; }
 		// Set pipeline state 
 		void SetStateObject(ID3D12StateObject* StateObject, int version);
+		// Tracerays
+		void TraceRay(CommandContext* cmdContext, int rayIndex, D3DShaderIdetifier& raygenIdentifier, D3DShaderIdetifier& missIdentifier, unsigned int Width, unsigned int Height, unsigned int Depth);
+		// get descripter handle
+		D3D12_CPU_DESCRIPTOR_HANDLE GetDescriptorHandle() { return TlasHeap->GetCpuHandle(0); }
 	};
 
 

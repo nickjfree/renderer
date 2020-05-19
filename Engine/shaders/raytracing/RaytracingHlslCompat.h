@@ -26,4 +26,23 @@ struct RayGenConstantBuffer
     Viewport stencil;
 };
 
+
+cbuffer g_rayGenCB: register(b0)
+{
+    float4x4 gInvertViewMaxtrix;
+    float4   gViewPoint;
+}
+
+static const float fov = tan(0.15 * 3.141592654);
+
+float4 GetLookVector(float2 uv, float aspect)
+{
+    float2 clip_uv = (uv  - 0.5) * float2(2,-2);
+    float fary = fov;
+    float farx = aspect * fary;
+    float4 LookVec = float4(float2(farx, fary) * clip_uv, 1, 0);
+    return normalize(LookVec);
+}
+
+
 #endif // RAYTRACINGHLSLCOMPAT_H

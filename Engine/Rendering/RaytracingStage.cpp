@@ -61,8 +61,11 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 
 		compiled += compiler->SetDepthBuffer(-1);
 
+		// Parameter["RenderTarget"].as<int>() = Context->GetRenderTarget("gPostBuffer"); // rtTarget
 		Parameter["RenderTarget"].as<int>() = rtTarget;
-		Parameter["g_rayGenCB"].as<RayGenConstantBuffer>() = rayGenCB;
+
+		Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
+		Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 
 		compiled += TestShader->Compile(compiler, 0, 0, Parameter, Parameter, Context);
 		compiled += compiler->TraceRay();

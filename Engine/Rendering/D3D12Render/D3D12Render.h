@@ -116,6 +116,8 @@ namespace D3D12API {
 		int StateObjectVersion = 0;
 		// resource barriar list
 		Vector<CD3DX12_RESOURCE_BARRIER> ResourceBarriers;
+		// sbt resource
+		Vector<D3DSBTResource> SBTResource;
 		// current command context
 		CommandContext* CurrentCommandContext;
 		// current targets.

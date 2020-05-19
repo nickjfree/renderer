@@ -14,10 +14,10 @@ namespace D3D12API {
 		Shder records
 	*/
 	typedef struct ShaderRecord {
-		// 8 bytes indentifier
+		// 32 bytes indentifier
 		D3DShaderIdetifier ShaderIdentifier;
-		// 8 root parameters
-		UINT64 Params[8];
+		// 4 root parameters 32 bytes
+		UINT64 Params[4];
 	}ShaderRecord;
 
 	constexpr int MAX_RAY_TYPES = 3;

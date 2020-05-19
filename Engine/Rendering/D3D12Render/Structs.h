@@ -146,6 +146,12 @@ namespace D3D12API {
 		D3DShaderIdetifier HitGroupShaderIdentifier;
 		D3DShaderIdetifier MissShaderIdentifier;
 	}D3DRaytracingShader;
+
+	// shader binding table resource
+	typedef struct D3DSBTResource {
+		ID3D12Resource* Resource;
+		D3D12_RESOURCE_STATES  State;
+	}D3DSBTResource;
 }
 
 #endif

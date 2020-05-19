@@ -517,12 +517,16 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 		clear.Color[2] = 0.0f;
 		clear.Color[3] = 0.0f;
 	}
-	else if (Desc->BindFlag & BIND_UNORDERED_ACCESS) {
+	// uav
+	if (Desc->BindFlag & BIND_UNORDERED_ACCESS) {
 		// Num = NUM_FRAMES;
 		texture.MultiFrame = false;
-		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		textureDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 		state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-		pClear = NULL;
+		if (!(Desc->BindFlag & BIND_RENDER_TARGET)) {
+			// not bind as renter target
+			pClear = NULL;
+		}
 	}
 	for (int i = 0; i < Num; i++) {
 		Device->CreateCommittedResource(
@@ -1827,6 +1831,8 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 
 			auto& texture = Textures.GetItem(binding.ResourceId);
 			auto& buffer = Buffers.GetItem(binding.ResourceId);
+			// queue resource bariars
+			D3DSBTResource resource{};
 
 			switch (binding.BindingType) {
 
@@ -1839,6 +1845,10 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 					ResourceIndex = FrameIndex;
 				}
 				handle = texture.Resource[HandleIndex];
+				// resource state
+				resource.Resource = texture.Texture[ResourceIndex];
+				resource.State = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				// root sig
 				LocalRootSig->SetTexture(binding.Slot, binding.ResourceId, handle);
 				break;
 			case R_UAV_TEXTURE:
@@ -1850,6 +1860,10 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 					ResourceIndex = FrameIndex;
 				}
 				handle = texture.Resource[HandleIndex];
+				// resource state
+				resource.Resource = texture.Texture[ResourceIndex];
+				resource.State = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				// root sig
 				LocalRootSig->SetUAV(binding.Slot, binding.ResourceId, handle);
 				break;
 			case R_SRV_BUFFER:
@@ -1861,6 +1875,10 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 					ResourceIndex = FrameIndex;
 				}
 				handle = buffer.SRV[HandleIndex];
+				// resource state
+				resource.Resource = buffer.BufferResource[ResourceIndex];
+				resource.State = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				// root sig
 				LocalRootSig->SetTexture(binding.Slot, binding.ResourceId, handle);
 				break;
 			case R_UAV_BUFFER:
@@ -1872,11 +1890,17 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 					ResourceIndex = FrameIndex;
 				}
 				handle = buffer.SRV[HandleIndex];
+				// resource state
+				resource.Resource = buffer.BufferResource[ResourceIndex];
+				resource.State = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+				// root sig
 				LocalRootSig->SetUAV(binding.Slot, binding.ResourceId, handle);
 				break;
 			case R_VERTEX_BUFFER:
 				break;
 			}
+			// queue rtresource
+			SBTResource.PushBack(resource);
 		}
 		// flush localrootsig to sbt and rtScene's local descriptor heap
 		LocalRootSig->FlushSBT(descHeap, Record);

@@ -10,8 +10,8 @@ struct Viewport
 {
 	float left = -100;
 	float top = -100;
-	float right = 100;
-	float bottom= 100;
+	float right = 100; 
+	float bottom = 100;
 };
 
 struct RayGenConstantBuffer

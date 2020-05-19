@@ -36,7 +36,7 @@ void PostpassStage::CreatePingPongBuffer() {
 	desc.Height = Context->FrameHeight;
 	desc.ArraySize = 1;
 	desc.CPUAccess = (R_CPU_ACCESS)0;
-	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE | BIND_UNORDERED_ACCESS);
 	desc.MipLevels = 1;
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;

@@ -570,8 +570,8 @@ bool DoTheImportThing(const std::string& pFile) {
         return false;
     }  // Now we can access the file's contents.   
     printf("scene load success\n");
-    // ExtractMeshToH3d(scene);
-    ExtractAnimeMesh(scene);
+    ExtractMeshToH3d(scene);
+    // ExtractAnimeMesh(scene);
     // We're done. Everything will be cleaned up by the importer destructor  
     return true;
 }
@@ -589,7 +589,8 @@ int _tmain(int argc, _TCHAR* argv[])
     //DoTheImportThing("eyeBlinkLeft.fbx");
     //DoTheImportThing("neutral.fbx");
 
-	DoTheImportThing("human_right_turn.fbx");
+	// DoTheImportThing("human_right_turn.fbx");
+    DoTheImportThing("ground.fbx");
     return 0;
 }
 

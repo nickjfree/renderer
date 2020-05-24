@@ -12,7 +12,8 @@
 #ifndef RAYTRACING_HLSL
 #define RAYTRACING_HLSL
 
-#include "RaytracingHlslCompat.h"
+// #include "RaytracingHlslCompat.h"
+#include "../common/raytracing.hlsli"
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0);
@@ -26,13 +27,10 @@ struct RayPayload
 [shader("raygeneration")]
 void Raygen()
 {
-    float2 lerpValues = (float2)DispatchRaysIndex() / (float2)DispatchRaysDimensions();
-    float aspect = (float)DispatchRaysDimensions().x/(float)DispatchRaysDimensions().y;
 
-    // Orthographic projection since we're raytracing in screen space.
-    float3 origin = gViewPoint.xyz;
-    float3 rayDir = mul(GetLookVector(lerpValues, aspect), gInvertViewMaxtrix).xyz;
-
+    // word position to sun 
+    float3 origin = mul(float4(GetPositionScreen(DispatchRaysIndex().xy), 1), gInvertViewMaxtrix).xyz;
+    float3 rayDir = normalize(float3(1, 1, 0));
     // Trace the ray.
     // Set the ray's extents.
     RayDesc ray;
@@ -47,6 +45,8 @@ void Raygen()
 
     // Write the raytraced color to the output texture.
     RenderTarget[DispatchRaysIndex().xy] = payload.color;
+
+    // RenderTarget[DispatchRaysIndex().xy] = float4(origin, 1);
 }
 
 [shader("closesthit")]
@@ -59,7 +59,7 @@ void ClosestHit(inout RayPayload payload, in MyAttributes attr)
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = float4(0, 0.5, 0, 1);
+    payload.color = float4(0, 0.0, 0, 1);
 }
 
 #endif // RAYTRACING_HLSL

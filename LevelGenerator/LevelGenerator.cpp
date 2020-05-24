@@ -20,7 +20,7 @@ int TestGen(char * File) {
     int Num = 5;
     Header.NumEntries = Num;
     char * meshes[5] = {
-        "Mesh\\Unit.pack\\plane2\\0",
+        "Mesh\\Unit.pack\\ground\\0",
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
         "Mesh\\Unit.pack\\sneak\\0",
@@ -33,7 +33,7 @@ int TestGen(char * File) {
         WriteFile(hFile, &mesh, sizeof(mesh), &write, 0);
     }
     // write material 
-    char * materials[14] = {
+    char * materials[15] = {
         "Material\\Materials\\sneak.xml\\0",
         "Material\\Materials\\sneak1.xml\\0",
         "Material\\Materials\\sneak2.xml\\0",
@@ -47,14 +47,14 @@ int TestGen(char * File) {
 
 
         "Material\\Materials\\lightprobe.xml\\0",
-        "Material\\Materials\\cylinder.xml\\0",
-        //"Material\\Materials\\usbdrive.xml\\0", 
+        "Material\\Materials\\head.xml\\0",
+        "Material\\Materials\\ground.xml\\0", 
         "Material\\Materials\\human.xml\\0",
         //"Material\\Materials\\resistor.xml\\0",
         "Material\\Materials\\light.xml\\0",
     };
     MatrialEntry material = {};
-    Num = 14;
+    Num = 15;
     Header.NumEntries = Num;
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);
     while (Num--) {
@@ -78,12 +78,12 @@ int TestGen(char * File) {
     LightEntry light = {};
     ObjectEntry object = {};
 
-    Num = 6 + 100;
+    Num = 7 + 100;
     Header.NumEntries = Num;
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);
     Quaternion rot = Quaternion();
     object.Rotation = Quaternion();
-    // lumia
+    // human2
     strcpy_s(object.Name, "Player");
     object.NumComponents = 1;
     object.Position = Vector3(0, 0, 0);
@@ -92,15 +92,30 @@ int TestGen(char * File) {
     render.MaterialIndex = 1;
     render.ModelIndex = 1;
     strcpy_s(render.Info.TypeName, "Renderer");
-    // write lumia
+    // write human2
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &render, sizeof(render), &write, 0);
 
 
-    // adata
+    // head
     strcpy_s(object.Name, "Plane");
     object.NumComponents = 1;
     object.Position = Vector3(0.4f, 4.4, -5.5f);
+    rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
+    object.Rotation = rot;
+    object.Scale = Vector3(1, 1, 1);
+    render.MaterialIndex = 3;
+    render.ModelIndex = 0;
+    strcpy_s(render.Info.TypeName, "Renderer");
+    // write adata
+    WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
+    WriteFile(hFile, &render, sizeof(render), &write, 0);
+
+
+    // ground  as a big plane
+    strcpy_s(object.Name, "Ground");
+    object.NumComponents = 1;
+    object.Position = Vector3(0.0f, 0.0f, 0.0f);
     rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
     object.Rotation = rot;
     object.Scale = Vector3(1, 1, 1);
@@ -146,7 +161,7 @@ int TestGen(char * File) {
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &light, sizeof(light), &write, 0);
 
-    // qianzhihe
+    // sneak
     strcpy_s(object.Name, "qianzhihe");
     object.NumComponents = 1;
     object.Position = Vector3(0, 0, 0);
@@ -156,10 +171,10 @@ int TestGen(char * File) {
     object.Rotation = Quaternion();
     object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
     object.Scale = Vector3(1, 1, 1);
-    render.MaterialIndex = 4;
+    render.MaterialIndex = 5;
     render.ModelIndex = 3;
     strcpy_s(render.Info.TypeName, "Renderer");
-    // write qianzhihe
+    // write sneak
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &render, sizeof(render), &write, 0);
 
@@ -174,7 +189,7 @@ int TestGen(char * File) {
         object.Rotation = Quaternion();
         object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
         object.Scale = Vector3(1, 1, 1);
-        render.MaterialIndex = 4 + (i % 10);
+        render.MaterialIndex = 5 + (i % 10);
         render.ModelIndex = 3;
         strcpy_s(render.Info.TypeName, "Renderer");
         // write qianzhihe
@@ -188,7 +203,7 @@ int TestGen(char * File) {
     object.Position = Vector3(0, 1, 3);
     object.Rotation.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
     object.Scale = Vector3(1, 1, 1);
-    light.MaterialIndex = 3;
+    light.MaterialIndex = 4;
     light.ModelIndex = 2;
     light.Color = Vector3(1, 1, 1);
     light.Intensity = 1;

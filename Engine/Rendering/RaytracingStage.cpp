@@ -17,6 +17,7 @@ void RaytracingStage::Initialize()
 	desc.SampleDesc.Count = 1;
 
 	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	Context->RegisterRenderTarget("gRtShadow", rtTarget);
 }
 
 

@@ -34,7 +34,7 @@ PS_Output_Simple PS_Point_Light(PS_Input_Simple ps_input)
 
 
 /*
-    direction lighing
+    direction lighing (the sun)
 */
 PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
 {
@@ -49,8 +49,12 @@ PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
     L = normalize(L);
     // deferred lighting
     float3 lighting_color = gLightColor.xyz * deferred_lighting(gbuffer).xyz;
+    // direction light shadow
+    float shadow = gDiffuseMap0.Sample(gSam, ps_input.TexCoord).x;
     // final color
     output.Color = float4(intensity * lighting_color * saturate(dot(normal, L)), 0);
+    
+    output.Color = output.Color * (1 - shadow);
     return output;
 }
 

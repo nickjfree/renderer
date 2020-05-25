@@ -77,17 +77,13 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 	// perlight position
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
-	// per-frame
-	//Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter[hash_string::gInvertViewMaxtrix].as<Matrix4x4>());
-	//Matrix4x4::Tranpose(Camera->GetProjection(), &Parameter[hash_string::gProjectionMatrix].as<Matrix4x4>());
-	//Parameter[hash_string::gViewPoint].as<Vector3>() = Camera->GetViewPoint();
-	//Parameter[hash_string::gScreenSize].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 	// light parameters
 	StageParameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
 	StageParameter["gLightDirection"].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
 	StageParameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	StageParameter["gLightColor"].as<Vector3>() = Color;
 	StageParameter["gShadowMap"].as<int>() = ShadowMap;
+	StageParameter["gDiffuseMap0"].as<int>() = Context->GetResource("gRtShadow")->as<int>();
 	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &StageParameter["gLightViewProjection"].as<Matrix4x4>());
 	// process material
 	int Compiled = 0;

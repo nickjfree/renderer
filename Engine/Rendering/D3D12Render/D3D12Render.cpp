@@ -1288,12 +1288,12 @@ void D3D12Render::SetUnorderedAccessBuffer(int StartSlot, int* Buffers_, int Cou
 		bool dirty = RootSig->SetUAV(Slot, Id, handle);
 
 		if (dirty && OldState != NewState) {
-			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
-			ResourceBarriers.PushBack(Barrier);
-			Buffer.State[ResourceIndex].CurrentState = NewState;
 			// for test
 			CD3DX12_RESOURCE_BARRIER UAVBarrier = CD3DX12_RESOURCE_BARRIER::UAV(Resource);
 			ResourceBarriers.PushBack(UAVBarrier);
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+			ResourceBarriers.PushBack(Barrier);
+			Buffer.State[ResourceIndex].CurrentState = NewState;
 		}
 	}
 }
@@ -1350,12 +1350,13 @@ void D3D12Render::SetUnorderedAccessTexture(int StartSlot, int* Texture, int Cou
 		bool dirty = RootSig->SetUAV(Slot, Id, handle);
 
 		if (dirty && OldState != NewState) {
-			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
-			ResourceBarriers.PushBack(Barrier);
-			texture.State[ResourceIndex].CurrentState = NewState;
 			// for test
 			CD3DX12_RESOURCE_BARRIER UAVBarrier = CD3DX12_RESOURCE_BARRIER::UAV(Resource);
 			ResourceBarriers.PushBack(UAVBarrier);
+			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(Resource, OldState, NewState);
+			ResourceBarriers.PushBack(Barrier);
+			texture.State[ResourceIndex].CurrentState = NewState;
+
 		}
 	}
 }
@@ -1793,11 +1794,13 @@ void D3D12Render::TraceRay() {
    // test wait for the scene in graphic queue
 	WaitRaytracingScene();
 
+	// flush resource barriers
+	FlushResourceBarriers();
+
 	// flush compute rootsig
 	FlushRootComputeSignature();
 
-	// flush resource barriers
-	FlushResourceBarriers();
+
 	// tracing rays(test)
 	if (rtScene) {
 		// flush rtStateObject

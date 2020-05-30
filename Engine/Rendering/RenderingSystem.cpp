@@ -64,7 +64,11 @@ void RenderingSystem::PreloadingResource() {
 	Param.as<String*>() = &Preloadings[3];
 	//Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[3], Preloading, Param);
-
+	// load reflection shader
+	Preloadings[4] = "Shader\\shaders\\Reflection\\0";
+	Param.as<String*>() = &Preloadings[4];
+	//Preloading = new RenderPreloading(context);
+	Cache->AsyncLoadResource(Preloadings[4], Preloading, Param);
 	// TODO: fix preloading objects leaking
 }
 

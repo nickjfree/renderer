@@ -209,6 +209,15 @@
     </technique>
   </shader>
 
+  <shader name="Reflection">
+    <technique name="reflection">
+      <pass name="ssao" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\reflection.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="HDR">
     <technique name="scale_log">
       <pass name="scale_log" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">

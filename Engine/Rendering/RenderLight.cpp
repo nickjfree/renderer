@@ -83,7 +83,7 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 	StageParameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
 	StageParameter["gLightColor"].as<Vector3>() = Color;
 	StageParameter["gShadowMap"].as<int>() = ShadowMap;
-	StageParameter["gDiffuseMap0"].as<int>() = Context->GetResource("gRtShadow")->as<int>();
+	// StageParameter["gDiffuseMap0"].as<int>() = Context->GetResource("gRtReflection")->as<int>();
 	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &StageParameter["gLightViewProjection"].as<Matrix4x4>());
 	// process material
 	int Compiled = 0;

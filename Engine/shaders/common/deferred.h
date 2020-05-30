@@ -83,6 +83,15 @@ float3 GetPositionScreen(int2 posSrc)
     return Position;
 }
 
+// get view space position at uv in screen space
+float3 GetPositionLoad(float2 uv)
+{
+    float Depth = gDepthBuffer.SampleLevel(gSamPoint, uv, 0).x;
+    float3 Position = (GetLookVector(uv) * Depth).xyz;
+    return Position;
+}
+
+
 // get the view space normal vector at uv in screen space
 float4 GetNormal(float2 uv)
 {
@@ -90,6 +99,12 @@ float4 GetNormal(float2 uv)
     return float4(DecodeNormal(raw.xy), 0);
 }
 
+// get the  space normal vector at uv in screen space
+float4 GetNormalLoad(float2 uv)
+{
+    float4 raw =  gNormalBuffer.SampleLevel(gSamPoint, uv, 0);
+    return float4(DecodeNormal(raw.xy), 0);
+}
 
 // sample gbuffer
 GBuffer GetGBuffer(float2 uv)

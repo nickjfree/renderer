@@ -21,6 +21,7 @@ struct VS_Input_Instance
     float3 Tangent  : TANGENT;
     float4x4 InstanceWVP: InstanceWVP; 
     float4x4 InstanceWV: InstanceWV;
+    float4x4 InstancePWVP: InstancePWVP;
 };
 
 
@@ -71,7 +72,9 @@ struct PS_Input_GBuffer
     float4 Normal : NORMAL;
     float4 Tangent : TEXCOORD1;
     float4 BiNormal: TEXCOORD2;
-    float  Depth : TEXCOORD3;
+    float4 PrevPosH:  TEXCOORD3;
+    float4 CurrentPosH:  TEXCOORD4;
+    float  Depth : TEXCOORD5;
 };
 
 // GBuffer pixel shader output
@@ -81,6 +84,7 @@ struct PS_Output_GBuffer
     float4 Normal: SV_Target1;
     float4 Diffuse: SV_Target2;
     float4 Specular: SV_Target3;
+    float4 Motion: SV_Target4;
 };
 
 // simple pixel shader output

@@ -59,6 +59,11 @@ void RenderingCamera::SetProjection(Matrix4x4& Projection_) {
 	CheckStatus();
 }
 
+void RenderingCamera::UpdatePrevMatrix() { 
+	PrevViewProjection = ViewProjection; 
+	PrevViewMatrix = ViewMatrix; 
+}
+
 Frustum& RenderingCamera::GetFrustum() {
 	frustum = Frustum::CreateFromProjection(Position, Orientation, Projection);
 	//frustum = Frustum::CreateFromProjection(Projection);

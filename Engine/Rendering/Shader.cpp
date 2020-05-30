@@ -247,6 +247,7 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 		instance.Size = 0;
 		int Instance = 0;
 		int NumElements = 0;
+		int totalOffset = 0;
 		for (UINT i = 0; i < desc.InputParameters; i++) {
 			D3D12_SIGNATURE_PARAMETER_DESC input_desc;
 			Reflector->GetInputParameterDesc(i, &input_desc);
@@ -268,7 +269,8 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 					if (instance.Name.Len()) {
 						InstanceElements.PushBack(instance);
 					}
-					instance.Offset = instance.Size;
+					totalOffset += instance.Size;
+					instance.Offset = totalOffset;
 					instance.Size = GetOffset(input_desc.Mask);
 					instance.Name = Element->Semantic;
 				}

@@ -11,6 +11,8 @@ cbuffer PerObject: register(b0)
     // object
     float4x4 gWorldViewProjection;
     float4x4 gWorldViewMatrix;
+    // prev
+    float4x4 gPrevWorldViewProjection;    
     // material
     float gSpecular;
     float3 pad_1;

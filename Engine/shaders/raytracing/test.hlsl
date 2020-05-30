@@ -28,19 +28,36 @@ struct RayPayload
 void Raygen()
 {
 
+    float2 uv = (float2)(DispatchRaysIndex().xy + 0.5)/DispatchRaysDimensions().xy;
+    float3 viewPos = GetPositionLoad(uv).xyz;
     // word position to sun 
-    float3 origin = mul(float4(GetPositionScreen(DispatchRaysIndex().xy), 1), gInvertViewMaxtrix).xyz;
-    float3 rayDir = normalize(float3(1, 1, 0));
+    float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
+    // float3 origin = mul(float4(GetPositionLoad(DispatchRaysIndex().xy), 1), gInvertViewMaxtrix).xyz;
+    // get view normal
+    float3 normal = GetNormalLoad(uv).xyz; 
+    // get view space look
+    float3 look = GetLookVector(uv).xyz;
+    // get view space raydir
+    float3 rayDir = reflect(look, normal);
+    // get world space ray
+    rayDir = mul(float4(rayDir, 0), gInvertViewMaxtrix).xyz;
+    // normalize(float3(1, 1, 0));
     // Trace the ray.
     // Set the ray's extents.
     RayDesc ray;
     ray.Origin = origin;
-    ray.Direction = rayDir;
+    ray.Direction = normalize(rayDir);
     // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
     // TMin should be kept small to prevent missing geometry at close contact areas.
-    ray.TMin = 0.001;
+    ray.TMin = 0.005;
     ray.TMax = 10000.0;
     RayPayload payload = { float4(0, 0, 0, 0) };
+
+    if (length(viewPos) < 0.001) {
+        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0.0, 0, 1);
+        return;
+    }
+
     TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
 
     // Write the raytraced color to the output texture.

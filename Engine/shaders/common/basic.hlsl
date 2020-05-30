@@ -9,7 +9,8 @@ PS_Input_GBuffer VS_Basic_GBuffer(VS_Input_Simple vs_input)
 {
     PS_Input_GBuffer output;
     output = transform_to_view_gbuffer(vs_input.PosL, vs_input.Normal, 
-        vs_input.TexCoord, vs_input.Tangent, gWorldViewProjection, gWorldViewMatrix);
+        vs_input.TexCoord, vs_input.Tangent, 
+        gWorldViewProjection, gWorldViewMatrix, gPrevWorldViewProjection);
     return output;
 }
 
@@ -31,7 +32,8 @@ PS_Input_GBuffer VS_Instancing_GBuffer(VS_Input_Instance vs_input)
 {
     PS_Input_GBuffer output;
     output = transform_to_view_gbuffer(vs_input.PosL, vs_input.Normal, 
-        vs_input.TexCoord, vs_input.Tangent, vs_input.InstanceWVP, vs_input.InstanceWV);
+        vs_input.TexCoord, vs_input.Tangent, 
+        vs_input.InstanceWVP, vs_input.InstanceWV, vs_input.InstancePWVP);
     return output;
 }
 
@@ -70,6 +72,12 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     output.Diffuse = diffuse;
     // specular  y: roughness  z: metallic
     output.Specular = float4(gSpecular, specular.y, specular.z, 0);
+    // motion vectors
+    float2 currentScreen = ps_input.CurrentPosH.xy / ps_input.CurrentPosH.w * 0.5 + 0.5;
+    float2 prevScreen = ps_input.PrevPosH.xy / ps_input.PrevPosH.w * 0.5 + 0.5;   
+    currentScreen.y = 1 - currentScreen.y;
+    prevScreen.y = 1 - prevScreen.y;
+    output.Motion = float4(prevScreen.xy - currentScreen.xy, 0, 0);
     return output;
 }
 

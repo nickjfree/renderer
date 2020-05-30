@@ -198,6 +198,22 @@ int PostpassStage::SSAO(BatchCompiler* Compiler) {
 	return Compiled;
 }
 
+int PostpassStage::Reflection(BatchCompiler* Compiler) {
+	int Compiled = 0;
+	if (ReflectionShader) {
+		Compiled += ReflectionShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
+		// draw full screen quad
+		Compiled += Compiler->Quad();
+	}
+	else {
+		Variant* Value = Context->GetResource("Shader\\shaders\\Reflection\\0");
+		if (Value) {
+			ReflectionShader = Value->as<Shader*>();
+		}
+	}
+	return Compiled;
+}
+
 int PostpassStage::OIT(BatchCompiler* Compiler) {
 	int Compiled = 0;
 	if (OITShader) {
@@ -376,8 +392,12 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	Compiler->SetBuffer(Buffer);
 	// continue post process
 	renderview->Compile(Context);
+	// clear parames
+	Parameter.Clear();
 	// do SSAO
 	SSAO(Compiler);
+	// do reflection resolve pass
+	Reflection(Compiler);
 	// do OIT final pass
 	OIT(Compiler);
 	// do tone mapping and bloom

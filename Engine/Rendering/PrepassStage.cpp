@@ -26,7 +26,7 @@ void PrepassStage::CreateGBuffer() {
 	Targets[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R16G16_FLOAT;
 	Targets[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.Format = FORMAT_R16G16_FLOAT;
 	Targets[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
 	Targets[3] = Interface->CreateTexture2D(&desc, 0, 0, 0);
@@ -39,7 +39,7 @@ void PrepassStage::CreateGBuffer() {
 	// resgister targets
 	Context->RegisterRenderTarget("gDepthBuffer", Targets[0]);
 	Context->RegisterRenderTarget("gNormalBuffer", Targets[1]);
-	Context->RegisterRenderTarget("gLightBuffer", Targets[2]);
+	Context->RegisterRenderTarget("gMotionVector", Targets[2]);
 	Context->RegisterRenderTarget("gDiffuseBuffer", Targets[3]);
 	Context->RegisterRenderTarget("gSpecularBuffer", Targets[4]);
 	Context->RegisterRenderTarget("Depth", Depth);
@@ -237,11 +237,12 @@ void PrepassStage::PrePass(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	renderview->Index = 0;
 	renderview->Queue = renderQueue;
 	// set render target
-	renderview->TargetCount = 4;
+	renderview->TargetCount = 5;
 	renderview->Targets[0] = Targets[0];
 	renderview->Targets[1] = Targets[1];
 	renderview->Targets[2] = Targets[3];
 	renderview->Targets[3] = Targets[4];
+	renderview->Targets[4] = Targets[2];
 	renderview->Depth = Depth;
 	renderview->Parameters.Clear();
 	renderview->ClearDepth = 1;

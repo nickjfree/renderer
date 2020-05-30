@@ -13,7 +13,7 @@ PS_Input_GBuffer VS_Skinning_GBuffer(VS_Input_Skinning vs_input, uint VertexId :
     // transform to pixel shader
     PS_Input_GBuffer output;
     output = transform_to_view_gbuffer(vs_input.PosL, vs_input.Normal, 
-        vs_input.TexCoord, vs_input.Tangent, gWorldViewProjection, gWorldViewMatrix);
+        vs_input.TexCoord, vs_input.Tangent, gWorldViewProjection, gWorldViewMatrix, gPrevWorldViewProjection);
     return output;
 }
 

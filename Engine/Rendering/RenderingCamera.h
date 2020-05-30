@@ -37,9 +37,17 @@ protected:
 	Vector3 Look;
 	Vector3 Up;
 	Vector3 Right;
+	// p
 	Matrix4x4 Projection;
+	// v
 	Matrix4x4 ViewMatrix;
+	// vp
 	Matrix4x4 ViewProjection;
+	// previous frame's vp
+	Matrix4x4 PrevViewProjection;
+	// previous frame's v
+	Matrix4x4 PrevViewMatrix;
+	// inversed v
 	Matrix4x4 InvertView;
 	Frustum frustum;
 public:
@@ -51,10 +59,17 @@ public:
 	Matrix4x4& GetViewProjection() { return ViewProjection; }
 	Matrix4x4& GetProjection() { return Projection; }
 	Matrix4x4& GetInvertView() { return InvertView; }
+
+	Matrix4x4& GetPrevViewMatrix() { return PrevViewMatrix; }
+	Matrix4x4& GetPrevViewProjection() { return PrevViewProjection; }
+
 	Vector3& GetViewPoint() { return Position; }
 	void FromLight(Vector3& Position, Quaternion& Orientation, Matrix4x4& Projection);
 	void SetTransform(Vector3& Transform);
 	void SetRotation(Quaternion& Rotation);
 	void SetProjection(Matrix4x4& Projection);
+
+	void UpdatePrevMatrix();
+
 };
 #endif

@@ -38,6 +38,7 @@ private:
 	int Frames;
 	Shader* HDRShader;
 	Shader* OITShader;
+	Shader* ReflectionShader;
 	// renderviews
 	Vector<RenderView*> RenderViews;
 private:
@@ -53,6 +54,9 @@ private:
 
 	// SSAO
 	int SSAO(BatchCompiler* Compiler);
+	// reflection
+	int Reflection(BatchCompiler* Compiler);
+
 	// OIT
 	int OIT(BatchCompiler* Compiler);
 	// HDR

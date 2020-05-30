@@ -15,9 +15,9 @@ void RaytracingStage::Initialize()
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
-
+	 
 	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	Context->RegisterRenderTarget("gRtShadow", rtTarget);
+	Context->RegisterRenderTarget("gRtTarget", rtTarget);
 }
 
 

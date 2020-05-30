@@ -78,6 +78,8 @@ void RenderControl::StartCamera(RenderingCamera* Camera) {
 		RenderStage* Stage = path->Stages[i];
 		Stage->Execute(Camera, spatial, RenderQueue_, Queue, Events);
 	}
+	// update prev matrix. for motion vectors
+	Camera->UpdatePrevMatrix();
 }
 
 int RenderControl::AddCamera(RenderingCamera* Camera) {

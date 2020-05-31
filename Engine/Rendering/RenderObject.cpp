@@ -1,6 +1,7 @@
 #include "RenderObject.h"
 #include "RenderQueue.h"
 #include "Core\StringTable.h"
+#include "ShaderLibrary.h"
 
 USING_ALLOCATER(RenderObject);
 RenderObject::RenderObject() : BlendShape_(nullptr)
@@ -113,22 +114,37 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 	// get geometry
 	int Geometry = GetRenderMesh(0, 0);
 
-	auto renderInterface = Context->GetRenderInterface();
-	if (Geometry != -1) {
-		if (RaytracingGeometry == -1 && palette.Size == 0) {
-			// create it, static geometry
-			RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
-		}
-		if (RaytracingGeometry != -1) {
-			// add instance
-			R_RAYTRACING_INSTANCE instance = {};
-			instance.Flag = 0;
-			instance.MaterialId = 0;
-			instance.rtGeometry = RaytracingGeometry;
-			instance.Transform = GetWorldMatrix();
-			renderInterface->AddRaytracingInstance(instance);
+	// get raytracing shader library to get the resource bindings
+	Variant* Value = Context->GetResource("ShaderLibrary\\shaders\\test.cso");
+	ShaderLibrary* rtShader;
+	if (Value) {
+		// the rtshader
+		rtShader = Value->as<ShaderLibrary*>();
+
+
+		auto renderInterface = Context->GetRenderInterface();
+		if (Geometry != -1) {
+			if (RaytracingGeometry == -1 && palette.Size == 0) {
+				// create it, static geometry
+				RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
+			}
+			if (RaytracingGeometry != -1) {
+				// add instance
+				R_RAYTRACING_INSTANCE instance = {};
+				instance.Flag = 0;
+				instance.MaterialId = 0;
+				instance.rtGeometry = RaytracingGeometry;
+				instance.Transform = GetWorldMatrix();
+				// make local resource bindings
+				rtShader->GetLocalResourceBindings(material->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
+				//if (palette.Size) {
+					renderInterface->AddRaytracingInstance(instance);
+				//}
+				
+			}
 		}
 	}
+	
 	return 0;
 }
 

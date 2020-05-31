@@ -309,21 +309,21 @@ void D3D12Render::InitRootSignature() {
 	{
 		CD3DX12_DESCRIPTOR_RANGE1 DescRange[2];
 		// texture materials src t 3-10
-		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 2, 1);
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 2, 1);
 		// uavs  u 0-8
-		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 1);
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 4, 0, 1);
 
 		CD3DX12_ROOT_PARAMETER1 RP[16]{};
 		// constant buffer
 		RP[0].InitAsShaderResourceView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t0  vertex buffer
 		RP[1].InitAsShaderResourceView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t1  index buffer
-		RP[2].InitAsConstantBufferView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0  
-		RP[3].InitAsConstantBufferView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
+		RP[2].InitAsConstants(1, 0, 1, D3D12_SHADER_VISIBILITY_ALL); // b0  
+		RP[3].InitAsDescriptorTable(1, &DescRange[0]); // b1
 		// tables
-		RP[4].InitAsDescriptorTable(1, &DescRange[0]);  // t2-t9  srvs
-		RP[5].InitAsDescriptorTable(1, &DescRange[1]);  // u0-u7  uavs
+		// RP[4].InitAsDescriptorTable(1, &DescRange[0]);  // t2-t9  srvs
+		// RP[5].InitAsDescriptorTable(1, &DescRange[1]);  // u0-u7  uavs
 
-		LocalRootSig = new RootSignature(Device, RP, 6, nullHandle, nullUAVHandle, true);
+		LocalRootSig = new RootSignature(Device, RP, 4, nullHandle, nullUAVHandle, true);
 	}
 }
 
@@ -1615,30 +1615,35 @@ void D3D12Render::FlushRootSignature() {
 	BarrierFlushed = 0;
 }
 
-void D3D12Render::FlushRootComputeSignature() {
+void D3D12Render::FlushRootComputeSignature(DescriptorHeap * srvHeap) {
 	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	ID3D12DescriptorHeap* Heaps[2];
 	Heaps[1] = GpuSamplerHeaps[0]->Get();
 	int HeapChanged = 0;
-	if (!CurrentSRVHeap) {
-		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		Heaps[0] = CurrentSRVHeap->Get();
-		HeapChanged = 1;
-		cmdList->SetDescriptorHeaps(2, Heaps);
-		// set sampler descriptor table
-		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-	}
+	Heaps[0] = srvHeap->Get();
+	cmdList->SetDescriptorHeaps(2, Heaps);
+	// set sampler descriptor table
+	RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 
-	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true)) {
-		// need new heaps
+	if (!RootSig->Flush(cmdList, srvHeap, BarrierFlushed, HeapChanged, true)) {
+		// error
+		printf("descriptor heap full");
+		return;
+
+		//// need new heaps
+		//UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
+		//CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		//HeapChanged = 1;
+		//Heaps[0] = CurrentSRVHeap->Get();
+		//cmdList->SetDescriptorHeaps(2, Heaps);
+		//// set sampler descriptor table
+		//RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+		//RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true);
+	}
+	// clear the old graphic signature
+	if (CurrentSRVHeap) {
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		HeapChanged = 1;
-		Heaps[0] = CurrentSRVHeap->Get();
-		cmdList->SetDescriptorHeaps(2, Heaps);
-		// set sampler descriptor table
-		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true);
+		CurrentSRVHeap = nullptr;
 	}
 	// clear barrierflushed
 	BarrierFlushed = 0;
@@ -1791,18 +1796,20 @@ void D3D12Render::Quad() {
 }
 
 void D3D12Render::TraceRay() {
-   // test wait for the scene in graphic queue
-	WaitRaytracingScene();
-
-	// flush resource barriers
-	FlushResourceBarriers();
-
-	// flush compute rootsig
-	FlushRootComputeSignature();
 
 
 	// tracing rays(test)
 	if (rtScene) {
+
+		// test wait for the scene in graphic queue
+		WaitRaytracingScene();
+
+		// flush resource barriers
+		FlushResourceBarriers();
+
+		// flush compute rootsig
+		FlushRootComputeSignature(rtScene->GetDescriptorHeap());
+
 		// flush rtStateObject
 		FlushStateObject();
 		// trace rays
@@ -1813,8 +1820,11 @@ void D3D12Render::TraceRay() {
 	}
 }
 
-int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACING_INSTANCE& instance) {
+int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, D3DGeometry& geometry, R_RAYTRACING_INSTANCE& instance) {
 
+	// get vertex and index buffer
+	D3D12_GPU_VIRTUAL_ADDRESS vertexAddr = geometry.VertexResource->GetGPUVirtualAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS indexAddr = geometry.IndexResource->GetGPUVirtualAddress();
 	// add shader recrod for each ray types
 	for (auto ray = 0; ray < MAX_RAY_TYPES; ray++) {
 		// get a shader record
@@ -1905,6 +1915,10 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 			// queue rtresource
 			SBTResource.PushBack(resource);
 		}
+		// add vertex and index buffer rootparams
+		Record->Params[0] = vertexAddr;
+		Record->Params[1] = indexAddr;
+		*(unsigned int *)&Record->Params[2] = geometry.VBSize;
 		// flush localrootsig to sbt and rtScene's local descriptor heap
 		LocalRootSig->FlushSBT(descHeap, Record);
 	}
@@ -1915,7 +1929,11 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACIN
 
 int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 
+	// get rtGeometry
 	auto& rtGeometry = BottomLevelAS.GetItem(instance.rtGeometry);
+	// get geometry data
+	auto& Geometry = Geometries.GetItem(rtGeometry.GeometryId);
+
 	// get rtScene of current frame
 	if (!rtScene) {
 		rtScene = RaytracingScene::Alloc(Device);
@@ -1923,12 +1941,13 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 	if (!rtGeometry.Deformable) {
 		// static geometry
 		if (!rtGeometry.Dirty[0]) {
-			AddRaytracingInstance(&rtGeometry, instance);
+			AddRaytracingInstance(&rtGeometry, Geometry, instance);
 		}
-	} else if (rtGeometry.Deformable) {
+	} 
+	else if (rtGeometry.Deformable) {
 		if (!rtGeometry.Dirty[0]) {
-			// add to rtScene for build
-			AddRaytracingInstance(&rtGeometry, instance);
+			// add to rtScene for build. TODO(BLAS): the dirty flags may not working correctly
+			AddRaytracingInstance(&rtGeometry, Geometry, instance);
 		}
 		// add geometry of current frame to rtScene for builing
 		// deformable geometry index to build
@@ -2073,4 +2092,21 @@ void D3D12Render::SetupGraphicContext() {
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
 		CurrentSRVHeap = nullptr;
 	}
+}
+
+DescriptorHeap* D3D12Render::GetCurrentDescripterHeap() {
+
+	int HeapChanged = 0;
+	if (!CurrentSRVHeap) {
+		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
+		ID3D12DescriptorHeap* Heaps[2];
+		HeapChanged = 1;
+		Heaps[0] = CurrentSRVHeap->Get();
+		Heaps[1] = GpuSamplerHeaps[0]->Get();
+		cmdList->SetDescriptorHeaps(2, Heaps);
+		// set sampler descriptor table
+		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+	}
+	return CurrentSRVHeap;
 }

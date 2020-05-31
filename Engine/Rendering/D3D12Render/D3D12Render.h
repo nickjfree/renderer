@@ -190,7 +190,7 @@ namespace D3D12API {
 		// flush rootsig
 		void FlushRootSignature();
 		// flush compute rootsig
-		void FlushRootComputeSignature();
+		void FlushRootComputeSignature(DescriptorHeap * srvHeap);
 		// flush rendertargets
 		void FlushRenderTargets();
 		// flush piplinestate
@@ -204,7 +204,9 @@ namespace D3D12API {
 		// get topology_type by topology
 		R_PRIMITIVE_TOPOLOGY_TYPE GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology);
 		// add instance to rtScene
-		int AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, R_RAYTRACING_INSTANCE& instance);
+		int AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, D3DGeometry& geometry, R_RAYTRACING_INSTANCE& instance);
+		// get current descripter heap
+		DescriptorHeap* GetCurrentDescripterHeap();
 	public:
 		static D3D12Render* GetRender() { return thisRender; }
 		// get queue

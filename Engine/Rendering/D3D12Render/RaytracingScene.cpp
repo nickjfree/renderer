@@ -211,11 +211,16 @@ int RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID,
 	instance.InstanceID = InstanceID;
 	instance.InstanceMask = 1;
 	instance.Flags = Flags;
+	
 	// set transform to indetity
 	Matrix4x4 Trans;
 	Tansform.Tranpose(Tansform, &Trans);
 	memcpy(instance.Transform, &Trans, sizeof(float) * 12);
-	//instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;
+	//instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;	// InstanceId
+
+	// set instance id
+	instance.InstanceID = InstanceDesc.Size();
+	instance.InstanceContributionToHitGroupIndex = instance.InstanceID;
 	return InstanceDesc.PushBack(instance);
 }
 

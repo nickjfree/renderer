@@ -39,6 +39,9 @@ void PrepassStage::CreateGBuffer() {
 	// resgister targets
 	Context->RegisterRenderTarget("gDepthBuffer", Targets[0]);
 	Context->RegisterRenderTarget("gNormalBuffer", Targets[1]);
+
+	Context->RegisterRenderTarget("gNormalBuffer1", Targets[1]);
+
 	Context->RegisterRenderTarget("gMotionVector", Targets[2]);
 	Context->RegisterRenderTarget("gDiffuseBuffer", Targets[3]);
 	Context->RegisterRenderTarget("gSpecularBuffer", Targets[4]);

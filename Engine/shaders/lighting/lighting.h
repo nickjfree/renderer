@@ -4,7 +4,7 @@
 
 #include "../common/deferred.h"
 #include "../common/basic_layout.h"
-
+#include "../common/basic_registers.h"
 
 /*
     shadow map

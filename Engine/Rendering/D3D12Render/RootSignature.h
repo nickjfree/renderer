@@ -38,6 +38,8 @@ namespace D3D12API {
 		D3D12_DESCRIPTOR_RANGE_TYPE DescriptorType;
 		int ResourceId[MAX_DESC_TABLE_SIZE];
 		D3D12_CPU_DESCRIPTOR_HANDLE Handles[MAX_DESC_TABLE_SIZE];
+		//  PrevRaytracingTableHandle
+		D3D12_GPU_DESCRIPTOR_HANDLE PrevRaytracingTableHandle;
 		int Fresh[MAX_DESC_TABLE_SIZE];
 	} DescriptorTable;
 
@@ -79,6 +81,8 @@ namespace D3D12API {
 		D3D12_CPU_DESCRIPTOR_HANDLE NullHandle;
 		// null uav handle
 		D3D12_CPU_DESCRIPTOR_HANDLE NullUAVHandle;
+		// prev raytracing Descriper heap
+		DescriptorHeap* prevRtDescHeap;
 		// staging table count
 		int NumCachedTables;
 		// constant buffer view count

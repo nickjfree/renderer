@@ -2,11 +2,16 @@
 #ifndef  __DEFERRED__
 #define  __DEFERRED__
 
-#include "common.h"
+// #include "common.h"
+#include "basic_sampler.hlsli"
+#include "basic_constant.h"
 #include "post_constant.h"
+#include "deferred_register.hlsli"
+
 
 static const float fov = tan(0.15 * 3.141592654);
 
+// deferred shading gbuffer
 
 // gbuffer
 struct GBuffer

@@ -229,6 +229,7 @@ bool RootSignature::SetConstantBuffer(int slot, D3D12_CONSTANT_BUFFER_VIEW_DESC*
 // set sampler
 bool RootSignature::SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle) {
 	CommandList->SetGraphicsRootDescriptorTable(DescTables[4].RootSlot, handle);
+	CommandList->SetComputeRootDescriptorTable(DescTables[4].RootSlot, handle);
 	return true;
 }
 
@@ -341,7 +342,7 @@ bool D3D12API::RootSignature::FlushSBT(DescriptorHeap* descHeap, ShaderRecord* R
 		int Start = DescTable.Start;
 		int Num = DescTable.TableSize - Start;
 		int Slot = DescTable.RootSlot;
-		if (DescTable.Dirty) {
+		if (DescTable.Dirty || prevRtDescHeap != descHeap) {
 			// for local root signature the handles in the cache is invalid. we must set them to null
 			if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
 				// unbind srv
@@ -376,6 +377,10 @@ bool D3D12API::RootSignature::FlushSBT(DescriptorHeap* descHeap, ShaderRecord* R
 			else {
 				// set table pointers in the sbt
 				Record->Params[Slot] = handle.ptr;
+				// set prevraytracinghandle
+				DescTable.PrevRaytracingTableHandle = handle;
+				// remember this descripter heap
+				prevRtDescHeap = descHeap;
 			}
 			// refresh cache
 			DescTable.Dirty = 0;
@@ -384,6 +389,9 @@ bool D3D12API::RootSignature::FlushSBT(DescriptorHeap* descHeap, ShaderRecord* R
 			for (int n = 0; n < DescTable.TableSize; n++) {
 				DescTable.Fresh[n] = 0;
 			}
+		}
+		else {
+			Record->Params[Slot] = DescTable.PrevRaytracingTableHandle.ptr;
 		}
 	}
 

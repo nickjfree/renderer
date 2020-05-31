@@ -4,6 +4,8 @@
 #include "dxc/DxilContainer/DxilContainer.h"
 
 
+constexpr int RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE = 1;
+
 USING_ALLOCATER(ShaderLibrary);
 
 static dxc::DxcDllSupport dxcDllSupport;
@@ -288,3 +290,88 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	return 0;
 }
 
+
+void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, RenderContext* Context, R_RESOURCE_BINDING* bindings, int* count)
+{
+	// current binding index
+	auto index = 0;
+	// vertex and index buffers are system parameters which are not binded here
+
+	// textures (SRV)
+	int texture_units = TextureUnits.Size();
+	for (int i = 0; i < texture_units; i++) {
+		TextureUnit* unit = &TextureUnits[i];
+		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
+			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			if (Value) {
+				int id = Value->as<int>();
+				bindings[index].BindingType = R_SRV_TEXTURE;
+				bindings[index].ResourceId = id;
+				bindings[index].Slot = unit->Slot;
+				index++;
+			}
+		}
+	}
+	// buffers (SRV)
+	int buffer_units = BufferUnits.Size();
+	for (int i = 0; i < buffer_units; i++) {
+		BufferUnit* unit = &BufferUnits[i];
+		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
+			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			if (Value) {
+				int id = Value->as<int>();
+				bindings[index].BindingType = R_SRV_BUFFER;
+				bindings[index].ResourceId = id;
+				bindings[index].Slot = unit->Slot;
+				index++;
+			}
+		}
+	}
+	// rwbuffers (UAV)
+	int rwbuffer_units = RWBufferUnits.Size();
+	for (int i = 0; i < rwbuffer_units; i++) {
+		RWBufferUnit* unit = &RWBufferUnits[i];
+		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
+			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			if (Value) {
+				int id = Value->as<int>();
+				bindings[index].BindingType = R_UAV_BUFFER;
+				bindings[index].ResourceId = id;
+				bindings[index].Slot = unit->Slot;
+				index++;
+			}
+		}
+	}
+	// rwtextures (UAV)
+	int rwtexture_units = RWTextureUnits.Size();
+	for (int i = 0; i < rwtexture_units; i++) {
+		RWTextureUnit* unit = &RWTextureUnits[i];
+		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
+			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			if (Value) {
+				int id = Value->as<int>();
+				bindings[index].BindingType = R_UAV_TEXTURE;
+				bindings[index].ResourceId = id;
+				bindings[index].Slot = unit->Slot;
+				index++;
+			}
+		}
+	}
+	// constants are not binded for now
+	int parameters = Parameters.Size();
+	for (int i = 0; i < parameters; i++) {
+		ShaderParameter* parameter = &Parameters[i];
+		Variant* Value = GetParameter(parameter->Name, MaterialParam, MaterialParam, Context);
+		if (Value) {
+			if (!parameter->IsArray) {
+				// Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);
+			}
+			else {
+				ShaderParameterArray& Array = Value->as<ShaderParameterArray>();
+				// Compiler->UpdateArray(parameter->Slot, Array.Size, Array.Data);
+			}
+		}
+	}
+	*count = index;
+	return;
+}

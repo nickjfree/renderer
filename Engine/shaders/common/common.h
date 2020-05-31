@@ -1,6 +1,7 @@
 #ifndef __COMMON__
 #define __COMMON__
 
+#include "basic_sampler.hlsli"
 #include "basic_constant.h"
 #include "basic_registers.h"
 #include "basic_layout.h"

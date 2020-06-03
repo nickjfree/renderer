@@ -57,7 +57,7 @@ public:
 	virtual int OnLoadComplete(Variant& Parameter);
 	virtual int OnCreateComplete(Variant& Parameter);
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context);
-	void GetLocalResourceBindings(Dict& MaterialParam, RenderContext* Context, R_RESOURCE_BINDING * bindings, int* count);
+	void GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context, R_RESOURCE_BINDING * bindings, int* count);
 };
 
 

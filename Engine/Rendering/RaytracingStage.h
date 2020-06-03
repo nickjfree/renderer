@@ -29,8 +29,6 @@ private:
 private:
 	// initialization
 	void Initialize();
-	// shaderlibraries
-	ShaderLibrary* TestShader;
 	// rtTarget
 	int rtTarget;
 	// Parameters for rt stage

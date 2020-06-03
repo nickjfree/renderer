@@ -1641,7 +1641,7 @@ void D3D12Render::FlushRootComputeSignature(DescriptorHeap * srvHeap) {
 		//RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true);
 	}
 	// clear the old graphic signature
-	if (CurrentSRVHeap) {
+	if (CurrentSRVHeap && CurrentSRVHeap != srvHeap) {
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
 		CurrentSRVHeap = nullptr;
 	}
@@ -1912,8 +1912,8 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, D3DGeometry
 			case R_VERTEX_BUFFER:
 				break;
 			}
-			// queue rtresource
-			SBTResource.PushBack(resource);
+			// TODO: queue rtresource bariars
+			// SBTResource.PushBack(resource);
 		}
 		// add vertex and index buffer rootparams
 		Record->Params[0] = vertexAddr;

@@ -200,16 +200,14 @@ int PostpassStage::SSAO(BatchCompiler* Compiler) {
 
 int PostpassStage::Reflection(BatchCompiler* Compiler) {
 	int Compiled = 0;
-	if (ReflectionShader) {
-		Compiled += ReflectionShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
+
+	Variant* Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
+	if (Value) {
+		auto material = Value->as<Material*>();
+		ReflectionShader = material->GetShader();
+		Compiled += ReflectionShader->Compile(Compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		// draw full screen quad
 		Compiled += Compiler->Quad();
-	}
-	else {
-		Variant* Value = Context->GetResource("Shader\\shaders\\Reflection\\0");
-		if (Value) {
-			ReflectionShader = Value->as<Shader*>();
-		}
 	}
 	return Compiled;
 }

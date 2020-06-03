@@ -4,6 +4,7 @@
 #include "Resource\Resource.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "ShaderLibrary.h"
 #include "Container\Dict.h"
 #include "Resource\XMLParser.h"
 
@@ -23,6 +24,8 @@ private:
 	//Texture * Textures[MULTI_TEXTUES];
 	// shaders
 	Shader* ShaderProgram;
+	// shader library
+	ShaderLibrary* ShaderLib;
 	// texture id cache
 	//int TexrureID[MULTI_TEXTUES];
 	// parameters. 
@@ -43,6 +46,7 @@ public:
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod);
 	Dict& GetParameter() { return Parameters; }
 	Shader* GetShader() { return ShaderProgram; }
+	ShaderLibrary* GetShaderLibrary() { return ShaderLib; }
 	virtual int OnDestroy(Variant& Data);
 };
 

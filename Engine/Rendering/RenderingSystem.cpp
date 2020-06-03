@@ -60,16 +60,16 @@ void RenderingSystem::PreloadingResource() {
 	//Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);
 	// load test shader library
-	Preloadings[3] = "ShaderLibrary\\shaders\\test.cso";
+	Preloadings[3] = "Material\\Materials\\reflection.xml\\0";
 	Param.as<String*>() = &Preloadings[3];
 	//Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[3], Preloading, Param);
 	// load reflection shader
-	Preloadings[4] = "Shader\\shaders\\Reflection\\0";
-	Param.as<String*>() = &Preloadings[4];
-	//Preloading = new RenderPreloading(context);
-	Cache->AsyncLoadResource(Preloadings[4], Preloading, Param);
-	// TODO: fix preloading objects leaking
+	//Preloadings[4] = "Shader\\shaders\\Reflection\\0";
+	//Param.as<String*>() = &Preloadings[4];
+	////Preloading = new RenderPreloading(context);
+	//Cache->AsyncLoadResource(Preloadings[4], Preloading, Param);
+	//// TODO: fix preloading objects leaking
 }
 
 int RenderingSystem::Initialize() {

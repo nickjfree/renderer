@@ -25,45 +25,56 @@ int Material::OnSerialize(Deserializer& deserializer) {
 	// read xml structures
 	xml_node<>* material = xml_doc->first_node();
 	xml_node<>* node = material->first_node();
-	if (!strcmp(node->name(), "textures")) {
 
-		xml_node<>* texture = node->first_node();
-		while (texture) {
-			// read textures resource
-			xml_attribute<>* attr = texture->first_attribute("url");
+	while (node) {
+		if (!strcmp(node->name(), "textures")) {
+
+			xml_node<>* texture = node->first_node();
+			while (texture) {
+				// read textures resource
+				xml_attribute<>* attr = texture->first_attribute("url");
+				char* url = attr->value();
+				attr = texture->first_attribute("unit");
+				char* Unit = attr->value();
+				texture = texture->next_sibling();
+				Dependencies[String(url)].as<char*>() = Unit;
+				DepCount++;
+				printf("texture: %s  %s\n", Unit, url);
+			}
+		}
+		// read shader resource
+		if (!strcmp(node->name(), "shader")) {
+			xml_attribute<>* attr = node->first_attribute("url");
 			char* url = attr->value();
-			attr = texture->first_attribute("unit");
-			char* Unit = attr->value();
-			texture = texture->next_sibling();
-			Dependencies[String(url)].as<char*>() = Unit;
+			Dependencies[String(url)].as<char*>() = NULL;
 			DepCount++;
-			printf("texture: %s  %s\n", Unit, url);
+			printf("shader %s\n", url);
 		}
-	}
-	// read shader resource
-	node = node->next_sibling();
-	if (!strcmp(node->name(), "shader")) {
-		xml_attribute<>* attr = node->first_attribute("url");
-		char* url = attr->value();
-		Dependencies[String(url)].as<char*>() = NULL;
-		DepCount++;
-		printf("shader %s\n", url);
-	}
-	// read shader parameters
-	node = node->next_sibling();
-	if (node && !strcmp(node->name(), "parameters")) {
+		// read shader library
+		if (!strcmp(node->name(), "library")) {
+			xml_attribute<>* attr = node->first_attribute("url");
+			char* url = attr->value();
+			Dependencies[String(url)].as<char*>() = NULL;
+			DepCount++;
+			printf("shader %s\n", url);
+		}
+		// read shader parameters
+		if (node && !strcmp(node->name(), "parameters")) {
 
-		xml_node<>* parameter = node->first_node();
-		while (parameter) {
-			// read textures resource
-			xml_attribute<>* attr = parameter->first_attribute("name");
-			char* name = attr->value();
-			attr = parameter->first_attribute("value");
-			float value = static_cast<float>(atof(attr->value()));
-			parameter = parameter->next_sibling();
-			Parameters[String(name)].as<float>() = value;
-			printf("material parameter: %s  %f\n", name, value);
+			xml_node<>* parameter = node->first_node();
+			while (parameter) {
+				// read textures resource
+				xml_attribute<>* attr = parameter->first_attribute("name");
+				char* name = attr->value();
+				attr = parameter->first_attribute("value");
+				float value = static_cast<float>(atof(attr->value()));
+				parameter = parameter->next_sibling();
+				Parameters[String(name)].as<float>() = value;
+				printf("material parameter: %s  %f\n", name, value);
+			}
 		}
+		// next node
+		node = node->next_sibling();
 	}
 	return 0;
 }
@@ -95,6 +106,11 @@ int Material::OnSubResource(int Message, Resource* Sub, Variant& Param) {
 	if (resource->ResourceType == R_SHADER) {
 		//printf("finish shader\n");
 		ShaderProgram = (Shader*)resource;
+		DepCount--;
+	}
+	if (resource->ResourceType == R_SHADER_LIBRARY) {
+		//printf("finish shader\n");
+		ShaderLib = (ShaderLibrary*)resource;
 		DepCount--;
 	}
 	//printf("remain depcount %d\n", DepCount);

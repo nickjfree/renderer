@@ -43,13 +43,15 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 		renderObject->UpdateRaytracingStructure(Context);
 	}
 	// let's shoot rays
-	if (TestShader) {
+	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
+	if (Value) {
+		auto rtShader = Value->as<Material*>()->GetShaderLibrary();
 		//Compiled += Compiler->SetDepthBuffer(-1);
 		auto renderview = RenderView::Create();
 		renderview->Camera = Camera;
 		renderview->Depth = -1;
 		renderview->Type = R_STAGE_RT;
-		renderview->Index = 0;
+		renderview->Index = 0; 
 		renderview->Queue = renderQueue;
 		renderview->TargetCount = 0;
 
@@ -70,18 +72,13 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 
 
-		compiled += TestShader->Compile(compiler, 0, 0, Parameter, Parameter, Context);
+		compiled += rtShader->Compile(compiler, 0, 0, Parameter, Parameter, Context);
 		compiled += compiler->TraceRay();
 
 		renderview->QueueCommand();
 
 		RenderViews.PushBack(renderview);
 
-	} else {
-		Variant* Value = Context->GetResource("ShaderLibrary\\shaders\\test.cso");
-		if (Value) {
-			TestShader = Value->as<ShaderLibrary*>();
-		}
 	}
 	return 0;
 }

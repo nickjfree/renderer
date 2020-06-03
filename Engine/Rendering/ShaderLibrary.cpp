@@ -291,7 +291,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 }
 
 
-void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, RenderContext* Context, R_RESOURCE_BINDING* bindings, int* count)
+void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context, R_RESOURCE_BINDING* bindings, int* count)
 {
 	// current binding index
 	auto index = 0;
@@ -302,7 +302,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, RenderContext*
 	for (int i = 0; i < texture_units; i++) {
 		TextureUnit* unit = &TextureUnits[i];
 		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
-			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
 			if (Value) {
 				int id = Value->as<int>();
 				bindings[index].BindingType = R_SRV_TEXTURE;

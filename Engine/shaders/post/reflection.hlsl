@@ -1,7 +1,7 @@
 
 #include "../common/deferred.h"
 #include "../common/basic_layout.h"
-
+#include "../lighting/lighting.h"
 #include "../common/post.h"
 
 
@@ -16,9 +16,20 @@ PS_Output_Simple PS(PS_Input_Simple input)
     float2 uv = input.TexCoord;
 
     float4 Color = gPostBuffer.Sample(gSam, input.TexCoord);
-    float4 Reflection = gRtTarget.Sample(gSam, input.TexCoord);
 
-    output.Color = Color + 0.3 * Reflection;
+    GBuffer gbuffer = GetGBuffer(uv);
+
+    float roughness = gbuffer.Roughness;
+    float3 N = gbuffer.Normal.xyz;
+    float3 V = gbuffer.View;
+    float3 specularColor = gbuffer.Specular;
+    float NoV = dot(N, V);
+
+    float3 reflection = gRtTarget.Sample(gSam, input.TexCoord).xyz;
+    // pre-intergrated texture
+    reflection =  reflection * EnvBRDF(specularColor, roughness, NoV);
+
+    output.Color = Color + 3* float4(reflection, 0);
 
     // output.Color = Reflection;
 

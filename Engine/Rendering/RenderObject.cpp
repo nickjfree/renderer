@@ -115,12 +115,13 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 	int Geometry = GetRenderMesh(0, 0);
 
 	// get raytracing shader library to get the resource bindings
-	Variant* Value = Context->GetResource("ShaderLibrary\\shaders\\test.cso");
-	ShaderLibrary* rtShader;
+	Variant* Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
 	if (Value) {
-		// the rtshader
-		rtShader = Value->as<ShaderLibrary*>();
+		// raytracing shader material
+		auto rtMaterial = Value->as<Material*>();
 
+		// the rtshader
+		auto rtShader = rtMaterial->GetShaderLibrary();
 
 		auto renderInterface = Context->GetRenderInterface();
 		if (Geometry != -1) {
@@ -136,7 +137,7 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 				instance.rtGeometry = RaytracingGeometry;
 				instance.Transform = GetWorldMatrix();
 				// make local resource bindings
-				rtShader->GetLocalResourceBindings(material->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
+				rtShader->GetLocalResourceBindings(material->GetParameter(), rtMaterial->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
 				//if (palette.Size) {
 					renderInterface->AddRaytracingInstance(instance);
 				//}

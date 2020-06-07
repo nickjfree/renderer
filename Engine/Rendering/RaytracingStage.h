@@ -37,6 +37,8 @@ private:
 	Vector<RenderView*> RenderViews;
 	// test
 	RayGenConstantBuffer rayGenCB;
+	// int frame count
+	int NumFrames = 0;
 public:
 	RaytracingStage(RenderContext* Context);
 	virtual ~RaytracingStage();

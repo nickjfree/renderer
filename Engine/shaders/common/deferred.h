@@ -130,5 +130,24 @@ GBuffer GetGBuffer(float2 uv)
     return gbuffer;
 }
 
+// sample gbuffer
+GBuffer GetGBufferLoad(float2 uv)
+{
+    GBuffer gbuffer;
+
+    // get vectors
+    gbuffer.Position = GetPositionLoad(uv);
+    gbuffer.Normal = GetNormalLoad(uv);
+    gbuffer.Diffuse = gDiffuseBuffer.SampleLevel(gSamPoint, uv, 0);
+    gbuffer.View = normalize(-gbuffer.Position);
+    // get roughness, specular and metallic value
+    float4 rm = gSpecularBuffer.SampleLevel(gSamPoint, uv, 0);
+    gbuffer.Roughness = rm.y;
+    gbuffer.Metallic = rm.z;
+    float3 F0 = float3(rm.x, rm.x, rm.x);
+    gbuffer.Specular = lerp(F0, gbuffer.Diffuse.rgb, gbuffer.Metallic);
+    return gbuffer;
+}
+
 
 #endif

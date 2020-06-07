@@ -111,7 +111,7 @@ float4 BRDF(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness,
     float3 F   = F_Schlick(f0, f90, saturate(dot(H, V)));      
 
     float3 numerator = NDF * G * F;
-    float denominator = 4.0 * NdotV * NdotH;
+    float denominator = 4.0 * NdotV * NdotL;
     float3 specular = numerator / max(denominator, 0.001);
 
     // Diffuse BRDF 

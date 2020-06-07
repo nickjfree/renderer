@@ -139,7 +139,7 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 				// make local resource bindings
 				rtShader->GetLocalResourceBindings(material->GetParameter(), rtMaterial->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
 				//if (palette.Size) {
-					renderInterface->AddRaytracingInstance(instance);
+				renderInterface->AddRaytracingInstance(instance);
 				//}
 				
 			}

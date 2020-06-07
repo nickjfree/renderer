@@ -14,6 +14,8 @@
 
 // #include "RaytracingHlslCompat.h"
 #include "../common/raytracing.hlsli"
+#include "random.hlsli"
+#include "monte_carlo.hlsli"
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
@@ -48,18 +50,32 @@ void Raygen()
 {
 
     float2 uv = (float2)(DispatchRaysIndex().xy + 0.5)/DispatchRaysDimensions().xy;
-    float3 viewPos = GetPositionLoad(uv).xyz;
+    uint linearIndex = DispatchRaysIndex().x + DispatchRaysIndex().y * DispatchRaysDimensions().x;   
+
+    GBuffer gbuffer = GetGBufferLoad(uv);
+
+    float3 viewPos = gbuffer.Position.xyz;
     // word position to sun 
     float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
     // float3 origin = mul(float4(GetPositionLoad(DispatchRaysIndex().xy), 1), gInvertViewMaxtrix).xyz;
     // get view normal
-    float3 normal = GetNormalLoad(uv).xyz; 
+    float3 normal = gbuffer.Normal.xyz; 
     // get view space look
-    float3 look = GetLookVector(uv).xyz;
+    float3 look = -gbuffer.View.xyz;
     // get view space raydir
-    float3 rayDir = reflect(look, normal);
+    // float3 rayDir = reflect(look, normal);
     // get world space ray
-    rayDir = mul(float4(rayDir, 0), gInvertViewMaxtrix).xyz;
+    // rayDir = mul(float4(rayDir, 0), gInvertViewMaxtrix).xyz;
+
+    float roughness = gbuffer.Roughness;
+
+    float3 world_normal = mul(float4(normal, 0), gInvertViewMaxtrix).xyz;
+    float3 world_look =  mul(float4(look, 0), gInvertViewMaxtrix).xyz;
+    // random seed
+    uint seed = RandInit(linearIndex, gFrameNumber);
+    float2 randsample = float2(Rand(seed), Rand(seed));
+    float3 rayDir = GenerateReflectedRayDirection(world_look, world_normal, roughness, randsample);
+    FixSampleDirectionIfNeeded(world_normal, rayDir);
     // normalize(float3(1, 1, 0));
     // Trace the ray.
     // Set the ray's extents.

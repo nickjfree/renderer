@@ -40,7 +40,8 @@ cbuffer PerFrame: register(b2)
 
     int  gTimeElapse;
     int  gAbsoluteTime;
-    float2 pad;
+    int  gFrameNumber;
+    int  pad;
     // post pass 
     float4   gSampleOffsets[4];
     float4   gSampleWeights[4];

@@ -31,7 +31,7 @@ PS_Output_Simple PS(PS_Input_Simple input)
 
     output.Color = Color + 3* float4(reflection, 0);
 
-    // output.Color = Reflection;
+    //output.Color = float4(reflection, 0);
 
     return output;
 }

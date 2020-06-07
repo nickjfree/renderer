@@ -70,8 +70,10 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     // depth: view space z value
     output.Depth.x = ps_input.Depth;
     output.Diffuse = diffuse;
-    // specular  y: roughness  z: metallic
+    // x: specular  y: roughness  z: metallic
     output.Specular = float4(gSpecular, specular.y, specular.z, 0);
+
+    // output.Specular = float4(gSpecular, 0.2, specular.z, 0);
     // motion vectors
     float2 currentScreen = ps_input.CurrentPosH.xy / ps_input.CurrentPosH.w * 0.5 + 0.5;
     float2 prevScreen = ps_input.PrevPosH.xy / ps_input.PrevPosH.w * 0.5 + 0.5;   

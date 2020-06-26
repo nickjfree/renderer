@@ -16,6 +16,7 @@ public:
 	~Allocater() {};
 	void* Alloc();
 	void   Free(void* ptr);
+	int GetId(void* ptr);
 	int Count();
 };
 
@@ -33,6 +34,13 @@ void* Allocater<T, align>::Alloc()
 	ptr = (void*)((unsigned long long)ptr + offset);
 	*(int*)ptr = id;
 	return (char*)ptr + sizeof(int);
+}
+
+template <class T, int align>
+int Allocater<T, align>::GetId(void* ptr)
+{
+	int id = *(int*)((char*)ptr - sizeof(int));
+	return id;
 }
 
 template <class T, int align>

@@ -33,5 +33,6 @@ PS_Output_Simple PS(PS_Input_Simple input)
 
     //output.Color = float4(reflection, 0);
 
+    // output.Color = gMotionVector.Sample(gSam, input.TexCoord).w/2048.0f;
     return output;
 }

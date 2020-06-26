@@ -19,13 +19,13 @@
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
+Texture2D PrevRenderTarget : register(t1, space0);
+
 ByteAddressBuffer Vertices : register(t0, space1);
 ByteAddressBuffer Indices : register(t1, space1);
-
 Texture2D gDiffuseMap0 : register(t2, space1);
 Texture2D gNormalMap0 : register(t3, space1);
 Texture2D gSpecularMap0 : register(t4, space1);
-Texture2D gNormalBuffer1 : register(t5, space1);
 
 
 
@@ -96,9 +96,12 @@ void Raygen()
     TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
 
     // Write the raytraced color to the output texture.
-    RenderTarget[DispatchRaysIndex().xy] = payload.color;
-
-    // RenderTarget[DispatchRaysIndex().xy] = float4(origin, 1);
+    // RenderTarget[DispatchRaysIndex().xy] = payload.color;
+    float history;
+    float2 prevUV = GetPrevScreenCoordLoad(uv, history);
+    float4 prevColor = PrevRenderTarget.SampleLevel(gSamPoint, prevUV, 0);
+    float alpha = max(0.05, 1.0 / history);
+    RenderTarget[DispatchRaysIndex().xy] = lerp(prevColor, payload.color, alpha);
 }
 
 [shader("closesthit")]

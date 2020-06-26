@@ -30,7 +30,7 @@ private:
 	// initialization
 	void Initialize();
 	// rtTarget
-	int rtTarget;
+	int rtTarget[2];
 	// Parameters for rt stage
 	Dict Parameter;
 	// renderviews

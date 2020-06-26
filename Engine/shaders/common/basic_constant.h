@@ -15,7 +15,10 @@ cbuffer PerObject: register(b0)
     float4x4 gPrevWorldViewProjection;    
     // material
     float gSpecular;
-    float3 pad_1;
+    // object id
+    int   gObjectId;
+    // pad
+    float2 pad_1;
 }
 
 cbuffer PerLight: register(b1)

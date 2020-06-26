@@ -63,6 +63,9 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	StageParameter[hash_string::InstanceWV].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>();
 	StageParameter[hash_string::InstanceWVP].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>();
 	StageParameter["InstancePWVP"].as<Matrix4x4>() = StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
+	// object id
+	StageParameter["gObjectId"].as<int>() = get_object_id() + 1;
+	StageParameter["InstanceObjectId"].as<int>() = StageParameter["gObjectId"].as<int>();
 	// get geometry
 	int Geometry = GetRenderMesh(Stage, Lod);
 	// if there is a skinning matrix

@@ -12,7 +12,7 @@
 
 PS_Input_GBuffer transform_to_view_gbuffer(
     float3 position, float3 normal, float2 texcoord, float3 tangent,
-    float4x4 mvp, float4x4 mv, float4x4 pmvp)
+    float4x4 mvp, float4x4 mv, float4x4 pmvp, int objectId)
 {
     // the output
     PS_Input_GBuffer output = (PS_Input_GBuffer)0;
@@ -33,6 +33,8 @@ PS_Input_GBuffer transform_to_view_gbuffer(
     output.TexCoord = texcoord;
     // depth is z value in view space
     output.Depth = view_position.z;
+    // object id
+    output.ObjectId = objectId;
     return output;
 }
 

@@ -23,15 +23,26 @@ void PrepassStage::CreateGBuffer() {
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R32_FLOAT;
 	desc.SampleDesc.Count = 1;
+	// linearz
 	Targets[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	// normal
 	desc.Format = FORMAT_R16G16_FLOAT;
 	Targets[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	desc.Format = FORMAT_R16G16_FLOAT;
+	// motion vector
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	Targets[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	// albedo
 	desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
 	Targets[3] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	// specular/reghness/metalic
 	desc.Format = FORMAT_R8G8B8A8_UNORM;
 	Targets[4] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+
+	// CompactData ,  objectid/history/normal.x/normal.y
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	CompactData[0] = Targets[5] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	CompactData[1] = Targets[6] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+
 
 	desc.BindFlag = BIND_DEPTH_STENCIL;
 	desc.Format = FORMAT_D24_UNORM_S8_UINT;
@@ -242,7 +253,7 @@ void PrepassStage::PrePass(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	// set render target
 	renderview->TargetCount = 5;
 	renderview->Targets[0] = Targets[0];
-	renderview->Targets[1] = Targets[1];
+	renderview->Targets[1] = CompactData[Frames % 2];
 	renderview->Targets[2] = Targets[3];
 	renderview->Targets[3] = Targets[4];
 	renderview->Targets[4] = Targets[2];
@@ -250,6 +261,12 @@ void PrepassStage::PrePass(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	renderview->Parameters.Clear();
 	renderview->ClearDepth = 1;
 	renderview->ClearTargets = 1;
+	// set compact previous data
+	Variant variant;
+	variant.as<int>() = CompactData[Frames % 2];
+	Context->SetResource("gCompactBuffer", variant);
+	variant.as<int>() = CompactData[(Frames + 1) % 2];
+	Context->SetResource("gPrevCompactBuffer", variant);
 	// 4. submit to workqueue
 	int count = 1;
 	while (count--) {
@@ -349,6 +366,7 @@ int PrepassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue
 	LigthingPass(Camera, spatial, renderQueue, Queue, Events);
 	OITInitPass(Camera, spatial, renderQueue, Queue, Events);
 	//	ShadingPass(Camera, spatial, renderQueue, Queue, Events);
+	Frames++;
 	return 0;
 }
 

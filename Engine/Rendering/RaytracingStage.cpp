@@ -16,8 +16,9 @@ void RaytracingStage::Initialize()
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
 	 
-	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	Context->RegisterRenderTarget("gRtTarget", rtTarget);
+	rtTarget[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	rtTarget[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	Context->RegisterRenderTarget("gRtTarget", rtTarget[0]);
 }
 
 
@@ -65,7 +66,9 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 		compiled += compiler->SetDepthBuffer(-1);
 
 		// Parameter["RenderTarget"].as<int>() = Context->GetRenderTarget("gPostBuffer"); // rtTarget
-		Parameter["RenderTarget"].as<int>() = rtTarget;
+		Parameter["RenderTarget"].as<int>() = rtTarget[NumFrames%2];
+		Parameter["PrevRenderTarget"].as<int>() = rtTarget[(NumFrames + 1) % 2];
+		Context->SetResource("rtTarget", Parameter["RenderTarget"]);
 
 		Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
 		Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();

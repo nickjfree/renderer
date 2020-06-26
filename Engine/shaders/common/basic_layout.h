@@ -22,6 +22,7 @@ struct VS_Input_Instance
     float4x4 InstanceWVP: InstanceWVP; 
     float4x4 InstanceWV: InstanceWV;
     float4x4 InstancePWVP: InstancePWVP;
+    int InstanceObjectId: InstanceObjectId;
 };
 
 
@@ -75,13 +76,14 @@ struct PS_Input_GBuffer
     float4 PrevPosH:  TEXCOORD3;
     float4 CurrentPosH:  TEXCOORD4;
     float  Depth : TEXCOORD5;
+    int ObjectId : TEXCOORD6;
 };
 
 // GBuffer pixel shader output
 struct PS_Output_GBuffer
 {
     float4 Depth : SV_Target0;
-    float4 Normal: SV_Target1;
+    float4 Compact: SV_Target1;
     float4 Diffuse: SV_Target2;
     float4 Specular: SV_Target3;
     float4 Motion: SV_Target4;

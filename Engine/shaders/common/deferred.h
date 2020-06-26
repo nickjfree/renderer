@@ -100,15 +100,15 @@ float3 GetPositionLoad(float2 uv)
 // get the view space normal vector at uv in screen space
 float4 GetNormal(float2 uv)
 {
-    float4 raw =  gNormalBuffer.Sample(gSamPoint, uv);
-    return float4(DecodeNormal(raw.xy), 0);
+    float4 raw =  gCompactBuffer.Sample(gSamPoint, uv);
+    return float4(DecodeNormal(raw.zw), 0);
 }
 
 // get the  space normal vector at uv in screen space
 float4 GetNormalLoad(float2 uv)
 {
-    float4 raw =  gNormalBuffer.SampleLevel(gSamPoint, uv, 0);
-    return float4(DecodeNormal(raw.xy), 0);
+    float4 raw =  gCompactBuffer.SampleLevel(gSamPoint, uv, 0);
+    return float4(DecodeNormal(raw.zw), 0);
 }
 
 // sample gbuffer
@@ -147,6 +147,14 @@ GBuffer GetGBufferLoad(float2 uv)
     float3 F0 = float3(rm.x, rm.x, rm.x);
     gbuffer.Specular = lerp(F0, gbuffer.Diffuse.rgb, gbuffer.Metallic);
     return gbuffer;
+}
+
+
+float2 GetPrevScreenCoordLoad(float2 uv, out float history)
+{
+    float4 motion = gMotionVector.SampleLevel(gSamPoint, uv, 0);
+    history = motion.w;
+    return uv + motion.xy;
 }
 
 

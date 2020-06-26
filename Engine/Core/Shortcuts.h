@@ -13,7 +13,9 @@
 	public: \
 		void * operator new(size_t size){ return m_Allocater.Alloc(); } \
 		void operator delete(void * ptr) { m_Allocater.Free(ptr); } \
-        int get_object_count() { return m_Allocater.Count(); } 
+        int get_object_count() { return m_Allocater.Count(); } \
+		int get_object_id() { return m_Allocater.GetId(this); }
+
 
 // static allocater member in cpp file
 #define USING_ALLOCATER(Object)  \

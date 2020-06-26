@@ -15,7 +15,10 @@ private:
 	int DepthStat[8];
 	int RasterStat[8];
 	int BlendStat[8];
+	int CompactData[2];
 	Vector<RenderView*> RenderViews;
+	// currant frames
+	int Frames = 0;
 private:
 	// create g-buffer for deferred rendering
 	void CreateGBuffer();

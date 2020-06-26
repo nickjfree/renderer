@@ -265,10 +265,10 @@ void D3D12Render::InitRootSignature() {
 	// init graphic root signature
 	{
 		CD3DX12_DESCRIPTOR_RANGE1 DescRange[5];
-		// texture materials src t 0-8
-		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 9, 0, 0);
-		// texture g-buffer srv t 9-13
-		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 5, 9, 0);
+		// texture materials src t 0-7
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 0, 0);
+		// texture g-buffer srv t 8-13
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 6, 8, 0);
 		// texture misc srv t 14-20
 		DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0);
 		// uavs  u 0-8

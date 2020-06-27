@@ -126,7 +126,7 @@ void PostpassStage::CreateHDRBuffer() {
 	int  i = 0;
 	int width = 4096;
 	int height = 4096;
-	for (int i = 0; i < MAX_HDR_LUM; i++) {
+	for (int i = 0; i < MAX_HDR_LUM-1; i++) {
 		width /= 4;
 		height /= 4;
 		desc.Width = width;

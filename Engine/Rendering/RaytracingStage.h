@@ -29,8 +29,11 @@ private:
 private:
 	// initialization
 	void Initialize();
-	// rtTarget
-	int rtTarget[2];
+	// raytracing rendertarget
+	int rtTarget;
+	// accumulate buffers(color and moments)
+	int AccColor[2];
+	int AccMoments[2];
 	// Parameters for rt stage
 	Dict Parameter;
 	// renderviews
@@ -39,6 +42,17 @@ private:
 	RayGenConstantBuffer rayGenCB;
 	// int frame count
 	int NumFrames = 0;
+	// denosing shader
+	Shader* DenosingShader = nullptr;
+private:
+	// temporal_accumulation
+	int Accumulation(BatchCompiler* Compiler);
+	// filter
+	int Filter(BatchCompiler* Compiler);
+	// raytracing
+	int Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
+	// denosing
+	int Denosing(BatchCompiler* Compiler);
 public:
 	RaytracingStage(RenderContext* Context);
 	virtual ~RaytracingStage();

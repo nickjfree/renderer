@@ -52,18 +52,20 @@ PS_Input_Simple VS_Instancing_Simple(VS_Input_Instance vs_input)
 
 
 float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, out float history) {
-    float valid = 0.0;
+    float valid = 1.0;
     float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
     if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
         // check for object id
-        if (abs(objectId - compactData.x) < 0.001f) {
-            valid = 1.0;
+        if (abs(objectId - compactData.x) > 0.001f) {
+            valid = 0.0;
         }
         // check for normal
         float3 prevNormal = DecodeNormal(compactData.zw);
-        if (dot(prevNormal, currentNormal) >= sqrt(2)/2.0) {
-            valid = 1.0;
+        if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) {
+            valid = 0.0;
         }
+    } else {
+        valid = 0.0;   
     }
     history = clamp(lerp(1.0, compactData.y + 1, valid), 0, 1024);
     return valid;
@@ -96,7 +98,7 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     // compact info: object id
     output.Compact.x = ps_input.ObjectId;
 
-    //output.Specular = float4(gSpecular, 0.2, specular.z, 0);
+    output.Specular = float4(gSpecular, 0.2, specular.z, 0);
     // motion vectors
     float2 currentScreen = ps_input.CurrentPosH.xy / ps_input.CurrentPosH.w * 0.5 + 0.5;
     float2 prevScreen = ps_input.PrevPosH.xy / ps_input.PrevPosH.w * 0.5 + 0.5;   

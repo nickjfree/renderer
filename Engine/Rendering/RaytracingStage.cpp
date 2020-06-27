@@ -16,9 +16,19 @@ void RaytracingStage::Initialize()
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
 	 
-	rtTarget[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	rtTarget[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
-	Context->RegisterRenderTarget("gRtTarget", rtTarget[0]);
+	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
+
+
+	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+
+	AccColor[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	AccColor[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	AccMoments[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	AccMoments[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+
+	// rtTarget[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	Context->RegisterRenderTarget("gRtTarget", rtTarget);
 }
 
 
@@ -31,8 +41,73 @@ RaytracingStage::~RaytracingStage()
 {
 }
 
-int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events)
+int RaytracingStage::Accumulation(BatchCompiler* Compiler) 
 {
+	/*
+		Texture2D gPrevColor : register(t0);
+		Texture2D gPrevMoment : register(t1);
+		Texture2D gCurrentColor : register(t2);
+	*/
+	auto compiled = 0;
+
+	Parameter["gPrevColor"].as<int>() = AccColor[1];
+	Parameter["gPrevMoment"].as<int>() = AccMoments[(NumFrames + 1) % 2];
+	Parameter["gCurrentColor"].as<int>() = rtTarget;
+	compiled += DenosingShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
+
+	int Targets[2] = { AccColor[0],  AccMoments[NumFrames % 2] };
+	compiled += Compiler->SetRenderTargets(2, Targets);
+	compiled += Compiler->Quad();
+	// set result color as gRaytracingBuffer
+	/*Variant variant;
+	variant.as<int>() = Targets[0];
+	Context->SetResource("gRaytracingBuffer", variant);*/
+	return compiled;
+}
+
+int RaytracingStage::Filter(BatchCompiler* Compiler) {
+
+	auto compiled = 0;
+	Parameter["gColor"].as<int>() = AccColor[0];
+	Parameter["gMoment"].as<int>() = AccMoments[NumFrames % 2];
+
+	int Target = AccColor[1];
+	// filter
+	compiled += DenosingShader->Compile(Compiler, 1, 0, Parameter, Parameter, Context);
+	
+	compiled += Compiler->SetRenderTargets(1, &Target);
+	compiled += Compiler->Quad();
+
+	Variant variant;
+	variant.as<int>() = Target;
+	Context->SetResource("gRaytracingBuffer", variant);
+
+	return 0;
+}
+
+int RaytracingStage::Denosing(BatchCompiler* Compiler) {
+	auto compiled = 0;
+	// get shaders
+	if (!DenosingShader) {
+		auto Value = Context->GetResource("Shader\\shaders\\Denoising\\0");
+		if (Value) {
+			DenosingShader = Value->as<Shader*>();
+		}
+	} else {
+		// shader loaded, we can do the denosing
+		compiled += Accumulation(Compiler);
+		// filter moments
+		compiled += Filter(Compiler);
+		// 
+	}
+	return compiled;
+}
+
+
+int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler)
+{
+
+	auto compiled = 0;
 	// get all the renderobjs
 	rtInstances.Empty();
 	spatial->Query(rtInstances, Node::RENDEROBJECT);
@@ -48,42 +123,54 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 	if (Value) {
 		auto rtShader = Value->as<Material*>()->GetShaderLibrary();
 		//Compiled += Compiler->SetDepthBuffer(-1);
-		auto renderview = RenderView::Create();
-		renderview->Camera = Camera;
-		renderview->Depth = -1;
-		renderview->Type = R_STAGE_RT;
-		renderview->Index = 0; 
-		renderview->Queue = renderQueue;
-		renderview->TargetCount = 0;
-
-		auto compiler = renderview->Compiler;
-		compiler->SetBuffer((char*)renderview->CommandBuffer);
-
-		auto compiled = 0;
 		// build raytracing scene in compute queue
 		compiler->BuildRaytracingScene();
 
 		compiled += compiler->SetDepthBuffer(-1);
 
 		// Parameter["RenderTarget"].as<int>() = Context->GetRenderTarget("gPostBuffer"); // rtTarget
-		Parameter["RenderTarget"].as<int>() = rtTarget[NumFrames%2];
-		Parameter["PrevRenderTarget"].as<int>() = rtTarget[(NumFrames + 1) % 2];
+		Parameter["RenderTarget"].as<int>() = rtTarget;
+		//Parameter["PrevRenderTarget"].as<int>() = rtTarget[(NumFrames + 1) % 2];
 		Context->SetResource("rtTarget", Parameter["RenderTarget"]);
 
 		Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
 		Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
-		Parameter["gFrameNumber"].as<int>() = NumFrames++;
+		Parameter["gFrameNumber"].as<int>() = NumFrames;
 
 		compiled += rtShader->Compile(compiler, 0, 0, Parameter, Parameter, Context);
 		compiled += compiler->TraceRay();
-
-		renderview->QueueCommand();
-
-		RenderViews.PushBack(renderview);
-
 	}
-	return 0;
+	return compiled;
+}
+
+int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events) 
+{
+
+	auto compiled = 0;
+	// create a renderview
+	auto renderview = RenderView::Create();
+	renderview->Camera = Camera;
+	renderview->Depth = -1;
+	renderview->Type = R_STAGE_RT;
+	renderview->Index = 0;
+	renderview->Queue = renderQueue;
+	renderview->TargetCount = 0;
+
+	auto compiler = renderview->Compiler;
+	compiler->SetBuffer((char*)renderview->CommandBuffer);
+
+	// trace rays
+	compiled += Raytracing(Camera, spatial, compiler);
+	// denoising
+	compiled += Denosing(compiler);
+	// inc  frames
+	NumFrames++;
+	// recycle
+	renderview->QueueCommand();
+	RenderViews.PushBack(renderview);
+
+	return compiled;
 }
 
 int RaytracingStage::End()

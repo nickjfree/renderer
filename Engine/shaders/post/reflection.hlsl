@@ -4,8 +4,9 @@
 #include "../lighting/lighting.h"
 #include "../common/post.h"
 
+// raytracing result
+Texture2D gRaytracingBuffer : register(t0); 
 
-Texture2D gRtTarget : register(t0); 
 /*
     reflection resolve pixel shader
 */
@@ -25,13 +26,13 @@ PS_Output_Simple PS(PS_Input_Simple input)
     float3 specularColor = gbuffer.Specular;
     float NoV = dot(N, V);
 
-    float3 reflection = gRtTarget.Sample(gSam, input.TexCoord).xyz;
+    float3 reflection = gRaytracingBuffer.Sample(gSam, input.TexCoord).xyz;
     // pre-intergrated texture
     reflection =  reflection * EnvBRDF(specularColor, roughness, NoV);
 
     output.Color = Color + 3* float4(reflection, 0);
 
-    //output.Color = float4(reflection, 0);
+    // output.Color = float4(reflection, 0);
 
     // output.Color = gMotionVector.Sample(gSam, input.TexCoord).w/2048.0f;
     return output;

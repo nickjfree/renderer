@@ -23,6 +23,7 @@ struct GBuffer
     float3 Specular;
     float Roughness;
     float Metallic;
+    float ObjectId;
 };
 
 
@@ -149,12 +150,24 @@ GBuffer GetGBufferLoad(float2 uv)
     return gbuffer;
 }
 
+float2 GetPrevScreenCoord(float2 uv, out float history)
+{
+    float4 motion = gMotionVector.Sample(gSamPoint, uv);
+    history = motion.w;
+    return uv + motion.xy;
+}
 
 float2 GetPrevScreenCoordLoad(float2 uv, out float history)
 {
     float4 motion = gMotionVector.SampleLevel(gSamPoint, uv, 0);
     history = motion.w;
     return uv + motion.xy;
+}
+
+
+float GetObjectId(float2 uv) 
+{
+    return gCompactBuffer.Sample(gSamPoint, uv).x;
 }
 
 

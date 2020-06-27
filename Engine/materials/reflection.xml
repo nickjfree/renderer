@@ -5,5 +5,5 @@
   </textures>
 
   <shader name="reflection" url="Shader\shaders\Reflection\0"></shader>
-  <library name="rtReflection" url="ShaderLibrary\shaders\test.cso"></library>
+  <library name="rtReflection" url="ShaderLibrary\shaders\raytracing.cso"></library>
 </material>

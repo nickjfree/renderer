@@ -22,7 +22,6 @@ fxc /T vs_5_1 /E VS_BlendShape_GBuffer /Fo blendshape-gbuffer.vs  animation/blen
 fxc /T vs_5_1 /E VS /Fo quad.vs  common/quad.hlsl
 
 
-
 fxc /T ps_5_1 /E PS_Point_Light /Fo point_light.ps lighting/lighting.hlsl
 fxc /T ps_5_1 /E PS_Direction_Light /Fo direction_light.ps lighting/lighting.hlsl
 fxc /T ps_5_1 /E PS_ImageBased_Light /Fo ibl.ps lighting/lighting.hlsl
@@ -45,4 +44,8 @@ fxc /T ps_5_1 /E AOITSPClearPS /D dohdr=1   /Fo oit-clear.ps  oit/oit.hlsl
 
 fxc /T ps_5_1 /E PS  /Fo reflection.ps  post/reflection.hlsl
 
-dxc  -Zi -Fo test.cso -T lib_6_3  -nologo raytracing\test.hlsl
+dxc  -Zi -Fo raytracing.cso -T lib_6_3  -nologo raytracing\raytracing.hlsl
+
+fxc /T ps_5_1 /E PS_TemporalAccumulation  /Fo temporal_accumulation.ps  raytracing/denoising.hlsl
+
+fxc /T ps_5_1 /E PS_Filter /Fo wavelet_filter.ps  raytracing/denoising.hlsl

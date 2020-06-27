@@ -96,12 +96,12 @@ void Raygen()
     TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
 
     // Write the raytraced color to the output texture.
-    // RenderTarget[DispatchRaysIndex().xy] = payload.color;
-    float history;
-    float2 prevUV = GetPrevScreenCoordLoad(uv, history);
-    float4 prevColor = PrevRenderTarget.SampleLevel(gSamPoint, prevUV, 0);
-    float alpha = max(0.05, 1.0 / history);
-    RenderTarget[DispatchRaysIndex().xy] = lerp(prevColor, payload.color, alpha);
+    RenderTarget[DispatchRaysIndex().xy] = payload.color;
+    // float history;
+    // float2 prevUV = GetPrevScreenCoordLoad(uv, history);
+    // float4 prevColor = PrevRenderTarget.SampleLevel(gSamPoint, prevUV, 0);
+    // float alpha = max(0.05, 1.0 / history);
+    // RenderTarget[DispatchRaysIndex().xy] = lerp(prevColor, payload.color, alpha);
 }
 
 [shader("closesthit")]
@@ -127,22 +127,7 @@ void ClosestHit(inout RayPayload payload, in MyAttributes attr)
 
    // float4 color = float4(uv, 0.0, 0);
 
-    payload.color = color;
-    // if (gVertexStride == 48) {
-
-    //     StructuredBuffer<VS_Input_Simple> vertex = Vertics;
-
-    //     payload.color = float4(0, 1.0, 0.0, 1);
-    // } else {
-
-    //     StructuredBuffer<VS_Input_Skinning> vertex = (StructuredBuffer<VS_Input_Skinning>)Vertics;
-
-    //     payload.color = float4(1.0, 1.0, 1.0, 1);
-    // }
-
-
-
-    
+    payload.color = color;    
 }
 
 [shader("miss")]

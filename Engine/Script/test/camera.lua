@@ -3,7 +3,7 @@
 
 name = "main camera"
 id = 1337
-speed = 0.05
+speed = 0.005
 rspeed = 0.1 * (3.1415926 / 180.0)
 -- position = {x=0, y=1, z =0}
 active = true

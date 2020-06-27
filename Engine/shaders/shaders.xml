@@ -218,6 +218,21 @@
     </technique>
   </shader>
 
+  <shader name="Denoising">
+    <technique name="temporal_acc">
+      <pass name="temporal_acc" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\temporal_accumulation.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="wavelet_filter">
+      <pass name="wavelet_filter" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\wavelet_filter.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="HDR">
     <technique name="scale_log">
       <pass name="scale_log" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">

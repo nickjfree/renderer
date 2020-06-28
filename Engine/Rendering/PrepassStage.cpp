@@ -38,7 +38,7 @@ void PrepassStage::CreateGBuffer() {
 	desc.Format = FORMAT_R8G8B8A8_UNORM;
 	Targets[4] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
-	// CompactData ,  objectid/history/normal.x/normal.y
+	// CompactData ,  objectid/depth/normal.x/normal.y
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	CompactData[0] = Targets[5] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	CompactData[1] = Targets[6] = Interface->CreateTexture2D(&desc, 0, 0, 0);

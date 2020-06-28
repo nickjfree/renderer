@@ -43,18 +43,37 @@ bool eps_equal(float a, float b){
 }
 
 
-float GetVariance(float2 uv, out float history) 
+// float GetVariance(float2 uv) 
+// {
+//     float4 moments = gMoment.SampleLevel(gSamPoint, uv, 0);
+//     float history = moments.w;
+
+//     float variance = moments.y - moments.x * moments.x;
+//     if (history < 4) {
+//         variance = 1.0;
+//     }
+//     return abs(variance);
+// }
+
+
+float GetVariance(float2 uv) 
 {
-    float4 moments = gMoment.SampleLevel(gSamPoint, uv, 0);
-    history = moments.w;
 
-    float variance = moments.y - moments.x * moments.x;
-    if (history < 4) {
-        variance = 1.0;
+    float gvl = 0.001;
+    for (int y0 = -1; y0 <= 1; y0++) {
+        for (int x0 = -1; x0 <= 1; x0++) {
+            float4 moments = gMoment.SampleLevel(gSamPoint, uv, 0);
+            float variance = moments.y - moments.x * moments.x;
+            gvl += gaussKernel[x0 + 3*y0 + 4] * variance;
+        }
     }
-    return abs(variance);
+    float4 moments = gMoment.SampleLevel(gSamPoint, uv, 0);
+    float history = moments.w;
+    if (history < 4) {
+        gvl = 1.0;
+    }
+    return abs(gvl);
 }
-
 
 /*
     pixel shader (temporal accumulation)
@@ -66,25 +85,34 @@ PS_Output_Acc PS_TemporalAccumulation(PS_Input_Simple ps_input)
     float2 uv = ps_input.TexCoord;
 
     float4 currentColor = gCurrentColor.SampleLevel(gSamPoint, uv, 0);
-    float history;
-    float2 prevUV = GetPrevScreenCoordLoad(uv, history);
+    float valid;
+    float2 prevUV = GetPrevScreenCoordLoad(uv, valid);
     float4 prevColor = gPrevColor.Sample(gSamPoint, prevUV, 0);
-    float2 prevMoment = gPrevColor.Sample(gSamPoint, prevUV, 0).xy;
-
+    float4 prevMoment = gPrevMoment.Sample(gSamPoint, prevUV, 0);
+    float history = prevMoment.w;
+    // accumulate history
+    history = clamp(lerp(1.0, history + 1, valid), 0, 1024);
     // current luminance
     float newLuma = luma(currentColor.xyz);
 
-    float2 currentMoment = float2(newLuma, newLuma * newLuma);
+    float4 currentMoment = float4(float2(newLuma, newLuma * newLuma), 0, history);
 
     float alphaColor = max(maxAlphaColor, saturate(1.0 / (history + epsilon)) );
     float alphaMoment = max(maxAlphaMoment, saturate(1.0 / (history + epsilon)) );
 
-
     // output accumulated color and moments
     output.Color = float4(lerp(prevColor, currentColor, alphaColor).xyz, history);
-    output.Moment = float4(lerp(prevMoment, currentMoment, alphaMoment), 0, history);
-
+    output.Moment = float4(lerp(prevMoment, currentMoment, alphaMoment).xy, 0, history);
     return output;
+}
+
+
+/*
+    pixel shader (filter variant)
+*/
+PS_Output_Simple PS_FilterVariant(PS_Input_Simple ps_input)
+{
+
 }
 
 
@@ -104,8 +132,7 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
     float  pObjectId = GetObjectId(uv);
     float  pLuminance = luma(pColor);
 
-    float history;
-    float pVariance = GetVariance(uv, history);
+    float  pVariance = GetVariance(uv);
 
     float2 demension;
     gColor.GetDimensions(demension.x, demension.y);
@@ -129,8 +156,7 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
                 float3 qNormal = GetNormal(loc).xyz;
 
                 float3 qColor = gColor.Sample(gSamPoint, loc).xyz;
-                float qHistory;
-                float qVariance = GetVariance(loc, qHistory);
+                float qVariance = GetVariance(loc);
 
                 float qLuminance = luma(qColor);
 
@@ -140,13 +166,13 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
 
                 float wn = pow(max(0.0, dot(pNormal, qNormal)), sigmaN);
 
-                float gvl = 0.001;
-                for (int y0 = -1; y0 <= 1; y0++) {
-                    for (int x0 = -1; x0 <= 1; x0++) {
-                        gvl += gaussKernel[x0 + 3*y0 + 4] * GetVariance(loc + float2(x0, y0) * texelSize, qHistory);
-                    }
-                }
-                float wl = min(1.0, exp(-abs(pLuminance - qLuminance) / (sigmaL * sqrt(gvl) + epsilon)));
+                // float gvl = 0.001;
+                // for (int y0 = -1; y0 <= 1; y0++) {
+                //     for (int x0 = -1; x0 <= 1; x0++) {
+                //         gvl += gaussKernel[x0 + 3*y0 + 4] * GetVariance(loc + float2(x0, y0) * texelSize);
+                //     }
+                // }
+                float wl = min(1.0, exp(-abs(pLuminance - qLuminance) / (sigmaL * sqrt(max(0.0, pVariance) + epsilon))));
 
                 float w = wp * wn * wl;
                 float weight = h[5*(offsety + 2) + offsetx + 2] * w;

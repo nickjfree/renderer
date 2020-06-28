@@ -150,17 +150,17 @@ GBuffer GetGBufferLoad(float2 uv)
     return gbuffer;
 }
 
-float2 GetPrevScreenCoord(float2 uv, out float history)
+float2 GetPrevScreenCoord(float2 uv, out float valid)
 {
     float4 motion = gMotionVector.Sample(gSamPoint, uv);
-    history = motion.w;
+    valid = motion.w;
     return uv + motion.xy;
 }
 
-float2 GetPrevScreenCoordLoad(float2 uv, out float history)
+float2 GetPrevScreenCoordLoad(float2 uv, out float valid)
 {
     float4 motion = gMotionVector.SampleLevel(gSamPoint, uv, 0);
-    history = motion.w;
+    valid = motion.w;
     return uv + motion.xy;
 }
 

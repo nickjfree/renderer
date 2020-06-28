@@ -51,23 +51,23 @@ PS_Input_Simple VS_Instancing_Simple(VS_Input_Instance vs_input)
 }
 
 
-float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, out float history) {
+float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, float currentLinearZ)
+{
     float valid = 1.0;
     float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
     if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
         // check for object id
-        if (abs(objectId - compactData.x) > 0.001f) {
-            valid = 0.0;
-        }
+        if (abs(objectId - compactData.x) > 0.001f) return 0.0;
         // check for normal
         float3 prevNormal = DecodeNormal(compactData.zw);
-        if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) {
-            valid = 0.0;
-        }
+        if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) return 0.0;
+        float prevLinearZ = compactData.y;
+        // check for linear depth
+        float maxChangeZ = max(abs(ddx(currentLinearZ)), abs(ddy(currentLinearZ)));
+        if(abs(prevLinearZ - currentLinearZ) / (maxChangeZ + 1e-4) > 2.0) return 0.0;
     } else {
-        valid = 0.0;   
+        return 0.0;   
     }
-    history = clamp(lerp(1.0, compactData.y + 1, valid), 0, 1024);
     return valid;
 }
 
@@ -105,14 +105,11 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     currentScreen.y = 1 - currentScreen.y;
     prevScreen.y = 1 - prevScreen.y;
     // motion vector valid or not
-    bool valid;
-    float history;
-    valid = reprojectionValid(prevScreen, ps_input.ObjectId, normal.xyz, history);
-
+    float valid = reprojectionValid(prevScreen, ps_input.ObjectId, normal.xyz, ps_input.Depth);
     //set motion vector and compact buffer
-    output.Motion = float4(prevScreen.xy - currentScreen.xy, 0, history);
+    output.Motion = float4(prevScreen.xy - currentScreen.xy, 0, valid);
     // history length
-    output.Compact.y = history;
+    output.Compact.y = ps_input.Depth;
     return output;
 }
 

@@ -56,13 +56,13 @@ bool eps_equal(float a, float b){
 // }
 
 
-float GetVariance(float2 uv) 
+float GetVariance(float2 uv, float2 texelSize) 
 {
 
     float gvl = 0.001;
     for (int y0 = -1; y0 <= 1; y0++) {
         for (int x0 = -1; x0 <= 1; x0++) {
-            float4 moments = gMoment.SampleLevel(gSamPoint, uv, 0);
+            float4 moments = gMoment.SampleLevel(gSamPoint, uv + float2(x0, y0) * texelSize, 0);
             float variance = moments.y - moments.x * moments.x;
             gvl += gaussKernel[x0 + 3*y0 + 4] * variance;
         }
@@ -132,11 +132,15 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
     float  pObjectId = GetObjectId(uv);
     float  pLuminance = luma(pColor);
 
-    float  pVariance = GetVariance(uv);
-
+    // get texel size
     float2 demension;
     gColor.GetDimensions(demension.x, demension.y);
     float2 texelSize = 1 / demension;
+
+
+    float  pVariance = GetVariance(uv, texelSize);
+
+
 
     float3 c = float3(0, 0, 0);
     float v = 0.0;
@@ -156,7 +160,7 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
                 float3 qNormal = GetNormal(loc).xyz;
 
                 float3 qColor = gColor.Sample(gSamPoint, loc).xyz;
-                float qVariance = GetVariance(loc);
+               // float qVariance = GetVariance(loc, texelSize);
 
                 float qLuminance = luma(qColor);
 
@@ -178,14 +182,15 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
                 float weight = h[5*(offsety + 2) + offsetx + 2] * w;
 
                 c += weight * qColor;
-                v += weight * weight * qVariance;
+               // v += weight * weight * qVariance;
                 weights += weight;
             }
         }
     }
 
     if (weights > epsilon) {
-        output.Color = float4((c / weights).xyz,  v / (weights * weights));
+        // output.Color = float4((c / weights).xyz,  v / (weights * weights));
+        output.Color = float4((c / weights).xyz,  1);
     } else {
         output.Color = float4(pColor.xyz, 0);
     }

@@ -377,6 +377,6 @@ int PrepassStage::End() {
 	while (Size--) {
 		view = RenderViews.PopBack();
 		view->Recycle();
-	}
+	} 
 	return 0;
 }

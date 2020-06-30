@@ -55,7 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;_WINDOWS;RENDER_D3D12;DEBUG_PHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.88\src;F:\proj\Game11\Game\bullet3-2.88\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.89\src;F:\proj\Game11\Game\bullet3-2.89\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -78,7 +78,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;RENDER_D3D12;_WINDOWS;DEBUG_PHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.88\src;F:\proj\Game11\Game\bullet3-2.88\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.89\src;F:\proj\Game11\Game\bullet3-2.89\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>
       </LanguageStandard>
@@ -90,7 +90,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalOptions>DXGUID.lib d3d11.lib dxgi.lib D3Dcompiler.lib DirectXTK.lib  d3d12.lib BulletDynamics.lib  BulletCollision.lib LinearMath.lib HACD.lib OpenGL32.lib 
 Glu32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalLibraryDirectories>F:\proj\Game11\Game\DirectXTK-aug2019\Bin\Desktop_2019_Win10\x64\Release;F:\proj\game11\game\x64\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\proj\game11\game\x64\Release\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>$(ProjectDir)shaders\compile_shaders.bat</Command>

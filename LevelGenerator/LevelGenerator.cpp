@@ -73,6 +73,43 @@ int TestGen(char * File) {
         strcpy_s(model.Name, 128, models[Num]);
         WriteFile(hFile, &model, sizeof(model), &write, 0);
     }
+    // write skeletions
+    Num = 1;
+    Header.NumEntries = Num;
+    SkeletonEntry skeleton = {};
+    WriteFile(hFile, &Header, sizeof(Header), &write, 0);
+    while (Num--) {
+        strcpy_s(skeleton.Url, 128, "Skeleton\\skeletons\\human.hsk");
+        WriteFile(hFile, &skeleton, sizeof(skeleton), &write, 0);
+    }
+    // write animations
+    Num = 3;
+    Header.NumEntries = Num;
+    AnimationEntry animation = {};
+    WriteFile(hFile, &Header, sizeof(Header), &write, 0);
+    char * animations[3] = {
+        "Animation\\keyframe\\human_walking.ha", 
+        "Animation\\keyframe\\human_left_turn.ha", 
+        "Animation\\keyframe\\human_right_turn.ha"
+    };
+    auto i = 0;
+    while (i < Num) {
+        strcpy_s(animation.Url, 128, animations[i++]);
+        WriteFile(hFile, &animation, sizeof(animation), &write, 0);
+    }
+    // write blendshapes
+    Num = 1;
+    Header.NumEntries = Num;
+    BlendShapeEntry blendshape = {};
+    WriteFile(hFile, &Header, sizeof(Header), &write, 0);
+    char* blendshapes[1] = {
+        "BlendShape\\blendshapes\\arkit.xml"
+    };
+    i = 0;
+    while (i < Num) {
+        strcpy_s(blendshape.Url, 128, blendshapes[i++]);
+        WriteFile(hFile, &blendshape, sizeof(blendshape), &write, 0);
+    }
     // write gameobjects, lumia adata and some lights
     RenderEntry render = {};
     LightEntry light = {};
@@ -178,7 +215,7 @@ int TestGen(char * File) {
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &render, sizeof(render), &write, 0);
 
-    int i = 0;
+    i = 0;
     while (i++ < 100) {
         strcpy_s(object.Name, "qianzhihe");
         object.NumComponents = 1;

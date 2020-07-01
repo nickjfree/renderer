@@ -59,12 +59,25 @@ private:
 	// test
 	GameObject* MainCamera;
 	// level infos
+	// mesh
 	int NumMeshes;
 	MeshEntry* MeshEntries;
+	// material
 	int NumMaterials;
 	MatrialEntry* MaterialEntries;
+	// model
 	int NumModels;
 	ModelEntry* ModelEntries;
+	// skeleton
+	int NumSkeletons;
+	SkeletonEntry* SkeletonEntries;
+	// animation
+	int NumAnimations;
+	AnimationEntry* AnimationEntries;
+	// blendshep
+	int NumBlendShapes;
+	BlendShapeEntry* BlendShapeEntries;
+
 	int NumObjects;
 	ObjectEntry* ObjectEntries;
 	// loaded

@@ -37,6 +37,29 @@ typedef struct ModelEntry {
 	int MeshGroup[8];  // 8 lods in a model
 }ModelEntry;
 
+
+/*
+	Skeleton Entry
+*/
+typedef struct SkeletonEntry {
+	char Url[256];
+}SkeletonEntry;
+
+
+/*
+	Animation Entry
+*/
+typedef struct AnimationEntry {
+	char Url[256];
+}AnimationEntry;
+
+/*
+	BlendShape Entry
+*/
+typedef struct BlendShapeEntry {
+	char Url[256];
+}BlendShapeEntry;
+
 /*
 	Component Entry
 */

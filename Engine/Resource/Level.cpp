@@ -120,6 +120,24 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	offset += sizeof(LevelHeader);
 	ModelEntries = (ModelEntry*)offset;
 	offset += sizeof(ModelEntry) * NumModels;
+	// read skeletons
+	Header = (LevelHeader*)offset;
+	NumSkeletons = Header->NumEntries;
+	offset += sizeof(LevelHeader);
+	SkeletonEntries = (SkeletonEntry *)offset;
+	offset += sizeof(SkeletonEntry) * NumSkeletons;
+	// read animations
+	Header = (LevelHeader*)offset;
+	NumAnimations = Header->NumEntries;
+	offset += sizeof(LevelHeader);
+	AnimationEntries = (AnimationEntry*)offset;
+	offset += sizeof(AnimationEntry) * NumAnimations;
+	// read blendshapes
+	Header = (LevelHeader*)offset;
+	NumBlendShapes = Header->NumEntries;
+	offset += sizeof(LevelHeader);
+	BlendShapeEntries = (BlendShapeEntry*)offset;
+	offset += sizeof(BlendShapeEntry) * NumBlendShapes;
 	// read objects
 	Header = (LevelHeader*)offset;
 	NumObjects = Header->NumEntries;
@@ -128,9 +146,9 @@ int Level::OnSerialize(Deserializer& deserializer) {
 	// dependency count
 	DepCount += NumMeshes;
 	DepCount += NumMaterials;
-	DepCount += 1;  // add 1 skeleton
-	DepCount += 3;  // and 3 animation
-	DepCount += 1;  // and 1 blendshape
+	DepCount += NumSkeletons;
+	DepCount += NumAnimations;
+	DepCount += NumBlendShapes;
 	return 0;
 }
 
@@ -148,30 +166,31 @@ int Level::OnCreateComplete(Variant& Parameter) {
 		Meshs.PushBack(empty_mesh);    // init mesh vertor to zero
 		Cache->AsyncLoadResource(MeshEntries[i].Url, this, Param);
 	}
-
 	for (int i = 0; i < NumMaterials; i++) {
 		Param.as<int>() = i;
 		Materials.PushBack(empty_material); // init material vector to zero
 		Cache->AsyncLoadResource(MaterialEntries[i].Url, this, Param);
 	}
-	// for test submiting skeletion loading task
-	Param.as<int>() = 0;
-	Skeletons.PushBack(empty_skeleton);
-	Cache->AsyncLoadResource("Skeleton\\skeletons\\human.hsk", this, Param);
-	// for test submiting animation loading task
-	Param.as<int>() = 0;
-	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource("Animation\\keyframe\\human_walking.ha", this, Param);
-	Param.as<int>() = 1;
-	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource("Animation\\keyframe\\human_left_turn.ha", this, Param);
-	Param.as<int>() = 2;
-	Animations.PushBack(empty_animation);
-	Cache->AsyncLoadResource("Animation\\keyframe\\human_right_turn.ha", this, Param);
-	// load blendshape
-	Param.as<int>() = 0;
-	BlendShapes.PushBack(empty_blendshape);
-	Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
+	for (int i = 0; i < NumSkeletons; i++) {
+		Param.as<int>() = i;
+		Skeletons.PushBack(empty_skeleton); // init skeleton vector to zero
+		Cache->AsyncLoadResource(SkeletonEntries[i].Url, this, Param);
+	}
+	for (int i = 0; i < NumAnimations; i++) {
+		Param.as<int>() = i;
+		Animations.PushBack(empty_animation); // init animation vector to zero
+		Cache->AsyncLoadResource(AnimationEntries[i].Url, this, Param);
+	}
+	for (int i = 0; i < NumBlendShapes; i++) {
+		Param.as<int>() = i;
+		BlendShapes.PushBack(empty_blendshape); // init blendshape vector to zero
+		Cache->AsyncLoadResource(BlendShapeEntries[i].Url, this, Param);
+	}
+	//// for test submiting loading task
+	//// load blendshape
+	//Param.as<int>() = 0;
+	//BlendShapes.PushBack(empty_blendshape);
+	//Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
 	return 0;
 }
 

@@ -91,6 +91,15 @@ typedef struct LightEntry {
 	Vector3 Direction;
 }LightEntry;
 
+/*
+	Physics Entry
+*/
+typedef struct PhysicsEntry {
+	ComponentEntry Info;
+	int Type;
+	int Pad[3];
+}PhysicsEntry;
+
 
 /*
 	Gameobjects, and it's component

@@ -261,19 +261,6 @@ int Level::InitScript() {
 			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
 			Object->AddComponent(script);
 		}
-		if (Object->GetName() == "qianzhihe" || Object->GetName() == "Plane") {
-			PhysicsObject* Physics = new PhysicsObject(context);
-			// creat convext hulls for collision shape
-			MeshRenderer* render = (MeshRenderer*)Object->GetComponent("Renderer");
-			Model* model = render->GetModel();
-			Physics->CreateShapeFromModel(model);
-			Object->AddComponent(Physics);
-
-			// add scripts to all for test
-			//Script* script = new Script(context);
-			//script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
-			//Object->AddComponent(script);
-		}
 		if (Object->GetName() == "Plane") {
 
 			// test blendshape

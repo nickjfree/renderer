@@ -72,6 +72,9 @@ public:
 	};
 	// object type
 	int ObjectType;
+private:
+	// auto generate shape
+	void AutoGenerateShape(GameObject* GameObj);
 public:
 	PhysicsObject(Context* context);
 	virtual ~PhysicsObject();
@@ -93,6 +96,8 @@ public:
 	void SetObjectType(PhysicsObject::Type  type);
 	// set type by int
 	void SetObjectType(int  type) { return SetObjectType(PhysicsObject::Type(type)); }
+	// load physics object
+	int Load(void* Raw, Level* level);
 };
 
 #endif

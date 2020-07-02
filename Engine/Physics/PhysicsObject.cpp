@@ -1,7 +1,7 @@
 #include "PhysicsObject.h"
 #include "Scene\GameObject.h"
 #include "PhysicsSystem.h"
-
+#include "Rendering/MeshRenderer.h"
 
 USING_ALLOCATER(PhysicsObject)
 
@@ -78,9 +78,7 @@ int PhysicsObject::OnAttach(GameObject* GameObj) {
 	quaternion.deSerializeFloat(data);
 	btTransform transform = btTransform(quaternion, position);
 	if (!Shape) {
-		Shape = new CollisionShape();
-		Shape->Shapes.Box = new btBoxShape(btVector3(2, 2, 2));
-		Shape->Shared = 0;
+		AutoGenerateShape(GameObj);
 	}
 	MotionState = new btDefaultMotionState(transform);
 	btVector3 Inertia;
@@ -201,4 +199,24 @@ int PhysicsObject::OnDestroy(GameObject* GameObj) {
 	Shape->DecRef();
 	Shape = nullptr;
 	return 0;
+}
+
+int PhysicsObject::Load(void* Raw, Level* level) {
+	auto* physicsData = (PhysicsEntry *)Raw;
+	ObjectType = physicsData->Type;
+	return sizeof(PhysicsEntry);
+}
+
+void PhysicsObject::AutoGenerateShape(GameObject* GameObj) {
+	auto render = (MeshRenderer *)GameObj->GetComponent("Renderer");
+	if (render) {
+		auto model = render->GetModel();
+		CreateShapeFromModel(model);
+	}
+	else {
+		// default to a box shape
+		Shape = new CollisionShape();
+		Shape->Shapes.Box = new btBoxShape(btVector3(2, 2, 2));
+		Shape->Shared = 0;
+	}
 }

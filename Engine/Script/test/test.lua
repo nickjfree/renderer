@@ -27,5 +27,4 @@ function clone(source, target)
             target[k] = v
         end
     end
-
 end

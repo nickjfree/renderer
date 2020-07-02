@@ -113,6 +113,7 @@ int TestGen(char * File) {
     // write gameobjects, lumia adata and some lights
     RenderEntry render = {};
     LightEntry light = {};
+    PhysicsEntry physics = {};
     ObjectEntry object = {};
 
     Num = 7 + 100;
@@ -136,7 +137,7 @@ int TestGen(char * File) {
 
     // head
     strcpy_s(object.Name, "Plane");
-    object.NumComponents = 1;
+    object.NumComponents = 2;
     object.Position = Vector3(0.4f, 4.4, -5.5f);
     rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
     object.Rotation = rot;
@@ -144,9 +145,13 @@ int TestGen(char * File) {
     render.MaterialIndex = 3;
     render.ModelIndex = 0;
     strcpy_s(render.Info.TypeName, "Renderer");
+    // physics component
+    strcpy_s(physics.Info.TypeName, "PhysicsObject");
+    physics.Type = 0;
     // write adata
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &render, sizeof(render), &write, 0);
+    WriteFile(hFile, &physics, sizeof(physics), &write, 0);
 
 
     // ground  as a big plane
@@ -200,7 +205,7 @@ int TestGen(char * File) {
 
     // sneak
     strcpy_s(object.Name, "qianzhihe");
-    object.NumComponents = 1;
+    object.NumComponents = 2;
     object.Position = Vector3(0, 0, 0);
     //	Quaternion rot = Quaternion();
     rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
@@ -208,17 +213,22 @@ int TestGen(char * File) {
     object.Rotation = Quaternion();
     object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
     object.Scale = Vector3(1, 1, 1);
+    // render componemt
     render.MaterialIndex = 5;
     render.ModelIndex = 3;
     strcpy_s(render.Info.TypeName, "Renderer");
+    // physics component
+    strcpy_s(physics.Info.TypeName, "PhysicsObject");
+    physics.Type = 0;
     // write sneak
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &render, sizeof(render), &write, 0);
+    WriteFile(hFile, &physics, sizeof(physics), &write, 0);
 
     i = 0;
     while (i++ < 100) {
         strcpy_s(object.Name, "qianzhihe");
-        object.NumComponents = 1;
+        object.NumComponents = 2;
         object.Position = Vector3(0 + (i / 10) * 10, 5, 0 + (i % 10) * 10);
         //	Quaternion rot = Quaternion();
         rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
@@ -226,12 +236,17 @@ int TestGen(char * File) {
         object.Rotation = Quaternion();
         object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
         object.Scale = Vector3(1, 1, 1);
+        // renderer
         render.MaterialIndex = 5 + (i % 10);
         render.ModelIndex = 3;
         strcpy_s(render.Info.TypeName, "Renderer");
+        // physics
+        strcpy_s(physics.Info.TypeName, "PhysicsObject");
+        physics.Type = 0;
         // write qianzhihe
         WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
         WriteFile(hFile, &render, sizeof(render), &write, 0);
+        WriteFile(hFile, &physics, sizeof(physics), &write, 0);
     }
 
     // envirremont light

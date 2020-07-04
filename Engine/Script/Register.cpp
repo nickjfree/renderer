@@ -79,9 +79,9 @@ EXPORT(BlendingNode, SetParameter)
 GC(BlendingNode)
 END_EXPORT()
 
-EXPORT_CLASS(BinaryBlendingNode)
-EXPORT(BinaryBlendingNode, SetParameter)
-GC(BinaryBlendingNode)
+EXPORT_CLASS(BlendingNode2)
+EXPORT(BlendingNode2, SetParameter)
+GC(BlendingNode2)
 END_EXPORT()
 
 EXPORT_CLASS(BlendingNode3)

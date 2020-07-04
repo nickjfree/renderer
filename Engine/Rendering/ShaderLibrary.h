@@ -22,7 +22,7 @@ class ShaderLibrary: public GPUResource
 	OBJECT(ShaderLibrary);
 	BASEOBJECT(ShaderLibrary);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(ShaderLibrary);
+	DECLARE_ALLOCATER(ShaderLibrary);
 
 private:
 	// textures

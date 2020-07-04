@@ -14,8 +14,8 @@
 
 class CullingTask : public Task
 {
-	DECLAR_ALLOCATER(CullingTask);
-	DECLAR_RECYCLE(CullingTask);
+	DECLARE_ALLOCATER(CullingTask);
+	DECLARE_RECYCLE(CullingTask);
 public:
 	// renderview 
 	RenderView* renderview;

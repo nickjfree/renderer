@@ -25,7 +25,7 @@ using std::weak_ptr;
 class EventNode;
 
 class EventRegistry {
-	DECLAR_ALLOCATER(EventRegistry)
+	DECLARE_ALLOCATER(EventRegistry)
 public:
 	LinkList<EventRegistry> Link;
 	int EventId;

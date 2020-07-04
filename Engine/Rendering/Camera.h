@@ -14,7 +14,7 @@ class Camera : public Component
 {
 	BASEOBJECT(Camera);
 	OBJECT(Camera);
-	DECLAR_ALLOCATER(Camera);
+	DECLARE_ALLOCATER(Camera);
 private:
 	RenderingCamera* RenderCamera;
 protected:

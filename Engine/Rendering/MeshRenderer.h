@@ -14,7 +14,7 @@ class MeshRenderer : public Renderer {
 	// macros
 	OBJECT(MeshRenderer);
 	BASEOBJECT(Renderer);
-	DECLAR_ALLOCATER(MeshRenderer);
+	DECLARE_ALLOCATER(MeshRenderer);
 	//	UUID();
 
 private:

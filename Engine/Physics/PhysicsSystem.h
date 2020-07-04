@@ -19,7 +19,7 @@ class PhysicsObject;
 class PhysicsSystem : public System {
 
 	OBJECT(PhysicsSystem);
-	DECLAR_ALLOCATER(PhysicsSystem);
+	DECLARE_ALLOCATER(PhysicsSystem);
 	BASEOBJECT(PhysicsSystem);
 private:
 	// bullet classes

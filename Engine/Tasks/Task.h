@@ -12,8 +12,8 @@
 
 class Task
 {
-	DECLAR_RECYCLE(Task);
-	DECLAR_ALLOCATER(Task);
+	DECLARE_RECYCLE(Task);
+	DECLARE_ALLOCATER(Task);
 public:
 	LinkList<Task> TaskList;
 public:

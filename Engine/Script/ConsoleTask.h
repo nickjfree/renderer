@@ -6,8 +6,8 @@
 
 class ConsoleTask : public Task {
 
-	DECLAR_ALLOCATER(ConsoleTask);
-	DECLAR_RECYCLE(ConsoleTask);
+	DECLARE_ALLOCATER(ConsoleTask);
+	DECLARE_RECYCLE(ConsoleTask);
 
 public:
 	// script code line

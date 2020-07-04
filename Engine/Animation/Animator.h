@@ -19,7 +19,7 @@ class Animator : public Component
 {
 	OBJECT(Animator);
 	BASEOBJECT(Animator);
-	DECLAR_ALLOCATER(Animator);
+	DECLARE_ALLOCATER(Animator);
 
 private:
 	// test stage

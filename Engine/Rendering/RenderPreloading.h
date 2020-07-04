@@ -8,7 +8,7 @@
 class RenderPreloading : public GPUResource {
 	OBJECT(RenderPreloading);
 	BASEOBJECT(RenderPreloading);
-	DECLAR_ALLOCATER(RenderPreloading)
+	DECLARE_ALLOCATER(RenderPreloading)
 public:
 	RenderPreloading(Context* context);
 	virtual ~RenderPreloading();

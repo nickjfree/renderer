@@ -19,7 +19,7 @@ class RenderingCamera;
 
 class Node
 {
-	DECLAR_ALLOCATER(Node);
+	DECLARE_ALLOCATER(Node);
 	friend Node;
 protected:
 	// positions

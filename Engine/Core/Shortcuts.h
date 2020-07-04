@@ -6,7 +6,7 @@
 // macro defines
 
 // custom memory allocater for special classes, override new and delete operator in header files
-#define  DECLAR_ALLOCATER(Object) \
+#define  DECLARE_ALLOCATER(Object) \
 	private: \
 		static Allocater<Object> m_Allocater; \
 		static ObjectTypeId Class; \
@@ -24,7 +24,7 @@
 
 
 // the obejct is used in a recyced pool, the free object is used again without desctruct and construct, this is a faster version of DECLAR_ALLOCATER
-#define  DECLAR_RECYCLE(Object) \
+#define  DECLARE_RECYCLE(Object) \
 	private: \
 		static RecyclePool<Object> m_RecyclePool; \
 	public: \

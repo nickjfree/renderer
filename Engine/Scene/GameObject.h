@@ -21,7 +21,7 @@ class GameObject : public EventNode
 	friend GameObject;
 	OBJECT(GameObject);
 	BASEOBJECT(GameObject);
-	DECLAR_ALLOCATER(GameObject)
+	DECLARE_ALLOCATER(GameObject)
 public:
 	GameObject(Context* context_);
 	GameObject(Context* context, const String& Name);

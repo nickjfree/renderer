@@ -15,7 +15,7 @@ public:
 	// macros
 	OBJECT(Model);
 	BASEOBJECT(Model);
-	DECLAR_ALLOCATER(Model);
+	DECLARE_ALLOCATER(Model);
 
 private:
 	// pointer for store user data

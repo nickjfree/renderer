@@ -12,8 +12,8 @@
 
 class ResourceTask : public Task
 {
-	DECLAR_ALLOCATER(ResourceTask);
-	DECLAR_RECYCLE(ResourceTask);
+	DECLARE_ALLOCATER(ResourceTask);
+	DECLARE_RECYCLE(ResourceTask);
 public:
 	Resource* resource;
 	Resource* caller;

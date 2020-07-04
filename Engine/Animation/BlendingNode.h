@@ -14,6 +14,7 @@ class BlendingNode : public Object
 {
 	BASEOBJECT(BlendingNode);
 	OBJECT(BlendingNode);
+	DECLARE_ALLOCATER(BlendingNode);
 
 protected:
 	// animation stage
@@ -46,10 +47,11 @@ public:
 	virtual Matrix4x4& GetMotion() { return AnimStage->GetMotion();  }
 };
 
-class BinaryBlendingNode : public BlendingNode
+class BlendingNode2 : public BlendingNode
 {
 	BASEOBJECT(BlendingNode);
-	OBJECT(BinaryBlendingNode);
+	OBJECT(BlendingNode2);
+	DECLARE_ALLOCATER(BlendingNode2);
 
 protected:
 	// animation stages
@@ -66,8 +68,8 @@ protected:
 	// motion
 	Matrix4x4 Motion;
 public:
-	BinaryBlendingNode(Context* context);
-	~BinaryBlendingNode();
+	BlendingNode2(Context* context);
+	~BlendingNode2();
 	// add 2 nodes
 	void AddNodes(BlendingNode* NodeA, BlendingNode* NodeB, bool SyncCycle);
 	// set alpha
@@ -86,6 +88,7 @@ class BlendingNode3 : public BlendingNode
 {
 	BASEOBJECT(BlendingNode);
 	OBJECT(BlendingNode3);
+	DECLARE_ALLOCATER(BlendingNode3);
 
 protected:
 	// the 3 nodes to blending,   -x 0 +x => left, center, right

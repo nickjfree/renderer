@@ -30,7 +30,7 @@ class Skeleton : public Resource {
 
 	BASEOBJECT(Skeleton);
 	OBJECT(Skeleton);
-	DECLAR_ALLOCATER(Skeleton);
+	DECLARE_ALLOCATER(Skeleton);
 	LOADEROBJECT(FileLoader);
 
 public:

@@ -8,7 +8,7 @@
 class Renderer : public Component
 {
 	OBJECT(Renderer);
-	DECLAR_ALLOCATER(Renderer);
+	DECLARE_ALLOCATER(Renderer);
 	//	UUID();
 public:
 	Renderer(Context* context);

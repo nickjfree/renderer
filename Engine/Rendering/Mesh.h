@@ -21,7 +21,7 @@ typedef struct MeshConvex {
 
 class Mesh : public GPUResource
 {
-	DECLAR_ALLOCATER(Mesh);
+	DECLARE_ALLOCATER(Mesh);
 	OBJECT(Mesh);
 protected:
 	AABB Box;

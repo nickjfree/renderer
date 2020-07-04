@@ -37,8 +37,8 @@
 
 class Event
 {
-	DECLAR_ALLOCATER(Event);
-	DECLAR_RECYCLE(Event);
+	DECLARE_ALLOCATER(Event);
+	DECLARE_RECYCLE(Event);
 public:
 	int EventId;
 	Dict EventParam;

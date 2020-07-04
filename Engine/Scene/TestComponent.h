@@ -16,7 +16,7 @@ private:
 public:
 	OBJECT(TestComponent);
 	BASEOBJECT(Component);
-	DECLAR_ALLOCATER(TestComponent);
+	DECLARE_ALLOCATER(TestComponent);
 	TestComponent(Context* context_);
 	~TestComponent();
 	virtual int HandleEvent(Event* Evt);

@@ -92,8 +92,8 @@ BEGIN_PROXY(BlendingNode)
 METHOD(SetParameter, &BlendingNode::SetParameter)
 END_PROXY()
 
-BEGIN_PROXY(BinaryBlendingNode)
-METHOD(SetParameter, &BinaryBlendingNode::SetParameter)
+BEGIN_PROXY(BlendingNode2)
+METHOD(SetParameter, &BlendingNode2::SetParameter)
 END_PROXY()
 
 BEGIN_PROXY(BlendingNode3)

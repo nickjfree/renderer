@@ -16,7 +16,7 @@ class Animation : public Resource {
 	BASEOBJECT(Animation);
 	OBJECT(Animation);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(Animation);
+	DECLARE_ALLOCATER(Animation);
 
 	// allow AnimationClip to sample the data
 	friend AnimationClip;

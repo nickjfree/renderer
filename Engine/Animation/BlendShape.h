@@ -46,7 +46,7 @@ class BlendShape : public GPUResource
 	OBJECT(BlendShape);
 	BASEOBJECT(BlendShape);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(BlendShape);
+	DECLARE_ALLOCATER(BlendShape);
 
 public:
 	// blendshapes

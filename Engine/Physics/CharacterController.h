@@ -7,7 +7,7 @@
 
 class CharacterController : public PhysicsObject
 {
-	DECLAR_ALLOCATER(CharacterController);
+	DECLARE_ALLOCATER(CharacterController);
 	OBJECT(CharacterController);
 	BASEOBJECT(CharacterController);
 

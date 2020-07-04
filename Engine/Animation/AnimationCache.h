@@ -6,8 +6,8 @@
 
 class AnimationCache {
 
-	DECLAR_ALLOCATER(AnimationCache);
-	DECLAR_RECYCLE(AnimationCache);
+	DECLARE_ALLOCATER(AnimationCache);
+	DECLARE_RECYCLE(AnimationCache);
 
 public:
 	// interpolated result

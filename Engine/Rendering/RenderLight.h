@@ -8,7 +8,7 @@
 */
 class RenderLight : public RenderObject
 {
-	DECLAR_ALLOCATER(RenderLight);
+	DECLARE_ALLOCATER(RenderLight);
 private:
 	// light parameter
 	// direction

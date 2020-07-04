@@ -169,7 +169,7 @@ class Shader : public GPUResource
 	OBJECT(Shader);
 	BASEOBJECT(Shader);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(Shader);
+	DECLARE_ALLOCATER(Shader);
 private:
 	// techs 
 	Vector<Technique> Techs;

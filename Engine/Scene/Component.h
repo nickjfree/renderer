@@ -14,7 +14,7 @@ class GameObject;
 class Component : public EventNode
 {
 
-	DECLAR_ALLOCATER(Component);
+	DECLARE_ALLOCATER(Component);
 	OBJECT(Component);
 	BASEOBJECT(Component);
 protected:

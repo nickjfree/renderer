@@ -28,7 +28,7 @@ class ScriptingSystem;
 class Script : public Component {
 	OBJECT(Script);
 	BASEOBJECT(Script);
-	DECLAR_ALLOCATER(Script);
+	DECLARE_ALLOCATER(Script);
 
 private:
 	// the script path

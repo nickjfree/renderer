@@ -1,6 +1,10 @@
 #include "BlendingNode.h"
 
 
+USING_ALLOCATER(BlendingNode)
+USING_ALLOCATER(BlendingNode2)
+USING_ALLOCATER(BlendingNode3)
+
 
 BlendingNode::BlendingNode(Context* context) : Object(context), AnimStage(nullptr), Duration(0) {
 }
@@ -50,11 +54,11 @@ void BlendingNode::SetParameter(const String& Name, float Value) {
 }
 
 
-BinaryBlendingNode::BinaryBlendingNode(Context* context) : BlendingNode(context), Alpha(0.5f), Scale(1.0f), SyncCycle(true), NodeA(nullptr), NodeB(nullptr) {
+BlendingNode2::BlendingNode2(Context* context) : BlendingNode(context), Alpha(0.5f), Scale(1.0f), SyncCycle(true), NodeA(nullptr), NodeB(nullptr) {
 	Cache = AnimationCache::Create();
 }
 
-BinaryBlendingNode::~BinaryBlendingNode() {
+BlendingNode2::~BlendingNode2() {
 	Cache->Recycle();
 	if (NodeA) {
 		NodeA->DecRef();
@@ -64,14 +68,14 @@ BinaryBlendingNode::~BinaryBlendingNode() {
 	}
 }
 
-void BinaryBlendingNode::AddNodes(BlendingNode* NodeA_, BlendingNode* NodeB_, bool Sync) {
+void BlendingNode2::AddNodes(BlendingNode* NodeA_, BlendingNode* NodeB_, bool Sync) {
 	NodeA = NodeA_;
 	NodeB = NodeB_;
 	SyncCycle = Sync;
 }
 
 // advance
-int BinaryBlendingNode::Advance(float time) {
+int BlendingNode2::Advance(float time) {
 	Alpha = Parameters["x"].as<float>();
 	// calculate scale factor
 	if (SyncCycle) {
@@ -94,7 +98,7 @@ int BinaryBlendingNode::Advance(float time) {
 }
 
 // apply
-int BinaryBlendingNode::Apply() {
+int BlendingNode2::Apply() {
 	Alpha = Parameters["x"].as<float>();
 	NodeA->Apply();
 	NodeB->Apply();
@@ -120,12 +124,12 @@ int BinaryBlendingNode::Apply() {
 }
 
 // GetAnimationCache
-AnimationCache* BinaryBlendingNode::GetAnimationCache() {
+AnimationCache* BlendingNode2::GetAnimationCache() {
 	return Cache;
 }
 
 // get motion
-Matrix4x4& BinaryBlendingNode::GetMotion() { 
+Matrix4x4& BlendingNode2::GetMotion() { 
 	Matrix4x4& MotionA = NodeA->GetMotion();
 	Matrix4x4& MotionB = NodeB->GetMotion();
 	

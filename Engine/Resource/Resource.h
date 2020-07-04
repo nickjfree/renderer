@@ -49,7 +49,7 @@ protected:
 	Deserializer DeSerial;
 
 public:
-	DECLAR_ALLOCATER(Resource);
+	DECLARE_ALLOCATER(Resource);
 	// resource type
 	enum Type {
 		R_MESH,
@@ -79,7 +79,7 @@ public:
 	typedef struct PendingLoad
 	{
 
-		DECLAR_ALLOCATER(PendingLoad)
+		DECLARE_ALLOCATER(PendingLoad)
 			Resource* Caller;
 		Resource::Message Message;
 		Variant Param;
@@ -89,7 +89,7 @@ public:
 
 	typedef struct CallerNotice
 	{
-		DECLAR_ALLOCATER(CallerNotice)
+		DECLARE_ALLOCATER(CallerNotice)
 			Resource* Caller;
 		Variant Param;
 	}CallerNotice;

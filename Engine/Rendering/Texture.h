@@ -9,7 +9,7 @@ class Texture : public GPUResource
 	OBJECT(Texture);
 	BASEOBJECT(Texture);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(Texture);
+	DECLARE_ALLOCATER(Texture);
 private:
 	// raw data in binary. dds file. texture shold take care of deallocation of this raw memoery
 	void* Raw;

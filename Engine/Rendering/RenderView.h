@@ -21,8 +21,8 @@
 
 class RenderView
 {
-	DECLAR_ALLOCATER(RenderView);
-	DECLAR_RECYCLE(RenderView);
+	DECLARE_ALLOCATER(RenderView);
+	DECLARE_RECYCLE(RenderView);
 public:
 	// camera
 	RenderingCamera* Camera;

@@ -9,7 +9,7 @@
 */
 class BasicPartition : public PartitionMethod
 {
-	DECLAR_ALLOCATER(BasicPartition)
+	DECLARE_ALLOCATER(BasicPartition)
 private:
 	BasicCullingImp* BasicCulling;
 public:

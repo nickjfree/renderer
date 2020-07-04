@@ -13,7 +13,7 @@ class Light : public Component
 {
 	OBJECT(Light);
 	BASEOBJECT(Light);
-	DECLAR_ALLOCATER(Light);
+	DECLARE_ALLOCATER(Light);
 private:
 	RenderLight* renderLight;
 	// light type

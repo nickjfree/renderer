@@ -14,8 +14,8 @@
 
 class OsEvent
 {
-	DECLAR_ALLOCATER(OsEvent);
-	DECLAR_RECYCLE(OsEvent);
+	DECLARE_ALLOCATER(OsEvent);
+	DECLARE_RECYCLE(OsEvent);
 	friend 	OsEvent;
 private:
 	HANDLE hEvent;

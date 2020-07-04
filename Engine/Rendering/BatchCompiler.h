@@ -18,7 +18,7 @@
 
 class BatchCompiler
 {
-	DECLAR_ALLOCATER(BatchCompiler);
+	DECLARE_ALLOCATER(BatchCompiler);
 private:
 	char ByteCode[BYTECODE_SIZE];
 	// curretn instancing status

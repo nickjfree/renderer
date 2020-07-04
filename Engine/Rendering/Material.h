@@ -18,7 +18,7 @@ class Material : public Resource
 	OBJECT(Material);
 	BASEOBJECT(Material);
 	LOADEROBJECT(FileLoader);
-	DECLAR_ALLOCATER(Material);
+	DECLARE_ALLOCATER(Material);
 private:
 	// textures, diffuse, normal, specular
 	//Texture * Textures[MULTI_TEXTUES];

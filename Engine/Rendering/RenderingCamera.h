@@ -13,7 +13,7 @@
 */
 class RenderingCamera
 {
-	DECLAR_ALLOCATER(RenderingCamera);
+	DECLARE_ALLOCATER(RenderingCamera);
 private:
 	float MoveSpeed;
 	float RotationSpeed;

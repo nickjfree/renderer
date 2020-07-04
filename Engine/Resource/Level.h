@@ -39,7 +39,7 @@ class Scene;
 
 class Level : public Resource
 {
-	DECLAR_ALLOCATER(Level);
+	DECLARE_ALLOCATER(Level);
 	LOADEROBJECT(FileLoader);
 	OBJECT(Level);
 	BASEOBJECT(Level);

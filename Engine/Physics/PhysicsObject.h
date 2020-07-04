@@ -45,7 +45,7 @@ typedef struct CollisionShape {
 
 class PhysicsObject : public Component {
 
-	DECLAR_ALLOCATER(PhysicsObject);
+	DECLARE_ALLOCATER(PhysicsObject);
 	OBJECT(PhysicsObject);
 	BASEOBJECT(PhysicsObject);
 

@@ -14,7 +14,7 @@
 
 class RenderObject : public Node
 {
-	DECLAR_ALLOCATER(RenderObject);
+	DECLARE_ALLOCATER(RenderObject);
 protected:
 	// geometry
 	Model* model;

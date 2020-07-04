@@ -17,7 +17,7 @@ using namespace h3d;
 
 class H3DMesh : public Mesh
 {
-	DECLAR_ALLOCATER(H3DMesh);
+	DECLARE_ALLOCATER(H3DMesh);
 	OBJECT(H3DMesh);
 	BASEOBJECT(Mesh);
 	LOADEROBJECT(FileMappingLoader);

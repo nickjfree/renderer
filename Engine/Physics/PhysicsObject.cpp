@@ -188,16 +188,25 @@ void PhysicsObject::Clear() {
 		delete Shape->Shapes.Box;
 		delete Shape;
 	}
-	delete MotionState;
-	delete rigidBody;
+	if (MotionState) {
+		delete MotionState;
+	}
+	if (rigidBody) {
+		delete rigidBody;
+	}
+
 }
 
 int PhysicsObject::OnDestroy(GameObject* GameObj) {
-	World->removeRigidBody(rigidBody);
+	if (rigidBody) {
+		World->removeRigidBody(rigidBody);
+	}
 	Component::OnDestroy(GameObj);
 	// remove shape
-	Shape->DecRef();
-	Shape = nullptr;
+	if (Shape) {
+		Shape->DecRef();
+		Shape = nullptr;
+	}
 	return 0;
 }
 

@@ -133,6 +133,10 @@ Component* GameObject::CreateComponent(const String& type) {
 	return comp;
 }
 
+Object* GameObject::CreateObject(const String& type) {
+	return context->CreateObject(type);
+}
+
 bool GameObject::AddComponent(Component* component) {
 	if (GetComponent(component->GetTypeName())) {
 		return false;

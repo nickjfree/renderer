@@ -22,7 +22,8 @@ private:
 public:
 	AnimationSystem(Context* context);
 	virtual ~AnimationSystem();
-
+	// init 
+	virtual int Initialize();
 	// add animator
 	void AddAnimator(Animator* animator);
 	// remove animator

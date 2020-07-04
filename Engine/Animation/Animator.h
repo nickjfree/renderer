@@ -53,7 +53,6 @@ public:
 	BlendingNode* GetBlendingNode() const;
 	// list bendshapes
 	void ListBlendShapes() const;
-
 	// update
 	void Update(float time);
 	// on attach

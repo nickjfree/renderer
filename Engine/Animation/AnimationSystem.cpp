@@ -8,6 +8,15 @@ AnimationSystem::AnimationSystem(Context* context) : System(context) {
 AnimationSystem::~AnimationSystem() {
 }
 
+int AnimationSystem::Initialize() {
+	context->RegisterObject<Animator>();
+	context->RegisterObject<BlendingNode>();
+	context->RegisterObject<BlendingNode2>();
+	context->RegisterObject<BlendingNode3>();
+	return 0;
+}
+
+
 
 void AnimationSystem::AddAnimator(Animator* animator) {
 	animator->AddRef();

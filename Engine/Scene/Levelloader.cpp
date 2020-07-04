@@ -76,8 +76,8 @@ int LevelLoader::HandleEvent(Event* event) {
 }
 
 int LevelLoader::Initialize() {
-	context->RegisterObject<MeshRenderer>();
-	context->RegisterObject<Light>();
+	// context->RegisterObject<MeshRenderer>();
+	//context->RegisterObject<Light>();
 	return 0;
 }
 

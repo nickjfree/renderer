@@ -80,8 +80,9 @@ int RenderingSystem::Initialize() {
 	InitLowLevel();
 	InitTopLevel();
 	// register component
-	context->RegisterObject<Renderer>();
+	// context->RegisterObject<Renderer>();
 	context->RegisterObject<Light>();
+	context->RegisterObject<MeshRenderer>();
 	return 0;
 }
 

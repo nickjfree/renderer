@@ -74,6 +74,8 @@ public:
 	template <class T> 	T* CreateComponent();
 	// create component, but not add it to the gameobject
 	Component* CreateComponent(const String& type);
+	//  create objects
+	Object* CreateObject(const String& type);
 	// create sub gameobject
 	GameObject* CreateGameObject(const String& Name);
 	// attach subobject

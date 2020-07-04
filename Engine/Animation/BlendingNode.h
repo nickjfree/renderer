@@ -49,7 +49,7 @@ public:
 
 class BlendingNode2 : public BlendingNode
 {
-	BASEOBJECT(BlendingNode);
+	BASEOBJECT(BlendingNode2);
 	OBJECT(BlendingNode2);
 	DECLARE_ALLOCATER(BlendingNode2);
 
@@ -86,7 +86,7 @@ public:
 
 class BlendingNode3 : public BlendingNode
 {
-	BASEOBJECT(BlendingNode);
+	BASEOBJECT(BlendingNode3);
 	OBJECT(BlendingNode3);
 	DECLARE_ALLOCATER(BlendingNode3);
 

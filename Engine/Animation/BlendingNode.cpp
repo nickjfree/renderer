@@ -170,6 +170,9 @@ void BlendingNode3::AddNodes(BlendingNode* Nodes[3], bool Sync) {
 	SyncCycle = Sync;
 }
 
+void BlendingNode3::SetNode(int Index, BlendingNode* Node) {
+	Nodes_[Index] = Node;
+}
 
 // advance
 int BlendingNode3::Advance(float time) {

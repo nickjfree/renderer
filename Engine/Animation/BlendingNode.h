@@ -111,6 +111,10 @@ public:
 	~BlendingNode3();
 	// add 3 nodes
 	void AddNodes(BlendingNode* Nodes[3],  bool Sync);
+	// SetNode
+	void SetNode(int Index, BlendingNode* Node);
+	// sync animation cycles or not
+	void SetSyncCycle(bool sync) { SyncCycle = sync; }
 	// advance
 	virtual int Advance(float time);
 	// apply

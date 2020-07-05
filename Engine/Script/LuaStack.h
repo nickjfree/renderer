@@ -211,6 +211,10 @@ public:
 		value = (float)luaL_checknumber(vm, index);
 	}
 
+	static void Get(lua_State* vm, int index, bool& value) {
+		value = lua_toboolean(vm, index);
+	}
+
 	static void Get(lua_State* vm, int index, String& value) {
 		value = (char*)luaL_checkstring(vm, index);
 	}
@@ -254,8 +258,6 @@ public:
 		T* data = *(T**)lua_touserdata(vm, -1);
 		value = data;
 	}
-
-
 };
 
 

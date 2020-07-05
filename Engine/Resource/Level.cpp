@@ -290,30 +290,30 @@ int Level::InitScript() {
 			Model* model = render->GetModel();
 			Object->AddComponent(Character);
 			// set animation component
-			Animator* animator = new Animator(context);
-			Animation* animation_walk = GetAnimation(0);
-			Animation* animation_left_turn = GetAnimation(1);
-			Animation* animation_right_turn = GetAnimation(2);
-			Skeleton* skeleton = GetSkeleton(0);
-			// walk node
-			BlendingNode* walk = new BlendingNode(context);
-			walk->SetAnimationClip(animation_walk, 0);
-			// left node
-			BlendingNode* left = new BlendingNode(context);
-			left->SetAnimationClip(animation_left_turn, 0);
-			// right node
-			BlendingNode* right = new BlendingNode(context);
-			right->SetAnimationClip(animation_right_turn, 0);
-			// blend by 0.5
-			auto * blend = new BlendingNode3(context);
-			BlendingNode* Nodes[3] = { left, walk, right };
-			blend->AddNodes(Nodes, true);
-			blend->SetParameter("x", 0);
+			//Animator* animator = new Animator(context);
+			//Animation* animation_walk = GetAnimation(0);
+			//Animation* animation_left_turn = GetAnimation(1);
+			//Animation* animation_right_turn = GetAnimation(2);
+			//Skeleton* skeleton = GetSkeleton(0);
+			//// walk node
+			//BlendingNode* walk = new BlendingNode(context);
+			//walk->SetAnimationClip(animation_walk, 0);
+			//// left node
+			//BlendingNode* left = new BlendingNode(context);
+			//left->SetAnimationClip(animation_left_turn, 0);
+			//// right node
+			//BlendingNode* right = new BlendingNode(context);
+			//right->SetAnimationClip(animation_right_turn, 0);
+			//// blend by 0.5
+			//auto * blend = new BlendingNode3(context);
+			//BlendingNode* Nodes[3] = { left, walk, right };
+			//blend->AddNodes(Nodes, true);
+			//blend->SetParameter("x", 0);
 
-			animator->SetSkeleton(skeleton);
-			animator->SetBlendingNode(blend);
-			// animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 0.1f);
-			Object->AddComponent(animator);
+			//animator->SetSkeleton(skeleton);
+			//animator->SetBlendingNode(blend);
+			//// animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 0.1f);
+			//Object->AddComponent(animator);
 		}
 		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {
 			// global light should follow camera

@@ -17,7 +17,7 @@ CullingTask::~CullingTask()
 int CullingTask::Work() {
 	Frustum frustum = renderview->Camera->GetFrustum();
 	BatchCompiler* Compiler = renderview->Compiler;
-	renderview->VisibleObjects.Empty();
+	renderview->VisibleObjects.Reset();
 
 
 

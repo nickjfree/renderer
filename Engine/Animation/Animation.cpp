@@ -61,8 +61,8 @@ int Animation::OnSerialize(Deserializer& serializer) {
 
 
 int Animation::OnDestroy(Variant& Param) {
-	Tracks.Empty();
-	Clips.Empty();
+	Tracks.Reset();
+	Clips.Reset();
 	DeSerial.Release();
 	return 0;
 }

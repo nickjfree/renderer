@@ -56,10 +56,13 @@ public:
 	void operator = (Vector&);
 	int PushBack(T& Item);
 	T& PopBack();
-	void Empty() {
-		// you can't call this function with none pointer types
-		//assert(sizeof(T) == sizeof(void*));
-		ItemSize = 0;
+	void Reset() {
+		// POD or not
+		if (std::is_trivially_destructible<T>::value || !std::is_destructible<T>::value) {
+			ItemSize = 0;
+		} else {
+			Clear();
+		}
 	}
 	Iterator Begin() {
 		Iterator Iter;
@@ -148,10 +151,14 @@ Vector<T>::Vector(Vector<T>& rh) {
 
 template <class T>
 void Vector<T>::operator=(Vector<T>& rh) {
+	// clear old data
+	Clear();
 	ItemSize = rh.ItemSize;
 	Capacity = rh.Capacity;
 	Resized = rh.Resized;
-	Data = new T[ItemSize];
+	if (Capacity) {
+		Data = new T[ItemSize];
+	}
 	for (int i = 0; i < ItemSize; i++) {
 		Data[i] = rh.Data[i];
 	}

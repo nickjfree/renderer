@@ -205,6 +205,8 @@ namespace D3D12API {
 		R_PRIMITIVE_TOPOLOGY_TYPE GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology);
 		// add instance to rtScene
 		int AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, D3DGeometry& geometry, R_RAYTRACING_INSTANCE& instance);
+		// void free BLAS
+		void FreeBlas(int Id);
 		// get current descripter heap
 		DescriptorHeap* GetCurrentDescripterHeap();
 	public:

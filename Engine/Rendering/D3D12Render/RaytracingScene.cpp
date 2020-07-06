@@ -69,8 +69,8 @@ void RaytracingScene::Retire(UINT64 FenceValue) {
 void RaytracingScene::Reset() {
 	SBT->Reset();
 	SceneFenceValue_ = -1;
-	BottomLevelDesc.Empty();
-	InstanceDesc.Empty();
+	BottomLevelDesc.Reset();
+	InstanceDesc.Reset();
 	ShaderBindingHeap->Reset();
 }
 
@@ -133,7 +133,7 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	SceneFenceValue_ = cmdContext->Finish(0);
 
 	// clear instances
-	InstanceDesc.Empty();
+	InstanceDesc.Reset();
 	return SceneFenceValue_;
 }
 
@@ -143,7 +143,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// wait for frev frame's  graphic work to complete
 	if (GraphicsFenceValue == 0) {
 		// we are the first frame
-		BottomLevelDesc.Empty();
+		BottomLevelDesc.Reset();
 		return 0;
 	}
 	// wait for prev graphics work to finish
@@ -157,7 +157,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 		if (OldState != NewState) {
 			if (OldState == D3D12_RESOURCE_STATE_COPY_DEST) {
 				// buffer was not deformed 
-				BottomLevelDesc.Empty();
+				BottomLevelDesc.Reset();
 				return 0;
 			}
 			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(bottoemLevelDesc.Buffer->BufferResource[FrameIndex], OldState, NewState);
@@ -168,7 +168,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// submit resource barriers for deformable buffer, uav --> vertex buffer
 	if (ResourceBarriers.Size()) {
 		cmdList->ResourceBarrier(ResourceBarriers.Size(), ResourceBarriers.GetData());
-		ResourceBarriers.Empty();
+		ResourceBarriers.Reset();
 	}
 	// build them
 	for (auto Iter = BottomLevelDesc.Begin(); Iter != BottomLevelDesc.End(); Iter++) {
@@ -185,10 +185,10 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// submit uav resource barriers for blas and scratch
 	if (ResourceBarriers.Size()) {
 		cmdList->ResourceBarrier(ResourceBarriers.Size(), ResourceBarriers.GetData());
-		ResourceBarriers.Empty();
+		ResourceBarriers.Reset();
 	}
 	// clear deformable geometry
-	BottomLevelDesc.Empty();
+	BottomLevelDesc.Reset();
 	return cmdContext->Flush(0);
 }
 

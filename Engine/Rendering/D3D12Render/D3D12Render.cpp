@@ -793,7 +793,7 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 	Blas.Deformable = Deformable;
 	// initial state:  dirty
 	memset(Blas.Dirty, 1, sizeof(Blas.Dirty));
-	D3DGeometry& Geometry = Geometries.GetItem(GeometryId);
+	auto& Geometry = Geometries.GetItem(GeometryId);
 	if (!Deformable && Geometry.UsedBlas.Size() ) {
 		// static objects
 		return Geometry.UsedBlas[0];
@@ -1489,7 +1489,7 @@ void D3D12Render::Present() {
 	for (int i = 0; i < UsedConstHeaps.Size(); i++) {
 		UsedConstHeaps[i]->Retire(FenceValue);
 	}
-	UsedConstHeaps.Empty();
+	UsedConstHeaps.Reset();
 	// retire all gpu srv heaps
 	if (CurrentSRVHeap) {
 		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
@@ -1498,7 +1498,7 @@ void D3D12Render::Present() {
 	for (int i = 0; i < UsedGpuSRVHeaps.Size(); i++) {
 		UsedGpuSRVHeaps[i]->Retire(FenceValue);
 	}
-	UsedGpuSRVHeaps.Empty();
+	UsedGpuSRVHeaps.Reset();
 	// retire current rtscene. so it can be reused
 	if (rtScene) {
 		rtScene->Retire(FenceValue);
@@ -1655,7 +1655,7 @@ int D3D12Render::FlushResourceBarriers() {
 		//		printf("flush %d barriers\n", Count);
 				// just flush them all
 		CurrentCommandContext->GetGraphicsCommandList()->ResourceBarrier(Count, ResourceBarriers.GetData());
-		ResourceBarriers.Empty();
+		ResourceBarriers.Reset();
 		BarrierFlushed = 1;
 	}
 	return Count;
@@ -1814,7 +1814,7 @@ void D3D12Render::TraceRay() {
 		FlushStateObject();
 		// trace rays
 
-		auto Shader = RaytracingShaders.GetItem(0);
+		auto& Shader = RaytracingShaders.GetItem(0);
 		// dispatch rays
 		rtScene->TraceRay(CurrentCommandContext, 0, Shader.RaygenShaderIdentifier, Shader.MissShaderIdentifier, 3840, 2160, 1);
 	}
@@ -1967,6 +1967,21 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 }
 
 
+void D3D12Render::FreeBlas(int Id) {
+	auto& blas = BottomLevelAS.GetItem(Id);
+	if (blas.Scrach[0]) {
+		blas.Scrach[0]->Release();
+	}
+	if (blas.BLAS[0]) {
+		blas.BLAS[0]->Release();
+	}
+	if (blas.BufferId != -1) {
+		DestroyBuffer(blas.BufferId);
+	}
+	BottomLevelAS.MarkFree(Id);
+}
+
+
 R_PRIMITIVE_TOPOLOGY_TYPE D3D12Render::GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology) {
 	if (topology == R_PRIMITIVE_TOPOLOGY_UNDEFINED) {
 		return R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
@@ -2005,9 +2020,18 @@ void D3D12Render::ShowPerformanceInfo() {
 
 int D3D12Render::DestroyGeometry(int Id) {
 	if (Id != -1) {
-		auto Item = Geometries.GetItem(Id);
+		auto& Item = Geometries.GetItem(Id);
 		Item.IndexResource->Release();
 		Item.VertexResource->Release();
+		// free raytracing buffers
+		for (auto iter = Item.FreeBlas.Begin(); iter != Item.FreeBlas.End(); iter++) {
+			FreeBlas(*iter);
+		}
+		for (auto iter = Item.UsedBlas.Begin(); iter != Item.UsedBlas.End(); iter++) {
+			FreeBlas(*iter);
+		}
+		Item.FreeBlas.Reset();
+		Item.UsedBlas.Reset();
 		Geometries.MarkFree(Id);
 	}
 	return 0;
@@ -2016,7 +2040,7 @@ int D3D12Render::DestroyGeometry(int Id) {
 
 int D3D12Render::DestroyBuffer(int Id) {
 	if (Id != -1) {
-		auto Item = Buffers.GetItem(Id);
+		auto& Item = Buffers.GetItem(Id);
 		if (Item.MultiResource) {
 			for (auto i = 0; i < NUM_FRAMES; i++) {
 				Item.BufferResource[i]->Release();
@@ -2033,7 +2057,7 @@ int D3D12Render::DestroyBuffer(int Id) {
 
 int D3D12Render::DestroyTexture2D(int Id) {
 	if (Id != -1) {
-		auto Item = Textures.GetItem(Id);
+		auto& Item = Textures.GetItem(Id);
 		if (Item.MultiResource) {
 			for (auto i = 0; i < NUM_FRAMES; i++) {
 				Item.Texture[i]->Release();

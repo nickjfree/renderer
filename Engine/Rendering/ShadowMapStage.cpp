@@ -37,7 +37,7 @@ void ShadowMapStage::Initialize() {
 int ShadowMapStage::ShadowPass(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events) {
 	// find all affected lights and submit culling tasks for each light for shadow mapping
 	Frustum frustum = Camera->GetFrustum();
-	Lights.Empty();
+	Lights.Reset();
 	spatial->Query(frustum, Lights, Node::LIGHT);
 	int Size = Lights.Size();
 	int TargetsUsed = 0;

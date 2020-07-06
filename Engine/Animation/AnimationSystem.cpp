@@ -44,6 +44,6 @@ int AnimationSystem::Update(int ms) {
 		Animator* animator = *Iter;
 		animator->DecRef();
 	}
-	Destroyed.Empty();
+	Destroyed.Reset();
 	return 0;
 }

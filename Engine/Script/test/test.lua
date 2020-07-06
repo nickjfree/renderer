@@ -28,3 +28,8 @@ function clone(source, target)
         end
     end
 end
+
+function test()
+    collectgarbage()
+    loader:UnloadLevel("Level\\levels\\desktop.level\\0")
+end

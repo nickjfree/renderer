@@ -113,7 +113,7 @@ namespace D3D12API {
 		// referenced geometry
 		int GeometryId;
 		// referenced deformable buffer
-		int BufferId;
+		int BufferId = -1;
 
 		int MultiFrame;
 		int MultiResource;

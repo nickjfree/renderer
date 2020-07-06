@@ -109,7 +109,7 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 
 	auto compiled = 0;
 	// get all the renderobjs
-	rtInstances.Empty();
+	rtInstances.Reset();
 	spatial->Query(rtInstances, Node::RENDEROBJECT);
 	int Size = rtInstances.Size();
 	// add rtInstance to Scene

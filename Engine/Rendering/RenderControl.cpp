@@ -58,7 +58,7 @@ int RenderControl::Execute() {
 	// wait for tasks finish
 	int Count = Events.Size();
 	OsEvent::Join(Count, &Events[0], 1);
-	Events.Empty();
+	Events.Reset();
 	RenderQueue_->Execute(RenderProcesser_);
 	// end stages
 	RenderingPath* path = RenderPath[LIGHT_PRE];

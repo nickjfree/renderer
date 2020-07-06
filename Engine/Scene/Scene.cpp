@@ -32,7 +32,7 @@ int Scene::Update(int ms) {
 		// decref is assumed to delete this gameobject
 		obj->DecRef();
 	}
-	Destroyed.Empty();
+	Destroyed.Reset();
 	return 0;
 }
 

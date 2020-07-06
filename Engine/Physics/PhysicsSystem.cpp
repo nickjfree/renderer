@@ -188,7 +188,7 @@ int PhysicsSystem::Update(int ms) {
 		PhysicsObject* obj = Destroyed[i];
 		RemovePhysicsObject(obj);
 	}
-	Destroyed.Empty();
+	Destroyed.Reset();
 
 #ifdef DEBUG_PHYSICS
 	// debug

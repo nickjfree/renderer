@@ -57,6 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.89\src;F:\proj\Game11\Game\bullet3-2.89\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,8 +81,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>F:\proj\Game11\Game\Engine;F:\proj\Game11\Game\DirectXTK-aug2019\Inc;F:\proj\Game11\Game\bullet3-2.89\src;F:\proj\Game11\Game\bullet3-2.89\Extras\HACD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <LanguageStandard>
-      </LanguageStandard>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>

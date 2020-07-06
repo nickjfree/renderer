@@ -44,7 +44,7 @@ void ShaderBindingTable::UpdateRay(int rayIndex, D3DShaderIdetifier& raygenIdent
 }
 
 void ShaderBindingTable::Reset() {
-	HitGroup.Empty();
+	HitGroup.Reset();
 	Current = 0;
 }
 

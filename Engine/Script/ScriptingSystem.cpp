@@ -32,7 +32,7 @@ int ScriptingSystem::Update(int ms) {
 		Script* script = Destroyed[i];
 		script->Remove();
 	}
-	Destroyed.Empty();
+	Destroyed.Reset();
 	return 0;
 }
 

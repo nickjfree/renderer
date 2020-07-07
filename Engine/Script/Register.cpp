@@ -32,6 +32,7 @@ END_EXPORT()
 EXPORT_CLASS(Scene)
 EXPORT(Scene, CreateGameObject)
 EXPORT(Scene, CreateComponent)
+EXPORT(Scene, SendEvent)
 GC(Scene)
 END_EXPORT()
 

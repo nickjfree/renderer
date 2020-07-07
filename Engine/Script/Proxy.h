@@ -3,12 +3,12 @@
 
 #include "LuaStack.h"
 #include "../Core/Object.h"
-//#include <typeinfo.h>
 
 template <typename T, typename FuncType = T>
 struct MemberFunctor;
 
 
+// strip types
 template <typename T>
 struct ParamType {
 	typedef T Type;
@@ -26,156 +26,98 @@ struct ParamType<const T&> {
 };
 
 
+// get parameters
+template <typename T>
+auto GetParameter(lua_State * L, int Index)
+{
+	ParamType<T>::Type parameter;
+	LuaStack::Get(L, Index, parameter);
+	return parameter;
+}
+
+/*
+	template for  void func(p...) and r func(p...)
+*/
+template <typename ClassType, typename MemberFunction, typename ... Parameter>
+struct WithParameters {
+
+	template<std::size_t ... Index>
+	static int VoidCall(lua_State* L, MemberFunction mfp, std::index_sequence<Index...>) {
+		// get objects
+		ClassType* object;
+		LuaStack::Get(L, 1, object);
+		// call function
+		(object->*mfp)(GetParameter<Parameter>(L, Index+2)...);
+		return 0;
+	}
+	template<std::size_t ... Index>
+	static int ReturnCall(lua_State* L, MemberFunction mfp, std::index_sequence<Index...>) {
+		// get objects
+		ClassType* object;
+		LuaStack::Get(L, 1, object);
+		// call function
+		LuaStack::Push(L, (object->*mfp)(GetParameter<Parameter>(L, Index+2)...));
+		return 1;
+	}
+};
+
 // void ()
 template <typename ClassType, typename FuncType>
 struct MemberFunctor<void (ClassType::*)(), FuncType> {
 	static int Call(lua_State* L, FuncType mfp) {
 		ClassType* object;
 		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs\n");
 		(object->*mfp)();
 		return 0;
 	}
 };
 
+// void func(p...)
+template <typename ClassType, typename ...Paramter, typename FuncType>
+struct MemberFunctor<void (ClassType::*)(Paramter...), FuncType> {
+	static int Call(lua_State* L, FuncType mfp) {
+		return WithParameters<ClassType, FuncType, Paramter...>::VoidCall(L, mfp, std::make_index_sequence<sizeof...(Paramter)>{});
+	}
+};
 
-//R 
+
+//  return func()
 template <typename ClassType, typename R, typename FuncType>
 struct MemberFunctor<R(ClassType::*)(), FuncType> {
 	static int Call(lua_State* L, FuncType mfp) {
 		ClassType* object;
-		//ParamType<R>::Type ret;
 		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs\n");
-				// ret = (object->*mfp)();
-				//  push return values
 		LuaStack::Push(L, (object->*mfp)());
 		return 1;
 	}
 };
 
-//R () const
+// return func(p...)
+template <typename ClassType, typename R, typename ...Paramter, typename FuncType>
+struct MemberFunctor<R(ClassType::*)(Paramter...), FuncType> {
+	static int Call(lua_State* L, FuncType mfp) {
+		return WithParameters<ClassType, FuncType, Paramter...>::ReturnCall(L, mfp, std::make_index_sequence<sizeof...(Paramter)>{});
+	}
+};
+
+// return func() const
 template <typename ClassType, typename R, typename FuncType>
 struct MemberFunctor<R(ClassType::*)() const, FuncType> {
 	static int Call(lua_State* L, FuncType mfp) {
 		ClassType* object;
-		//ParamType<R>::Type ret;
 		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs\n");
-				// ret = (object->*mfp)();
-				//  push return values
 		LuaStack::Push(L, (object->*mfp)());
 		return 1;
 	}
 };
 
-//void P1
-template <typename ClassType, typename P1, typename FuncType>
-struct MemberFunctor<void (ClassType::*)(P1), FuncType> {
+// return func(p...) const
+template <typename ClassType, typename R, typename ...Paramter, typename FuncType>
+struct MemberFunctor<R(ClassType::*)(Paramter...) const, FuncType> {
 	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		ClassType* object;
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-		(object->*mfp)(p1);
-		//  push return values
-		return 0;
+		return WithParameters<ClassType, FuncType, Paramter...>::ReturnCall(L, mfp, std::make_index_sequence<sizeof...(Paramter)>{});
 	}
 };
-
-//void P1 P2
-template <typename ClassType, typename P1, typename P2, typename FuncType>
-struct MemberFunctor<void (ClassType::*)(P1, P2), FuncType> {
-	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		ParamType<P2>::Type p2;
-		ClassType* object;
-		LuaStack::Get(L, 3, p2);
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-		(object->*mfp)(p1, p2);
-		//  push return values
-		return 0;
-	}
-};
-
-//void P1 P2
-template <typename ClassType, typename P1, typename P2, typename P3, typename FuncType>
-struct MemberFunctor<void (ClassType::*)(P1, P2, P3), FuncType> {
-	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		ParamType<P2>::Type p2;
-		ParamType<P3>::Type p3;
-		ClassType* object;
-		LuaStack::Get(L, 4, p3);
-		LuaStack::Get(L, 3, p2);
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-		(object->*mfp)(p1, p2, p3);
-		//  push return values
-		return 0;
-	}
-};
-
-//R P1
-template <typename ClassType, typename R, typename P1, typename FuncType>
-struct MemberFunctor<R(ClassType::*)(P1), FuncType> {
-	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		//ParamType<R>::Type ret;
-		ClassType* object;
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-				//ret = (object->*mfp)(p1);
-				//  push return values
-		LuaStack::Push(L, (object->*mfp)(p1));
-		return 1;
-	}
-};
-
-
-//R P1 P2
-template <typename ClassType, typename R, typename P1, typename P2, typename FuncType>
-struct MemberFunctor<R(ClassType::*)(P1, P2), FuncType> {
-	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		ParamType<P2>::Type p2;
-		//ParamType<R>::Type ret;
-		ClassType* object;
-		LuaStack::Get(L, 3, p2);
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-		//ret = (object->*mfp)(p1, p2);
-		//  push return values
-		LuaStack::Push(L, (object->*mfp)(p1, p2));
-		return 1;
-	}
-};
-
-//R P1 P2 P3
-template <typename ClassType, typename R, typename P1, typename P2, typename P3, typename FuncType>
-struct MemberFunctor<R(ClassType::*)(P1, P2, P3), FuncType> {
-	static int Call(lua_State* L, FuncType mfp) {
-		ParamType<P1>::Type p1;
-		ParamType<P2>::Type p2;
-		ParamType<P3>::Type p3;
-		//ParamType<R>::Type ret;
-		ClassType* object;
-		LuaStack::Get(L, 4, p3);
-		LuaStack::Get(L, 3, p2);
-		LuaStack::Get(L, 2, p1);
-		LuaStack::Get(L, 1, object);
-		//		printf("calling funcs %s\n", typeid(P1).name());
-		LuaStack::Push(L, (object->*mfp)(p1, p2, p3));
-		return 1;
-	}
-};
-
 
 
 template <typename FuncType>

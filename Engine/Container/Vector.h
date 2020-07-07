@@ -157,7 +157,7 @@ void Vector<T>::operator=(Vector<T>& rh) {
 	Capacity = rh.Capacity;
 	Resized = rh.Resized;
 	if (Capacity) {
-		Data = new T[ItemSize];
+		Data = new T[Capacity];
 	}
 	for (int i = 0; i < ItemSize; i++) {
 		Data[i] = rh.Data[i];

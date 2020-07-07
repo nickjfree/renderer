@@ -29,7 +29,11 @@ function clone(source, target)
     end
 end
 
-function test()
+function reset()
     collectgarbage()
     loader:UnloadLevel("Level\\levels\\desktop.level\\0")
+end
+
+function control()
+    scene:SendEvent(1025)
 end

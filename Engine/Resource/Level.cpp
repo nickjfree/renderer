@@ -249,25 +249,19 @@ int Level::InitScript() {
 	event->Recycle();
 	// add camera script
 	// attach a script component for test 
-	Script* script = new Script(context);
+	auto script = context->CreateObject<Script>();
 	script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\camera.lua");
 	MainCamera->AddComponent(script);
 	// update test
 	for (auto Iter = GameObjects.Begin(); Iter != GameObjects.End(); Iter++) {
-		GameObject* Object = *Iter;
-		if (Object->GetName() == "Player") {
-			// attach a script component for test 
-			Script* script = new Script(context);
-			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
-			Object->AddComponent(script);
-		}
-		if (Object->GetName() == "Plane") {
+		auto object = *Iter;
+		if (object->GetName() == "Plane") {
 
 			// test blendshape
-			Animator* animator = new Animator(context);
-			Object->AddComponent(animator);
+			auto animator = context->CreateObject<Animator>();
+			object->AddComponent(animator);
 			// creat convext hulls for collision shape
-			MeshRenderer* render = (MeshRenderer*)Object->GetComponent("Renderer");
+			MeshRenderer* render = (MeshRenderer*)object->GetComponent("Renderer");
 			// set test model and blendshapes
 			Model* model = GetModel(4);
 			BlendShape* shape = GetBlendShape(0);
@@ -283,41 +277,20 @@ int Level::InitScript() {
 			// render->SetBlendShapeWeights(test_indics, test_weights, 3);
 			//render->SetTransparente();
 		}
-		if (Object->GetName() == "Player") {
-			CharacterController* Character = new CharacterController(context);
+		if (object->GetName() == "Player" || object->GetName() == "NPC") {
+			auto Character = context->CreateObject<CharacterController>();
 			// creat convext hulls for collision shape
-			MeshRenderer* render = (MeshRenderer*)Object->GetComponent("Renderer");
+			MeshRenderer* render = (MeshRenderer*)object->GetComponent("Renderer");
 			Model* model = render->GetModel();
-			Object->AddComponent(Character);
-			// set animation component
-			//Animator* animator = new Animator(context);
-			//Animation* animation_walk = GetAnimation(0);
-			//Animation* animation_left_turn = GetAnimation(1);
-			//Animation* animation_right_turn = GetAnimation(2);
-			//Skeleton* skeleton = GetSkeleton(0);
-			//// walk node
-			//BlendingNode* walk = new BlendingNode(context);
-			//walk->SetAnimationClip(animation_walk, 0);
-			//// left node
-			//BlendingNode* left = new BlendingNode(context);
-			//left->SetAnimationClip(animation_left_turn, 0);
-			//// right node
-			//BlendingNode* right = new BlendingNode(context);
-			//right->SetAnimationClip(animation_right_turn, 0);
-			//// blend by 0.5
-			//auto * blend = new BlendingNode3(context);
-			//BlendingNode* Nodes[3] = { left, walk, right };
-			//blend->AddNodes(Nodes, true);
-			//blend->SetParameter("x", 0);
-
-			//animator->SetSkeleton(skeleton);
-			//animator->SetBlendingNode(blend);
-			//// animator->SetAnimationStage(0, animetion->GetAnimationClip(0), 0, 0.1f);
-			//Object->AddComponent(animator);
+			object->AddComponent(Character);
+			// attach a script component for test 
+			auto script = context->CreateObject<Script>();
+			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\script.lua");
+			object->AddComponent(script);
 		}
-		if (Object->GetName() == "Light2" || Object->GetName() == "LightProb") {
+		if (object->GetName() == "Light2" || object->GetName() == "LightProb") {
 			// global light should follow camera
-			MainCamera->Attach(Object);
+			MainCamera->Attach(object);
 		}
 	}
 	return 0;

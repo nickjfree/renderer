@@ -116,7 +116,7 @@ int TestGen(char * File) {
     PhysicsEntry physics = {};
     ObjectEntry object = {};
 
-    Num = 7 + 100;
+    Num = 8 + 100;
     Header.NumEntries = Num;
     WriteFile(hFile, &Header, sizeof(Header), &write, 0);
     Quaternion rot = Quaternion();
@@ -125,6 +125,19 @@ int TestGen(char * File) {
     strcpy_s(object.Name, "Player");
     object.NumComponents = 1;
     object.Position = Vector3(0, 0, 0);
+    object.Rotation = Quaternion();
+    object.Scale = Vector3(1, 1, 1);
+    render.MaterialIndex = 1;
+    render.ModelIndex = 1;
+    strcpy_s(render.Info.TypeName, "Renderer");
+    // write human2
+    WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
+    WriteFile(hFile, &render, sizeof(render), &write, 0);
+
+    // human2 again
+    strcpy_s(object.Name, "NPC");
+    object.NumComponents = 1;
+    object.Position = Vector3(5, 0, 0);
     object.Rotation = Quaternion();
     object.Scale = Vector3(1, 1, 1);
     render.MaterialIndex = 1;
@@ -204,7 +217,7 @@ int TestGen(char * File) {
     WriteFile(hFile, &light, sizeof(light), &write, 0);
 
     // sneak
-    strcpy_s(object.Name, "qianzhihe");
+    strcpy_s(object.Name, "sneak");
     object.NumComponents = 2;
     object.Position = Vector3(0, 0, 0);
     //	Quaternion rot = Quaternion();

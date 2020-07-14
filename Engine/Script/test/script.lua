@@ -59,7 +59,10 @@ end
 
 function on_test()
     engine.print("on_test")
-    active = not active
+    if (gameobject:GetName() == "Player")
+    then
+        active = not active
+    end
 end
 
 

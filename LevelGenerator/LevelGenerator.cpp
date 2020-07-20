@@ -20,7 +20,7 @@ int TestGen(char * File) {
     int Num = 5;
     Header.NumEntries = Num;
     char * meshes[5] = {
-        "Mesh\\Unit.pack\\ground\\0",
+        "Mesh\\test.pack\\cube\\0",
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
         "Mesh\\Unit.pack\\sneak\\0",
@@ -172,7 +172,7 @@ int TestGen(char * File) {
     object.NumComponents = 1;
     object.Position = Vector3(0.0f, 0.0f, 0.0f);
     rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
-    object.Rotation = rot;
+    object.Rotation = Quaternion();
     object.Scale = Vector3(1, 1, 1);
     render.MaterialIndex = 2;
     render.ModelIndex = 0;

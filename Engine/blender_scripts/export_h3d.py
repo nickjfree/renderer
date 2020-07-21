@@ -48,9 +48,16 @@ class Vertex(object):
         self.normal = normal
         self.uv = uv
         self.tangent = tangent
+        self.index = 0
 
     def __str__(self):
         return "position: %s\nnormal: %s\nuv: %s\ntangent: %s\n " % (self.position, self.normal, self.uv, self.tangent)
+
+    def __eq__(self, other):
+        return self.position == other.position and 
+            self.normal == other.normal and
+            self.uv == other.uv and
+            self.tangent == other.tangent
 
     def pack(self):
 
@@ -71,6 +78,10 @@ class Vertex(object):
     @classmethod
     def pack_size(cls):
         return struct.calcsize(cls.format_str)
+
+
+    def set_index(self, index):
+        self.index = index
 
 
 
@@ -94,6 +105,10 @@ class Mesh(object):
         self.num_vertex = 0
         self.num_index = 0
 
+        # used vertex
+        self.used_vertex = set()
+
+
     def calc_data(self):
         '''prepare data for exporting'''
 
@@ -106,7 +121,7 @@ class Mesh(object):
             for li in range(poly.loop_start, poly.loop_start + poly.loop_total):
                 loop = self.mesh.loops[li]                 
                 # vertex
-                vertex = self.mesh.vertices[loop.vertex_index]
+                vertex = self.mesh.vertices[ loop.vertex_index]
                 pos = vertex.co.xyz
                 # uv
                 uv = self.uv_layer[li].uv
@@ -116,10 +131,19 @@ class Mesh(object):
                 tangent = loop.tangent
                 # add to vertex buffer
                 new_vertex = Vertex(position=pos, normal=normal, uv=uv, tangent=tangent)
-                self.vertices.append(new_vertex)
-                # get index 
-                index = len(self.vertices) - 1
-                self.indices.append(index)
+                # is vertex already used
+                vertex_id = len(self.vertices)
+                max_vertex_id = len(self.vertices) - 1
+                for i in range(0, len(self.vertices)):
+                    old_vertex = self.vertices[max_vertex_count - i]
+                    if old_vertex == new_vertex:
+                        vertex_id = max_vertex_count - i
+                        break
+                if vertex_id == len(self.vertices):
+                    # not match
+                    self.vertices.append(new_vertex)
+                # set index 
+                self.indices.append(vertex_id)
 
         self.num_vertex = len(self.vertices)
         self.num_index = len(self.indices)

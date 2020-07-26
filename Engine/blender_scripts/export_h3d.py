@@ -54,9 +54,9 @@ class Vertex(object):
         return "position: %s\nnormal: %s\nuv: %s\ntangent: %s\n " % (self.position, self.normal, self.uv, self.tangent)
 
     def __eq__(self, other):
-        return self.position == other.position and 
-            self.normal == other.normal and
-            self.uv == other.uv and
+        return self.position == other.position and \
+            self.normal == other.normal and \
+            self.uv == other.uv and \
             self.tangent == other.tangent
 
     def pack(self):
@@ -71,7 +71,7 @@ class Vertex(object):
         # }h3d_vertex;
         return struct.pack(self.format_str, -self.position.y, self.position.z, self.position.x,
             -self.normal.y, self.normal.z, self.normal.x,
-            self.uv.x, self.uv.y,
+            self.uv.x, 1 - self.uv.y,
             0,
             -self.tangent.y, self.tangent.z, self.tangent.x)
 
@@ -135,9 +135,9 @@ class Mesh(object):
                 vertex_id = len(self.vertices)
                 max_vertex_id = len(self.vertices) - 1
                 for i in range(0, len(self.vertices)):
-                    old_vertex = self.vertices[max_vertex_count - i]
+                    old_vertex = self.vertices[max_vertex_id - i]
                     if old_vertex == new_vertex:
-                        vertex_id = max_vertex_count - i
+                        vertex_id = max_vertex_id - i
                         break
                 if vertex_id == len(self.vertices):
                     # not match

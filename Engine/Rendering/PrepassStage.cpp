@@ -183,6 +183,7 @@ void PrepassStage::CreateRenderState() {
 	// culling pass blend state
 	R_BLEND_STATUS blend = {};
 	blend.Enable = 0;
+	blend.AlphaToCoverage = 0;
 	blend.SrcBlend = R_BLEND::BLEND_ONE;
 	blend.DestBlend = R_BLEND::BLEND_ONE;
 	blend.BlendOp = R_BLEND_OP::BLEND_OP_ADD;
@@ -208,6 +209,12 @@ void PrepassStage::CreateRenderState() {
 	blend.DestBlendAlpha = R_BLEND::BLEND_ZERO;
 	blend.BlendOpAlpha = R_BLEND_OP::BLEND_OP_ADD;
 	BlendStat[3] = Interface->CreateBlendStatus(&blend);
+	// a2c
+	blend.Enable = 0;
+	blend.AlphaToCoverage = 1;
+	blend.Mask = R_BLEND_MASK::ENABLE_ALL;
+	BlendStat[4] = Interface->CreateBlendStatus(&blend);
+
 	// restar
 	R_RASTERIZER_DESC raster = {};
 	raster.CullMode = R_CULL::NONE;
@@ -230,6 +237,7 @@ void PrepassStage::CreateRenderState() {
 	Context->RegisterRenderState("Additive", BlendStat[1]);
 	Context->RegisterRenderState("Blend", BlendStat[2]);
 	Context->RegisterRenderState("AlphaBlend", BlendStat[3]);
+	Context->RegisterRenderState("A2C", BlendStat[4]);
 	Context->RegisterRenderState("NoCull", RasterStat[0]);
 	Context->RegisterRenderState("Rasterizer", RasterStat[1]);
 }
@@ -252,9 +260,9 @@ void PrepassStage::PrePass(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	renderview->Queue = renderQueue;
 	// set render target
 	renderview->TargetCount = 5;
-	renderview->Targets[0] = Targets[0];
+	renderview->Targets[0] = Targets[3];
 	renderview->Targets[1] = CompactData[Frames % 2];
-	renderview->Targets[2] = Targets[3];
+	renderview->Targets[2] = Targets[0];
 	renderview->Targets[3] = Targets[4];
 	renderview->Targets[4] = Targets[2];
 	renderview->Depth = Depth;

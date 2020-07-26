@@ -1026,7 +1026,7 @@ int D3D12Render::CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc) {
 
 int D3D12Render::CreateBlendStatus(R_BLEND_STATUS* Desc) {
 	D3DRenderState State = {};
-	State.Blend.AlphaToCoverageEnable = FALSE;
+	State.Blend.AlphaToCoverageEnable = Desc->AlphaToCoverage;
 	State.Blend.IndependentBlendEnable = FALSE;
 	State.Blend.RenderTarget[0].BlendEnable = Desc->Enable;
 	State.Blend.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)Desc->BlendOp;

@@ -109,6 +109,27 @@
     </technique>
   </shader>
 
+  <shader name="Alpha">
+    <technique name="GBuffering_Alpha" instance="yes">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="A2C" rtformat="GBuffer">
+        <vs url="Shaders\shaders\instance-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading" instance="yes">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="A2C"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\instance-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow_Alpha" instance="yes">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="A2C" rtformat="GBuffer">
+        <vs url="Shaders\shaders\instance-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="BasicNoCull">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">

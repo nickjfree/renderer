@@ -395,6 +395,7 @@ enum R_BLEND_MASK {
 */
 typedef struct R_BLEND_STATUS {
 	bool  Enable;
+	bool  AlphaToCoverage;
 	R_BLEND    SrcBlend;
 	R_BLEND    DestBlend;
 	R_BLEND_OP BlendOp;

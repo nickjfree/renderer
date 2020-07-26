@@ -102,14 +102,14 @@ float3 GetPositionLoad(float2 uv)
 float4 GetNormal(float2 uv)
 {
     float4 raw =  gCompactBuffer.Sample(gSamPoint, uv);
-    return float4(DecodeNormal(raw.zw), 0);
+    return float4(DecodeNormal(raw.xy), 0);
 }
 
 // get the  space normal vector at uv in screen space
 float4 GetNormalLoad(float2 uv)
 {
     float4 raw =  gCompactBuffer.SampleLevel(gSamPoint, uv, 0);
-    return float4(DecodeNormal(raw.zw), 0);
+    return float4(DecodeNormal(raw.xy), 0);
 }
 
 // sample gbuffer
@@ -167,7 +167,7 @@ float2 GetPrevScreenCoordLoad(float2 uv, out float valid)
 
 float GetObjectId(float2 uv) 
 {
-    return gCompactBuffer.Sample(gSamPoint, uv).x;
+    return gCompactBuffer.Sample(gSamPoint, uv).w;
 }
 
 

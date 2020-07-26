@@ -57,11 +57,11 @@ float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, f
     float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
     if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
         // check for object id
-        if (abs(objectId - compactData.x) > 0.001f) return 0.0;
+        if (abs(objectId - compactData.w) > 0.001f) return 0.0;
         // check for normal
-        float3 prevNormal = DecodeNormal(compactData.zw);
+        float3 prevNormal = DecodeNormal(compactData.xy);
         if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) return 0.0;
-        float prevLinearZ = compactData.y;
+        float prevLinearZ = compactData.z;
         // check for linear depth
         float maxChangeZ = max(abs(ddx(currentLinearZ)), abs(ddy(currentLinearZ)));
         if(abs(prevLinearZ - currentLinearZ) / (maxChangeZ + 1e-4) > 2.0) return 0.0;
@@ -89,14 +89,14 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     normal = ps_input.Normal * normal.z + normal.x * ps_input.Tangent + normal.y * ps_input.BiNormal;
     normal = normalize(normal);
     // output
-    output.Compact.zw = EncodeNormal(normal.xyz);
+    output.Compact.xy = EncodeNormal(normal.xyz);
     // depth: view space z value
     output.Depth.x = ps_input.Depth;
     output.Diffuse = diffuse;
     // x: specular  y: roughness  z: metallic
     output.Specular = float4(gSpecular, specular.y, specular.z, 0);
     // compact info: object id
-    output.Compact.x = ps_input.ObjectId;
+    output.Compact.w = ps_input.ObjectId;
 
     // output.Specular = float4(gSpecular, 0.1, specular.z, 0);
     // motion vectors
@@ -109,7 +109,7 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     //set motion vector and compact buffer
     output.Motion = float4(prevScreen.xy - currentScreen.xy, 0, valid);
     // history length
-    output.Compact.y = ps_input.Depth;
+    output.Compact.z = ps_input.Depth;
     return output;
 }
 

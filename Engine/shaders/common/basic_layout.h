@@ -82,9 +82,9 @@ struct PS_Input_GBuffer
 // GBuffer pixel shader output
 struct PS_Output_GBuffer
 {
-    float4 Depth : SV_Target0;
-    float4 Compact: SV_Target1;
-    float4 Diffuse: SV_Target2;
+    float4 Diffuse : SV_Target0;
+    float4 Compact: SV_Target1;   //  xy: normal  z: linearZ(half)  w: objectId,
+    float4 Depth: SV_Target2;     // linearZ
     float4 Specular: SV_Target3;
     float4 Motion: SV_Target4;
 };

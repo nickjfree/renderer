@@ -191,6 +191,8 @@ void D3D12Render::InitD3D12() {
 		texture.Target[n] = rtvHandle;
 		texture.Texture[n] = RenderTargets[n];
 		texture.State[n].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
+		// debug
+		RenderTargets[n]->SetName(L"BackBuffer");
 	}
 	// init rootsigature
 
@@ -537,6 +539,9 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 			pClear,
 			IID_PPV_ARGS(&texture.Texture[i]));
 		texture.State[i].CurrentState = state;
+
+		// debug 
+		texture.Texture[i]->SetName(L"RenderTarget");
 	}
 }
 
@@ -682,7 +687,10 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			nullptr,
 			IID_PPV_ARGS(&Buffer.BufferResource[n]));
-	
+		
+		// debug
+		Buffer.BufferResource[n]->SetName(L"Buffer");
+
 		// upload cpu data to this buffer
 		if (desc->CPUData) {
 			CommandContext* Context = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -761,6 +769,10 @@ int D3D12Render::CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		nullptr,
 		IID_PPV_ARGS(&Geometry.IndexResource));
+	// debug 
+	Geometry.VertexResource->SetName(L"VertexBuffer");
+	Geometry.IndexResource->SetName(L"IndexBuffer");
+
 	Geometry.VBSize = VertexSize;
 	Geometry.INum = INum;
 	Geometry.VSize = VBSize;
@@ -849,6 +861,9 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 			nullptr,
 			IID_PPV_ARGS(&Blas.BLAS[i]));
 		Blas.BLASState[i].CurrentState = D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE;
+		// debug
+		Blas.Scrach[i]->SetName(L"ScrachBuffer");
+		Blas.BLAS[i]->SetName(L"BLAS");
 	}
 	// create bottom level as
 	if (Deformable) {

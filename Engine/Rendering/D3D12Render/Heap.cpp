@@ -40,6 +40,7 @@ void Heap::Init(ID3D12Device* Device_, UINT64 MaxSize_, int Type_, D3D12_RESOURC
 		State,
 		nullptr,
 		IID_PPV_ARGS(&Buffer));
+	Buffer->SetName(L"Heap");
 	if (Type == HeapType::CPU) {
 		CD3DX12_RANGE readRange(0, 0);
 		Buffer->Map(0, &readRange, &CpuData);

@@ -121,6 +121,7 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
 PS_Output_Simple PS_Simple(PS_Input_Simple ps_input)
 {   
     PS_Output_Simple output = (PS_Output_Simple)0;
-    output.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    output.Color = gDiffuseMap0.Sample(gSam, ps_input.TexCoord);
+    // output.Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
     return output;
 }

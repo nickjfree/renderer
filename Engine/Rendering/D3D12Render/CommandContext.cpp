@@ -130,6 +130,8 @@ void CommandContext::InitializeTexture(ID3D12Resource* DestResource, std::vector
 		nullptr,
 		IID_PPV_ARGS(&uploadHeap));
 
+	uploadHeap->SetName(L"TextureUploadHeap");
+
 	UpdateSubresources(CommandList, DestResource, uploadHeap,
 		0, 0, static_cast<UINT>(subresources.size()), subresources.data());
 	// resource barrier
@@ -151,6 +153,9 @@ void CommandContext::InitializeVetexBuffer(ID3D12Resource* DestResource, void* B
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&uploadHeap));
+
+	// debug
+	uploadHeap->SetName(L"VertexBufferUploadHeap");
 
 	D3D12_SUBRESOURCE_DATA Data = {};
 	Data.pData = Buffer;
@@ -181,6 +186,8 @@ void CommandContext::InitializeIndexBuffer(ID3D12Resource* DestResource, void* B
 		nullptr,
 		IID_PPV_ARGS(&uploadHeap));
 
+	uploadHeap->SetName(L"IndexBufferUploadHeap");
+
 	D3D12_SUBRESOURCE_DATA Data = {};
 	Data.pData = Buffer;
 	Data.RowPitch = Size;
@@ -210,6 +217,8 @@ void D3D12API::CommandContext::InitializeUnorderedAccessBuffer(ID3D12Resource* D
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&uploadHeap));
+
+	uploadHeap->SetName(L"UAVUploadHeap");
 
 	D3D12_SUBRESOURCE_DATA Data = {};
 	Data.pData = Buffer;

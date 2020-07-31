@@ -128,12 +128,13 @@ namespace
 	template<UINT TNameLength>
 	inline void SetDebugObjectName(_In_ ID3D12DeviceChild* resource, _In_z_ const wchar_t(&name)[TNameLength])
 	{
-#if !defined(NO_D3D12_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
+//#if !defined(NO_D3D12_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
+//		resource->SetName(name);
+//#else
+//		UNREFERENCED_PARAMETER(resource);
+//		UNREFERENCED_PARAMETER(name);
+//#endif
 		resource->SetName(name);
-#else
-		UNREFERENCED_PARAMETER(resource);
-		UNREFERENCED_PARAMETER(name);
-#endif
 	}
 
 	inline uint32_t CountMips(uint32_t width, uint32_t height)

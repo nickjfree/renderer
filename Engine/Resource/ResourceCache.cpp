@@ -11,6 +11,7 @@
 #include "Resource/Level.h"
 #include "Animation/Skeleton.h"
 #include "Animation/BlendShape.h"
+#include "Rendering/TerrainNode.h"
 
 
 
@@ -67,7 +68,7 @@ int ResourceCache::AsyncLoadResource(const String& URL, Resource* Caller, Varian
 				Caller->OnSubResource(Resource::RM_LOAD, sub, Param);
 			}
 			else if (sub->GetAsyncStatus() == Resource::S_LOADING) {
-				// loading nothing to be done, add owner
+				// loading. nothing to be done, add owner
 				sub->AddOwner(Caller, Param);
 			}
 			else if (sub->GetAsyncStatus() == Resource::S_DESTORYED) {
@@ -219,6 +220,8 @@ int ResourceCache::Initialize() {
 	RegisterResource<Skeleton>();
 	RegisterResource<Animation>();
 	RegisterResource<BlendShape>();
+	RegisterResource<TerrainNode>();
+	RegisterResource<TerrainPayload>();
 	// register resource loader
 	RegisterLoader<FileMappingLoader>();
 	RegisterLoader<FileLoader>();

@@ -32,7 +32,7 @@ int Node::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside) {
 	LinkList<Node>::Iterator Iter;
 	for (Iter = SubNodes.Begin(); Iter != SubNodes.End(); Iter++) {
 		Node* sub = *Iter;
-		CullingObject& cull_obj = sub->GetCullingObject();
+		auto& cull_obj = sub->GetCullingObject();
 		int test = Fr.Contains(cull_obj);
 		switch (test) {
 		case ContainType::CONTAINS:

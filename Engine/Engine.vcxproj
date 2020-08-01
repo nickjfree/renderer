@@ -205,6 +205,9 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\ShaderLibrary.h" />
     <ClInclude Include="Rendering\ShadowMapStage.h" />
     <ClInclude Include="Rendering\Spatial.h" />
+    <ClInclude Include="Rendering\Terrain.h" />
+    <ClInclude Include="Rendering\TerrainNode.h" />
+    <ClInclude Include="Rendering\TerrainPayload.h" />
     <ClInclude Include="Rendering\Texture.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Resource\BinarySerializer.h" />
@@ -318,6 +321,9 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\ShaderLibrary.cpp" />
     <ClCompile Include="Rendering\ShadowMapStage.cpp" />
     <ClCompile Include="Rendering\Spatial.cpp" />
+    <ClCompile Include="Rendering\Terrain.cpp" />
+    <ClCompile Include="Rendering\TerrainNode.cpp" />
+    <ClCompile Include="Rendering\TerrainPayload.cpp" />
     <ClCompile Include="Rendering\Texture.cpp" />
     <ClCompile Include="Resource\BinarySerializer.cpp" />
     <ClCompile Include="Resource\FileMappingLoader.cpp" />

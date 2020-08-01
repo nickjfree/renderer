@@ -7,6 +7,7 @@
 #include "RenderPreloading.h"
 #include "Rendering\MeshRenderer.h"
 #include "Rendering\Light.h"
+#include "Terrain.h"
 
 
 RenderingSystem::RenderingSystem(Context* context) : System(context), frames(0)
@@ -83,6 +84,7 @@ int RenderingSystem::Initialize() {
 	// context->RegisterObject<Renderer>();
 	context->RegisterObject<Light>();
 	context->RegisterObject<MeshRenderer>();
+	context->RegisterObject<Terrain>();
 	return 0;
 }
 

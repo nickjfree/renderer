@@ -30,7 +30,7 @@ int BasicCullingImp::Query(Vector<Node*>& Result, int Type) {
 
 // insert
 int BasicCullingImp::Add(RenderObject* RenderObj) {
-	CullingObject& cul_obj = RenderObj->GetCullingObject();
+	auto& cul_obj = RenderObj->GetCullingObject();
 	// use box for some other use
 	Root->AddChild(RenderObj);
 	return 0;

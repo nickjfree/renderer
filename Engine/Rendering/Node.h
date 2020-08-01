@@ -56,6 +56,7 @@ public:
 		REFLECT = 8,
 		PORTAL = 16,
 		TRANS = 32,
+		TERRAIN = 64,
 		POST
 	};
 
@@ -66,8 +67,8 @@ private:
 public:
 	Node();
 	virtual ~Node();
-	CullingObject& GetCullingObject() { return CullingObj; }
-	int SetCullingObject(CullingObject& obj) { CullingObj = obj; return 0; }
+	const CullingObject& GetCullingObject() const { return CullingObj; }
+	int SetCullingObject(const CullingObject& obj) { CullingObj = obj; return 0; }
 	void AddChild(Node* Child);
 	void Remove(Node* Child);
 	// query by frustum and types

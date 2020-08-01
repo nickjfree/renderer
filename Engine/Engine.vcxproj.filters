@@ -431,6 +431,15 @@
     <ClInclude Include="Rendering\D3D12Render\ShaderBindingTable.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\TerrainNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\TerrainPayload.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Terrain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -866,6 +875,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\D3D12Render\ShaderBindingTable.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\TerrainNode.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\TerrainPayload.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\Terrain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

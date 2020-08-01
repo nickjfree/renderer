@@ -504,8 +504,7 @@ void D3D12Render::CreateTexture2DRaw(R_TEXTURE2D_DESC* Desc, D3DTexture& texture
 		if (clear.Format == FORMAT_R32_TYPELESS) {
 			clear.Format = (DXGI_FORMAT)FORMAT_D32_FLOAT;
 		}
-	}
-	else if (Desc->BindFlag & BIND_RENDER_TARGET) {
+	} else if (Desc->BindFlag & BIND_RENDER_TARGET) {
 		// Num = NUM_FRAMES;
 		texture.MultiFrame = true;
 		textureDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;

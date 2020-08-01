@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-    <texture unit="gLightProbe" name="LightProbe" url="Texture\textures\lightprobe.dds\0">lightprobe</texture>
-    <texture unit="gLUT" name="lut" url="Texture\textures\lut.dds\0">lub</texture>
-    <texture unit="gLdCube" name="ldcube" url="Texture\textures\pre.dds\0">pre</texture>
-    <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\irr.dds\0">irr</texture>
+    <texture unit="gLightProbe" name="LightProbe" url="Texture\textures\iblEnvHDR.dds\0">lightprobe</texture>
+    <texture unit="gLUT" name="lut" url="Texture\textures\iblBrdf.dds\0">lut</texture>
+    <texture unit="gLdCube" name="ldcube" url="Texture\textures\iblSpecularHDR.dds\0">pre</texture>
+    <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\iblDiffuseHDR.dds\0">irr</texture>
   </textures>
   <shader name="PointLight" url="Shader\shaders\PointLight\0"></shader>
 </material>

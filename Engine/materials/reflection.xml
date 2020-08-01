@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-    <texture unit="gLUT" name="reflection_lut" url="Texture\textures\lut.dds\0">reflection_lut</texture>
+    <texture unit="gLUT" name="reflection_lut" url="Texture\textures\iblBrdf.dds\0">reflection_lut</texture>
   </textures>
 
   <shader name="reflection" url="Shader\shaders\Reflection\0"></shader>

@@ -31,6 +31,7 @@ public:
 	DWORD VTSize;
 	void* VBuffer;
 	DWORD INum;
+	DWORD IndexSize;
 	WORD* IBuffer;
 	// physics data
 	int NumConvex;

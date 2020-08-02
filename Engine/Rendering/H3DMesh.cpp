@@ -39,9 +39,14 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 	DWORD INum = H3DMesh->IndexNum;
 	WORD* Index = (WORD*)(H3DMesh->OffsetIndex + (char*)Header);
 	VBuffer = Vertex;
+	// vertex buffer size
 	VBSize = VSize;
+	// index number
 	this->INum = INum;
+	// vertex size
 	VTSize = H3DMesh->VertexSize;
+	// index size
+	IndexSize = H3DMesh->IndexSize;
 	IBuffer = Index;
 	// check for out off bound indices
 	for (DWORD i = 0; i < INum; i++) {
@@ -57,7 +62,8 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 
 int H3DMesh::OnLoadComplete(Variant& Data) {
 	// create geometry in GPU
-	id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, FORMAT_R16_UINT, R_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	R_FORMAT format = IndexSize == 2 ? FORMAT_R16_UINT : FORMAT_R32_UINT;
+	id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, format, R_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// calc AABB 
 	float minx = 0, miny = 0, minz = 0;
 	float maxx = 0, maxy = 0, maxz = 0;

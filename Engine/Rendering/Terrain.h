@@ -6,6 +6,18 @@
 #include "../Container/Vector.h"
 #include "RenderObject.h"
 
+typedef struct TerrainVertex {
+	// position
+	float x, y, z;
+	// ring level
+	float ringLevel;
+	// sampleLevel
+	float sampeLevel;
+	// pad
+	float id;
+}TerrainVertex;
+
+
 class Terrain : public Component
 {
 	OBJECT(Terrain);
@@ -17,11 +29,14 @@ private:
 	Vector<TerrainNode*> rootNodes;
 	// the world size
 	int sizeX_, sizeY_;
-
+	// clipmap mesh 
+	int clipmapGeometry_;
+private:
+	
 public:
 	Terrain(Context* context);
 	// init terrain 
-	void Init(int sizeX, int sizeY, int level);
+	void Init(int sizeX, int sizeY, int numLevels);
 
 
 };

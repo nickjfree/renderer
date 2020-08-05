@@ -31,7 +31,7 @@ private:
 	// parameters. 
 	Dict Parameters;
 	// xml doc
-	xml_document<>* xml_doc;
+	std::unique_ptr<xml_document<>> xml_doc;
 	// raw xml data
 	void* RawXML;
 public:

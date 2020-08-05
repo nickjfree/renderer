@@ -19,7 +19,7 @@ int Material::OnSerialize(Deserializer& deserializer) {
 	//parse as xml file
 	RawXML = deserializer.Raw();
 	XMLParser Parser;
-	xml_doc = Parser.Parse(RawXML);
+	xml_doc = std::unique_ptr<xml_document<>>(Parser.Parse(RawXML));
 	// free buffer used by file data
 
 	// read xml structures
@@ -131,7 +131,7 @@ int Material::OnDestroy(Variant& Data) {
 	}
 	// free xml node
 	xml_doc->clear();
-	delete xml_doc;
+	// delete xml_doc;
 	DeSerial.Release();
 	return 0;
 }

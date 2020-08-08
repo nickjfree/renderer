@@ -6,6 +6,9 @@
 #include "../common/deferred.h"
 
 
+// uav deformable buffer. transformed vertext stored in this buffer
+RWStructuredBuffer<VS_Input_Simple> gDeformableBuffer     : register( u0 );
+
 /*
     snap terrain vertex to grid
 */

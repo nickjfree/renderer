@@ -30,8 +30,8 @@ void RenderObject::SetTransparent() {
 	Type = Node::TRANS;
 }
 
-void RenderObject::SetNoCull() {
-	Type |= Node::NO_CULL;
+void RenderObject::SetClipmap() {
+	Type |= Node::CLIPMAP;
 }
 
 int RenderObject::GetRenderMesh(int Stage, int Lod) const {
@@ -72,8 +72,8 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	StageParameter["InstanceObjectId"].as<int>() = StageParameter["gObjectId"].as<int>();
 	// get geometry
 	int Geometry = GetRenderMesh(Stage, Lod);
-	// if there is a skinning matrix
-	if (palette.Size) {
+	// if there is a skinning matrix or is a terrain.
+	if (palette.Size || Type & CLIPMAP) {
 		StageParameter["gSkinMatrix"].as<ShaderParameterArray>() = palette;
 		// deformabled buffer
 		if (Stage == 0 && DeformableBuffer != -1) {
@@ -132,7 +132,7 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 
 		auto renderInterface = Context->GetRenderInterface();
 		if (Geometry != -1) {
-			if (RaytracingGeometry == -1 && palette.Size == 0) {
+			if (RaytracingGeometry == -1 && palette.Size == 0 && !(Type & CLIPMAP)) {
 				// create it, static geometry
 				RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
 			}

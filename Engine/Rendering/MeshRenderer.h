@@ -46,7 +46,7 @@ public:
 	// set transparent
 	void SetTransparente();
 	// set no cull
-	void SetNoCull();
+	void SetClipmap();
 	// get model
 	Model* GetModel() { return renderObject->GetModel(); }
 	// get test frame data

@@ -43,7 +43,7 @@ public:
 	// set type
 	void SetTransparent();
 	// set no cull
-	void SetNoCull();
+	void SetClipmap();
 	// get model
 	Model* GetModel() const { return model; }
 	// get material

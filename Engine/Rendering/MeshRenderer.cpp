@@ -83,8 +83,8 @@ void MeshRenderer::SetTransparente() {
 	renderObject->SetTransparent();
 }
 
-void MeshRenderer::SetNoCull() {
-	renderObject->SetNoCull();
+void MeshRenderer::SetClipmap() {
+	renderObject->SetClipmap();
 }
 
 void MeshRenderer::SetBlendShape(BlendShape* Shape) {

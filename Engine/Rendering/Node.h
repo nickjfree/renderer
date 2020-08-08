@@ -57,7 +57,7 @@ public:
 		PORTAL = 16,
 		TRANS = 32,
 		TERRAIN = 64,
-		NO_CULL = 128,
+		CLIPMAP = 128,
 		POST
 	};
 

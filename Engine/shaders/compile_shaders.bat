@@ -18,6 +18,10 @@ fxc /T vs_5_1 /E VS_Skinning_GBuffer /Fo skin-gbuffer.vs  animation/skinning.hls
 fxc /T vs_5_1 /E VS_BlendShape_Simple /Fo blendshape-simple.vs  animation/blendshape.hlsl
 fxc /T vs_5_1 /E VS_BlendShape_GBuffer /Fo blendshape-gbuffer.vs  animation/blendshape.hlsl
 
+fxc /T vs_5_1 /E VS_Terrain_GBuffer /Fo terrain-gbuffer.vs  terrain/terrain.hlsl
+fxc /T vs_5_1 /E VS_Terrain_Simple /Fo terrain-simple.vs  terrain/terrain.hlsl
+
+fxc /T ps_5_1 /E PS_Terrain_GBuffer /Fo terrain-gbuffer.ps  terrain/terrain.hlsl
 
 fxc /T vs_5_1 /E VS /Fo quad.vs  common/quad.hlsl
 

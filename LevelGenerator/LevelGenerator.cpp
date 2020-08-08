@@ -48,7 +48,8 @@ int TestGen(char * File) {
 
         "Material\\Materials\\lightprobe.xml\\0",
         "Material\\Materials\\head.xml\\0",
-        "Material\\Materials\\ground.xml\\0", 
+        // "Material\\Materials\\ground.xml\\0", 
+        "Material\\Materials\\terrain.xml\\0",
         "Material\\Materials\\human.xml\\0",
         //"Material\\Materials\\resistor.xml\\0",
         "Material\\Materials\\light.xml\\0",
@@ -168,7 +169,7 @@ int TestGen(char * File) {
 
 
     // ground  as a big plane
-    strcpy_s(object.Name, "Ground");
+    strcpy_s(object.Name, "Terrain");
     object.NumComponents = 1;
     object.Position = Vector3(0.0f, 0.0f, 0.0f);
     rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);

@@ -83,6 +83,10 @@ void MeshRenderer::SetTransparente() {
 	renderObject->SetTransparent();
 }
 
+void MeshRenderer::SetNoCull() {
+	renderObject->SetNoCull();
+}
+
 void MeshRenderer::SetBlendShape(BlendShape* Shape) {
 	renderObject->SetBlendShape(Shape);
 }

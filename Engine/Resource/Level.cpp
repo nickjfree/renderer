@@ -280,6 +280,7 @@ int Level::InitScript() {
 		if (object->GetName() == "Player" || object->GetName() == "NPC") {
 			auto Character = context->CreateObject<CharacterController>();
 			// creat convext hulls for collision shape
+			object->SetTranslation(Vector3(0, 0, 0));
 			MeshRenderer* render = (MeshRenderer*)object->GetComponent("Renderer");
 			Model* model = render->GetModel();
 			object->AddComponent(Character);
@@ -289,9 +290,17 @@ int Level::InitScript() {
 			object->AddComponent(script);
 		}
 		if (object->GetName() == "Light2" || object->GetName() == "LightProb") {
-			// global light should follow camera
+			// global light and terrain  should follow camera
 			MainCamera->Attach(object);
 		}
+		if (object->GetName() == "Terrain") {
+			// test terrain rendering. no cull and always at origin
+			object->SetTranslation(Vector3(0, 0, 0));
+			object->SetRotation(Quaternion());
+			auto renderer = (MeshRenderer *)object->GetComponent("Renderer");
+			renderer->SetNoCull();
+		}
+
 	}
 	return 0;
 }

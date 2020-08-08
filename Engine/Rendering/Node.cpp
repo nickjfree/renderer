@@ -42,6 +42,11 @@ int Node::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside) {
 			inside = false;
 			break;
 		case ContainType::DISJOINT:
+			if (sub->Type & NO_CULL) {
+				// object is forced always visiable
+				inside = false;
+				break;
+			}
 			continue;
 		default:
 			continue;

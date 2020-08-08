@@ -45,6 +45,8 @@ public:
 	void SetMaterial(Material* material) { renderObject->SetMaterial(material); }
 	// set transparent
 	void SetTransparente();
+	// set no cull
+	void SetNoCull();
 	// get model
 	Model* GetModel() { return renderObject->GetModel(); }
 	// get test frame data

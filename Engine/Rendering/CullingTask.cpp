@@ -34,7 +34,7 @@ int CullingTask::Work() {
 		RenderObject* obj = (RenderObject*)renderview->VisibleObjects[i];
 		Compiled += obj->Compile(Compiler, renderview->Type, 0, renderview->Parameters, renderview->Camera, Context);
 		// clear frame params
-		renderview->Parameters.Clear();
+		// renderview->Parameters.Clear();
 		if (Compiled >= COMMANDBUFFER_SIZE) {
 			printf("warning: commandbuffer overflow\n");
 			break;

@@ -30,6 +30,10 @@ void RenderObject::SetTransparent() {
 	Type = Node::TRANS;
 }
 
+void RenderObject::SetNoCull() {
+	Type |= Node::NO_CULL;
+}
+
 int RenderObject::GetRenderMesh(int Stage, int Lod) const {
 	// ignore stage
 	Mesh* mesh = model->MeshResource[Lod];

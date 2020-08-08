@@ -130,6 +130,28 @@
     </technique>
   </shader>
 
+  <shader name="Terrain">
+    <technique name="GBuffering_Terrain">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\terrain-gbuffer.vs"></vs>
+        <ps url="Shaders\shaders\gbuffer.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shading">
+      <pass name="Basic-shading" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend"  rtformat="PostBuffer">
+        <vs url="Shaders\shaders\terrain-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="Shadow_Terrain">
+      <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
+        <vs url="Shaders\shaders\terrain-simple.vs"></vs>
+        <ps url="Shaders\shaders\simple.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
+
   <shader name="BasicNoCull">
     <technique name="GBuffering">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="NoCull" blend="Blend">

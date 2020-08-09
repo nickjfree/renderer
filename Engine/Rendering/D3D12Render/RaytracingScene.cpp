@@ -140,6 +140,9 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cmdContext, UINT64 GraphicsFenceValue) {
 	// rebuild all bottom level as for deformable geometries
 	auto cmdList = cmdContext->GetRaytracingCommandList();
+
+	// printf("AAAAA %d\n", BottomLevelDesc.Size());
+
 	// wait for frev frame's  graphic work to complete
 	if (GraphicsFenceValue == 0) {
 		// we are the first frame

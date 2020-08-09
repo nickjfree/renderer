@@ -54,7 +54,7 @@ PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
     // final color
     output.Color = float4(intensity * lighting_color * saturate(dot(normal, L)), 0);
     
-    // output.Color = output.Color + 0.1 * float4(shadow, shadow, shadow, 0);
+    // output.Color = float4(L, 0);
     return output;
 }
 

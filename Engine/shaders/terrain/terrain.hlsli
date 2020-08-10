@@ -15,12 +15,14 @@ RWStructuredBuffer<VS_Input_Simple> gDeformableBuffer     : register( u0 );
 float3 snap_terrain_vertex(float3 position, float3 cameraPosition) 
 {
     // get climap level
-    int level = floor(position.y / 2) + 1;
-    float levelScale = 1.0/level;
+    int sampleLevel = floor(position.y / 2) + 1;
+    int moveLevel = floor((position.y /2) + 0.5) + 1;
+    float levelScale = 1.0 / moveLevel;
     // snap vertex to grid
-    float3 centerOffset = floor(cameraPosition) * levelScale;
-    centerOffset = floor(centerOffset) * level;
-    return float3(position.x + centerOffset.x, level, position.z + centerOffset.z);
+    position = floor(position + cameraPosition);
+    float3 centerOffset = floor(position * levelScale);
+    centerOffset = centerOffset * moveLevel;
+    return float3(centerOffset.x, moveLevel, centerOffset.z);
 }
 
 /*
@@ -44,16 +46,16 @@ VS_Input_Simple transform_terrain(VS_Input_Simple vs_input)
     // calc uv
     float2 uv = position.xz / 8.0f;
     // sample height map
-    position.y = get_terrain_vertex_height(uv, position.y);
+    // position.y = get_terrain_vertex_height(uv, position.y);
     // noraml is always up
     float4 normal = float4(0, 1, 0, 0);
     // transform tangent
-    float4 tangent = float4(1, 0, 0, 0);
+    float3 tangent = vs_input.Tangent;
     // return output
     vs_input.PosL = position.xyz;
     vs_input.TexCoord = uv;
     vs_input.Normal = normal.xyz;
-    vs_input.Tangent = tangent.xyz;
+    vs_input.Tangent = tangent;
 
     return vs_input;
 }

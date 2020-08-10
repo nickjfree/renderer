@@ -11,8 +11,6 @@ PS_Output_Simple PS_Point_Light(PS_Input_Simple ps_input)
     GBuffer gbuffer = GetGBuffer(ps_input.TexCoord);
     // shadow value, it is light intense
     float shadow = shadow_value(gbuffer);
-    // lighting color
-    float3 lighting_color = deferred_lighting(gbuffer).xyz;
     // adjust lighting by distance and light intensity
     float radius = gRadiusIntensity.x;
     float intensity = gRadiusIntensity.y;
@@ -23,6 +21,8 @@ PS_Output_Simple PS_Point_Light(PS_Input_Simple ps_input)
     // get L, V, vectors
     float3 L = gLightPosition.xyz - position.xyz;
     L = normalize(L);
+    // lighting color
+    float3 lighting_color = deferred_lighting(gbuffer, L).xyz;
     // distance from light
     float d = distance(gLightPosition.xyz, position.xyz);
     // an value
@@ -48,11 +48,13 @@ PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
     float3 L = -gLightDirection.xyz;
     L = normalize(L);
     // deferred lighting
-    float3 lighting_color = gLightColor.xyz * deferred_lighting(gbuffer).xyz;
+    float3 lighting_color = gLightColor.xyz * deferred_lighting(gbuffer, L).xyz;
     // direction light shadow
     float shadow = gDiffuseMap0.Sample(gSam, ps_input.TexCoord).x;
     // final color
     output.Color = float4(intensity * lighting_color * saturate(dot(normal, L)), 0);
+
+    // output.Color = float4(intensity * lighting_color, 0);
     
     // output.Color = float4(L, 0);
     return output;

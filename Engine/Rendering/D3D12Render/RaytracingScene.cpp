@@ -141,7 +141,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// rebuild all bottom level as for deformable geometries
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 
-	// printf("AAAAA %d\n", BottomLevelDesc.Size());
+	// printf("to Build %d\n", BottomLevelDesc.Size());
 
 	// wait for frev frame's  graphic work to complete
 	if (GraphicsFenceValue == 0) {
@@ -160,8 +160,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 		if (OldState != NewState) {
 			if (OldState == D3D12_RESOURCE_STATE_COPY_DEST) {
 				// buffer was not deformed 
-				BottomLevelDesc.Reset();
-				return 0;
+				continue;
 			}
 			CD3DX12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(bottoemLevelDesc.Buffer->BufferResource[FrameIndex], OldState, NewState);
 			ResourceBarriers.PushBack(Barrier);
@@ -174,9 +173,15 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 		ResourceBarriers.Reset();
 	}
 	// build them
+	// printf("Build %d\n", BottomLevelDesc.Size());
 	for (auto Iter = BottomLevelDesc.Begin(); Iter != BottomLevelDesc.End(); Iter++) {
 		auto& bottoemLevelDesc = *Iter;
 		auto FrameIndex = bottoemLevelDesc.FrameIndex;
+		D3D12_RESOURCE_STATES OldState = bottoemLevelDesc.Buffer->State[FrameIndex].CurrentState;
+		if (OldState == D3D12_RESOURCE_STATE_COPY_DEST) {
+			// buffer was not deformed 
+			continue;
+		}
 		cmdList->BuildRaytracingAccelerationStructure(&bottoemLevelDesc.buildDesc, 0, nullptr);
 		auto Barrier = CD3DX12_RESOURCE_BARRIER::UAV(bottoemLevelDesc.Blas->BLAS[FrameIndex]);
 		ResourceBarriers.PushBack(Barrier);

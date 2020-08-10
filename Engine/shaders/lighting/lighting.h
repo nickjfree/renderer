@@ -153,14 +153,14 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 /*
     get deferred lighing color from gbuffer
 */
-float4 deferred_lighting(GBuffer gbuffer)
+float4 deferred_lighting(GBuffer gbuffer, float3 lightDriection)
 {
     // get vectors
     float3 normal = gbuffer.Normal.xyz;
     float3 position = gbuffer.Position;
     // get L, V, vectors
-    float3 L = gLightPosition.xyz - position.xyz;
-    L = normalize(L);
+    // float3 L = gLightPosition.xyz - position.xyz;
+    float3 L = normalize(lightDriection);
     float3 V = normalize(gbuffer.View);
     // calculate brdf   
     return BRDF(normal, V, L, gbuffer.Specular, F90, 

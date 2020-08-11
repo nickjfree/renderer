@@ -16,13 +16,15 @@ float3 snap_terrain_vertex(float3 position, float3 cameraPosition)
 {
     // get climap level
     int sampleLevel = floor(position.y / 2) + 1;
-    int moveLevel = floor((position.y /2) + 0.5) + 1;
-    float levelScale = 1.0 / moveLevel;
+    int snapLevel =  floor((position.y /2) + 0.5);
+    int snapUnit = 1 << snapLevel;
+    float invertUnit = 1.0 / snapUnit;
     // snap vertex to grid
-    position = floor(position + cameraPosition);
-    float3 centerOffset = floor(position * levelScale);
-    centerOffset = centerOffset * moveLevel;
-    return float3(centerOffset.x, moveLevel, centerOffset.z);
+    // cameraPosition = float3(0.9, 0, 0.9);
+    position += 0.5 * float3(snapUnit, 0, snapUnit);
+    float3 centerPosition = cameraPosition;//  + snapUnit * 0.5 + ;
+    centerPosition = floor(centerPosition * invertUnit) * snapUnit ;
+    return float3(position.x + centerPosition.x, 0, position.z + centerPosition.z);
 }
 
 /*

@@ -7,7 +7,7 @@
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
 static const float MiddleGray = 0.18f;
-static const float BRIGHT_PASS_THRESHOLD = 5.0f;
+static const float BRIGHT_PASS_THRESHOLD = 10.0f;
 
 
 
@@ -25,13 +25,13 @@ PS_Output_Simple PS_Log(PS_Input_Simple input)
     {
         // Compute the sum of log(luminance) throughout the sample points
         vSample = gPostBuffer.Sample(gSamBilinear, input.TexCoord + gSampleOffsets[iSample].xy).xyz;
-        // fLogLumSum += log(dot(vSample, LumVector)+0.0001f);
-        fLogLumSum += dot(vSample, LumVector);
+        fLogLumSum += log(dot(vSample, LumVector)+0.0001f);
+        // fLogLumSum += dot(vSample, LumVector);
     }
     // Divide the sum to complete the average
     fLogLumSum *= 0.25;
-    fLogLumSum = log(fLogLumSum + 0.0001f);
-    output.Color = float4(fLogLumSum,fLogLumSum,fLogLumSum,0);
+    // fLogLumSum = log(fLogLumSum + 0.0001f);
+    output.Color = float4(fLogLumSum, fLogLumSum, fLogLumSum,0);
     return output;
 }
 

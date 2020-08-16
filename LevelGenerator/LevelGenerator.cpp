@@ -23,7 +23,7 @@ int TestGen(char * File) {
         "Mesh\\test.pack\\cube\\0",
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
-        "Mesh\\Unit.pack\\sneak\\0",
+        "Mesh\\test.pack\\gun\\0",
         "Mesh\\BlendShapes.pack\\eyeBlink_L\\0",
     };
     MeshEntry mesh = {};
@@ -34,7 +34,7 @@ int TestGen(char * File) {
     }
     // write material 
     char * materials[15] = {
-        "Material\\Materials\\sneak.xml\\0",
+        "Material\\Materials\\gun.xml\\0",
         "Material\\Materials\\sneak1.xml\\0",
         "Material\\Materials\\sneak2.xml\\0",
         "Material\\Materials\\sneak3.xml\\0",
@@ -43,7 +43,7 @@ int TestGen(char * File) {
         "Material\\Materials\\sneak6.xml\\0",
         "Material\\Materials\\sneak7.xml\\0",
         "Material\\Materials\\sneak8.xml\\0",
-        "Material\\Materials\\sneak9.xml\\0",
+        "Material\\Materials\\gun.xml\\0",
 
 
         "Material\\Materials\\lightprobe.xml\\0",
@@ -226,7 +226,7 @@ int TestGen(char * File) {
     rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
     object.Rotation = rot;
     object.Rotation = Quaternion();
-    object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
+    // object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
     object.Scale = Vector3(1, 1, 1);
     // render componemt
     render.MaterialIndex = 5;
@@ -249,10 +249,11 @@ int TestGen(char * File) {
         rot.RotationAxis(Vector3(1, 0, 0), 1.5f * 3.14159f);
         object.Rotation = rot;
         object.Rotation = Quaternion();
-        object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
+       //  object.Rotation.RotationAxis(Vector3(1, 0, 0), 3.14159f);
         object.Scale = Vector3(1, 1, 1);
         // renderer
-        render.MaterialIndex = 5 + (i % 10);
+        // render.MaterialIndex = 5 + (i % 10);
+        render.MaterialIndex = 5;
         render.ModelIndex = 3;
         strcpy_s(render.Info.TypeName, "Renderer");
         // physics

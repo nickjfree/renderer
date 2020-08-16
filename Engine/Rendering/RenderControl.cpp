@@ -66,7 +66,7 @@ int RenderControl::Execute() {
 	for (int i = 0; i < stages; i++) {
 		RenderStage* Stage = path->Stages[i];
 		Stage->End();
-	}
+	} 
 	return 0;
 }
 

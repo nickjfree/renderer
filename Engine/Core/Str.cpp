@@ -1,14 +1,20 @@
 #include "Str.h"
 #include "MathFunc.h"
 
-
 String::String() :Length(0), Str(0)
 {
 }
 
-String::String(const char* buff)
+constexpr unsigned int const_strlen(const char* buff)
 {
-	Length = strlen(buff);
+	auto len = -1;
+	while (buff[++len]);
+	return len;
+}
+
+constexpr String::String(const char* buff): Hash(buff), Length(0), Str(0), ShortStr()
+{
+	Length = const_strlen(buff);
 	if (Length < SHORSTR_LENGTH) {
 		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
 		Str = ShortStr;
@@ -17,7 +23,8 @@ String::String(const char* buff)
 		// be carefull not to free buff from outsite
 		Str = buff;
 	}
-	Hash = StringHash(buff);
+	// Hash = StringHash(buff);
+	Str = buff;
 }
 
 String::String(const String& rh)
@@ -154,7 +161,7 @@ String::~String()
 }
 
 
-StringHash::StringHash(const char* buff)
+constexpr StringHash::StringHash(const char* buff): value(0)
 {
 	value = hash(buff);
 }
@@ -180,7 +187,7 @@ StringHash::operator unsigned int() const
 	return value;
 };
 
-unsigned int StringHash::hash(const char* buff)
+constexpr unsigned int StringHash::hash(const char* buff)
 {
 	value = djb2_hash((unsigned char*)buff);
 	return value;

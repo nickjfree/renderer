@@ -19,11 +19,11 @@ private:
 	// value
 	unsigned int value;
 private:
-	unsigned int hash(const char* buff);
+	constexpr unsigned int hash(const char* buff);
 
 public:
 	StringHash() : value(0) {};
-	StringHash(const char* buff);
+	constexpr StringHash(const char* buff);
 	StringHash(const StringHash& rh) { value = rh.value; };
 	inline operator int() const;
 	bool inline operator ==(const StringHash& rh) const;
@@ -48,7 +48,7 @@ public:
 	String();
 	String(const String& rh);
 	String(String&& rh);
-	String(const char* buff);
+	constexpr String(const char* buff);
 	String& operator=(const String& rh);
 	//String& operator=(String&& rh);
 	String& operator=(const char* rh);

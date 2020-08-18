@@ -6,10 +6,10 @@
 
 
 //djb2 hash functions
-inline unsigned int djb2_hash(unsigned char* str)
+constexpr inline unsigned int djb2_hash(unsigned char* str)
 {
 	unsigned long hash = 5381;
-	int c;
+	int c = 0;
 
 	while (c = *str++)
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */

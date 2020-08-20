@@ -1,7 +1,7 @@
 #include "Str.h"
 #include "MathFunc.h"
 
-String::String() :Length(0), Str(0)
+String::String() :Length(0), Str(0), ShortStr()
 {
 }
 
@@ -12,9 +12,10 @@ constexpr unsigned int const_strlen(const char* buff)
 	return len;
 }
 
-constexpr String::String(const char* buff): Hash(buff), Length(0), Str(0), ShortStr()
-{
-	Length = const_strlen(buff);
+
+
+String::String(char* buff): Hash(buff), Length(0), Str(0), ShortStr() {
+	Length = strlen(buff);
 	if (Length < SHORSTR_LENGTH) {
 		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
 		Str = ShortStr;
@@ -27,7 +28,7 @@ constexpr String::String(const char* buff): Hash(buff), Length(0), Str(0), Short
 	Str = buff;
 }
 
-String::String(const String& rh)
+String::String(const String& rh)noexcept : ShortStr() 
 {
 	const char* buff = rh.Str;
 	Length = strlen(rh.Str);
@@ -42,7 +43,7 @@ String::String(const String& rh)
 	Hash = rh.Hash;
 }
 
-String::String(String&& rh) {
+String::String(String&& rh) noexcept :ShortStr()   {
 	const char* buff = rh.Str;
 	Length = strlen(rh.Str);
 	if (Length < SHORSTR_LENGTH) {
@@ -92,28 +93,18 @@ String& String::operator=(const String& rh) {
 //    return *this;
 //}
 
-String& String::operator=(const char* buff) {
-	if (!buff) {
-		return *this;
-	}
-	Length = strlen(buff);
-	if (Length < SHORSTR_LENGTH) {
-		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
-		Str = ShortStr;
-	}
-	else {
-		// be carefull not to free buff from outsite
-		Str = buff;
-	}
-	Hash = StringHash(buff);
-	return *this;
-}
+
 
 String::operator int() const {
 	return Hash;
 }
 
 String::operator unsigned int() const {
+	return Hash;
+}
+
+String::operator const StringHash() const
+{
 	return Hash;
 }
 
@@ -156,18 +147,9 @@ int String::Split(char delimiter, String* Result, int Count) const {
 }
 
 
-String::~String()
-{
-}
-
-
-constexpr StringHash::StringHash(const char* buff): value(0)
+StringHash::StringHash(char* buff): value(0)
 {
 	value = hash(buff);
-}
-
-StringHash::~StringHash()
-{
 }
 
 StringHash::operator int() const

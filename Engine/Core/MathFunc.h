@@ -6,7 +6,7 @@
 
 
 //djb2 hash functions
-constexpr inline unsigned int djb2_hash(unsigned char* str)
+inline unsigned int djb2_hash(unsigned char* str)
 {
 	unsigned long hash = 5381;
 	int c = 0;
@@ -16,6 +16,29 @@ constexpr inline unsigned int djb2_hash(unsigned char* str)
 
 	return hash;
 }
+
+//djb2 hash functions first
+template<unsigned int N>
+constexpr __forceinline unsigned int djb2_hash(const char (&str)[N])
+{
+	unsigned long hash = 5381;
+	return djb2_hash<N - 1>(str + 1, ((hash << 5) + hash) + str[0]);
+}
+
+//djb2 hash functions interation
+template<unsigned int N>
+constexpr __forceinline unsigned int djb2_hash(const char* str, unsigned int hash)
+{
+	return djb2_hash<N - 1>(str + 1, ((hash << 5) + hash) + str[0]);
+}
+
+//djb2 hash functions end
+template<>
+constexpr __forceinline unsigned int djb2_hash<1>(const char* str, unsigned int hash)
+{
+	return hash;
+}
+
 
 
 //sdbm hash functions

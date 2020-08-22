@@ -8,6 +8,7 @@
 
 
 #include <string.h>
+#include "MathFunc.h"
 
 #define SHORSTR_LENGTH 64
 
@@ -19,12 +20,12 @@ private:
 	// value
 	unsigned int value;
 private:
-	constexpr unsigned int hash(const char* buff);
+	unsigned int hash(const char* buff);
 
 public:
 	StringHash() : value(0) {};
+	template <unsigned int N>  constexpr __forceinline StringHash(const char (&buff)[N]);
 	StringHash(char* buff);
-	template <unsigned int N> constexpr StringHash(const char (&buff)[N]);
 	StringHash(const StringHash& rh) { value = rh.value; };
 	inline operator int() const;
 	bool inline operator ==(const StringHash& rh) const;
@@ -32,10 +33,11 @@ public:
 	inline operator unsigned int() const;
 };
 
+
+
 template <unsigned int N>
-constexpr StringHash::StringHash(const char(&buff)[N]) : value(0)
+__forceinline constexpr StringHash::StringHash(const char(&buff)[N]) : value(djb2_hash(buff))
 {
-	value = hash(buff);
 }
 
 // custom ascii string class used in engine, this is not string resource.
@@ -55,7 +57,7 @@ public:
 	String(const String& rh) noexcept;
 	String(String&& rh) noexcept;
 	template <unsigned int N>
-	constexpr String(const char(&buff)[N]);
+	__forceinline  constexpr String(const char(&buff)[N]);
 	String(char* buff);
 	String& operator=(const String& rh);
 	//String& operator=(String&& rh);
@@ -74,17 +76,13 @@ public:
 };
 
 template <unsigned int N>
-constexpr String::String(const char(&buff)[N]) : Hash(buff), Length(N), Str(0), ShortStr()
+__forceinline constexpr String::String(const char(&buff)[N]) : Hash(buff), Length(N), Str(0), ShortStr()
 {
-	if (Length < SHORSTR_LENGTH) {
-		strcpy_s(ShortStr, SHORSTR_LENGTH, buff);
-		Str = ShortStr;
-	}
-	else {
-		// be carefull not to free buff from outsite
-		Str = buff;
-	}
-	// Hash = StringHash(buff);
+	static_assert(N <= 64, "const string to too long");
+	// auto index = Length;
+	//while (index--) {
+	//	ShortStr[index] = buff[index];
+	//}
 	Str = buff;
 }
 
@@ -105,5 +103,7 @@ String& String::operator=(const char(&buff)[N]) {
 	Hash = StringHash(buff);
 	return *this;
 }
+
+
 #endif
 

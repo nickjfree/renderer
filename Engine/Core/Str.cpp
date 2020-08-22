@@ -1,5 +1,4 @@
 #include "Str.h"
-#include "MathFunc.h"
 
 String::String() :Length(0), Str(0), ShortStr()
 {
@@ -169,7 +168,7 @@ StringHash::operator unsigned int() const
 	return value;
 };
 
-constexpr unsigned int StringHash::hash(const char* buff)
+unsigned int StringHash::hash(const char* buff)
 {
 	value = djb2_hash((unsigned char*)buff);
 	return value;

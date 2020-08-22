@@ -66,6 +66,7 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	// instance data
 	StageParameter[hash_string::InstanceWV].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>();
 	StageParameter[hash_string::InstanceWVP].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>();
+	// constexpr String PWVP("InstancePWVP");
 	StageParameter["InstancePWVP"].as<Matrix4x4>() = StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
 	// object id
 	StageParameter["gObjectId"].as<int>() = get_object_id() + 1;
@@ -87,7 +88,6 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	if (BlendShape_) {
 		StageParameter["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
 		StageParameter["gWeightsArray"].as<ShaderParameterArray>() = blendshape_;
-
 	}
 
 	int Compiled = 0;

@@ -47,6 +47,7 @@ void ScriptingSystem::InitEnvironment() {
 	REGISTER_CLASS(LuaState, Model);
 	REGISTER_CLASS(LuaState, Material);
 	REGISTER_CLASS(LuaState, MeshRenderer);
+	REGISTER_CLASS(LuaState, Light);
 	REGISTER_CLASS(LuaState, InputSystem);
 	REGISTER_CLASS(LuaState, PhysicsObject);
 	REGISTER_CLASS(LuaState, Animator);

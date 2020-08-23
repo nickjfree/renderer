@@ -12,6 +12,7 @@
 #include "Physics\PhysicsObject.h"
 #include "Animation\Animator.h"
 #include "Resource\ResourceCache.h"
+#include "Rendering/Light.h"
 
 
 // proxy Scene
@@ -67,13 +68,17 @@ END_PROXY()
 
 // Model
 BEGIN_PROXY(Model)
-
 END_PROXY()
 
 // Renderer
 BEGIN_PROXY(MeshRenderer)
 METHOD(SetMaterial, &MeshRenderer::SetMaterial)
 METHOD(SetModel, &MeshRenderer::SetModel)
+END_PROXY()
+
+// light
+BEGIN_PROXY(Light)
+METHOD(SetIntensity, &Light::SetIntensity)
 END_PROXY()
 
 //Matrtial

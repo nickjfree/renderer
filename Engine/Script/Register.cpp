@@ -64,6 +64,11 @@ EXPORT(MeshRenderer, SetMaterial)
 GC(MeshRenderer)
 END_EXPORT()
 
+EXPORT_CLASS(Light)
+EXPORT(Light, SetIntensity)
+GC(Light)
+END_EXPORT()
+
 EXPORT_CLASS(Material)
 EXPORT(Material, GetUrl)
 GC(Material)

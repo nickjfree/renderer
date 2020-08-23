@@ -71,11 +71,13 @@ PS_Output_Simple PS_ImageBased_Light(PS_Input_Simple ps_input)
     float3 position = gbuffer.Position;
     float3 V = gbuffer.View;
 
+    // intensity
+    float intensity = gRadiusIntensity.y;
     if (length(position) < 0.001) {
         // draw the light probe
         float4 look = GetLookVector(ps_input.TexCoord);
         look = mul(look, gInvertViewMaxtrix);
-        output.Color = gLightProbe.Sample(gSam, look.xyz);
+        output.Color = gLightProbe.Sample(gSam, look.xyz) * intensity * 2;
         return output;
     }
     
@@ -100,7 +102,6 @@ PS_Output_Simple PS_ImageBased_Light(PS_Input_Simple ps_input)
     float3 kD = 1 - kS;
     kD = lerp(kD, 0, metallic);
 
-    float intensity = gRadiusIntensity.y;
     float4 color;
     color.rgb = (kD * diffuse + specular) * intensity;
     color.a = 1;

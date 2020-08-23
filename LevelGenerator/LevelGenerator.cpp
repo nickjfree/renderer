@@ -23,7 +23,7 @@ int TestGen(char * File) {
         "Mesh\\test.pack\\cube\\0",
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
-        "Mesh\\test.pack\\gun\\0",
+        "Mesh\\test.pack\\rock\\0",
         "Mesh\\BlendShapes.pack\\eyeBlink_L\\0",
     };
     MeshEntry mesh = {};
@@ -43,7 +43,7 @@ int TestGen(char * File) {
         "Material\\Materials\\sneak6.xml\\0",
         "Material\\Materials\\sneak7.xml\\0",
         "Material\\Materials\\sneak8.xml\\0",
-        "Material\\Materials\\gun.xml\\0",
+        "Material\\Materials\\rock.xml\\0",
 
 
         "Material\\Materials\\lightprobe.xml\\0",
@@ -157,7 +157,7 @@ int TestGen(char * File) {
     object.Rotation = rot;
     object.Scale = Vector3(1, 1, 1);
     render.MaterialIndex = 3;
-    render.ModelIndex = 0;
+    render.ModelIndex = 4;
     strcpy_s(render.Info.TypeName, "Renderer");
     // physics component
     strcpy_s(physics.Info.TypeName, "PhysicsObject");
@@ -208,7 +208,7 @@ int TestGen(char * File) {
     light.MaterialIndex = 0;
     light.ModelIndex = 2;
     light.Color = Vector3(1, 1, 1);
-    light.Intensity = 1;
+    light.Intensity = 3;
     light.Radius = 50;
     light.Type = 1;
     light.Direction = Vector3(1.414f, -1.414f, 0.5);
@@ -274,7 +274,7 @@ int TestGen(char * File) {
     light.MaterialIndex = 4;
     light.ModelIndex = 2;
     light.Color = Vector3(1, 1, 1);
-    light.Intensity = 1;
+    light.Intensity = 2;
     light.Radius = 50;
     light.Type = 3;
     light.Direction = Vector3(1.414f, -1.414f, 0.5);

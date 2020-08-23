@@ -298,7 +298,7 @@ int Level::InitScript() {
 			object->SetTranslation(Vector3(0, 0, 0));
 			object->SetRotation(Quaternion());
 			auto renderer = (MeshRenderer *)object->GetComponent("Renderer");
-			renderer->SetClipmap();
+			renderer->SetClipmap(); 
 		}
 
 	}

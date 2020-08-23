@@ -205,9 +205,13 @@ int PostpassStage::Reflection(BatchCompiler* Compiler) {
 	if (Value) {
 		auto material = Value->as<Material*>();
 		ReflectionShader = material->GetShader();
+		// render to postbuffer
+		Compiled += Compiler->SetRenderTargets(1, &PingPong[0]);
 		Compiled += ReflectionShader->Compile(Compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		// draw full screen quad
 		Compiled += Compiler->Quad();
+		// restore render targets
+		Compiled += Compiler->SetRenderTargets(1, &PingPong[1]);
 	}
 	return Compiled;
 }
@@ -392,10 +396,10 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	renderview->Compile(Context);
 	// clear parames
 	Parameter.Clear();
-	// do SSAO
-	SSAO(Compiler);
 	// do reflection resolve pass
 	Reflection(Compiler);
+	// do SSAO
+	SSAO(Compiler);
 	// do OIT final pass
 	OIT(Compiler);
 	// do tone mapping and bloom

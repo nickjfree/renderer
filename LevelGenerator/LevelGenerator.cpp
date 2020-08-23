@@ -207,7 +207,7 @@ int TestGen(char * File) {
     object.Scale = Vector3(1, 1, 1);
     light.MaterialIndex = 0;
     light.ModelIndex = 2;
-    light.Color = Vector3(1, 1, 1);
+    light.Color = Vector3(1, 0.8, 0.5);
     light.Intensity = 3;
     light.Radius = 50;
     light.Type = 1;
@@ -274,7 +274,7 @@ int TestGen(char * File) {
     light.MaterialIndex = 4;
     light.ModelIndex = 2;
     light.Color = Vector3(1, 1, 1);
-    light.Intensity = 2;
+    light.Intensity = 1;
     light.Radius = 50;
     light.Type = 3;
     light.Direction = Vector3(1.414f, -1.414f, 0.5);

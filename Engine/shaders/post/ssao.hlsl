@@ -77,7 +77,7 @@ PS_Output_Simple PS(PS_Input_Simple input)
     }
     ao /= float(iterations) * 4;
     ao = saturate(ao);
-    output.Color = lerp(Color, 0.1 * Color, ao);
+    output.Color = lerp(Color, 0.01 * Color, ao);
 
     if(isnan(output.Color.x)) 
     {

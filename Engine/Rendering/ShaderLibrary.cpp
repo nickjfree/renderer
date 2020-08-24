@@ -126,7 +126,7 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 			//	D3D12_SHADER_INPUT_BIND_DESC bind_desc;
 				
 			// get tlas
-			if (bindDesc.Type == 12) {
+			if (bindDesc.Type == D3D_SIT_RTACCELERATIONSTRUCTURE) {
 				RtSceneUnit rt;
 				rt.Name = (char*)bindDesc.Name;
 				rt.Slot = bindDesc.BindPoint;

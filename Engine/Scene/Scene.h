@@ -17,6 +17,8 @@ private:
 	List<GameObject> Objects;
 	// vector for destroyed objects
 	Vector<GameObject*> Destroyed;
+	// gameobject name lookup
+	static HashMap<String, GameObject*, 1024> gameObjectLookUp_;
 public:
 	Scene(Context* context);
 	virtual ~Scene();
@@ -26,6 +28,9 @@ public:
 	int Update(int ms);
 	// is empty
 	bool IsEmpty();
+	// getgameobject by name
+	GameObject* GetGameObject(const String& name);
+
 };
 
 #endif

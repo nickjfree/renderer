@@ -37,3 +37,10 @@ end
 function control()
     scene:SendEvent(1025)
 end
+
+
+function setEnv(intensity)
+    lightObject = scene:GetGameObject("LightProb")
+    light = lightObject:GetComponent("Light")
+    light:SetIntensity(intensity)
+end

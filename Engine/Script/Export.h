@@ -20,6 +20,7 @@ BEGIN_PROXY(Scene)
 METHOD(CreateGameObject, &Scene::CreateGameObject)
 METHOD(CreateComponent, &Scene::CreateComponent)
 METHOD(SendEvent, &Scene::SendEvent)
+METHOD(GetGameObject, &Scene::GetGameObject)
 END_PROXY()
 
 // proxy levelloader

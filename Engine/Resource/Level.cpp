@@ -23,6 +23,8 @@
 #include "Animation\AnimationClip.h"
 #include "Animation\BlendShape.h"
 
+#include "Rendering/Terrain.h"
+
 
 USING_ALLOCATER(Level);
 
@@ -299,6 +301,10 @@ int Level::InitScript() {
 			object->SetRotation(Quaternion());
 			auto renderer = (MeshRenderer *)object->GetComponent("Renderer");
 			renderer->SetClipmap(); 
+			// test terrain component
+			auto terrain = context->CreateObject<Terrain>();
+			terrain->Init(8192, 8192, 8);
+			object->AddComponent(terrain);
 		}
 
 	}

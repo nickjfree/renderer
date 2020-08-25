@@ -85,6 +85,7 @@ int RenderingSystem::Initialize() {
 	context->RegisterObject<Light>();
 	context->RegisterObject<MeshRenderer>();
 	context->RegisterObject<Terrain>();
+	context->RegisterObject<TerrainNode>();
 	return 0;
 }
 

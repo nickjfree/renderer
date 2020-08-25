@@ -67,7 +67,9 @@ public:
 
 	// createobject 
 	template <class T> T* CreateObject() {
-		return (T*)CreateObject(T::GetTypeNameStatic());
+		return reinterpret_cast<T*>(
+			CreateObject(T::GetTypeNameStatic())
+		);
 	}
 };
 

@@ -2,7 +2,7 @@
 #include "Scene\Scene.h"
 
 USING_ALLOCATER(Light);
-Light::Light(Context* context) :Component(context)
+Light::Light(Context* context):Component(context)
 {
 	renderLight = new RenderLight();
 }
@@ -55,7 +55,7 @@ int Light::OnAttach(GameObject* GameObj) {
 	// Notify partition
 	Event* Evt = Event::Create();
 	Evt->EventId = EV_NODE_ADD;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
+	Evt->EventParam["RenderObject"].as<RenderLight*>() = renderLight;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position

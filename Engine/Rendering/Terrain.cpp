@@ -1,5 +1,8 @@
 
 #include "Terrain.h"
+#include "Scene/GameObject.h"
+#include "Scene/Scene.h"
+
 
 USING_ALLOCATER(Terrain)
 
@@ -33,6 +36,7 @@ void Terrain::Init(int sizeX, int sizeY, int numLevels)
 		for (auto y = 0; y < numRootNodeY; y++) {
 			auto rootNode = CreateNode(x, y, numLevels - 1);
 			rootNodes.PushBack(rootNode);
+			
 		}
 	}
 }
@@ -61,5 +65,46 @@ TerrainNode* Terrain::CreateNode(int x, int y, int level)
 		node->AddChild(nodeBL);
 		node->AddChild(nodeBR);
 	}
+	// add to node list
+	Nodes_.PushBack(node);
 	return node;
 }
+
+int Terrain::OnAttach(GameObject* GameObj)
+{
+	Scene* scene = GameObj->GetScene();
+	// Notify partition
+	// add all rootNodes to scenen partition
+
+	for (auto iter = rootNodes.Begin(); iter != rootNodes.End(); iter++) {
+		Event* Evt = Event::Create();
+		Evt->EventId = EV_NODE_ADD;
+		Evt->EventParam["RenderObject"].as<Node*>() = *iter;
+		SendEvent(scene, Evt);
+		Evt->Recycle();
+	}
+	return 0;
+}
+
+int Terrain::OnDestroy(GameObject* GameObj)
+{
+	// Notify partition to remove renderobject from scenegraph
+	Scene* scene = Owner->GetScene();
+	for (auto iter = rootNodes.Begin(); iter != rootNodes.End(); iter++) {
+		// remove all the node
+		auto node = *iter;
+		// send event to remove it
+		Event* Evt = Event::Create();
+		Evt->EventId = EV_NODE_REMOVE;
+		Evt->EventParam["RenderObject"].as<Node*>() = *iter;
+		SendEvent(scene, Evt);
+		Evt->Recycle();
+	}
+	// clear all node
+	for (auto iter = Nodes_.Begin(); iter != Nodes_.End(); iter++) {
+		delete *iter;
+	}
+	Component::OnDestroy(GameObj);
+	return 0;
+}
+

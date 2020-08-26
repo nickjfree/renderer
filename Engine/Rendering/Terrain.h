@@ -7,7 +7,7 @@
 #include "RenderObject.h"
 
 
-constexpr int TerrainTileSize = 32;
+constexpr int TerrainTileSize = 64;
 constexpr int TerrainLevels = 8;
 
 
@@ -34,7 +34,10 @@ public:
 	Terrain(Context* context);
 	// init terrain 
 	void Init(int sizeX, int sizeY, int numLevels);
-
+	// onattach
+	int OnAttach(GameObject* GameObj);
+	// destroy
+	int OnDestroy(GameObject* GameObj);
 
 };
 

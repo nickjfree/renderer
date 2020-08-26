@@ -7,7 +7,7 @@
 #include "RenderObject.h"
 
 
-constexpr int TerrainTileSize = 8;
+constexpr int TerrainTileSize = 32;
 constexpr int TerrainLevels = 8;
 
 

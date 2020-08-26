@@ -1577,6 +1577,9 @@ ID3D12PipelineState* D3D12Render::CreatePSO(PSOCache& cache) {
 	Desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 	// create it
 	HRESULT result = Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&PSO));
+	if (PSO == nullptr) {
+		printf("CreatePso failed result:%d, rtvcount %d\n", result, Desc.NumRenderTargets);
+	}
 	PSOTable.Set(cache, PSO);
 	return PSO;
 }

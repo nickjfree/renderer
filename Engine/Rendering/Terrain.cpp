@@ -48,11 +48,15 @@ TerrainNode* Terrain::CreateNode(int x, int y, int level)
 	// create culling geometry
 	int currentSzie = TerrainTileSize * (int)pow(2, level);
 	float d = 0.5f * currentSzie;
-	Vector3 Center(x + d, 0, y + d);
-	auto cullingObject = AABB(Center, Vector3(d, d, d));
+	Vector3 Center(0, 0, 0);
+	auto cullingObject = AABB(Center, Vector3(d, 10, d));
 	node->SetCullingObject(cullingObject);
-	// set parent (this)
+	// set terrain (this)
 	node->SetTerrain(this);
+	// set level
+	node->SetLevel(level);
+	// set position
+	node->SetPosition(Vector3(x + d, 0, y + d));
 	if (level) {
 		// not the finest level
 		int childSize = TerrainTileSize * (int)pow(2, level - 1);

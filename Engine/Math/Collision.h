@@ -63,7 +63,7 @@ typedef struct AABB {
 
 typedef struct Frustum {
 	BoundingFrustum fr;
-
+	Vector3 Center;
 	Frustum() {};
 
 	Frustum(const Vector3& _Origin, const Quaternion& _Orientation,
@@ -76,12 +76,6 @@ typedef struct Frustum {
 	/*
 		Method
 	*/
-	void Transform(Matrix4x4& Trans) {
-		BoundingFrustum result;
-		fr.Transform(result, Trans.matrix);
-		fr = result;
-	}
-
 	ContainType Contains(const AABB& rh) {
 		return (ContainType)fr.Contains(rh.Box);
 	}
@@ -105,6 +99,7 @@ typedef struct Frustum {
 		BoundingFrustum::CreateFromMatrix(result.fr, Projection.matrix);
 		result.fr.Transform(temp, 1, Orientation.quaternion, Origin.vector);
 		result.fr = temp;
+		result.Center.vector  = XMLoadFloat3(&result.fr.Origin);
 		return result;
 	}
 }Frustum;

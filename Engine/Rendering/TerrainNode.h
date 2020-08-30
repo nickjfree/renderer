@@ -31,11 +31,11 @@ private:
 	int level_;
 	// position offset
 	int offsetX_, offsetY_;
-
-
-
+	// view distance
+	float viewDistance_;
 private:
-
+	// isVisible
+	bool IsVisible(const Vector3& viewPoint);
 public:
 	TerrainNode(Context* context);
 	// on sub resource create complete(main thread)
@@ -44,6 +44,12 @@ public:
 	void SetScale(int scale) { scale_ = scale; }
 	// set terrain
 	void SetTerrain(Terrain* terrain) { terrain_ = terrain; }
+	// get terrain
+	Terrain* GetTerrain() { return terrain_; }
+	// set level
+	void SetLevel(int level);
+	// query
+	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
 };
 
 

@@ -48,3 +48,31 @@ RenderToTextureStage::RenderToTextureStage(RenderContext* context) : RenderStage
 RenderToTextureStage::~RenderToTextureStage()
 {
 }
+
+
+int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events)
+{
+	Frustum frustum = Camera->GetFrustum();
+	terrainNodes_.Reset();
+	spatial->Query(frustum, terrainNodes_, Node::TERRAIN);
+
+	printf("terrain node %d\n", terrainNodes_.Size());
+	// update the page table
+	if (terrainNodes_.Size()) {
+		auto terrain = static_cast<TerrainNode*>(terrainNodes_[0])->GetTerrain();
+	}
+
+	return 0;
+}
+
+
+int RenderToTextureStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events)
+{
+	auto compiled = RenderTerrainTexture(Camera, spatial, renderQueue, Queue, Events);
+	return 0;
+}
+
+int RenderToTextureStage::End()
+{
+	return 0;
+}

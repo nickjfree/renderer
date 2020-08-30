@@ -98,7 +98,7 @@ PS_Output_GBuffer PS_GBuffer(PS_Input_GBuffer ps_input)
     // compact info: object id
     output.Compact.w = ps_input.ObjectId;
 
-    output.Specular = float4(gSpecular, 0.1, specular.z, 0);
+    // output.Specular = float4(gSpecular, 0.1, specular.z, 0);
     // motion vectors
     float2 currentScreen = ps_input.CurrentPosH.xy / ps_input.CurrentPosH.w * 0.5 + 0.5;
     float2 prevScreen = ps_input.PrevPosH.xy / ps_input.PrevPosH.w * 0.5 + 0.5;   

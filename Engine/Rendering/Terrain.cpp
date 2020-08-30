@@ -51,6 +51,8 @@ TerrainNode* Terrain::CreateNode(int x, int y, int level)
 	Vector3 Center(x + d, 0, y + d);
 	auto cullingObject = AABB(Center, Vector3(d, d, d));
 	node->SetCullingObject(cullingObject);
+	// set parent (this)
+	node->SetTerrain(this);
 	if (level) {
 		// not the finest level
 		int childSize = TerrainTileSize * (int)pow(2, level - 1);
@@ -83,7 +85,7 @@ int Terrain::OnAttach(GameObject* GameObj)
 		SendEvent(scene, Evt);
 		Evt->Recycle();
 	}
-	return 0;
+	return 0; 
 }
 
 int Terrain::OnDestroy(GameObject* GameObj)

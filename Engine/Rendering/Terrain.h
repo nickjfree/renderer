@@ -9,6 +9,10 @@
 
 constexpr int TerrainTileSize = 64;
 constexpr int TerrainLevels = 8;
+constexpr int VirtualTexturePageSize = 2048;  // 2K per page
+constexpr int VirtualTexturePageScale = 6;
+constexpr int VirtualTextureSize = VirtualTexturePageScale * VirtualTexturePageSize;
+constexpr int VirtaulTexturePageTableSize = 4 * (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4 + 2 * 2 + 1);
 
 
 class Terrain : public Component

@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "TerrainPayload.h"
 
+class Terrain;
 
 class TerrainNode : public Node, Resource
 {
@@ -13,6 +14,8 @@ class TerrainNode : public Node, Resource
 	LOADEROBJECT(FileLoader);
 
 private:
+	// Terrain
+	Terrain* terrain_;
 	// terrain payload (Terrain Data for rendering)
 	TerrainPayload* terrainPayload_;
 	// terrain data status
@@ -28,6 +31,9 @@ private:
 	int level_;
 	// position offset
 	int offsetX_, offsetY_;
+
+
+
 private:
 
 public:
@@ -36,6 +42,8 @@ public:
 	virtual int OnSubResource(int Message, Resource* Sub, Variant& Param);
 	// set scale
 	void SetScale(int scale) { scale_ = scale; }
+	// set terrain
+	void SetTerrain(Terrain* terrain) { terrain_ = terrain; }
 };
 
 

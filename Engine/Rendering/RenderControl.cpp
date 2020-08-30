@@ -4,6 +4,7 @@
 #include "PostpassStage.h"
 #include "ShadowMapStage.h"
 #include "RaytracingStage.h"
+#include "RenderToTextureStage.h"
 #include "Opcode.h"
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -25,6 +26,9 @@ int RenderControl::Initialize() {
 	RenderStage* Stage = 0;
 	// initialize shadow map pass
 	Stage = new ShadowMapStage(Context);
+	LightPrePass->Stages.PushBack(Stage);
+	// initialize rtt pass
+	Stage = new RenderToTextureStage(Context);
 	LightPrePass->Stages.PushBack(Stage);
 	// initialize light-pre pass
 	Stage = new PrepassStage(Context);

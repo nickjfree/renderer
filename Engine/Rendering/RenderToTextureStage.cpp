@@ -57,11 +57,41 @@ int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial*
 	spatial->Query(frustum, terrainNodes_, Node::TERRAIN);
 
 	printf("terrain node %d\n", terrainNodes_.Size());
+	// 
+	int compiled = 0;
+
+	// draw debug texture to backbuffer
+	RenderView* renderview = RenderView::Create();
+	// clear params
+	renderview->Parameters.Clear();
+	renderview->TargetCount = 1;
+	renderview->ClearTargets = 0;
+	// render to backbuffer
+	renderview->Targets[0] = 0;
+	renderview->Depth = -1;
+	renderview->ClearDepth = 0;
+	renderview->Type = R_STAGE_DEBUG;
+	renderview->Camera = Camera;
+	renderview->Queue = renderQueue;
+	auto compiler = renderview->Compiler;
+	char* buffer = (char*)renderview->CommandBuffer;
+	compiler->SetBuffer(buffer);
+	renderview->Compile(Context);
+	// render all terrain nodes
+	for (auto iter = terrainNodes_.Begin(); iter != terrainNodes_.End(); iter++) {
+		auto node = *iter;
+		compiled += node->Compile(compiler, renderview->Type, 0, renderview->Parameters, Camera, Context);
+	}
+	//compiler->Present();
+	renderview->QueueCommand();
+	// rememebr renderview
+	renderViews_.PushBack(renderview);
+	
 	// update the page table
 	if (terrainNodes_.Size()) {
+		// update pagetable
 		auto terrain = static_cast<TerrainNode*>(terrainNodes_[0])->GetTerrain();
 	}
-
 	return 0;
 }
 
@@ -74,5 +104,10 @@ int RenderToTextureStage::Execute(RenderingCamera* Camera, Spatial* spatial, Ren
 
 int RenderToTextureStage::End()
 {
+	int Size = renderViews_.Size();
+	while (Size--) {
+		auto view = renderViews_.PopBack();
+		view->Recycle();
+	}
 	return 0;
 }

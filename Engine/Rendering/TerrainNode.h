@@ -1,12 +1,12 @@
 #ifndef __TERRAIN_NODE__
 #define __TERRAIN_NODE__
 
-#include "Node.h"
+#include "RenderObject.h"
 #include "TerrainPayload.h"
 
 class Terrain;
 
-class TerrainNode : public Node, Resource
+class TerrainNode : public RenderObject, Resource
 {
 	OBJECT(TerrainNode);
 	BASEOBJECT(TerrainNode);
@@ -50,6 +50,8 @@ public:
 	void SetLevel(int level);
 	// query
 	virtual int Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool inside);
+	// compile
+	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
 };
 
 

@@ -407,7 +407,7 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	// submit to queue
 	// Compiler->SetRenderTargets(1, renderview->Targets);
 	// present
-	Compiler->Present();
+	// Compiler->Present();
 	renderview->QueueCommand();
 
 	RenderViews.PushBack(renderview);

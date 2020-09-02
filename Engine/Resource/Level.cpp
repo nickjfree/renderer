@@ -303,6 +303,8 @@ int Level::InitScript() {
 			renderer->SetClipmap(); 
 			// test terrain component
 			auto terrain = context->CreateObject<Terrain>();
+			auto material = GetMaterial(2);
+			terrain->SetMaterial(material);
 			terrain->Init(8192, 8192, 8);
 			object->AddComponent(terrain);
 		}

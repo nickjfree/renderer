@@ -63,10 +63,36 @@ int TerrainNode::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool insid
 	return 0;
 }
 
+int TerrainNode::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context)
+{
+	StageParameter["InstancePosition"].as<Vector3>() = Position;
+	StageParameter["InstanceScale"].as<float>() = (float)scale_;
+	StageParameter["InstanceLevel"].as<float>() = (float)level_;
+
+	// do virtual texture rendering
+	Stage = 3;
+	if (material) {
+		auto compiled = material->Compile(Compiler, Stage, Lod);
+		// process shader
+		auto shader = material->GetShader();
+		compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
+		if (shader->IsInstance(Stage)) {
+			unsigned char instanceBuffer[64 * 4];
+			auto instanceSize = shader->MakeInstance(Compiler, Stage, StageParameter, instanceBuffer);
+			// quad
+			compiled += Compiler->Instance(0, instanceBuffer, instanceSize);
+		}
+		return compiled;
+	}
+	return 0;
+}
+
 
 void TerrainNode::SetLevel(int level) 
 {
 	level_ = level;
 	// get view distance
 	viewDistance_ = TerrainFinestLevelViewDistance * (float)pow(2, level) + TerrainTileSize * (float)pow(2, level-1);
+	// scale
+	scale_ = TerrainTileSize * (float)pow(2, level);
 }

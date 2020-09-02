@@ -143,10 +143,16 @@
         <ps url="Shaders\shaders\simple.ps"></ps>
       </pass>
     </technique>
-    <technique name="Shadow_Terrain">
+    <technique name="ShadowTerrain">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\terrain-simple.vs"></vs>
         <ps url="Shaders\shaders\simple.ps"></ps>
+      </pass>
+    </technique>
+    <technique name="VirtualTexture" instance="yes">
+      <pass name="Basic-pre" depthstencil="NoZTest" rasterizer="NoCull" blend="Overlay" rtformat="GBuffer">
+        <vs url="Shaders\shaders\terrain-virtual.vs"></vs>
+        <ps url="Shaders\shaders\terrain-virtual.ps"></ps>
       </pass>
     </technique>
   </shader>

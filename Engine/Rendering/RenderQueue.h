@@ -18,6 +18,8 @@
 #define R_STAGE_LIGHT    0xA1
 #define R_STAGE_POST     0xA2
 
+#define R_STAGE_DEBUG    0xFD
+
 
 #define R_STAGE_PRESENT  0xFE
 

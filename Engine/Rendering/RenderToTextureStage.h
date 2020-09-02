@@ -14,7 +14,8 @@ private:
 	int terrainPageTable_;
 	// terrain nodes to render
 	Vector<Node*> terrainNodes_;
-
+	// renderviews;
+	Vector<RenderView*> renderViews_;
 private:
 	// initialization
 	void Initialize();

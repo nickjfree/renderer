@@ -75,7 +75,7 @@ PS_Output_Simple PS_ImageBased_Light(PS_Input_Simple ps_input)
     float intensity = gRadiusIntensity.y;
     if (length(position) < 0.001) {
         // draw the light probe
-        float4 look = GetLookVector(ps_input.TexCoord);
+        float4 look = normalize(GetLookVector(ps_input.TexCoord));
         look = mul(look, gInvertViewMaxtrix);
         output.Color = gLightProbe.Sample(gSam, look.xyz) * intensity * 2;
         return output;

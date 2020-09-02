@@ -214,6 +214,19 @@ void PrepassStage::CreateRenderState() {
 	blend.AlphaToCoverage = 1;
 	blend.Mask = R_BLEND_MASK::ENABLE_ALL;
 	BlendStat[4] = Interface->CreateBlendStatus(&blend);
+	// alpha blend layer
+	blend.Enable = 1;
+	blend.AlphaToCoverage = 0;
+	blend.SrcBlend = R_BLEND::BLEND_SRC_ALPHA;
+	blend.DestBlend = R_BLEND::BLEND_INV_SRC_ALPHA;
+	blend.BlendOp = R_BLEND_OP::BLEND_OP_ADD;
+	blend.SrcBlendAlpha = R_BLEND::BLEND_ZERO;
+	blend.DestBlendAlpha = R_BLEND::BLEND_ZERO;
+	blend.BlendOpAlpha = R_BLEND_OP::BLEND_OP_ADD;
+	blend.Mask = R_BLEND_MASK::ENABLE_ALL;
+	BlendStat[5] = Interface->CreateBlendStatus(&blend);
+
+
 
 	// restar
 	R_RASTERIZER_DESC raster = {};
@@ -238,6 +251,7 @@ void PrepassStage::CreateRenderState() {
 	Context->RegisterRenderState("Blend", BlendStat[2]);
 	Context->RegisterRenderState("AlphaBlend", BlendStat[3]);
 	Context->RegisterRenderState("A2C", BlendStat[4]);
+	Context->RegisterRenderState("Overlay", BlendStat[5]);
 	Context->RegisterRenderState("NoCull", RasterStat[0]);
 	Context->RegisterRenderState("Rasterizer", RasterStat[1]);
 }

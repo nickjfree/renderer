@@ -26,7 +26,7 @@ protected:
 	unsigned int SortKeyHigh;
 	unsigned int SortKeyLow;
 	// InstanceBuffer
-	unsigned char InstanceBuffer[64 * 4];
+	// unsigned char InstanceBuffer[64 * 4];
 	// matrix palette
 	ShaderParameterArray palette;
 	// blendshapes parameters for shader

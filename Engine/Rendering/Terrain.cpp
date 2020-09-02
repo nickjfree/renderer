@@ -20,7 +20,7 @@ void Terrain::Init(int sizeX, int sizeY, int numLevels)
 	// init terrain
 	// 1. calc node numbers
 	int numNodes = 0;
-	int currentLevel = 0;
+	int currentLevel = 0; 
 	while (currentLevel < numLevels) {
 		numNodes += (int)pow(4, currentLevel++);
 	}
@@ -57,6 +57,8 @@ TerrainNode* Terrain::CreateNode(int x, int y, int level)
 	node->SetLevel(level);
 	// set position
 	node->SetPosition(Vector3(x + d, 0, y + d));
+	// set material
+	node->SetMaterial(material_);
 	if (level) {
 		// not the finest level
 		int childSize = TerrainTileSize * (int)pow(2, level - 1);

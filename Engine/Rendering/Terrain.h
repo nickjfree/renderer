@@ -37,6 +37,8 @@ private:
 	int sizeX_, sizeY_;
 	// clipmap mesh 
 	int clipmapGeometry_;
+	// material used for rendering
+	Material* material_;
 private:
 	// create node
 	TerrainNode * CreateNode(int x, int y, int level);
@@ -49,6 +51,8 @@ public:
 	int OnAttach(GameObject* GameObj);
 	// destroy
 	int OnDestroy(GameObject* GameObj);
+	// set material
+	void SetMaterial(Material* material) { material_ = material;	}
 
 };
 

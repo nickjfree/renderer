@@ -64,6 +64,7 @@ typedef struct AABB {
 typedef struct Frustum {
 	BoundingFrustum fr;
 	Vector3 Center;
+	Quaternion Orientation;
 	Frustum() {};
 
 	Frustum(const Vector3& _Origin, const Quaternion& _Orientation,
@@ -100,6 +101,7 @@ typedef struct Frustum {
 		result.fr.Transform(temp, 1, Orientation.quaternion, Origin.vector);
 		result.fr = temp;
 		result.Center.vector  = XMLoadFloat3(&result.fr.Origin);
+		result.Orientation.quaternion = XMLoadFloat4(&result.fr.Orientation);
 		return result;
 	}
 }Frustum;

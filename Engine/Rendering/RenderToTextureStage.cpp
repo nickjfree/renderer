@@ -56,7 +56,7 @@ int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial*
 	terrainNodes_.Reset();
 	spatial->Query(frustum, terrainNodes_, Node::TERRAIN);
 
-	printf("terrain node %d\n", terrainNodes_.Size());
+	// printf("terrain node %d\n", terrainNodes_.Size());
 	// 
 	int compiled = 0;
 

@@ -38,6 +38,8 @@ int TerrainNode::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool insid
 	}
 	// get view point
 	Vector3 viewPoint = Fr.Center;
+
+
 	// child nodes
 	for (auto Iter = SubNodes.Begin(); Iter != SubNodes.End(); Iter++) {
 		TerrainNode* sub = static_cast<TerrainNode*>(*Iter);

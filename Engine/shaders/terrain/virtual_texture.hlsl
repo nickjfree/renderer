@@ -1,6 +1,6 @@
 
-#include "../common/basic_layout.h"
-
+// #include "../common/basic_layout.h"
+#include "../common/common.h"
 
 // quad vertex
 struct VS_Input_Quad_Instance
@@ -18,17 +18,21 @@ PS_Input_Simple VS(VS_Input_Quad_Instance input)
 {
     // simple ps shader input layout
     PS_Input_Simple output = (PS_Input_Simple)0;
-    // caculate screen space
-	float sacle = input.InstanceScale/8192.0;
-
+    // caculate screen space 
+    float tileScale = 1/3.0;
+	float subScale = 1/6.0;
 	float2 origin = input.InstancePosition.xz - float2(0.5 * input.InstanceScale, 0.5 * input.InstanceScale);
-	float2 offset = origin/8192;
+    // wrap position
+    float2 tileOffset = float2(fmod(input.InstanceLevel, 3), floor(input.InstanceLevel / 3)) * tileScale;
+    float2 subOffset = floor(fmod(origin / input.InstanceScale, 2)) * subScale;
 
-    input.PosL.xy = (input.PosL.xy * sacle) + offset;
+	float2 offset = tileOffset + subOffset;
+
+    input.PosL.xy = (input.PosL.xy * subScale) + offset;
 
     output.PosH.xy = 2 * input.PosL.xy - 1;
     output.PosH.zw = 1;
-    output.TexCoord = float2(input.InstanceLevel/7, 1 - input.InstanceLevel/7);
+    output.TexCoord = input.TexCoord;
     return output;
 }
 
@@ -39,6 +43,9 @@ PS_Input_Simple VS(VS_Input_Quad_Instance input)
 PS_Output_Simple PS(PS_Input_Simple ps_input)
 {   
     PS_Output_Simple output = (PS_Output_Simple)0;
-    output.Color = float4(ps_input.TexCoord, 0, 0.1);
+    
+    float4 color = gDiffuseMap0.Sample(gSam, ps_input.TexCoord);
+
+    output.Color = float4(color.xyz, 0.1);
     return output;
 }

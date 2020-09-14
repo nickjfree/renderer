@@ -13,8 +13,8 @@ void RenderToTextureStage::CreateTerrainTextures()
 {
 	// virtual texture
 	R_TEXTURE2D_DESC desc{};
-	desc.Width = VirtualTextureSize;
-	desc.Height = VirtualTextureSize;
+	desc.Width = TerrainVirtualTextureSize;
+	desc.Height = TerrainVirtualTextureSize;
 	desc.ArraySize = 1;
 	desc.CPUAccess = (R_CPU_ACCESS)0;
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
@@ -28,7 +28,7 @@ void RenderToTextureStage::CreateTerrainTextures()
 	buffDesc.BindFlags = (R_BIND_FLAG)(BIND_SHADER_RESOURCE | BIND_UNORDERED_ACCESS);
 	buffDesc.CPUAccessFlags = (R_CPU_ACCESS)0;
 	buffDesc.MiscFlags = (R_MISC)0;
-	buffDesc.Size = VirtaulTexturePageTableSize;
+	buffDesc.Size = TerrainVirtaulTexturePageTableSize;
 	buffDesc.StructureByteStride = 4;
 	buffDesc.Usage = DEFAULT;
 	buffDesc.CPUData = nullptr;
@@ -67,6 +67,7 @@ int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial*
 	renderview->TargetCount = 1;
 	renderview->ClearTargets = 0;
 	// render to backbuffer
+	renderview->Targets[0] = terrainVirtualTexture_;
 	renderview->Targets[0] = 0;
 	renderview->Depth = -1;
 	renderview->ClearDepth = 0;
@@ -82,7 +83,7 @@ int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial*
 		auto node = *iter;
 		compiled += node->Compile(compiler, renderview->Type, 0, renderview->Parameters, Camera, Context);
 	}
-	//compiler->Present();
+	// compiler->Present();
 	renderview->QueueCommand();
 	// rememebr renderview
 	renderViews_.PushBack(renderview);

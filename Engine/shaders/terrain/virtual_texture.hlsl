@@ -28,11 +28,12 @@ PS_Input_Simple VS(VS_Input_Quad_Instance input)
 
 	float2 offset = tileOffset + subOffset;
 
+    float2 texCoord = origin +  input.PosL.xy * float2(input.InstanceScale, input.InstanceScale);
     input.PosL.xy = (input.PosL.xy * subScale) + offset;
 
     output.PosH.xy = 2 * input.PosL.xy - 1;
     output.PosH.zw = 1;
-    output.TexCoord = input.TexCoord;
+    output.TexCoord = texCoord/8192;
     return output;
 }
 
@@ -46,6 +47,6 @@ PS_Output_Simple PS(PS_Input_Simple ps_input)
     
     float4 color = gDiffuseMap0.Sample(gSam, ps_input.TexCoord);
 
-    output.Color = float4(color.xyz, 0.1);
+    output.Color = float4(color.xyz, 0.9);
     return output;
 }

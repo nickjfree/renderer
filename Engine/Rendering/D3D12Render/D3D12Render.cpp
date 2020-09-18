@@ -1217,6 +1217,7 @@ void D3D12Render::SetViewPort(float tlx, float tly, float width, float height, f
 
 void D3D12Render::SetDepthStencil(int Depth) {
 	if (Depth == -1) {
+		this->Depth = D3D12_CPU_DESCRIPTOR_HANDLE{};
 		return;
 	}
 	D3DTexture& texture = Textures.GetItem(Depth);
@@ -1703,7 +1704,8 @@ void D3D12Render::FlushRenderTargets() {
 	// set targets and depthstencil
 	if (TargetDirty) {
 		ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
-		cmdList->OMSetRenderTargets(NumTargets, Targets, 0, &Depth);
+		auto depth = !Depth.ptr? nullptr: &Depth;
+		cmdList->OMSetRenderTargets(NumTargets, Targets, 0, depth);
 		TargetDirty = 0;
 	}
 }

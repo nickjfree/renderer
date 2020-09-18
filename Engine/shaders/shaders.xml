@@ -134,7 +134,7 @@
     <technique name="GBuffering_Terrain">
       <pass name="Basic-pre" depthstencil="Depth" rasterizer="Rasterizer" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\terrain-gbuffer.vs"></vs>
-        <ps url="Shaders\shaders\gbuffer.ps"></ps>
+        <ps url="Shaders\shaders\terrain-gbuffer.ps"></ps>
       </pass>
     </technique>
     <technique name="Shading">
@@ -150,7 +150,7 @@
       </pass>
     </technique>
     <technique name="VirtualTexture" instance="yes">
-      <pass name="Basic-pre" depthstencil="NoZTest" rasterizer="NoCull" blend="Overlay" rtformat="GBuffer">
+      <pass name="Basic-pre" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend" rtformat="GBuffer">
         <vs url="Shaders\shaders\terrain-virtual.vs"></vs>
         <ps url="Shaders\shaders\terrain-virtual.ps"></ps>
       </pass>

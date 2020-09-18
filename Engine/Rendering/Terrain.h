@@ -14,8 +14,9 @@ constexpr int TerrainTileSize = 64;
 constexpr int TerrainLevels = 8;
 constexpr int TerrainVirtualTexturePageSize = 2048;  // 2K per page
 constexpr int TerrainVirtualTexturePageScale = 6;
-constexpr int TerrainVirtualTextureSize = TerrainVirtualTexturePageScale * TerrainVirtualTexturePageSize;
-constexpr int TerrainVirtaulTexturePageTableSize = 4 * (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4 + 2 * 2 + 1);
+constexpr int TerrainVirtualTextureSizeX = 8 * TerrainVirtualTexturePageSize;
+constexpr int TerrainVirtualTextureSizeY = 4 * TerrainVirtualTexturePageSize;
+// constexpr int TerrainVirtaulTexturePageTableSize = 4 * (128 * 128 + 64 * 64 + 32 * 32 + 16 * 16 + 8 * 8 + 4 * 4 + 2 * 2 + 1);
 
 /*
 *	 rendering constants  

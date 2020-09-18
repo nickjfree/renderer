@@ -19,11 +19,11 @@ PS_Input_Simple VS(VS_Input_Quad_Instance input)
     // simple ps shader input layout
     PS_Input_Simple output = (PS_Input_Simple)0;
     // caculate screen space 
-    float tileScale = 1/3.0;
-	float subScale = 1/6.0;
+    float2 tileScale = float2(0.25f, 0.5f);
+	float2 subScale = float2(0.125f, 0.25f);
 	float2 origin = input.InstancePosition.xz - float2(0.5 * input.InstanceScale, 0.5 * input.InstanceScale);
     // wrap position
-    float2 tileOffset = float2(fmod(input.InstanceLevel, 3), floor(input.InstanceLevel / 3)) * tileScale;
+    float2 tileOffset = float2(fmod(input.InstanceLevel, 4), floor(input.InstanceLevel / 4)) * tileScale;
     float2 subOffset = floor(fmod(origin / input.InstanceScale, 2)) * subScale;
 
 	float2 offset = tileOffset + subOffset;

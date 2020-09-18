@@ -63,9 +63,9 @@ PS_Output_GBuffer PS_Terrain_GBuffer(PS_Input_GBuffer ps_input)
 {   
     PS_Output_GBuffer output = (PS_Output_GBuffer)0;
     // read gbuffers
-    float4 normal = gNormalMap0.SampleLevel(gSam, ps_input.TexCoord, 0);
-    float4 diffuse = gDiffuseMap0.SampleLevel(gSam, ps_input.TexCoord, 0);
-    float4 specular = gSpecularMap0.SampleLevel(gSam, ps_input.TexCoord, 0);
+    float4 normal = float4(0, 0, 1, 0);
+    float4 diffuse = gTerrainVirtualTexture.Sample(gSamPoint, ps_input.TexCoord);
+    float4 specular = gSpecularMap0.Sample(gSam, ps_input.TexCoord);
     // normalize normal vector
     normal = normal * 2.0 - 1;
     normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
@@ -79,7 +79,7 @@ PS_Output_GBuffer PS_Terrain_GBuffer(PS_Input_GBuffer ps_input)
     output.Depth.x = ps_input.Depth;
     output.Diffuse = diffuse;
     // x: specular  y: roughness  z: metallic
-    output.Specular = float4(gSpecular, specular.y, specular.z, 0);
+    output.Specular = float4(gSpecular, 0.5, 0, 0);
     // compact info: object id
     output.Compact.w = ps_input.ObjectId;
 

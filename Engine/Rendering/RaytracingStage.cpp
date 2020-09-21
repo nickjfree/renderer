@@ -103,10 +103,8 @@ int RaytracingStage::Denosing(BatchCompiler* Compiler) {
 	return compiled;
 }
 
-
-int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler)
+int RaytracingStage::BuildRaytracingScene(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler)
 {
-
 	auto compiled = 0;
 	// get all the renderobjs
 	rtInstances.Reset();
@@ -118,15 +116,26 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		//renderObject->Compile();
 		renderObject->UpdateRaytracingStructure(Context);
 	}
+	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
+	if (Value) {
+		compiler->BuildRaytracingScene();
+	}
+	return compiled;
+}
+
+
+int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler)
+{
+
+	auto compiled = 0;
 	// let's shoot rays
 	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
 	if (Value) {
 		auto rtShader = Value->as<Material*>()->GetShaderLibrary();
 		//Compiled += Compiler->SetDepthBuffer(-1);
 		// build raytracing scene in compute queue
-		compiler->BuildRaytracingScene();
-
-		compiled += compiler->SetDepthBuffer(-1);
+		// compiler->BuildRaytracingScene();
+		// compiled += compiler->SetDepthBuffer(-1);
 
 		// Parameter["RenderTarget"].as<int>() = Context->GetRenderTarget("gPostBuffer"); // rtTarget
 		Parameter["RenderTarget"].as<int>() = rtTarget;
@@ -146,31 +155,51 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 
 int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events) 
 {
+	{
+		auto compiled = 0;
+		// create a renderview
+		auto renderview = RenderView::Create();
+		renderview->Camera = Camera;
+		renderview->Depth = -1;
+		renderview->Type = R_STAGE_RT_BUILD;
+		renderview->Index = 0;
+		renderview->Queue = renderQueue;
+		renderview->TargetCount = 0;
 
-	auto compiled = 0;
-	// create a renderview
-	auto renderview = RenderView::Create();
-	renderview->Camera = Camera;
-	renderview->Depth = -1;
-	renderview->Type = R_STAGE_RT;
-	renderview->Index = 0;
-	renderview->Queue = renderQueue;
-	renderview->TargetCount = 0;
+		auto compiler = renderview->Compiler;
+		compiler->Reset();
+		// build scene
+		BuildRaytracingScene(Camera, spatial, compiler);
+		// recycle
+		renderview->QueueCommand();
+		RenderViews.PushBack(renderview);
+	}
+	// trace ray
+	{
+		auto compiled = 0;
+		// create a renderview
+		auto renderview = RenderView::Create();
+		renderview->Camera = Camera;
+		renderview->Depth = -1;
+		renderview->Type = R_STAGE_RT_DISPATCH2;
+		renderview->Index = 0;
+		renderview->Queue = renderQueue;
+		renderview->TargetCount = 0;
 
-	auto compiler = renderview->Compiler;
-	compiler->SetBuffer((char*)renderview->CommandBuffer);
+		auto compiler = renderview->Compiler;
+		compiler->Reset();
+		// trace rays
+		compiled += Raytracing(Camera, spatial, compiler);
+		// denoising
+		compiled += Denosing(compiler);
 
-	// trace rays
-	compiled += Raytracing(Camera, spatial, compiler);
-	// denoising
-	compiled += Denosing(compiler);
+		// recycle
+		renderview->QueueCommand();
+		RenderViews.PushBack(renderview);
+	}
 	// inc  frames
 	NumFrames++;
-	// recycle
-	renderview->QueueCommand();
-	RenderViews.PushBack(renderview);
-
-	return compiled;
+	return 0;
 }
 
 int RaytracingStage::End()

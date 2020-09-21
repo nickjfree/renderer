@@ -25,8 +25,7 @@ int CullingTask::Work() {
 
 	//	printf("visible objects in %d %d\n", ObjectType, renderview->VisibleObjects.Size());
 	int Size = renderview->VisibleObjects.Size();
-	char* Buffer = (char*)renderview->CommandBuffer;
-	Compiler->SetBuffer(Buffer);
+	Compiler->Reset();
 	int Compiled = 0;
 	// target and view prepair
 	renderview->Compile(Context);

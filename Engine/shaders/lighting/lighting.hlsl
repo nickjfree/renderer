@@ -50,7 +50,7 @@ PS_Output_Simple PS_Direction_Light(PS_Input_Simple ps_input)
     // deferred lighting
     float3 lighting_color = gLightColor.xyz * deferred_lighting(gbuffer, L).xyz;
     // direction light shadow
-    float shadow = gDiffuseMap0.Sample(gSam, ps_input.TexCoord).x;
+    // float shadow = gDiffuseMap0.Sample(gSam, ps_input.TexCoord).x;
     // final color
     output.Color = float4(intensity * lighting_color * saturate(dot(normal, L)), 0);
 

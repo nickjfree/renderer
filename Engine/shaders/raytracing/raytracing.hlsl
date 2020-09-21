@@ -97,12 +97,15 @@ void Raygen()
 
     // Write the raytraced color to the output texture.
     RenderTarget[DispatchRaysIndex().xy] = payload.color;
+
+    // RenderTarget[DispatchRaysIndex().xy] = float4(1,1,1,1);
     // float history;
     // float2 prevUV = GetPrevScreenCoordLoad(uv, history);
     // float4 prevColor = PrevRenderTarget.SampleLevel(gSamPoint, prevUV, 0);
     // float alpha = max(0.05, 1.0 / history);
     // RenderTarget[DispatchRaysIndex().xy] = lerp(prevColor, payload.color, alpha);
 }
+
 
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in MyAttributes attr)

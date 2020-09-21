@@ -374,6 +374,7 @@ int PostpassStage::HDR(BatchCompiler* Compiler) {
 	return Compiled;
 }
 
+
 int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueue* renderQueue, WorkQueue* Queue, Vector<OsEvent*>& Events) {
 	RenderView* renderview = RenderView::Create();
 	// setup render view
@@ -390,8 +391,7 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	//renderview->Depth = Context->GetRenderTarget("Depth");
 	renderview->ClearDepth = 0;
 	BatchCompiler* Compiler = renderview->Compiler;
-	char* Buffer = (char*)renderview->CommandBuffer;
-	Compiler->SetBuffer(Buffer);
+	Compiler->Reset();
 	// continue post process
 	renderview->Compile(Context);
 	// clear parames

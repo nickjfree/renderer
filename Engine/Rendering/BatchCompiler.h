@@ -50,6 +50,8 @@ public:
 	int EndBuffer();
 	// set buffer
 	int SetBuffer(char* CommandBuffer_);
+	// reset
+	void Reset() { Offset = CommandBuffer; }
 	// render geometry
 	int RenderGeometry(int Geometry);
 	// set transform

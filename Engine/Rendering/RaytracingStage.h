@@ -45,6 +45,8 @@ private:
 	// denosing shader
 	Shader* DenosingShader = nullptr;
 private:
+	// build scene
+	int BuildRaytracingScene(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
 	// temporal_accumulation
 	int Accumulation(BatchCompiler* Compiler);
 	// filter

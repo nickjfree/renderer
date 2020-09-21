@@ -76,8 +76,7 @@ int RenderToTextureStage::RenderTerrainTexture(RenderingCamera* Camera, Spatial*
 	renderview->Camera = Camera;
 	renderview->Queue = renderQueue;
 	auto compiler = renderview->Compiler;
-	char* buffer = (char*)renderview->CommandBuffer;
-	compiler->SetBuffer(buffer);
+	compiler->Reset();
 	renderview->Compile(Context);
 	// set view port
 	compiler->SetViewport(0.0f, 0.0f, static_cast<float>(TerrainVirtualTextureSizeX), static_cast<float>(TerrainVirtualTextureSizeY), 0.0f, 1.0f);

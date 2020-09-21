@@ -8,6 +8,7 @@ RenderView::RenderView() : ClearTargets(1)
 {
 	CommandBuffer = new char[COMMANDBUFFER_SIZE];
 	Compiler = new BatchCompiler();
+	Compiler->SetBuffer((char*)CommandBuffer);
 	Event = OsEvent::Create();
 }
 

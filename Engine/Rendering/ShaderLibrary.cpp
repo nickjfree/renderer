@@ -49,7 +49,7 @@ int ShaderLibrary::AddFunction(char* Name) {
 int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size) 
 {
 	/*
-		shader reflection to get contant buffer info and input signature info
+		shader reflection to get constant buffer info and input signature info
 	*/
 	dxcDllSupport.Initialize();
 

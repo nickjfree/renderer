@@ -23,7 +23,7 @@ int TestGen(char * File) {
         "Mesh\\test.pack\\cube\\0",
         "Mesh\\character.pack\\human2\\0",
         "Mesh\\Unit.pack\\sphere\\0",
-        "Mesh\\Unit.pack\\sneak\\0",
+        "Mesh\\test.pack\\rock\\0",
         "Mesh\\BlendShapes.pack\\eyeBlink_L\\0",
     };
     MeshEntry mesh = {};
@@ -43,7 +43,7 @@ int TestGen(char * File) {
         "Material\\Materials\\sneak6.xml\\0",
         "Material\\Materials\\sneak7.xml\\0",
         "Material\\Materials\\sneak8.xml\\0",
-        "Material\\Materials\\sneak.xml\\0",
+        "Material\\Materials\\rock.xml\\0",
 
 
         "Material\\Materials\\lightprobe.xml\\0",

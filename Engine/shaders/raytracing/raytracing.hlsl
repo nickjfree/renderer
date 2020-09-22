@@ -76,9 +76,12 @@ void Raygen()
     float2 randsample = float2(Rand(seed), Rand(seed));
     float3 rayDir = GenerateReflectedRayDirection(world_look, world_normal, roughness, randsample);
     FixSampleDirectionIfNeeded(world_normal, rayDir);
-    // normalize(float3(1, 1, 0));
     // Trace the ray.
     // Set the ray's extents.
+    // float4 look = GetLookVector(uv);
+    // float3 rayDir = mul(look, gInvertViewMaxtrix).xyz;
+    // float3 origin = mul(float4(0, 0, 0, 1), gInvertViewMaxtrix).xyz;
+
     RayDesc ray;
     ray.Origin = origin;
     ray.Direction = normalize(rayDir);
@@ -95,7 +98,7 @@ void Raygen()
 
     TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
 
-    // Write the raytraced color to the output texture.
+    // // Write the raytraced color to the output texture.
     RenderTarget[DispatchRaysIndex().xy] = payload.color;
 
     // RenderTarget[DispatchRaysIndex().xy] = float4(1,1,1,1);

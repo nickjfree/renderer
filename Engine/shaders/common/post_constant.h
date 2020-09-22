@@ -8,6 +8,7 @@
 cbuffer Misc : register(b4)
 {
     float4 gScreenSize;
+    float4x4 pad1;
 }
 
 #endif

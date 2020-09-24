@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-    <texture unit="gLUT" name="reflection_lut" url="Texture\textures\iblBrdf.dds\0">reflection_lut</texture>
+    <!-- <texture unit="gLUT" name="reflection_lut" url="Texture\textures\iblBrdf.dds\0">reflection_lut</texture> -->
+    <texture unit="gLightProbe" name="LightProbe" url="Texture\textures\iblEnvHDR.dds\0">lightprobe</texture>
+    <texture unit="gLUT" name="lut" url="Texture\textures\iblBrdf.dds\0">lut</texture>
+    <texture unit="gLdCube" name="ldcube" url="Texture\textures\iblSpecularHDR.dds\0">pre</texture>
+    <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\iblDiffuseHDR.dds\0">irr</texture>
   </textures>
 
   <shader name="reflection" url="Shader\shaders\Reflection\0"></shader>

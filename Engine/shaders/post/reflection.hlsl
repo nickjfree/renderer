@@ -10,7 +10,6 @@ Texture2D gRaytracingBuffer : register(t0);
 /*
     reflection resolve pixel shader
 */
-
 PS_Output_Simple PS(PS_Input_Simple input)
 {   
     PS_Output_Simple output = (PS_Output_Simple)0;
@@ -30,10 +29,8 @@ PS_Output_Simple PS(PS_Input_Simple input)
     // pre-intergrated texture
     reflection =  reflection * EnvBRDF(specularColor, roughness, NoV);
 
-    // output.Color = Color + 3* float4(reflection, 0);
-
     output.Color = 1 * float4(reflection, 0);
-
+   
     // output.Color = gMotionVector.Sample(gSam, input.TexCoord).w/2048.0f;
     return output;
 }

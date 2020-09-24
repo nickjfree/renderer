@@ -131,7 +131,8 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 	// let's shoot rays
 	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
 	if (Value) {
-		auto rtShader = Value->as<Material*>()->GetShaderLibrary();
+		auto material = Value->as<Material*>();
+		auto rtShader = material->GetShaderLibrary();
 		//Compiled += Compiler->SetDepthBuffer(-1);
 		// build raytracing scene in compute queue
 		// compiler->BuildRaytracingScene();
@@ -147,7 +148,7 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 		Parameter["gFrameNumber"].as<int>() = NumFrames;
 
-		compiled += rtShader->Compile(compiler, 0, 0, Parameter, Parameter, Context);
+		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		compiled += compiler->TraceRay();
 	}
 	return compiled;

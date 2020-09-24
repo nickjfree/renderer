@@ -396,6 +396,9 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	renderview->Compile(Context);
 	// clear parames
 	Parameter.Clear();
+	// set perframe parameters
+	Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
+
 	// do reflection resolve pass
 	Reflection(Compiler);
 	// do SSAO

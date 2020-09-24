@@ -19,7 +19,7 @@
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
-Texture2D PrevRenderTarget : register(t1, space0);
+// Texture2D PrevRenderTarget : register(t1, space0);
 
 ByteAddressBuffer Vertices : register(t0, space1);
 ByteAddressBuffer Indices : register(t1, space1);
@@ -27,7 +27,8 @@ Texture2D gDiffuseMap0 : register(t2, space1);
 Texture2D gNormalMap0 : register(t3, space1);
 Texture2D gSpecularMap0 : register(t4, space1);
 
-
+// light prob
+TextureCube  gLightProbe           : register(t17);
 
 // info about the instance
 cbuffer InstanceInfo: register(b0, space1)
@@ -55,17 +56,12 @@ void Raygen()
     GBuffer gbuffer = GetGBufferLoad(uv);
 
     float3 viewPos = gbuffer.Position.xyz;
-    // word position to sun 
+    // world position to sun 
     float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
-    // float3 origin = mul(float4(GetPositionLoad(DispatchRaysIndex().xy), 1), gInvertViewMaxtrix).xyz;
-    // get view normal
+    // get view-space normal
     float3 normal = gbuffer.Normal.xyz; 
-    // get view space look
+    // get view-space look
     float3 look = -gbuffer.View.xyz;
-    // get view space raydir
-    // float3 rayDir = reflect(look, normal);
-    // get world space ray
-    // rayDir = mul(float4(rayDir, 0), gInvertViewMaxtrix).xyz;
 
     float roughness = gbuffer.Roughness;
 
@@ -99,6 +95,7 @@ void Raygen()
     TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
 
     // // Write the raytraced color to the output texture.
+
     RenderTarget[DispatchRaysIndex().xy] = payload.color;
 
     // RenderTarget[DispatchRaysIndex().xy] = float4(1,1,1,1);
@@ -132,14 +129,14 @@ void ClosestHit(inout RayPayload payload, in MyAttributes attr)
     float4 color = gDiffuseMap0.SampleLevel(gSam, uv, 0);
 
    // float4 color = float4(uv, 0.0, 0);
-
-    payload.color = color;    
+    payload.color = float4(color.xyz, RayTCurrent());
 }
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    payload.color = float4(0, 0.0, 0, 1);
+    // payload.color = float4(0, 0, 0, 1);
+    payload.color = gLightProbe.SampleLevel(gSam, WorldRayDirection(), 0);
 }
 
 #endif // RAYTRACING_HLSL

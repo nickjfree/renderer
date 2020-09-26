@@ -85,6 +85,8 @@ PS_Output_Acc PS_TemporalAccumulation(PS_Input_Simple ps_input)
     float2 uv = ps_input.TexCoord;
 
     float4 currentColor = gCurrentColor.SampleLevel(gSamPoint, uv, 0);
+    // clamp
+    currentColor = min(currentColor, float4(100, 100, 100, 0));
     float valid;
     float2 prevUV = GetPrevScreenCoordLoad(uv, valid);
     float4 prevColor = gPrevColor.Sample(gSamPoint, prevUV, 0);

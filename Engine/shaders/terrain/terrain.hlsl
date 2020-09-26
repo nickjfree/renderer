@@ -79,7 +79,7 @@ PS_Output_GBuffer PS_Terrain_GBuffer(PS_Input_GBuffer ps_input)
     output.Depth.x = ps_input.Depth;
     output.Diffuse = diffuse;
     // x: specular  y: roughness  z: metallic
-    output.Specular = float4(gSpecular, 0.8, 0, 0);
+    output.Specular = float4(gSpecular, 0.9, 0, 0);
     // compact info: object id
     output.Compact.w = ps_input.ObjectId;
 

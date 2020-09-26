@@ -131,14 +131,12 @@ int PhysicsSystem::Initialize() {
 	dynamicsWorld->setGravity(btVector3(0, -10, 0));
 
 	// build a test plane
-	//the ground is a cube of side 100 at position y = -56.
-	//the sphere will hit it at y = -6, with center at -5
 	{
 		btCollisionShape* groundShape = new btBoxShape(btVector3(btScalar(1000.), btScalar(50.), btScalar(1000.)));
 
 		btTransform groundTransform;
 		groundTransform.setIdentity();
-		groundTransform.setOrigin(btVector3(0, -56, 0));
+		groundTransform.setOrigin(btVector3(0, -50, 0));
 
 		btScalar mass(0.);
 

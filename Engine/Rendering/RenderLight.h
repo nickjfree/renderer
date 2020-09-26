@@ -41,6 +41,8 @@ public:
 	~RenderLight();
 	// compile
 	int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
+	// update raytracing structure
+	int UpdateRaytracingStructure(RenderContext* Context);
 	// set light type
 	void SetLightType(int Type);
 	// set radius

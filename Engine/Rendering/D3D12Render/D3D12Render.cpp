@@ -1819,13 +1819,12 @@ void D3D12Render::TraceRay() {
 
 	// tracing rays(test)
 	if (rtScene) {
-
 		// test wait for the scene in graphic queue
 		WaitRaytracingScene();
-
-		// flush resource barriers
-		FlushResourceBarriers();
-
+	}
+	// flush resource barriers
+	FlushResourceBarriers();
+	if (rtScene) {
 		// flush compute rootsig
 		FlushRootComputeSignature(rtScene->GetDescriptorHeap());
 

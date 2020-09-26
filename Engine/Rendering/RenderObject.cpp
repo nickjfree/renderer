@@ -152,7 +152,6 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 			}
 		}
 	}
-	
 	return 0;
 }
 

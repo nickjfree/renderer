@@ -123,3 +123,43 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 	Compiled += Compiler->Quad();
 	return Compiled;
 }
+
+
+int RenderLight::UpdateRaytracingStructure(RenderContext* Context) {
+
+	// get geometry
+	int Geometry = GetRenderMesh(0, 0);
+
+	// get raytracing shader library to get the resource bindings
+	Variant* Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
+	if (Value) {
+		// raytracing shader material
+		auto rtMaterial = Value->as<Material*>();
+
+		// the rtshader
+		auto rtShader = rtMaterial->GetShaderLibrary();
+
+		auto renderInterface = Context->GetRenderInterface();
+		if (Geometry != -1) {
+			if (RaytracingGeometry == -1 && palette.Size == 0 && !(Type & CLIPMAP)) {
+				// create it, static geometry
+				RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
+			}
+			if (RaytracingGeometry != -1) {
+				// add instance
+				R_RAYTRACING_INSTANCE instance = {};
+				instance.Flag = 0;
+				instance.MaterialId = 1;
+				instance.rtGeometry = RaytracingGeometry;
+				instance.Transform = GetWorldMatrix();
+				// make local resource bindings
+				rtShader->GetLocalResourceBindings(material->GetParameter(), rtMaterial->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
+				//if (palette.Size) {
+				renderInterface->AddRaytracingInstance(instance);
+				//}
+
+			}
+		}
+	}
+	return 0;
+}

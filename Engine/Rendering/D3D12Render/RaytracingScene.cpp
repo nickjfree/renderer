@@ -227,8 +227,9 @@ int RaytracingScene::AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID,
 	//instance.Transform[0][0] = instance.Transform[1][1] = instance.Transform[2][2] = 1;	// InstanceId
 
 	// set instance id
-	instance.InstanceID = InstanceDesc.Size();
-	instance.InstanceContributionToHitGroupIndex = instance.InstanceID;
+	auto instanceIndex = InstanceDesc.Size();
+	// instance.InstanceID = 
+	instance.InstanceContributionToHitGroupIndex = instanceIndex;
 	return InstanceDesc.PushBack(instance);
 }
 

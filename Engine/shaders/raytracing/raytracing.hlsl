@@ -110,7 +110,10 @@ void Raygen()
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in MyAttributes attr)
 {
-    
+    if (InstanceID() == 1) {
+        payload.color = float4(0, 100, 0, RayTCurrent());
+        return;
+    }
     // 
     float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
     // PrimitiveIndex

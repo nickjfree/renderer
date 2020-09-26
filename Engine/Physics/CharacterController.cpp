@@ -82,7 +82,7 @@ int CharacterController::Update(int ms) {
 	Matrix4x4 Transform = Matrix4x4::FormPositionRotation(Position, Rotation);
 	// set to gameobject, the invert is used to offset back to gameobject root
 	// Owner->SetTransform(InvertCenter * Transform);
-	Owner->SetTranslation(Position);
+	Owner->SetTranslation(Position - CenterOffset);
 	return 0;
 }
 

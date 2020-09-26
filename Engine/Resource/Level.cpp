@@ -285,6 +285,7 @@ int Level::InitScript() {
 			object->SetTranslation(Vector3(0, 0, 0));
 			MeshRenderer* render = (MeshRenderer*)object->GetComponent("Renderer");
 			Model* model = render->GetModel();
+			Character->SetCeterOffset(Vector3(0, 6.6, 0));
 			object->AddComponent(Character);
 			// attach a script component for test 
 			auto script = context->CreateObject<Script>();

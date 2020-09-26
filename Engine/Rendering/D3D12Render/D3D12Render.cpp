@@ -44,13 +44,13 @@ HWND D3D12Render::CreateRenderWindow()
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = L"H3DRender";
+	wcex.lpszClassName = L"Simple Renderer";
 	wcex.hIconSm = NULL;
 	RegisterClassEx(&wcex);
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	wchar_t title[1024];
-	swprintf(title, 1024, L"H3DRender -D3D12 (%d,%d)", Width, Height);
-	RenderWindow = CreateWindow(L"H3DRender", title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
+	swprintf(title, 1024, L"Simple Renderer -D3D12 (%d,%d)", Width, Height);
+	RenderWindow = CreateWindow(L"Simple Renderer", title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, NULL, NULL);
 	// show this window
 	ShowWindow(RenderWindow, SW_SHOW);
 	UpdateWindow(RenderWindow);
@@ -2031,7 +2031,7 @@ void D3D12Render::ShowPerformanceInfo() {
 	Performance.StartingTime = Performance.EndingTime;
 	Performance.ElapsedMicroseconds.QuadPart *= 1000000;
 	Performance.ElapsedMicroseconds.QuadPart /= Performance.Frequency.QuadPart;
-	sprintf_s(WindowTitle, "H3DRender - D3D12(%d, %d) FPS: %lld  Draw Calls %d", Width, Height, 1000000 / Performance.ElapsedMicroseconds.QuadPart, Performance.DrawCallCount);
+	sprintf_s(WindowTitle, "Simple Renderer - D3D12(%d, %d) FPS: %lld  Draw Calls %d", Width, Height, 1000000 / Performance.ElapsedMicroseconds.QuadPart, Performance.DrawCallCount);
 	SetWindowTextA(hWnd, WindowTitle);
 	Performance.DrawCallCount = 0;
 }

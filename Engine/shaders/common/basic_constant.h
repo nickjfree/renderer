@@ -37,7 +37,8 @@ cbuffer PerLight: register(b1)
 cbuffer PerFrame: register(b2) 
 {
     // per frame
-    float4x4 gProjectionMatrix;
+    float4x4 gViewProjectionMatrix;
+    float4x4 gViewMatrix;
     float4x4 gInvertViewMaxtrix;
     float4   gViewPoint;
 

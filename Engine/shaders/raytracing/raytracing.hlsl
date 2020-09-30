@@ -27,6 +27,9 @@ Texture2D gDiffuseMap0 : register(t2, space1);
 Texture2D gNormalMap0 : register(t3, space1);
 Texture2D gSpecularMap0 : register(t4, space1);
 
+// postbuffer
+Texture2D gPostBuffer : register(t14); 
+
 // light prob
 TextureCube  gLightProbe           : register(t17);
 
@@ -70,7 +73,9 @@ void Raygen()
     // random seed
     uint seed = RandInit(linearIndex, gFrameNumber);
     float2 randsample = float2(Rand(seed), Rand(seed));
-    float3 rayDir = GenerateReflectedRayDirection(world_look, world_normal, roughness, randsample);
+    float4 sample = GenerateReflectedRayDirection(world_look, world_normal, roughness, randsample);
+    float3 rayDir = sample.xyz;
+    float invPDF = sample.w;
     FixSampleDirectionIfNeeded(world_normal, rayDir);
     // Trace the ray.
     // Set the ray's extents.
@@ -92,7 +97,7 @@ void Raygen()
         return;
     }
 
-    TraceRay(Scene, RAY_FLAG_NONE, ~0, 0, 1, 0, ray, payload);
+    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
 
     // // Write the raytraced color to the output texture.
 
@@ -111,10 +116,26 @@ void Raygen()
 void ClosestHit(inout RayPayload payload, in MyAttributes attr)
 {
     if (InstanceID() == 1) {
-        payload.color = float4(0, 100, 0, RayTCurrent());
+        payload.color = float4(0, 50, 0, RayTCurrent());
         return;
     }
-    // 
+    // try get the color from screen space
+    float3 hitPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+    float4 screenPosition = mul(float4(hitPosition, 1), gViewProjectionMatrix);
+    screenPosition.x = screenPosition.x / screenPosition.w * 0.5 + 0.5;
+    screenPosition.y = -screenPosition.y / screenPosition.w * 0.5 + 0.5;
+    // get gbuffer 
+    if ((saturate(screenPosition.x) == screenPosition.x) && (saturate(screenPosition.y) == screenPosition.y)) {
+        // in screen space
+        GBuffer gbuffer = GetGBufferLoad(screenPosition.xy);
+        float hitDepth = mul(float4(hitPosition, 1), gViewMatrix).z;
+        float gbufferDepth = gbuffer.Position.z;
+        if (hitDepth - gbufferDepth < 1) {
+            payload.color = gPostBuffer.SampleLevel(gSam, screenPosition.xy, 0);
+            return;
+        }
+    }
+    // can't get color from screen space, get it from textures
     float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
     // PrimitiveIndex
     uint index0 = PrimitiveIndex() * 3;

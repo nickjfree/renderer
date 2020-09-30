@@ -69,13 +69,13 @@ float4 ImportanceSampleVisibleGGX( float2 DiskE, float a2, float3 V )
 
     float G_SmithV = 2 * NoV / (NoV + sqrt(NoV * (NoV - NoV * a2) + a2));
 
-    float PDF = G_SmithV * VoH * D / NoV;
-
+    float PDF = G_SmithV * VoH * D / saturate(NoV);
+    
     return float4(H, PDF);
 }
 
 
-float3 GenerateReflectedRayDirection(
+float4 GenerateReflectedRayDirection(
     float3 IncidentDirection,
     float3 WorldNormal,
     float Roughness,
@@ -83,9 +83,11 @@ float3 GenerateReflectedRayDirection(
 )
 {
     float3 RayDirection;
+    float invPDF;
     if (Roughness < 0.001) //ReflectionSmoothClamp)
     {
         RayDirection = reflect(IncidentDirection, WorldNormal);
+        invPDF = 1;
     }
     else
     {
@@ -104,9 +106,9 @@ float3 GenerateReflectedRayDirection(
         float3 L = 2 * dot(V, H) * H - V;
 
         RayDirection = L;
+        invPDF = 1.0/Sample.w;
     }
-
-    return RayDirection;
+    return float4(RayDirection, invPDF);
 }
 
 void FixSampleDirectionIfNeeded(float3 SmoothSurfaceNormal, inout float3 SampleDirection)

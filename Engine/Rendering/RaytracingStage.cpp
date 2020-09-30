@@ -144,6 +144,8 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		Context->SetResource("rtTarget", Parameter["RenderTarget"]);
 
 		Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
+		Matrix4x4::Tranpose(Camera->GetViewProjection(), &Parameter["gViewProjectionMatrix"].as<Matrix4x4>());
+		Matrix4x4::Tranpose(Camera->GetViewMatrix(), &Parameter["gViewMatrix"].as<Matrix4x4>());
 		Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
 		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 		Parameter["gFrameNumber"].as<int>() = NumFrames;

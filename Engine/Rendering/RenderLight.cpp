@@ -109,7 +109,7 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 		break;
 	case DIRECTION:
 		Stage = 2;
-		// return Compiled;
+		//return Compiled;
 		break;
 	case ENV:
 		Stage = 3;

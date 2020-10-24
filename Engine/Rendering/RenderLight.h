@@ -3,6 +3,37 @@
 
 #include "RenderObject.h"
 #include "RenderingCamera.h"
+
+
+typedef struct LightData
+{
+    // light color
+	Vector3 color;
+	// light direction
+	Vector3 direction;
+	// light position
+	Vector3 position;
+	// radius
+	float radius;
+	// intensity
+	float intensity;
+	// spotlight inner angle
+	float innerAngle; 
+	// spotlight outer angle
+	float outerAngle;
+	// rectlight width
+	float rectLightWidth;
+	// rectlight height
+	float rectLightHeight;
+	// light type
+	int type;
+	// pad
+	int pad;
+}LightData;
+
+
+
+
 /*
 	light node
 */
@@ -73,6 +104,8 @@ public:
 	int GetShadowCasting() const { return ShadowCast; }
 	// get Light Camera
 	RenderingCamera* GetLightCamera();
+	// get lightdata
+	LightData GetLightData();
 };
 
 #endif

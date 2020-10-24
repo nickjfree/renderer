@@ -5,6 +5,7 @@
 #include "RenderStage.h"
 #include "ShaderLibrary.h"
 #include "RenderView.h"
+#include "Rendering/RenderLight.h"
 
 struct Viewport
 {
@@ -20,12 +21,15 @@ struct RayGenConstantBuffer
 	Viewport stencil;
 };
 
-
 class RaytracingStage : public RenderStage
 {
 private:
 	// ratrcing objects (renderObjects)
 	Vector<Node*> rtInstances;
+	// lights
+	Vector<Node*> lights;
+	// lighting data
+	Vector<LightData> lightingData;
 private:
 	// initialization
 	void Initialize();
@@ -55,6 +59,8 @@ private:
 	int Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
 	// denosing
 	int Denosing(BatchCompiler* Compiler);
+	// collection lighting data
+	int BuildLightingData(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
 public:
 	RaytracingStage(RenderContext* Context);
 	virtual ~RaytracingStage();

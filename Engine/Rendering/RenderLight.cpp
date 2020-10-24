@@ -163,3 +163,10 @@ int RenderLight::UpdateRaytracingStructure(RenderContext* Context) {
 	}
 	return 0;
 }
+
+
+// get lightdata
+LightData RenderLight::GetLightData() 
+{
+	return LightData{};
+}

@@ -123,6 +123,22 @@ int RaytracingStage::BuildRaytracingScene(RenderingCamera* Camera, Spatial* spat
 	return compiled;
 }
 
+int RaytracingStage::BuildLightingData(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler) 
+{
+	// clear prev data
+	lights.Reset();
+	lightingData.Reset();
+	spatial->Query(Camera->GetFrustum(), lights, Node::LIGHT);
+
+	for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
+		RenderLight* light = (RenderLight*)*iter;
+		lightingData.PushBack(light->GetLightData());
+	}
+	ShaderParameterArray shaderParameterLights { lightingData.GetData(), lightingData.Size() * sizeof(LightData) };
+	Parameter["gLightArray"].as<ShaderParameterArray>() = shaderParameterLights;
+	return 0;
+}
+
 
 int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler)
 {
@@ -191,6 +207,8 @@ int RaytracingStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQu
 
 		auto compiler = renderview->Compiler;
 		compiler->Reset();
+		// build lights
+		compiled += BuildLightingData(Camera, spatial, compiler);
 		// trace rays
 		compiled += Raytracing(Camera, spatial, compiler);
 		// denoising

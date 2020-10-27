@@ -157,10 +157,11 @@ float2 GetPrevScreenCoord(float2 uv, out float valid)
     return uv + motion.xy;
 }
 
-float2 GetPrevScreenCoordLoad(float2 uv, out float valid)
+float2 GetPrevScreenCoordLoad(float2 uv, out float valid, out float fwidthZ)
 {
     float4 motion = gMotionVector.SampleLevel(gSamPoint, uv, 0);
     valid = motion.w;
+    fwidthZ = motion.z;
     return uv + motion.xy;
 }
 
@@ -170,5 +171,29 @@ float GetObjectId(float2 uv)
     return gCompactBuffer.Sample(gSamPoint, uv).w;
 }
 
+float GetLinearZLoad(float2 uv)
+{
+    return gCompactBuffer.SampleLevel(gSamPoint, uv, 0).z;
+}
+
+float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, float currentLinearZ)
+{
+    float valid = 1.0;
+    float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
+    if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
+        // check for object id
+        if (abs(objectId - compactData.w) > 0.001f) return 0.0;
+        // check for normal
+        float3 prevNormal = DecodeNormal(compactData.xy);
+        if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) return 0.0;
+        float prevLinearZ = compactData.z;
+        // check for linear depth
+        float maxChangeZ = max(abs(ddx(currentLinearZ)), abs(ddy(currentLinearZ)));
+        if(abs(prevLinearZ - currentLinearZ) / (maxChangeZ + 1e-4) > 2.0) return 0.0;
+    } else {
+        return 0.0;   
+    }
+    return valid;
+}
 
 #endif

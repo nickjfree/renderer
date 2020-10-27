@@ -35,27 +35,6 @@ PS_Input_Simple VS_Terrain_Simple(VS_Input_Simple vs_input, uint VertexId : SV_V
     return output;
 }
 
-
-float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, float currentLinearZ)
-{
-    float valid = 1.0;
-    float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
-    if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
-        // check for object id
-        if (abs(objectId - compactData.w) > 0.001f) return 0.0;
-        // check for normal
-        float3 prevNormal = DecodeNormal(compactData.xy);
-        if (dot(prevNormal, currentNormal) < sqrt(2)/2.0) return 0.0;
-        float prevLinearZ = compactData.z;
-        // check for linear depth
-        float maxChangeZ = max(abs(ddx(currentLinearZ)), abs(ddy(currentLinearZ)));
-        if(abs(prevLinearZ - currentLinearZ) / (maxChangeZ + 1e-4) > 2.0) return 0.0;
-    } else {
-        return 0.0;   
-    }
-    return valid;
-}
-
 /*
     gbuffer pixel shader
 */
@@ -87,13 +66,16 @@ PS_Output_GBuffer PS_Terrain_GBuffer(PS_Input_GBuffer ps_input)
     // motion vectors
     float2 currentScreen = ps_input.CurrentPosH.xy / ps_input.CurrentPosH.w * 0.5 + 0.5;
     float2 prevScreen = ps_input.PrevPosH.xy / ps_input.PrevPosH.w * 0.5 + 0.5;   
+    float linearZ = ps_input.CurrentPosH.z;
     currentScreen.y = 1 - currentScreen.y;
     prevScreen.y = 1 - prevScreen.y;
     // motion vector valid or not
-    float valid = reprojectionValid(prevScreen, ps_input.ObjectId, normal.xyz, ps_input.Depth);
+    float valid = reprojectionValid(prevScreen, ps_input.ObjectId, normal.xyz, linearZ);
+    // z grad
+    float fwidthZ = max(abs(ddx(linearZ)), abs(ddy(linearZ)));
     //set motion vector and compact buffer
-    output.Motion = float4(prevScreen.xy - currentScreen.xy, 0, valid);
+    output.Motion = float4(prevScreen.xy - currentScreen.xy, fwidthZ, valid);
     // history length
-    output.Compact.z = ps_input.Depth;
+    output.Compact.z = linearZ;
     return output;
 }

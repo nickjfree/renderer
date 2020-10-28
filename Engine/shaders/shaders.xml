@@ -280,6 +280,12 @@
         <ps url="Shaders\shaders\wavelet_filter.ps"></ps>
       </pass>
     </technique>
+    <technique name="variance_filter">
+      <pass name="variance_filter" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\variance_filter.ps"></ps>
+      </pass>
+    </technique>
   </shader>
 
   <shader name="HDR">

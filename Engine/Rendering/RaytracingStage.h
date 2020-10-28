@@ -53,6 +53,8 @@ private:
 	int BuildRaytracingScene(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
 	// temporal_accumulation
 	int Accumulation(BatchCompiler* Compiler);
+	// calc variance
+	int CalcVariance(BatchCompiler* Compiler);
 	// filter
 	int Filter(BatchCompiler* Compiler);
 	// raytracing

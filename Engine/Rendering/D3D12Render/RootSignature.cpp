@@ -234,7 +234,7 @@ bool RootSignature::SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D1
 }
 
 // flush descriptors, constant bindings
-bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, bool isCompute) {
+bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, RootSignatureFlushFlag flushFlag) {
 	// flush texture bindings
 	// get total need size
 	int TotalTableSize = 0;
@@ -291,9 +291,10 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 				return false;
 			}
 			else {
-				if (isCompute) {
+				if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_COMPUTE) {
 					CommandList->SetComputeRootDescriptorTable(Slot, handle);
-				} else {
+				}
+				if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC) {
 					CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
 				}
 			}
@@ -310,9 +311,10 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 	// flush constants
 	for (int i = 0; i < NumConstantBuffers; i++) {
 		if (Constants[i].Dirty) {
-			if (isCompute) {
+			if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_COMPUTE) {
 				CommandList->SetComputeRootConstantBufferView(Constants[i].RootSlot, Constants[i].constDesc.BufferLocation);
-			} else {
+			}
+			if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC) {
 				CommandList->SetGraphicsRootConstantBufferView(Constants[i].RootSlot, Constants[i].constDesc.BufferLocation);
 			}
 			Constants[i].Dirty = 0;

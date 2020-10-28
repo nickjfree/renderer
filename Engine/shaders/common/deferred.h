@@ -69,26 +69,6 @@ float3 GetPosition(float2 uv)
 }
 
 
-// get view space look vector
-float4 GetLookVectorScreen(int2 posSrc)
-{
-    float2 uv = (float2(posSrc) + float2(0.5, 0.5)) / gScreenSize.xy;
-    float2 clip_uv = (uv  - 0.5) * float2(2, -2);
-    float fary = fov;
-    float farx = gScreenSize.x / gScreenSize.y * fary;
-    float4 LookVec = float4(float2(farx,fary) * clip_uv, 1,0);
-    return LookVec;
-}
-
-
-// get view space position at uv in screen space
-float3 GetPositionScreen(int2 posSrc)
-{
-    float Depth = gDepthBuffer.Load(int3(posSrc, 0)).x;
-    float3 Position = (GetLookVectorScreen(posSrc) * Depth).xyz;
-    return Position;
-}
-
 // get view space position at uv in screen space
 float3 GetPositionLoad(float2 uv)
 {

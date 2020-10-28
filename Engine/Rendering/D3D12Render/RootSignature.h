@@ -27,7 +27,6 @@ namespace D3D12API {
 	// max root srv num
 	constexpr int MAX_ROOT_SRV_NUM = 16;
 
-
 	// descriptor table cache
 	typedef struct DescriptorTable {
 		int RootSlot;
@@ -59,6 +58,12 @@ namespace D3D12API {
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 		};
 	} RootDescriptorSlot;
+
+	enum RootSignatureFlushFlag {
+		ROOT_SIGNATURE_FLUSH_GRAPHIC = 1,
+		ROOT_SIGNATURE_FLUSH_COMPUTE = 2,
+		ROOT_SIGNATURE_FLUSH_BOTH    = 3,
+	};
 
 	class RootSignature {
 
@@ -115,7 +120,7 @@ namespace D3D12API {
 		// set sampler
 		bool SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, bool isCompute=false);
+		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, RootSignatureFlushFlag flashFlag=RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC);
 		// flush shader binding tables
 		bool FlushSBT(DescriptorHeap* descHeap, ShaderRecord * Record);
 	};

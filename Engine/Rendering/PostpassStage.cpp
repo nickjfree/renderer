@@ -185,6 +185,8 @@ int PostpassStage::SSAO(BatchCompiler* Compiler) {
 	if (ssaoMaterial) {
 		Shader* shader = ssaoMaterial->GetShader();
 		Compiled += shader->Compile(Compiler, 0, 0, ssaoMaterial->GetParameter(), ssaoMaterial->GetParameter(), Context);
+		// set render targets
+		Compiled += Compiler->SetRenderTargets(1, &PingPong[1]);
 		// draw full screen quad
 		Compiled += Compiler->Quad();
 	}
@@ -205,13 +207,11 @@ int PostpassStage::Reflection(BatchCompiler* Compiler) {
 	if (Value) {
 		auto material = Value->as<Material*>();
 		ReflectionShader = material->GetShader();
+		Compiled += ReflectionShader->Compile(Compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		// render to postbuffer
 		Compiled += Compiler->SetRenderTargets(1, &PingPong[0]);
-		Compiled += ReflectionShader->Compile(Compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		// draw full screen quad
 		Compiled += Compiler->Quad();
-		// restore render targets
-		Compiled += Compiler->SetRenderTargets(1, &PingPong[1]);
 	}
 	return Compiled;
 }
@@ -398,7 +398,6 @@ int PostpassStage::Execute(RenderingCamera* Camera, Spatial* spatial, RenderQueu
 	Parameter.Clear();
 	// set perframe parameters
 	Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
-
 	// do reflection resolve pass
 	Reflection(Compiler);
 	// do SSAO

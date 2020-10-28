@@ -146,6 +146,8 @@ namespace D3D12API {
 		UINT64 PrevComputeFenceValue;
 		// barrier flushed
 		bool BarrierFlushed;
+		// compute root signature flushed
+
 		// windows title
 		char WindowTitle[1024];
 		// perfomence counters

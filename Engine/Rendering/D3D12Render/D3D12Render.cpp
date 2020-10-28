@@ -1643,7 +1643,7 @@ void D3D12Render::FlushRootComputeSignature(DescriptorHeap * srvHeap) {
 	// set sampler descriptor table
 	RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 
-	if (!RootSig->Flush(cmdList, srvHeap, BarrierFlushed, HeapChanged, true)) {
+	if (!RootSig->Flush(cmdList, srvHeap, BarrierFlushed, HeapChanged, ROOT_SIGNATURE_FLUSH_COMPUTE)) {
 		// error
 		printf("descriptor heap full");
 		return;
@@ -1835,6 +1835,9 @@ void D3D12Render::TraceRay() {
 		auto& Shader = RaytracingShaders.GetItem(0);
 		// dispatch rays
 		rtScene->TraceRay(CurrentCommandContext, 0, Shader.RaygenShaderIdentifier, Shader.MissShaderIdentifier, 3840, 2160, 1);
+		// clear compute root signature bindings
+		CurrentCommandContext->GetGraphicsCommandList()->SetComputeRootSignature(nullptr);
+		CurrentCommandContext->GetGraphicsCommandList()->SetComputeRootSignature(RootSig->Get());
 	}
 }
 

@@ -57,3 +57,5 @@ dxc  -Zi -Fo raytracing.cso -T lib_6_3  -nologo raytracing\raytracing.hlsl
 fxc /T ps_5_1 /E PS_TemporalAccumulation  /Fo temporal_accumulation.ps  raytracing/denoising.hlsl
 
 fxc /T ps_5_1 /E PS_Filter /Fo wavelet_filter.ps  raytracing/denoising.hlsl
+
+fxc /T ps_5_1 /E PS_FilterVariant /Fo variance_filter.ps  raytracing/denoising.hlsl

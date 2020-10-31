@@ -90,6 +90,8 @@ typedef struct R_BUFFER_DESC {
 	unsigned int       StructureByteStride;
 	void* CPUData;
 	bool Deformable;
+	// debug name
+	wchar_t * DebugName;
 }R_BUFFER_DESC;
 
 
@@ -241,7 +243,8 @@ typedef struct R_TEXTURE2D_DESC {
 	R_BIND_FLAG BindFlag;
 	R_CPU_ACCESS CPUAccess;
 	R_MISC MiscFlag;
-
+	// debug name
+	wchar_t * DebugName;
 }R_TEXTURE2D_DESC;
 
 

@@ -22,6 +22,7 @@ void RenderToTextureStage::CreateTerrainTextures()
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc.SampleDesc.Count = 1;
+	desc.DebugName = L"terrain-virtual-texture";
 	terrainVirtualTexture_ = Interface->CreateTexture2D(&desc, nullptr, 0, 0);
 	Context->RegisterRenderTarget("gTerrainVirtualTexture", terrainVirtualTexture_);
 	// page table

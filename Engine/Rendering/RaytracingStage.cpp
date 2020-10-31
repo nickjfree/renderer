@@ -15,16 +15,19 @@ void RaytracingStage::Initialize()
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
-	 
+	desc.DebugName = L"rt-target";
 	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-
+	desc.DebugName = L"svgf-color-0";
 	AccColor[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"svgf-color-1";
 	AccColor[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.DebugName = L"svgf-moments-0";
 	AccMoments[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"svgf-moments-1";
 	AccMoments[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	// rtTarget[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);

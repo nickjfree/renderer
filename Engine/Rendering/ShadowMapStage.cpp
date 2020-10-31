@@ -23,6 +23,7 @@ void ShadowMapStage::CreateShadowMaps() {
 	desc.Usage = DEFAULT;
 	desc.SampleDesc.Count = 1;
 	desc.Format = FORMAT_R32_TYPELESS;
+	desc.DebugName = L"shadowmap";
 	for (int i = 0; i < SHADOWSTAGE_SHADOWMAPS; i++) {
 		Targets[i] = Interface->CreateTexture2D(&desc, NULL, 0, 0);
 	}

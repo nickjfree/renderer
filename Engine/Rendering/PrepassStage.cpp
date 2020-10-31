@@ -24,28 +24,36 @@ void PrepassStage::CreateGBuffer() {
 	desc.Format = FORMAT_R32_FLOAT;
 	desc.SampleDesc.Count = 1;
 	// linearz
+	desc.DebugName = L"linear_depth";
 	Targets[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// normal
 	desc.Format = FORMAT_R16G16_FLOAT;
+	desc.DebugName = L"normal";
 	Targets[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// motion vector
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.DebugName = L"motion_vector";
 	Targets[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// albedo
 	desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
+	desc.DebugName = L"albedo";
 	Targets[3] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// specular/reghness/metalic
 	desc.Format = FORMAT_R8G8B8A8_UNORM;
+	desc.DebugName = L"specular";
 	Targets[4] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	// CompactData ,  objectid/depth/normal.x/normal.y
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.DebugName = L"compact_buffer-0";
 	CompactData[0] = Targets[5] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"compact_buffer-1";
 	CompactData[1] = Targets[6] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 
 	desc.BindFlag = BIND_DEPTH_STENCIL;
 	desc.Format = FORMAT_D24_UNORM_S8_UINT;
+	desc.DebugName = L"depth_buffer";
 	Depth = Interface->CreateTexture2D(&desc, NULL, 0, 0);
 	// resgister targets
 	Context->RegisterRenderTarget("gDepthBuffer", Targets[0]);
@@ -73,6 +81,7 @@ void PrepassStage::CreateABuffer() {
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R32_UINT;
 	desc.SampleDesc.Count = 1;
+	desc.DebugName = L"oit-mask";
 	ABuffers[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	// uav for depth and color
@@ -86,7 +95,9 @@ void PrepassStage::CreateABuffer() {
 	buffer_desc.StructureByteStride = 4 * nodes;
 	buffer_desc.Usage = DEFAULT;
 	buffer_desc.CPUData = nullptr;
+	desc.DebugName = L"oit-depth";
 	ABuffers[1] = Interface->CreateBuffer(&buffer_desc);
+	desc.DebugName = L"oit-color";
 	ABuffers[2] = Interface->CreateBuffer(&buffer_desc);
 
 	// resgister targets

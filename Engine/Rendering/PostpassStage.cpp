@@ -41,8 +41,10 @@ void PostpassStage::CreatePingPongBuffer() {
 	desc.Usage = DEFAULT;
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
+	desc.DebugName = L"post-buffer";
 	PingPong[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.DebugName = L"final-buffer";
 	PingPong[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 	//// resgister targets
@@ -136,7 +138,9 @@ void PostpassStage::CreateHDRBuffer() {
 			desc.Width = 1;
 			desc.Height = 1;
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+			desc.DebugName = L"hdr-adapt-lum-0";
 			AdaptLum[0] = LumScaleArray[i];
+			desc.DebugName = L"hdr-adapt-lum-1";
 			LumScaleArray[i + 1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 			AdaptLum[1] = LumScaleArray[i + 1];
 			AvgIter = i;
@@ -145,6 +149,7 @@ void PostpassStage::CreateHDRBuffer() {
 			break;
 		}
 		else {
+			desc.DebugName = L"hdr-downsample-buffer";
 			LumScaleArray[i] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 		}
 	}
@@ -152,12 +157,16 @@ void PostpassStage::CreateHDRBuffer() {
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.Width = Width / 2;
 	desc.Height = Height / 2;
+	desc.DebugName = L"hdr-bright-pass-target";
 	Bright = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// bloom 
 	desc.Width = Width / 8;
 	desc.Height = Height / 8;
+	desc.DebugName = L"hdr-bloom-pass-buffer-0";
 	Bloom[0] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"hdr-bloom-pass-buffer-1";
 	Bloom[1] = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"hdr-bloom-pass-buffer-2";
 	Bloom[2] = Interface->CreateTexture2D(&desc, 0, 0, 0);
 	// Star
 	Star = Interface->CreateTexture2D(&desc, 0, 0, 0);

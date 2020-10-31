@@ -197,7 +197,7 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	}
 	// clear deformable geometry
 	BottomLevelDesc.Reset();
-	return cmdContext->Flush(0);
+	return -1;
 }
 
 UINT64 RaytracingScene::WaitScene(CommandContext* GraphicContext) {

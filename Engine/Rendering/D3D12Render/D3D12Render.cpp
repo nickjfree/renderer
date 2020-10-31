@@ -554,9 +554,13 @@ int D3D12Render::CreateTexture2D(R_TEXTURE2D_DESC* Desc, void* RawData, int Size
 	bool isCube = 0;
 	if (Desc) {
 		CreateTexture2DRaw(Desc, texture, RawData, Size);
-	}
-	else if (!Desc) {
+		// set debug info
+		if (Desc->DebugName) {
+			texture.Texture[0]->SetName(Desc->DebugName);
+		}
+	} else if (!Desc) {
 		CreateTextureDDS(texture, RawData, Size, &isCube);
+		texture.Texture[0]->SetName(L"texture");
 	}
 	//create descriptors in cpu descriptor heaps
 	int HeapSlot = Id % MAX_DESCRIPTOR_SIZE;
@@ -688,7 +692,12 @@ int D3D12Render::CreateBuffer(R_BUFFER_DESC* desc) {
 			IID_PPV_ARGS(&Buffer.BufferResource[n]));
 		
 		// debug
-		Buffer.BufferResource[n]->SetName(L"Buffer");
+		if (desc->DebugName) {
+			Buffer.BufferResource[n]->SetName(desc->DebugName);
+		} else {
+			Buffer.BufferResource[n]->SetName(L"Buffer");
+		}
+
 
 		// upload cpu data to this buffer
 		if (desc->CPUData) {
@@ -2106,7 +2115,7 @@ void D3D12Render::BuildRaytracingScene() {
 	// graphic context was flushed by previous line, we must reset graphic state
 	SetupGraphicContext();
 	// wait for previouse graphics frame to complete and rebuild bottom level of prev frame.
-	PrevComputeFenceValue = rtScene->BuildBottomLevelAccelerationStructure(computeContext, GraphicsFenceValue);
+	rtScene->BuildBottomLevelAccelerationStructure(computeContext, GraphicsFenceValue);
 	// build top level as
 	PrevComputeFenceValue = rtScene->BuildTopLevelAccelerationStructure(computeContext);
 }

@@ -16,6 +16,8 @@ ScriptingSystem::~ScriptingSystem() {
 
 
 int ScriptingSystem::Update(int ms) {
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	// loop through all script compoment then call update of each compoment
 	for (auto Iter = Scripts.Begin(); Iter != Scripts.End(); Iter++) {
 		Script* script = *Iter;

@@ -116,6 +116,9 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 	// 5. build top level as
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 
+	// profile
+	PIXBeginEvent(cmdList, 0xFFFFFF00, "build_tlas");
+
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
 	buildDesc.DestAccelerationStructureData = TopLevelAS->GetResource()->GetGPUVirtualAddress();
 	buildDesc.ScratchAccelerationStructureData = TopLevelScratch->GetResource()->GetGPUVirtualAddress();
@@ -129,6 +132,9 @@ UINT64 RaytracingScene::BuildTopLevelAccelerationStructure(CommandContext* cmdCo
 		CD3DX12_RESOURCE_BARRIER UAVBarriers[2] = { CD3DX12_RESOURCE_BARRIER::UAV(TopLevelAS->GetResource()),  CD3DX12_RESOURCE_BARRIER::UAV(TopLevelScratch->GetResource()) };
 		cmdList->ResourceBarrier(2, UAVBarriers);
 	}
+	// end profile
+	PIXEndEvent(cmdList);
+
 	// flush context
 	SceneFenceValue_ = cmdContext->Finish(0);
 
@@ -141,6 +147,9 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	// rebuild all bottom level as for deformable geometries
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 
+	// profile
+	PIXBeginEvent(cmdList, 0xFF0000FF, "build_blas");
+
 	// printf("to Build %d\n", BottomLevelDesc.Size());
 
 	// wait for frev frame's  graphic work to complete
@@ -149,8 +158,13 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 		BottomLevelDesc.Reset();
 		return 0;
 	}
+
+	// wait enve
+	PIXBeginEvent(cmdList, 0xFFFF0000, "blas_wait");
 	// wait for prev graphics work to finish
 	cmdContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_DIRECT, GraphicsFenceValue);
+	// end blas_wait
+	PIXEndEvent(cmdList);
 	for (auto Iter = BottomLevelDesc.Begin(); Iter != BottomLevelDesc.End(); Iter++) {
 		auto& bottoemLevelDesc = *Iter;
 		auto FrameIndex = bottoemLevelDesc.FrameIndex;
@@ -197,6 +211,9 @@ UINT64 RaytracingScene::BuildBottomLevelAccelerationStructure(CommandContext* cm
 	}
 	// clear deformable geometry
 	BottomLevelDesc.Reset();
+
+	// end profile blas
+	PIXEndEvent(cmdList);
 	return -1;
 }
 
@@ -207,8 +224,13 @@ UINT64 RaytracingScene::WaitScene(CommandContext* GraphicContext) {
 		return -1;
 	}
 	// wait for a compute fencevalue in graphic queue
+	// profile wait
+	PIXBeginEvent(GraphicContext->GetGraphicsCommandList(), 0xFFFF0000, "wait_rtScene");
+
 	auto GraphicFence = GraphicContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE, SceneFenceValue_);
 	SceneFenceValue_ = -1;
+	// end profile wait
+	PIXEndEvent(GraphicContext->GetGraphicsCommandList());
 	return GraphicFence;
 }
 

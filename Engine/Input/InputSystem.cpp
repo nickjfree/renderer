@@ -15,7 +15,8 @@ int InputSystem::Initialize() {
 }
 
 int InputSystem::Update(int ms) {
-
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	return 0;
 }
 

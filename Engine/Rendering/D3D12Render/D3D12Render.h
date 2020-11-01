@@ -11,6 +11,7 @@
 #include <d3d12.h>
 #include "d3dx12.h"
 #include <dxgi1_4.h>
+#include "pix3.h"
 #include <Objbase.h>
 #include "Container\LinearBuffer.h"
 #include "Container\HashMap.h"
@@ -324,6 +325,11 @@ namespace D3D12API {
 		virtual void ClearRenderTarget();
 		// present
 		virtual void Present();
+
+		// begine event
+		virtual int BeginEvent(UINT64 color, const char* message);
+		// end event
+		virtual int EndEvent();
 	};
 
 }

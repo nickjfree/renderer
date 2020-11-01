@@ -90,6 +90,8 @@ int RenderingSystem::Initialize() {
 }
 
 int RenderingSystem::Update(int ms) {
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	// rendercontrol takes over the rendering process
 	//disable rendering
 	Control->Execute();

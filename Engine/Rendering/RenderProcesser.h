@@ -93,7 +93,7 @@ public:
 	RenderProcesser(RenderContext* context);
 	~RenderProcesser();
 	// execute
-	virtual int Execute(void* CommandBuffer);
+	virtual int Execute(void* CommandBuffer, unsigned int color = 0xFF00FF00, const char * Message = nullptr);
 };
 
 #endif

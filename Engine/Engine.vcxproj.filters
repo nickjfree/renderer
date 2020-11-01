@@ -440,6 +440,9 @@
     <ClInclude Include="Rendering\Terrain.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Profile\ProfileEvents.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -886,5 +889,8 @@
     <ClCompile Include="Rendering\Terrain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -29,6 +29,9 @@ void AnimationSystem::RemoveAnimator(Animator* animator) {
 }
 
 int AnimationSystem::Update(int ms) {
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
+
 	// update all animators
 	for (auto Iter = Animators.Begin(); Iter != Animators.End(); Iter++) {
 		Animator* animator = *Iter;

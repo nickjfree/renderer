@@ -5,7 +5,7 @@
 
 #define MAX_INSTANCE_NUM 1024
 
-RenderProcesser::RenderProcesser(RenderContext* context_) :context(context_)
+RenderProcesser::RenderProcesser(RenderContext* context_) :context(context_), ip()
 {
 	Interface = context->GetRenderInterface();
 	// set up command table
@@ -54,12 +54,13 @@ int RenderProcesser::ExecuteCommand(unsigned char cmd, void* data) {
 	return (this->*cmd_func)(data);
 }
 
-int RenderProcesser::Execute(void* CommandBuffer) {
+int RenderProcesser::Execute(void* CommandBuffer, unsigned int color, const char * Message) {
 	// do the real render stuff, by use rendernterface
-	/*for (int i = 0; i < 1000; i++) {
-		printf("%02x ", ((unsigned char*)CommandBuffer)[i]);
+
+	// profile command 
+	if (Message) {
+		Interface->BeginEvent(color, Message);
 	}
-	printf("\n");*/
 	ip = (unsigned char*)CommandBuffer;
 	char cmd = 0;
 	// begin rendering
@@ -69,6 +70,10 @@ int RenderProcesser::Execute(void* CommandBuffer) {
 		cmd = *(unsigned char*)ip;
 		Data = ip + 1;
 		flag = ExecuteCommand(cmd, Data);
+	}
+	// end profile command 
+	if (Message) {
+		Interface->EndEvent();
 	}
 	return 0;
 }

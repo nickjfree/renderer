@@ -166,6 +166,8 @@ int PhysicsSystem::Initialize() {
 }
 
 int PhysicsSystem::Update(int ms) {
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	// do simulation
 	dynamicsWorld->stepSimulation(ms / 1000.0f, 1);
 	// detect collision
@@ -175,8 +177,7 @@ int PhysicsSystem::Update(int ms) {
 		PhysicsObject* obj = *Iter;
 		if (!obj->Destroyed) {
 			obj->Update(ms);
-		}
-		else {
+		} else {
 			Destroyed.PushBack(obj);
 		}
 	}

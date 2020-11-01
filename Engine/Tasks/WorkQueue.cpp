@@ -73,6 +73,7 @@ int WorkQueue::Initialize() {
 }
 
 int WorkQueue::Update(int ms) {
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	HandleComplete();
 	return 0;
 }

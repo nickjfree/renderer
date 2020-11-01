@@ -155,6 +155,13 @@ public:
 	// end query
 	virtual void EndQuery() {}
 
+	/* Profile */
+
+	// begine event
+	virtual int BeginEvent(UINT64 color, const char* message) { return 0; }
+	// end event
+	virtual int EndEvent() { return 0; }
+
 };
 
 #endif

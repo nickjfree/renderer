@@ -18,8 +18,9 @@ LevelLoader::~LevelLoader()
 }
 
 int LevelLoader::Update(int ms) {
+	// profile
+	PIXScopedEvent(0xFF00FF00, __FUNCTION__);
 	// test code
-
 
 
 	static int flag = 0;

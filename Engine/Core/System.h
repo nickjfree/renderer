@@ -2,6 +2,7 @@
 #define __SYSTEM__
 
 #include "EventNode.h"
+#include "pix3.h"
 
 class System : public EventNode
 {

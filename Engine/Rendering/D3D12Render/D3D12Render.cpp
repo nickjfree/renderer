@@ -4,7 +4,6 @@
 #include "DDSTextureLoader12.h"
 #include "DefaultShader.h"
 
-
 using namespace D3D12API;
 using namespace DirectX;
 
@@ -1598,9 +1597,9 @@ void D3D12Render::SwapCommandContext() {
 	CurrentCommandContext = CommandContext::Alloc(Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	// wait for prev compute to finishe
-	if (PrevComputeFenceValue) {
+	/*if (PrevComputeFenceValue) {
 		CurrentCommandContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE, PrevComputeFenceValue);
-	}
+	}*/
 	cmdList->SetGraphicsRootSignature(RootSig->Get());
 	cmdList->SetComputeRootSignature(RootSig->Get());
 	// set primitive topology to triangleist
@@ -2163,4 +2162,17 @@ DescriptorHeap* D3D12Render::GetCurrentDescripterHeap() {
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
 	}
 	return CurrentSRVHeap;
+}
+
+
+// begine event
+int D3D12Render::BeginEvent(UINT64 color, const char* message) {
+	PIXBeginEvent(CurrentCommandContext->GetGraphicsCommandList(), color, message);
+	return 0;
+}
+
+// end event
+int D3D12Render::EndEvent() {
+	PIXEndEvent(CurrentCommandContext->GetGraphicsCommandList());
+	return 0;
 }

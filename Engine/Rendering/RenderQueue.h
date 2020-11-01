@@ -31,6 +31,7 @@
 #define R_STAGE_PRESENT      0xFE
 
 
+
 /*
 	renderqueue, a collection of command buffers
 */
@@ -38,7 +39,13 @@
 class RenderQueue
 {
 private:
+	// commands
 	void* CommandBuffers[R_STAGE_MAX];
+	// stage messages
+	char* StageMessages[R_STAGE_MAX];
+private:
+	// init stage messages
+	void InitStageMessages();
 public:
 	RenderQueue();
 	virtual ~RenderQueue();

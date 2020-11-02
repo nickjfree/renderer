@@ -1,7 +1,7 @@
 #ifndef __MONTE_CARLO__
 #define __MONTE_CARLO__
 
-#define PI 3.14159265
+#include "../common/constants.hlsli"
 
 
 float Pow2(float x) {

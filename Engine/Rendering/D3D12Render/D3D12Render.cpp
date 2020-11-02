@@ -1492,6 +1492,9 @@ void D3D12Render::Present() {
 
 	ID3D12GraphicsCommandList* commandlist = CurrentCommandContext->GetGraphicsCommandList();
 
+	// profile presnet
+	PIXBeginEvent(commandlist, 0xFF0000FF, "present");
+
 	// Indicate that the back buffer will be used as present.
 	D3D12_RESOURCE_BARRIER barrier = {};
 	// Indicate that the back buffer will now be used to present.
@@ -1502,8 +1505,13 @@ void D3D12Render::Present() {
 	D3DTexture& texture = Textures.GetItem(0);
 	texture.State[FrameIndex].CurrentState = D3D12_RESOURCE_STATE_PRESENT;
 	// test code. test async compute function
+	UINT64 FenceValue = Context->Flush(0);
+	SwapChain->Present(1, 0);
 
-	UINT64 FenceValue = Context->Finish(0);
+	// end profile present
+	PIXEndEvent(Context->GetGraphicsCommandList());
+
+	FenceValue = Context->Finish(0);
 	// retire all used constan heaps
 	if (CurrentConstHeap) {
 		UsedConstHeaps.PushBack(CurrentConstHeap);
@@ -1527,7 +1535,7 @@ void D3D12Render::Present() {
 		rtScene->Retire(FenceValue);
 		rtScene = nullptr;
 	}
-	SwapChain->Present(1, 0);
+	//SwapChain->Present(1, 0);
 	// save this FenceValue for later waiting
 	PrevFenceValue[FrameIndex] = FenceValue;
 	// change current command context and set rootsignature

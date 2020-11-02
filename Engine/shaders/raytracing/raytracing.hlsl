@@ -14,34 +14,13 @@
 
 // #include "RaytracingHlslCompat.h"
 #include "../common/raytracing.hlsli"
+#include "../common/post.h"
 #include "random.hlsli"
 #include "monte_carlo.hlsli"
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
 // Texture2D PrevRenderTarget : register(t1, space0);
-
-ByteAddressBuffer Vertices : register(t0, space1);
-ByteAddressBuffer Indices : register(t1, space1);
-Texture2D gDiffuseMap0 : register(t2, space1);
-Texture2D gNormalMap0 : register(t3, space1);
-Texture2D gSpecularMap0 : register(t4, space1);
-
-// postbuffer
-Texture2D gPostBuffer : register(t14); 
-
-// light prob
-TextureCube  gLightProbe           : register(t17);
-
-// info about the instance
-cbuffer InstanceInfo: register(b0, space1)
-{
-    // size of the vertex
-    uint gVertexStride;
-}
-
-typedef BuiltInTriangleIntersectionAttributes MyAttributes;
-
 
 
 struct RayPayload
@@ -67,6 +46,8 @@ void Raygen()
     float3 look = -gbuffer.View.xyz;
 
     float roughness = gbuffer.Roughness;
+
+    float3 specular = gbuffer.Specular;
 
     float3 world_normal = mul(float4(normal, 0), gInvertViewMaxtrix).xyz;
     float3 world_look =  mul(float4(look, 0), gInvertViewMaxtrix).xyz;
@@ -96,24 +77,15 @@ void Raygen()
         RenderTarget[DispatchRaysIndex().xy] = float4(0, 0.0, 0, 1);
         return;
     }
-
+    // get raytraced color
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
-
-    // // Write the raytraced color to the output texture.
-
-    RenderTarget[DispatchRaysIndex().xy] = payload.color;
-
-    // RenderTarget[DispatchRaysIndex().xy] = float4(1,1,1,1);
-    // float history;
-    // float2 prevUV = GetPrevScreenCoordLoad(uv, history);
-    // float4 prevColor = PrevRenderTarget.SampleLevel(gSamPoint, prevUV, 0);
-    // float alpha = max(0.05, 1.0 / history);
-    // RenderTarget[DispatchRaysIndex().xy] = lerp(prevColor, payload.color, alpha);
+    // target
+    RenderTarget[DispatchRaysIndex().xy] = float4(payload.color.xyz, 0);
 }
 
 
 [shader("closesthit")]
-void ClosestHit(inout RayPayload payload, in MyAttributes attr)
+void ClosestHit(inout RayPayload payload, in SimpleAttributes attr)
 {
     if (InstanceID() == 1) {
         payload.color = float4(0, 50, 0, RayTCurrent());
@@ -130,27 +102,13 @@ void ClosestHit(inout RayPayload payload, in MyAttributes attr)
         GBuffer gbuffer = GetGBufferLoad(screenPosition.xy);
         float hitDepth = mul(float4(hitPosition, 1), gViewMatrix).z;
         float gbufferDepth = gbuffer.Position.z;
-        if (hitDepth - gbufferDepth < 1) {
+        if (hitDepth - gbufferDepth < 0.1) {
             payload.color = gPostBuffer.SampleLevel(gSam, screenPosition.xy, 0);
             return;
         }
     }
     // can't get color from screen space, get it from textures
-    float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
-    // PrimitiveIndex
-    uint index0 = PrimitiveIndex() * 3;
-
-    // get the triangle indices
-    uint3 indices = LoadIndices16Bit(Indices, index0 * 2);
-    // get the triangle uvs
-
-    float2 uv0 = LoadVertexUVFloat2(Vertices, indices[0], gVertexStride);
-    float2 uv1 = LoadVertexUVFloat2(Vertices, indices[1], gVertexStride);
-    float2 uv2 = LoadVertexUVFloat2(Vertices, indices[2], gVertexStride);
-
-    float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
-
-    float4 color = gDiffuseMap0.SampleLevel(gSam, uv, 0);
+    float4 color = SampleHitPointColor(attr);
 
    // float4 color = float4(uv, 0.0, 0);
     payload.color = float4(color.xyz, RayTCurrent());

@@ -5,6 +5,8 @@
 #include "../common/deferred.h"
 #include "../common/basic_layout.h"
 #include "../common/basic_registers.h"
+#include "../common/constants.hlsli"
+
 
 /*
     shadow map
@@ -28,10 +30,6 @@ TextureCube  gLightProbeIrradiance : register(t20);
 /*
      constant values
 */
-
-#define  PI  3.141592657
-#define  IBL_LD_MIPMAPS 10
-#define  F90 1.0f
 
 
 /*
@@ -132,9 +130,10 @@ float SelectLDMipmap(float Roughness)
 float3 EnvBRDF(float3 SpecularColor, float Roughness, float NoV)
 {
     // LUT is generated from IBLBaker
-    float2 BRDF = gLUT.Sample(gSam, float2(NoV, 1-Roughness)).xy;
+    float2 BRDF = gLUT.SampleLevel(gSam, float2(NoV, 1-Roughness), 0).xy;
     return SpecularColor * BRDF.x + BRDF.y;
 }
+
 
 float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 {

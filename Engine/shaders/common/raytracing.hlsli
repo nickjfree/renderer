@@ -3,6 +3,24 @@
 
 
 #include "deferred.h"
+#include "../lighting/lighting.h"
+
+ByteAddressBuffer Vertices : register(t0, space1);
+ByteAddressBuffer Indices : register(t1, space1);
+
+Texture2D gDiffuseMapHG : register(t2, space1);
+Texture2D gNormalMapGH : register(t3, space1);
+Texture2D gSpecularMapHG : register(t4, space1);
+
+typedef BuiltInTriangleIntersectionAttributes SimpleAttributes;
+
+// info about the instance
+cbuffer InstanceInfo: register(b0, space1)
+{
+    // size of the vertex
+    uint gVertexStride;
+}
+
 
 
 // load vertex position
@@ -53,6 +71,31 @@ uint3 LoadIndices16Bit(ByteAddressBuffer SourceBuffer, uint OffsetInBytes)
         Result[2] = PackedIndices[1] >> 16;
     }
     return Result;
+}
+
+
+
+float4 SampleHitPointColor(SimpleAttributes attr)
+{
+
+    // can't get color from screen space, get it from textures
+    float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
+    // PrimitiveIndex
+    uint index0 = PrimitiveIndex() * 3;
+
+    // get the triangle indices
+    uint3 indices = LoadIndices16Bit(Indices, index0 * 2);
+    // get the triangle uvs
+
+    float2 uv0 = LoadVertexUVFloat2(Vertices, indices[0], gVertexStride);
+    float2 uv1 = LoadVertexUVFloat2(Vertices, indices[1], gVertexStride);
+    float2 uv2 = LoadVertexUVFloat2(Vertices, indices[2], gVertexStride);
+
+    float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
+
+    float4 color = gDiffuseMapHG.SampleLevel(gSam, uv, 0);
+
+    return color;
 }
 
 #endif

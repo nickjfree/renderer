@@ -8,7 +8,7 @@ using namespace::D3D12API;
 // retired scene
 List<RaytracingScene> RaytracingScene::RetiredScene;
 
-RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), Device_(Device) {
+RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), Device_(Device), ResourceStaged(false) {
 	Device_->QueryInterface(IID_PPV_ARGS(&rtDevice_));
 	// create toplevle resource
 	TopLevelAS = new ReuseHeap(Device_, 1024, Heap::HeapType::GPU, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
@@ -69,6 +69,7 @@ void RaytracingScene::Retire(UINT64 FenceValue) {
 void RaytracingScene::Reset() {
 	SBT->Reset();
 	SceneFenceValue_ = -1;
+	ResourceStaged = false;
 	BottomLevelDesc.Reset();
 	InstanceDesc.Reset();
 	ShaderBindingHeap->Reset();
@@ -272,7 +273,12 @@ void RaytracingScene::RebuildBottomLevelAs(D3DBottomLevelAS* Blas, D3DBuffer* Bu
 }
 
 void RaytracingScene::StageResources(CommandContext* cmdContext) {
+	if (ResourceStaged) 
+	{
+		return;
+	}
 	SBT->Stage(cmdContext);
+	ResourceStaged = true;
 }
 
 void RaytracingScene::SetStateObject(ID3D12StateObject* Pipeline, int version) {

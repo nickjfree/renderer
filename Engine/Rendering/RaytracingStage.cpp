@@ -17,6 +17,8 @@ void RaytracingStage::Initialize()
 	desc.SampleDesc.Count = 1;
 	desc.DebugName = L"rt-target";
 	rtTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
+	desc.DebugName = L"rt-target-test";
+	rtTestTarget = Interface->CreateTexture2D(&desc, 0, 0, 0);
 
 
 	desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
@@ -198,6 +200,10 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 		Parameter["gFrameNumber"].as<int>() = NumFrames;
 
+		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
+		compiled += compiler->TraceRay();
+		// test run
+		Parameter["RenderTarget"].as<int>() = rtTestTarget;
 		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		compiled += compiler->TraceRay();
 	}

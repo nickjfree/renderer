@@ -1832,7 +1832,6 @@ void D3D12Render::Quad() {
 
 void D3D12Render::TraceRay() {
 
-
 	// tracing rays(test)
 	if (rtScene) {
 		// test wait for the scene in graphic queue
@@ -2131,7 +2130,7 @@ void D3D12Render::BuildRaytracingScene() {
 void D3D12Render::WaitRaytracingScene() {
 	// wait for compute queue with the FenceValue at the time rtScene was built. 
 	// the current recorded graphic command list will be excuted after this call
-	if (rtScene) {
+	if (rtScene && !rtScene->ResourceStaged) {
 		rtScene->WaitScene(CurrentCommandContext);
 		// graphic context was flushed by previous line, we must reset graphic state
 		SetupGraphicContext();

@@ -64,6 +64,9 @@ namespace D3D12API {
 		// rtscene which are used be previous frame
 		static List<RaytracingScene> RetiredScene;
 	public:
+		// resource flush flag
+		bool ResourceStaged;
+	public:
 		RaytracingScene(ID3D12Device* Device);
 		~RaytracingScene();
 

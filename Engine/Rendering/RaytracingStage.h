@@ -31,10 +31,10 @@ private:
 	// lighting data
 	Vector<LightData> lightingData;
 private:
-	// initialization
-	void Initialize();
 	// raytracing rendertarget
 	int rtTarget;
+	// test render target
+	int rtTestTarget;
 	// accumulate buffers(color and moments)
 	int AccColor[2];
 	int AccMoments[2];
@@ -49,6 +49,8 @@ private:
 	// denosing shader
 	Shader* DenosingShader = nullptr;
 private:
+	// initialization
+	void Initialize();
 	// build scene
 	int BuildRaytracingScene(RenderingCamera* Camera, Spatial* spatial, BatchCompiler* compiler);
 	// temporal_accumulation

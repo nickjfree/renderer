@@ -234,13 +234,13 @@ bool RootSignature::SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D1
 }
 
 // flush descriptors, constant bindings
-bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, RootSignatureFlushFlag flushFlag) {
+bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, RootSignatureFlushFlag flushFlag) {
 	// flush texture bindings
 	// get total need size
 	int TotalTableSize = 0;
 	for (int i = 0; i < NumCachedTables; i++) {
 		DescriptorTable& DescTable = DescTables[i];
-		if (DescTable.Dirty || BarrierFlushed || HeapChanged) {
+		if (DescTable.Dirty || StateInvalid ) {
 			TotalTableSize += DescTable.TableSize;
 		}
 	}
@@ -251,63 +251,45 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 	// flush tables, srvs and uavs
 	for (int i = 0; i < NumCachedTables; i++) {
 		DescriptorTable& DescTable = DescTables[i];
-		int Start = DescTable.Start;
-		int Num = DescTable.TableSize - Start;
 		int Slot = DescTable.RootSlot;
-		if (DescTable.Dirty || BarrierFlushed || HeapChanged) {
-			if (BarrierFlushed) {
-				// resource barrier flushed, handles in the cache is invalid. we must set them to null
-				if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
-					// unbind srv
-					for (int n = 0; n < DescTable.TableSize; n++) {
-						if (!DescTable.Fresh[n]) {
-							DescTable.ResourceId[n] = -1;
-							DescTable.Handles[n] = NullHandle;
-						}
+		if (DescTable.Dirty || StateInvalid) {
+			// resource barrier flushed, descriptor heap changed.  handles in the cache is invalid. we must set them to null
+			if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
+				// unbind srv
+				for (int n = 0; n < DescTable.TableSize; n++) {
+					if (!DescTable.Fresh[n]) {
+						DescTable.ResourceId[n] = -1;
+						DescTable.Handles[n] = NullHandle;
 					}
-				} else if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
-					// unbind uav
-					for (int n = 0; n < DescTable.TableSize; n++) {
-						if (!DescTable.Fresh[n]) {
-							DescTable.ResourceId[n] = -1;
-							DescTable.Handles[n] = NullUAVHandle;
-						}
+				}
+			} else if (DescTable.DescriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
+				// unbind uav
+				for (int n = 0; n < DescTable.TableSize; n++) {
+					if (!DescTable.Fresh[n]) {
+						DescTable.ResourceId[n] = -1;
+						DescTable.Handles[n] = NullUAVHandle;
 					}
 				}
 			}
-			if (BarrierFlushed || HeapChanged) {
-				// flush all descrptors if heap changed or barriers has been flushed
-				// NOTE: Start and End not used for now. ( root signature version 1.1 )
-				DescTable.Start = 0;
-				DescTable.End = DescTable.TableSize - 1;
-			}
-			D3D12_CPU_DESCRIPTOR_HANDLE* Start = DescTable.Handles + DescTable.Start;
-			unsigned int NumToCopy = DescTable.End - DescTable.Start + 1;
-			unsigned int StartPad = DescTable.Start;
 			D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(DescTable.Handles, 0, DescTable.TableSize);
 			//D3D12_GPU_DESCRIPTOR_HANDLE handle = descHeap->StageDescriptors(Start, StartPad, NumToCopy);
 			if (!handle.ptr) {
 				// need new descripterheap
 				return false;
 			}
-			else {
-				if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_COMPUTE) {
-					CommandList->SetComputeRootDescriptorTable(Slot, handle);
-				}
-				if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC) {
-					CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
-				}
+			if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_COMPUTE) {
+				CommandList->SetComputeRootDescriptorTable(Slot, handle);
+			}
+			if (flushFlag & RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC) {
+				CommandList->SetGraphicsRootDescriptorTable(Slot, handle);
 			}
 			// refresh cache
 			DescTable.Dirty = 0;
-			DescTable.Start = DescTable.TableSize;
-			DescTable.End = -1;
 			for (int n = 0; n < DescTable.TableSize; n++) {
 				DescTable.Fresh[n] = 0;
 			}
 		}
 	}
-
 	// flush constants
 	for (int i = 0; i < NumConstantBuffers; i++) {
 		if (Constants[i].Dirty) {
@@ -320,6 +302,8 @@ bool RootSignature::Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap
 			Constants[i].Dirty = 0;
 		}
 	}
+	// flushed, mark valid again
+	StateInvalid = false;
 	return true;
 }
 

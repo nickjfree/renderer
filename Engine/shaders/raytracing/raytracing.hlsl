@@ -31,7 +31,6 @@ struct RayPayload
 [shader("raygeneration")]
 void Raygen()
 {
-
     float2 uv = (float2)(DispatchRaysIndex().xy + 0.5)/DispatchRaysDimensions().xy;
     uint linearIndex = DispatchRaysIndex().x + DispatchRaysIndex().y * DispatchRaysDimensions().x;   
 
@@ -81,6 +80,7 @@ void Raygen()
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
     // target
     RenderTarget[DispatchRaysIndex().xy] = float4(payload.color.xyz, 0);
+    // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
 }
 
 

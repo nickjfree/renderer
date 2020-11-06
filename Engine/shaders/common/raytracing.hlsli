@@ -8,9 +8,9 @@
 ByteAddressBuffer Vertices : register(t0, space1);
 ByteAddressBuffer Indices : register(t1, space1);
 
-Texture2D gDiffuseMapHG : register(t2, space1);
-Texture2D gNormalMapGH : register(t3, space1);
-Texture2D gSpecularMapHG : register(t4, space1);
+Texture2D gDiffuseMap0 : register(t2, space1);
+Texture2D gNormalMap0 : register(t3, space1);
+Texture2D gSpecularMap0 : register(t4, space1);
 
 typedef BuiltInTriangleIntersectionAttributes SimpleAttributes;
 
@@ -93,7 +93,7 @@ float4 SampleHitPointColor(SimpleAttributes attr)
 
     float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
 
-    float4 color = gDiffuseMapHG.SampleLevel(gSam, uv, 0);
+    float4 color = gDiffuseMap0.SampleLevel(gSam, uv, 0);
 
     return color;
 }

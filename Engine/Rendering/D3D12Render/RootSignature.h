@@ -94,6 +94,8 @@ namespace D3D12API {
 		int NumConstantBuffers;
 		// table size
 		int TotalTableSize;
+		// heapchanged or barriers flushed  flag
+		bool StateInvalid;
 	private:
 		ID3D12Device* Device;
 		// init root signature
@@ -120,9 +122,11 @@ namespace D3D12API {
 		// set sampler
 		bool SetSamplerTable(ID3D12GraphicsCommandList* CommandList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// flush descriptors, constant bindings
-		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, bool BarrierFlushed, bool HeapChanged, RootSignatureFlushFlag flashFlag=RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC);
+		bool Flush(ID3D12GraphicsCommandList* CommandList, DescriptorHeap* descHeap, RootSignatureFlushFlag flashFlag=RootSignatureFlushFlag::ROOT_SIGNATURE_FLUSH_GRAPHIC);
 		// flush shader binding tables
 		bool FlushSBT(DescriptorHeap* descHeap, ShaderRecord * Record);
+		// invalidate heap
+		void Invalidate() { StateInvalid = true; }
 	};
 
 }

@@ -1441,24 +1441,7 @@ void D3D12Render::SetPixelShader(int Id) {
 }
 
 void D3D12Render::SetConstant(int Slot, int Buffer, void* CPUData, unsigned int Size) {
-	D3DConstant& Constant = Constants.GetItem(Buffer);
-	void* Data = NULL;
-	if (CurrentConstHeap) {
-		Data = CurrentConstHeap->SubAlloc(Size);
-		if (!Data) {
-			UsedConstHeaps.PushBack(CurrentConstHeap);
-			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
-			Data = CurrentConstHeap->SubAlloc(Size);
-		}
-	}
-	else {
-		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
-		Data = CurrentConstHeap->SubAlloc(Size);
-	}
-	assert(Data);
-	memcpy(Data, CPUData, Size);
-	// bind to signature
-	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = CurrentConstHeap->GetGpuAddress(Data);
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = AllocTransientConstantBuffer(CPUData, Size);
 	D3D12_CONSTANT_BUFFER_VIEW_DESC desc = {};
 	desc.BufferLocation = GpuAddr;
 	desc.SizeInBytes = Size;
@@ -1513,23 +1496,17 @@ void D3D12Render::Present() {
 
 	FenceValue = Context->Finish(0);
 	// retire all used constan heaps
-	if (CurrentConstHeap) {
-		UsedConstHeaps.PushBack(CurrentConstHeap);
-		CurrentConstHeap = 0;
-	}
 	for (int i = 0; i < UsedConstHeaps.Size(); i++) {
 		UsedConstHeaps[i]->Retire(FenceValue);
 	}
 	UsedConstHeaps.Reset();
-	// retire all gpu srv heaps
-	if (CurrentSRVHeap) {
-		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		CurrentSRVHeap = 0;
-	}
+	CurrentConstHeap = 0;
+	// retire all transient gpu srv heaps
 	for (int i = 0; i < UsedGpuSRVHeaps.Size(); i++) {
 		UsedGpuSRVHeaps[i]->Retire(FenceValue);
 	}
 	UsedGpuSRVHeaps.Reset();
+	CurrentSRVHeap = 0;
 	// retire current rtscene. so it can be reused
 	if (rtScene) {
 		rtScene->Retire(FenceValue);
@@ -1608,76 +1585,22 @@ void D3D12Render::SwapCommandContext() {
 	/*if (PrevComputeFenceValue) {
 		CurrentCommandContext->WaitQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE, PrevComputeFenceValue);
 	}*/
-	cmdList->SetGraphicsRootSignature(RootSig->Get());
-	cmdList->SetComputeRootSignature(RootSig->Get());
-	// set primitive topology to triangleist
-	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	SetupGraphicContext();
 	// clear targets and depth
 	NumTargets = 0;
 	TargetDirty = 0;
-	// reset viewport
-	SetViewPort(0.0f, 0.0f, (float)ViewPortWidth, (float)ViewPortHeight, 0.0f, 1.0f);
 }
 
 
-void D3D12Render::FlushRootSignature() {
+void D3D12Render::FlushRootSignature(RootSignatureFlushFlag flushFlag = ROOT_SIGNATURE_FLUSH_GRAPHIC) {
 	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	ID3D12DescriptorHeap* Heaps[2];
 	Heaps[1] = GpuSamplerHeaps[0]->Get();
 	int HeapChanged = 0;
-	if (!CurrentSRVHeap) {
-		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		Heaps[0] = CurrentSRVHeap->Get();
-		HeapChanged = 1;
-		cmdList->SetDescriptorHeaps(2, Heaps);
-		// set sampler descriptor table
-		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-	}
-
-	if (!RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged)) {
-		// need new heaps
-		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		HeapChanged = 1;
-		Heaps[0] = CurrentSRVHeap->Get();
-		cmdList->SetDescriptorHeaps(2, Heaps);
-		// set sampler descriptor table
-		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-		RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged);
-	}
-	// clear barrierflushed
-	BarrierFlushed = 0;
-}
-
-void D3D12Render::FlushRootComputeSignature(DescriptorHeap * srvHeap) {
-	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
-	ID3D12DescriptorHeap* Heaps[2];
-	Heaps[1] = GpuSamplerHeaps[0]->Get();
-	int HeapChanged = 0;
-	Heaps[0] = srvHeap->Get();
-	cmdList->SetDescriptorHeaps(2, Heaps);
-	// set sampler descriptor table
-	RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-
-	if (!RootSig->Flush(cmdList, srvHeap, BarrierFlushed, HeapChanged, ROOT_SIGNATURE_FLUSH_COMPUTE)) {
-		// error
-		printf("descriptor heap full");
-		return;
-
-		//// need new heaps
-		//UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		//CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
-		//HeapChanged = 1;
-		//Heaps[0] = CurrentSRVHeap->Get();
-		//cmdList->SetDescriptorHeaps(2, Heaps);
-		//// set sampler descriptor table
-		//RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
-		//RootSig->Flush(cmdList, CurrentSRVHeap, BarrierFlushed, HeapChanged, true);
-	}
-	// clear the old graphic signature
-	if (CurrentSRVHeap && CurrentSRVHeap != srvHeap) {
-		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		CurrentSRVHeap = nullptr;
+	auto descriptorHeap = GetTransientDescripterHeap();
+	if (!RootSig->Flush(cmdList, descriptorHeap, flushFlag)) {
+		descriptorHeap = ResetTransientDescripterHeap(nullptr);
+		RootSig->Flush(cmdList, descriptorHeap, flushFlag);
 	}
 	// clear barrierflushed
 	BarrierFlushed = 0;
@@ -1691,6 +1614,8 @@ int D3D12Render::FlushResourceBarriers() {
 		CurrentCommandContext->GetGraphicsCommandList()->ResourceBarrier(Count, ResourceBarriers.GetData());
 		ResourceBarriers.Reset();
 		BarrierFlushed = 1;
+		// mark rootsig invalid
+		RootSig->Invalidate();
 	}
 	return Count;
 }
@@ -1767,7 +1692,7 @@ void D3D12Render::Draw(int Id) {
 	//	printf("draw %d\n", Geometry.INum);
 }
 
-void D3D12Render::DrawInstance(int Id, void* InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum) {
+void D3D12Render::DrawInstance(int Id, void* InstanceBuffer, unsigned int InstanceSize, unsigned int InstanceNum) {
 
 	// get geometry
 	D3DGeometry& Geometry = Geometries.GetItem(Id);
@@ -1780,28 +1705,13 @@ void D3D12Render::DrawInstance(int Id, void* InstanceBuffer, unsigned int Buffer
 	FlushPSO();
 	FlushRenderTargets();
 
-	unsigned int Size = BufferSize * InstanceNum;
-	void* Data;
-	if (CurrentConstHeap) {
-		Data = CurrentConstHeap->SubAlloc(Size);
-		if (!Data) {
-			UsedConstHeaps.PushBack(CurrentConstHeap);
-			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
-			Data = CurrentConstHeap->SubAlloc(Size);
-		}
-	}
-	else {
-		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
-		Data = CurrentConstHeap->SubAlloc(Size);
-	}
-	assert(Data);
-	memcpy(Data, InstanceBuffer, Size);
+	unsigned int size = InstanceSize * InstanceNum;
 	// bind to signature
-	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = CurrentConstHeap->GetGpuAddress(Data);
+	D3D12_GPU_VIRTUAL_ADDRESS GpuAddr = AllocTransientConstantBuffer(InstanceBuffer, size);
 	D3D12_VERTEX_BUFFER_VIEW InstanceDesc[2];
 	InstanceDesc[1].BufferLocation = GpuAddr;
-	InstanceDesc[1].SizeInBytes = Size;
-	InstanceDesc[1].StrideInBytes = BufferSize;
+	InstanceDesc[1].SizeInBytes = size;
+	InstanceDesc[1].StrideInBytes = InstanceSize;
 
 	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 	InstanceDesc[0] = Geometry.VBV;
@@ -1840,9 +1750,10 @@ void D3D12Render::TraceRay() {
 	// flush resource barriers
 	FlushResourceBarriers();
 	if (rtScene) {
+		// set rtScenen's descriptor heap with shader binding tables
+		ResetTransientDescripterHeap(rtScene->GetDescriptorHeap());
 		// flush compute rootsig
-		FlushRootComputeSignature(rtScene->GetDescriptorHeap());
-
+		FlushRootSignature(ROOT_SIGNATURE_FLUSH_COMPUTE);
 		// flush rtStateObject
 		FlushStateObject();
 		// trace rays
@@ -1851,6 +1762,7 @@ void D3D12Render::TraceRay() {
 		// dispatch rays
 		rtScene->TraceRay(CurrentCommandContext, 0, Shader.RaygenShaderIdentifier, Shader.MissShaderIdentifier, 3840, 2160, 1);
 		// clear compute root signature bindings
+		// TODO: find a better way to do this
 		CurrentCommandContext->GetGraphicsCommandList()->SetComputeRootSignature(nullptr);
 		CurrentCommandContext->GetGraphicsCommandList()->SetComputeRootSignature(RootSig->Get());
 	}
@@ -1973,6 +1885,7 @@ int D3D12Render::AddRaytracingInstance(R_RAYTRACING_INSTANCE& instance) {
 	// get rtScene of current frame
 	if (!rtScene) {
 		rtScene = RaytracingScene::Alloc(Device);
+		rtScene->SetDescriptorHeap(AllocTransientDescriptorHeap());
 	}
 	if (!rtGeometry.Deformable) {
 		// static geometry
@@ -2016,7 +1929,6 @@ void D3D12Render::FreeBlas(int Id) {
 	}
 	BottomLevelAS.MarkFree(Id);
 }
-
 
 R_PRIMITIVE_TOPOLOGY_TYPE D3D12Render::GetPtimitiveTopologyType(R_PRIMITIVE_TOPOLOGY topology) {
 	if (topology == R_PRIMITIVE_TOPOLOGY_UNDEFINED) {
@@ -2146,19 +2058,24 @@ void D3D12Render::SetupGraphicContext() {
 	cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// reset viewport
 	SetViewPort(0.0f, 0.0f, (float)ViewPortWidth, (float)ViewPortHeight, 0.0f, 1.0f);
+	// need new heap
+	CurrentSRVHeap = nullptr;
 	// force root signature flush
-	BarrierFlushed = true;
-	if (CurrentSRVHeap) {
-		UsedGpuSRVHeaps.PushBack(CurrentSRVHeap);
-		CurrentSRVHeap = nullptr;
-	}
+	RootSig->Invalidate();
 }
 
-DescriptorHeap* D3D12Render::GetCurrentDescripterHeap() {
+// alloc transient descriptor heap
+DescriptorHeap* D3D12Render::AllocTransientDescriptorHeap() {
+	auto heap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+	UsedGpuSRVHeaps.PushBack(heap);
+	return heap;
+}
+
+DescriptorHeap* D3D12Render::GetTransientDescripterHeap() {
 
 	int HeapChanged = 0;
 	if (!CurrentSRVHeap) {
-		CurrentSRVHeap = DescriptorHeap::Alloc(Device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+		CurrentSRVHeap = AllocTransientDescriptorHeap();
 		ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
 		ID3D12DescriptorHeap* Heaps[2];
 		HeapChanged = 1;
@@ -2167,10 +2084,47 @@ DescriptorHeap* D3D12Render::GetCurrentDescripterHeap() {
 		cmdList->SetDescriptorHeaps(2, Heaps);
 		// set sampler descriptor table
 		RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+		RootSig->Invalidate();
 	}
 	return CurrentSRVHeap;
 }
 
+DescriptorHeap* D3D12Render::ResetTransientDescripterHeap(DescriptorHeap * newHeap) {
+
+	int HeapChanged = 0;
+	CurrentSRVHeap = newHeap? newHeap : AllocTransientDescriptorHeap();
+	ID3D12GraphicsCommandList* cmdList = CurrentCommandContext->GetGraphicsCommandList();
+	ID3D12DescriptorHeap* Heaps[2];
+	HeapChanged = 1;
+	Heaps[0] = CurrentSRVHeap->Get();
+	Heaps[1] = GpuSamplerHeaps[0]->Get();
+	cmdList->SetDescriptorHeaps(2, Heaps);
+	// set sampler descriptor table
+	RootSig->SetSamplerTable(cmdList, GpuSamplerHeaps[0]->GetGpuHandle(0));
+	RootSig->Invalidate();
+	return CurrentSRVHeap;
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS D3D12Render::AllocTransientConstantBuffer(void* data, unsigned int size) {
+	void * cpuDst = nullptr;
+	if (CurrentConstHeap) {
+		cpuDst = CurrentConstHeap->SubAlloc(size);
+		if (!cpuDst) {
+			UsedConstHeaps.PushBack(CurrentConstHeap);
+			CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+			UsedConstHeaps.PushBack(CurrentConstHeap);
+			cpuDst = CurrentConstHeap->SubAlloc(size);
+		}
+	} else {
+		CurrentConstHeap = Heap::Alloc(Device, Heap::HeapType::CPU);
+		UsedConstHeaps.PushBack(CurrentConstHeap);
+		cpuDst = CurrentConstHeap->SubAlloc(size);
+	}
+	assert(cpuDst);
+	memcpy(cpuDst, data, size);
+	// bind to signature
+	return CurrentConstHeap->GetGpuAddress(cpuDst);
+}
 
 // begine event
 int D3D12Render::BeginEvent(UINT64 color, const char* message) {

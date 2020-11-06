@@ -8,7 +8,7 @@ using namespace::D3D12API;
 // retired scene
 List<RaytracingScene> RaytracingScene::RetiredScene;
 
-RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), Device_(Device), ResourceStaged(false) {
+RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), Device_(Device), ResourceStaged(false) , ShaderBindingHeap(nullptr) {
 	Device_->QueryInterface(IID_PPV_ARGS(&rtDevice_));
 	// create toplevle resource
 	TopLevelAS = new ReuseHeap(Device_, 1024, Heap::HeapType::GPU, D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
@@ -18,8 +18,6 @@ RaytracingScene::RaytracingScene(ID3D12Device* Device): SceneFenceValue_(-1), De
 	InstancesBuffer = new ReuseHeap(Device_, 1024, Heap::HeapType::CPU, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_FLAG_NONE);
 	// shader biding table
 	SBT = new ShaderBindingTable(Device_);
-	// create descriptor heap
-	ShaderBindingHeap = new DescriptorHeap(Device_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	TlasHeap = new DescriptorHeap(Device_, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 }
 
@@ -36,7 +34,6 @@ RaytracingScene::~RaytracingScene() {
 	// release shader binding table
 	delete SBT;
 	// release descriptor heap
-	delete ShaderBindingHeap;
 	delete TlasHeap;
 }
 
@@ -63,6 +60,7 @@ RaytracingScene* RaytracingScene::Alloc(ID3D12Device* Device) {
 // retire raytracing scene
 void RaytracingScene::Retire(UINT64 FenceValue) {
 	SceneFenceValue_ = FenceValue;
+	ShaderBindingHeap = nullptr;
 	RetiredScene.Insert(this);
 }
 
@@ -72,7 +70,6 @@ void RaytracingScene::Reset() {
 	ResourceStaged = false;
 	BottomLevelDesc.Reset();
 	InstanceDesc.Reset();
-	ShaderBindingHeap->Reset();
 }
 
 /*
@@ -303,5 +300,6 @@ void RaytracingScene::TraceRay(CommandContext* cmdContext, int rayIndex, D3DShad
 	// tracerays
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 	cmdList->SetPipelineState1(stateObject.State);
+	cmdList->DispatchRays(&rayDesc);
 	cmdList->DispatchRays(&rayDesc);
 }

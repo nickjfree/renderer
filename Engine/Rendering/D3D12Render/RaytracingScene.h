@@ -85,7 +85,9 @@ namespace D3D12API {
 		// add instance
 		int AddInstance(ID3D12Resource* BottomLevelAs, UINT InstanceID, UINT Flags, Matrix4x4& Tansform);
 		// get descriptor heap
-		DescriptorHeap* GetDescriptorHeap() { return ShaderBindingHeap; }
+		DescriptorHeap* GetDescriptorHeap() { return ShaderBindingHeap; };
+		// set descriptor heap
+		void SetDescriptorHeap(DescriptorHeap* heap) { ShaderBindingHeap = heap; };
 		// alloc sbt buffer
 		ShaderRecord* AllocShaderRecord(int MaterialId);
 		// add bottomlevel as for rebuild

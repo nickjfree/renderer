@@ -194,9 +194,7 @@ namespace D3D12API {
 		// flush barriers
 		int FlushResourceBarriers();
 		// flush rootsig
-		void FlushRootSignature();
-		// flush compute rootsig
-		void FlushRootComputeSignature(DescriptorHeap * srvHeap);
+		void FlushRootSignature(RootSignatureFlushFlag flushFlag);
 		// flush rendertargets
 		void FlushRenderTargets();
 		// flush piplinestate
@@ -214,7 +212,13 @@ namespace D3D12API {
 		// void free BLAS
 		void FreeBlas(int Id);
 		// get current descripter heap
-		DescriptorHeap* GetCurrentDescripterHeap();
+		DescriptorHeap* AllocTransientDescriptorHeap();
+		// ensure current descriptorheap
+		DescriptorHeap* GetTransientDescripterHeap();
+		// reset current descriptorheap
+		DescriptorHeap* ResetTransientDescripterHeap(DescriptorHeap* newHeap);
+		// alloc transient const buffer 
+		D3D12_GPU_VIRTUAL_ADDRESS AllocTransientConstantBuffer(void* data, unsigned int size);
 	public:
 		static D3D12Render* GetRender() { return thisRender; }
 		// get queue
@@ -308,7 +312,7 @@ namespace D3D12API {
 		// draw single geometry
 		virtual void Draw(int Geometry);
 		// draw instance geometry
-		virtual void DrawInstance(int Geometry, void* InstanceBuffer, unsigned int BufferSize, unsigned int InstanceNum);
+		virtual void DrawInstance(int Geometry, void* InstanceBuffer, unsigned int InstanceSize, unsigned int InstanceNum);
 		// Draw raw data. Slow operation, cause the data must copy to GPU memory first
 		virtual void DrawRaw(void* VBuffer, unsigned int VBSize, unsigned int VertexSize, void* IBuffer, unsigned int IBSize, R_FORMAT IndexFormat) {}
 		// draw full screen quad

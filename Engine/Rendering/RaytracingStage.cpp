@@ -203,9 +203,9 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		compiled += compiler->TraceRay();
 		// test run
-		Parameter["RenderTarget"].as<int>() = rtTestTarget;
-		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
-		compiled += compiler->TraceRay();
+		//Parameter["RenderTarget"].as<int>() = rtTestTarget;
+		//compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
+		//compiled += compiler->TraceRay();
 	}
 	return compiled;
 }

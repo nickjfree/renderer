@@ -538,6 +538,16 @@ typedef struct R_RESOURCE_BINDING
 }R_RESOURCE_BINDING;
 
 
+
+typedef struct R_RAYTRACING_SHADER_BINDINGS {
+	// int shader id
+	int ShaderId;
+	// num bindings
+	int NumBindings;
+	// biding
+	R_RESOURCE_BINDING Bindings[8];
+}R_RAYTRACING_SHADER_BINDINGS;
+
 typedef struct R_RAYTRACING_INSTANCE
 {
 	// matrix
@@ -548,10 +558,10 @@ typedef struct R_RAYTRACING_INSTANCE
 	int MaterialId;
 	// int flag
 	int Flag;
-	// num bindings
-	int NumBindings;
-	// biding
-	R_RESOURCE_BINDING Bindings[16];
+	// num shaders
+	int NumShaders;
+	// shader bindings. 8 ray types; 
+	R_RAYTRACING_SHADER_BINDINGS ShaderBindings[8];
 }R_RAYTRACING_INSTANCE;
 
 

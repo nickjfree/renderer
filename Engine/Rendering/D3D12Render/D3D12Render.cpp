@@ -1774,17 +1774,19 @@ int D3D12Render::AddRaytracingInstance(D3DBottomLevelAS* rtGeometry, D3DGeometry
 	D3D12_GPU_VIRTUAL_ADDRESS vertexAddr = geometry.VertexResource->GetGPUVirtualAddress();
 	D3D12_GPU_VIRTUAL_ADDRESS indexAddr = geometry.IndexResource->GetGPUVirtualAddress();
 	// add shader recrod for each ray types
-	for (auto ray = 0; ray < MAX_RAY_TYPES; ray++) {
+	for (auto ray = 0; ray < instance.NumShaders; ray++) {
+		// R_SHADER_RESOURCE_BINDINGS
+		R_RAYTRACING_SHADER_BINDINGS &bindings = instance.ShaderBindings[ray];
 		// get a shader record
 		auto Record = rtScene->AllocShaderRecord(instance.MaterialId);
 		// fill the hitgroup identifier
-		auto& Shader = RaytracingShaders.GetItem(ray);
+		auto& Shader = RaytracingShaders.GetItem(bindings.ShaderId);
 		Record->ShaderIdentifier = Shader.HitGroupShaderIdentifier;
 		// get raytracing's descriptor heap for local srv uav
 		DescriptorHeap* descHeap = rtScene->GetDescriptorHeap();
 		// set bindings
-		for (auto i = 0; i < instance.NumBindings; i++) {
-			auto binding = instance.Bindings[i];
+		for (auto i = 0; i < bindings.NumBindings; i++) {
+			auto binding = bindings.Bindings[i];
 
 			int ResourceIndex = 0;
 			int HandleIndex = 0;

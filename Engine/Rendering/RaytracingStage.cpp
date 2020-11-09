@@ -182,7 +182,7 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
 	if (Value) {
 		auto material = Value->as<Material*>();
-		auto rtShader = material->GetShaderLibrary();
+		auto rtShader = material->GetShaderLibrary(0);
 		//Compiled += Compiler->SetDepthBuffer(-1);
 		// build raytracing scene in compute queue
 		// compiler->BuildRaytracingScene();
@@ -268,5 +268,5 @@ int RaytracingStage::End()
 		auto view = RenderViews.PopBack();
 		view->Recycle();
 	}
-	return 0;
+	return 0; 
 }

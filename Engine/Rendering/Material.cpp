@@ -54,7 +54,9 @@ int Material::OnSerialize(Deserializer& deserializer) {
 		if (!strcmp(node->name(), "library")) {
 			xml_attribute<>* attr = node->first_attribute("url");
 			char* url = attr->value();
-			Dependencies[String(url)].as<char*>() = NULL;
+			ShaderLibrary* nullShader;
+			ShaderLibs.PushBack(nullShader);
+			Dependencies[String(url)].as<int>() = ShaderLibs.Size() - 1;
 			DepCount++;
 			printf("shader %s\n", url);
 		}
@@ -110,7 +112,7 @@ int Material::OnSubResource(int Message, Resource* Sub, Variant& Param) {
 	}
 	if (resource->ResourceType == R_SHADER_LIBRARY) {
 		//printf("finish shader\n");
-		ShaderLib = (ShaderLibrary*)resource;
+		ShaderLibs[Param.as<int>()] = (ShaderLibrary*)resource;
 		DepCount--;
 	}
 	//printf("remain depcount %d\n", DepCount);
@@ -134,4 +136,21 @@ int Material::OnDestroy(Variant& Data) {
 	// delete xml_doc;
 	DeSerial.Release();
 	return 0;
+}
+
+int Material::GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE* instance) {
+	int shaderIndex = 0;
+	// each shaderlib is a hitgroup
+	for (auto iter = ShaderLibs.Begin(); iter != ShaderLibs.End(); iter++, shaderIndex++) {
+		auto rtShader = *iter;
+		int bindingsPerShader = 0;
+		// set shader bindings
+		rtShader->GetLocalResourceBindings(Parameters, Parameters, context, instance->ShaderBindings[shaderIndex].Bindings, &instance->ShaderBindings[shaderIndex].NumBindings);
+		// set shaderId
+		instance->ShaderBindings[shaderIndex].ShaderId = rtShader->GetId();
+		// inc numShaders
+		++instance->NumShaders;
+	}
+	instance->NumShaders = shaderIndex + 1;
+	return instance->NumShaders;
 }

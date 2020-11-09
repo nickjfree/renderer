@@ -79,8 +79,7 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 		// deformabled buffer
 		if (Stage == 0 && DeformableBuffer != -1) {
 			StageParameter["gDeformableBuffer"].as<unsigned int>() = DeformableBuffer;
-		}
-		else if (Stage == 0 && Geometry != -1) {
+		} else if (Stage == 0 && Geometry != -1) {
 			RaytracingGeometry = Context->GetRenderInterface()->CreateRaytracingGeometry(Geometry, true, &DeformableBuffer);
 		}
 	}
@@ -123,12 +122,11 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 
 	// get raytracing shader library to get the resource bindings
 	Variant* Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
-	if (Value) {
-		// raytracing shader material
-		auto rtMaterial = Value->as<Material*>();
 
-		// the rtshader
-		auto rtShader = rtMaterial->GetShaderLibrary();
+	auto material = GetMaterial();
+	auto rtShader = material->GetShaderLibrary(0);
+
+	if (rtShader) {
 
 		auto renderInterface = Context->GetRenderInterface();
 		if (Geometry != -1) {
@@ -144,11 +142,8 @@ int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
 				instance.rtGeometry = RaytracingGeometry;
 				instance.Transform = GetWorldMatrix();
 				// make local resource bindings
-				rtShader->GetLocalResourceBindings(material->GetParameter(), rtMaterial->GetParameter(), Context, instance.Bindings, &instance.NumBindings);
-				//if (palette.Size) {
+				material->GetRtShaderBindings(Context, &instance);
 				renderInterface->AddRaytracingInstance(instance);
-				//}
-				
 			}
 		}
 	}

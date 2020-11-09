@@ -6,6 +6,7 @@
 #include "Shader.h"
 #include "ShaderLibrary.h"
 #include "Container\Dict.h"
+#include "Container/Vector.h"
 #include "Resource\XMLParser.h"
 
 
@@ -25,7 +26,7 @@ private:
 	// shaders
 	Shader* ShaderProgram;
 	// shader library
-	ShaderLibrary* ShaderLib;
+	Vector<ShaderLibrary*> ShaderLibs;
 	// texture id cache
 	//int TexrureID[MULTI_TEXTUES];
 	// parameters. 
@@ -46,7 +47,9 @@ public:
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod);
 	Dict& GetParameter() { return Parameters; }
 	Shader* GetShader() { return ShaderProgram; }
-	ShaderLibrary* GetShaderLibrary() { return ShaderLib; }
+	ShaderLibrary* GetShaderLibrary(int index) { return ShaderLibs.Size()? ShaderLibs[index] : nullptr; }
+	// get resource bindings for raytracing shaders
+	int GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE * instance);
 	virtual int OnDestroy(Variant& Data);
 };
 

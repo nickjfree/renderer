@@ -301,5 +301,4 @@ void RaytracingScene::TraceRay(CommandContext* cmdContext, int rayIndex, D3DShad
 	auto cmdList = cmdContext->GetRaytracingCommandList();
 	cmdList->SetPipelineState1(stateObject.State);
 	cmdList->DispatchRays(&rayDesc);
-	cmdList->DispatchRays(&rayDesc);
 }

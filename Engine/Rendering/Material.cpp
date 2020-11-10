@@ -151,6 +151,5 @@ int Material::GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE*
 		// inc numShaders
 		++instance->NumShaders;
 	}
-	instance->NumShaders = shaderIndex + 1;
 	return instance->NumShaders;
 }

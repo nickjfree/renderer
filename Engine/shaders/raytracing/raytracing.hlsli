@@ -2,7 +2,7 @@
 #define __RAYTRACING__
 
 
-#include "deferred.h"
+#include "../common/deferred.h"
 #include "../lighting/lighting.h"
 
 ByteAddressBuffer Vertices : register(t0, space1);
@@ -21,6 +21,15 @@ cbuffer InstanceInfo: register(b0, space1)
     uint gVertexStride;
 }
 
+
+struct MaterialData 
+{
+    float3 position;
+    float3 normal;
+    float  roughness;
+    float  specular;
+    float  metallic;
+};
 
 
 // load vertex position
@@ -97,5 +106,9 @@ float4 SampleHitPointColor(SimpleAttributes attr)
 
     return color;
 }
+
+
+
+
 
 #endif

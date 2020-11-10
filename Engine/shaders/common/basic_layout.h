@@ -99,8 +99,8 @@ struct PS_Output_Simple
 // denoising pixel shader output
 struct PS_Output_Acc
 {
-    float4 Color : SV_Target0;
-    float4 Moment: SV_Target1;
+    float4 Color   : SV_Target0;
+    float4 Moment  : SV_Target1;
 };
 
 #endif

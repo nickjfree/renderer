@@ -250,9 +250,7 @@ PS_Output_Simple PS_Filter(PS_Input_Simple ps_input)
 
     float4 sumColor = color;
     float sumWeights = 1.0;
-
     for (int offsetx = -2; offsetx <= 2; offsetx++) {
-
         for (int offsety = -2; offsety <= 2; offsety++) {
 
             float2 loc = uv + float2(step * offsetx * texelSize.x, step * offsety * texelSize.y);

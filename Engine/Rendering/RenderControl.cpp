@@ -44,6 +44,10 @@ int RenderControl::Initialize() {
 }
 
 int RenderControl::Execute() {
+
+	// profile
+	PIXScopedEvent(0xFFFFFF00, __FUNCTION__);
+
 	int numCamera = Cameras.Size();
 
 	if (!numCamera) {

@@ -13,7 +13,7 @@
 #define RAYTRACING_HLSL
 
 // #include "RaytracingHlslCompat.h"
-#include "../common/raytracing.hlsli"
+#include "raytracing.hlsli"
 #include "../common/post.h"
 #include "random.hlsli"
 #include "monte_carlo.hlsli"
@@ -26,7 +26,29 @@ RWTexture2D<float4> RenderTarget : register(u0, space0);
 struct RayPayload
 {
     float4 color;
+
 };
+
+
+void TraceReflectionRay(float3 origin, float3 look, float3 normal, float roughness, uint seed, inout RayPayload payload) 
+{
+    float2 randsample = float2(Rand(seed), Rand(seed));
+    float4 sample = GenerateReflectedRayDirection(look, normal, roughness, randsample);
+    float3 rayDir = sample.xyz;
+    float invPDF = sample.w;
+    FixSampleDirectionIfNeeded(normal, rayDir);
+    // get ray
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = normalize(rayDir);
+    // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
+    // TMin should be kept small to prevent missing geometry at close contact areas.
+    ray.TMin = 0.005;
+    ray.TMax = 10000.0;
+    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
+}
+
+
 
 [shader("raygeneration")]
 void Raygen()
@@ -37,49 +59,36 @@ void Raygen()
     GBuffer gbuffer = GetGBufferLoad(uv);
 
     float3 viewPos = gbuffer.Position.xyz;
-    // world position to sun 
-    float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
+
+    if (length(viewPos) < 0.001) {
+        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0.0, 0, 1);
+        return;
+    }
+  
     // get view-space normal
     float3 normal = gbuffer.Normal.xyz; 
     // get view-space look
     float3 look = -gbuffer.View.xyz;
 
     float roughness = gbuffer.Roughness;
-
-    float3 specular = gbuffer.Specular;
-
+  // world position to sun 
+    float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
     float3 world_normal = mul(float4(normal, 0), gInvertViewMaxtrix).xyz;
     float3 world_look =  mul(float4(look, 0), gInvertViewMaxtrix).xyz;
     // random seed
     uint seed = RandInit(linearIndex, gFrameNumber);
-    float2 randsample = float2(Rand(seed), Rand(seed));
-    float4 sample = GenerateReflectedRayDirection(world_look, world_normal, roughness, randsample);
-    float3 rayDir = sample.xyz;
-    float invPDF = sample.w;
-    FixSampleDirectionIfNeeded(world_normal, rayDir);
-    // Trace the ray.
-    // Set the ray's extents.
-    // float4 look = GetLookVector(uv);
-    // float3 rayDir = mul(look, gInvertViewMaxtrix).xyz;
-    // float3 origin = mul(float4(0, 0, 0, 1), gInvertViewMaxtrix).xyz;
 
-    RayDesc ray;
-    ray.Origin = origin;
-    ray.Direction = normalize(rayDir);
-    // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
-    // TMin should be kept small to prevent missing geometry at close contact areas.
-    ray.TMin = 0.005;
-    ray.TMax = 10000.0;
-    RayPayload payload = { float4(0, 0, 0, 0) };
+    float4 color = float4(0,0,0,0);
+    RayPayload payload;
+    payload.color = color;
 
-    if (length(viewPos) < 0.001) {
-        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0.0, 0, 1);
-        return;
+    [unroll]
+    for(int i = 0; i < 4; i++) {
+        TraceReflectionRay(origin, world_look, world_normal, roughness, seed, payload);
+        color = color + payload.color;
     }
-    // get raytraced color
-    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
     // target
-    RenderTarget[DispatchRaysIndex().xy] = float4(payload.color.xyz, 0);
+    RenderTarget[DispatchRaysIndex().xy] = color;
     // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
 }
 

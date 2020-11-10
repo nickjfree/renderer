@@ -121,7 +121,9 @@ void D3D12Render::InitD3D12() {
 	}
 	// check raytracing support
 	D3D12_FEATURE_DATA_D3D12_OPTIONS5  featureData{};
+	D3D12_FEATURE_DATA_D3D12_OPTIONS   featureData2{};
 	Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &featureData, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS5));
+	Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &featureData2, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS));
 	// get rtx device
 	Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
 	// create all command queues.
@@ -836,7 +838,10 @@ int D3D12Render::CreateRaytracingGeometry(int GeometryId, bool Deformable, int* 
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS bottomLevelInputs = {};
 	bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
-	bottomLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+	auto flags = Deformable ? 
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE :
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE|D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION;
+	bottomLevelInputs.Flags = flags;
 	bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 	bottomLevelInputs.pGeometryDescs = &geometryDesc;
 	bottomLevelInputs.NumDescs = 1;

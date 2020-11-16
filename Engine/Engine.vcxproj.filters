@@ -443,6 +443,18 @@
     <ClInclude Include="Profile\ProfileEvents.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\D3D12Renderer\D3D12Renderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Renderer\d3dx12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Renderer\DDSTextureLoader12.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\D3D12Renderer\D3d12Resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -887,6 +899,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\Terrain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Renderer\D3D12Renderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Renderer\DDSTextureLoader12.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\D3D12Renderer\D3d12Resource.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

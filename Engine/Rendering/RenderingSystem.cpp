@@ -86,6 +86,10 @@ int RenderingSystem::Initialize() {
 	context->RegisterObject<MeshRenderer>();
 	context->RegisterObject<Terrain>();
 	context->RegisterObject<TerrainNode>();
+
+
+	// for test
+	auto cmdContext = D3D12CommandContext::Alloc();
 	return 0;
 }
 

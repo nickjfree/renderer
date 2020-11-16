@@ -157,6 +157,10 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\Camera.h" />
     <ClInclude Include="Rendering\CullingTask.h" />
     <ClInclude Include="Rendering\D3D11Render\Structs.h" />
+    <ClInclude Include="Rendering\D3D12Renderer\D3D12Renderer.h" />
+    <ClInclude Include="Rendering\D3D12Renderer\D3d12Resource.h" />
+    <ClInclude Include="Rendering\D3D12Renderer\d3dx12.h" />
+    <ClInclude Include="Rendering\D3D12Renderer\DDSTextureLoader12.h" />
     <ClInclude Include="Rendering\D3D12Render\CommandContext.h" />
     <ClInclude Include="Rendering\D3D12Render\CommandQueue.h" />
     <ClInclude Include="Rendering\D3D12Render\D3D12Render.h" />
@@ -283,6 +287,9 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\BatchCompiler.cpp" />
     <ClCompile Include="Rendering\Camera.cpp" />
     <ClCompile Include="Rendering\CullingTask.cpp" />
+    <ClCompile Include="Rendering\D3D12Renderer\D3D12Renderer.cpp" />
+    <ClCompile Include="Rendering\D3D12Renderer\D3d12Resource.cpp" />
+    <ClCompile Include="Rendering\D3D12Renderer\DDSTextureLoader12.cpp" />
     <ClCompile Include="Rendering\D3D12Render\CommandContext.cpp" />
     <ClCompile Include="Rendering\D3D12Render\CommandQueue.cpp" />
     <ClCompile Include="Rendering\D3D12Render\D3D12Render.cpp" />

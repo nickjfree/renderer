@@ -21,6 +21,12 @@ using D3D12API::D3D12Render;
 typedef D3D12Render RenderImp;
 #endif
 
+
+// test
+#include "D3D12Renderer\D3D12Renderer.h"
+using D3D12Renderer::D3D12RenderInterface;
+using D3D12Renderer::D3D12CommandContext;
+
 //#else
 //typedef RenderInterface RenderImp;
 //#endif

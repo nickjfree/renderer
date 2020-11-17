@@ -8,98 +8,31 @@
 #include "pix3.h"
 #include "Rendering/RenderInterface.h"
 #include "Rendering/RenderDesc.h"
+#include "D3D12Helper.h"
 #include "Tasks/Mutex.h"
 #include "Container/List.h"
 #include "Container/Vector.h"
 
+
 namespace D3D12Renderer {
-
-
-	/*
-		transient item pool
-	*/
-	template <class ItemType>
-	class Transient
-	{
-	public:
-		// alloc item 
-		static ItemType* Alloc();
-		// retire all
-		static unsigned int RetireAll(unsigned int fence);
-	private:
-		// retire
-		void retire(unsigned int fence);
-	private:
-		// lock
-		static Mutex  lock;
-		// retired pool
-		static List<ItemType> retired;
-		// vector pending item to retire
-		static Vector<ItemType*> retiring;
-		// fence
-		unsigned int fenceValue = 0;
-	};
-
-	// initalization of the retired pool
-	template <class ItemType> List<ItemType> Transient<ItemType>::retired;
-	// initalization of the retiring pool
-	template <class ItemType> Vector<ItemType*> Transient<ItemType>::retiring;
-	//  initalization of the lock
-	template <class ItemType> Mutex Transient<ItemType>::lock;
-
-
-	// alloc an item
-	template <class ItemType> ItemType * Transient<ItemType>::Alloc()
-	{
-		// TODO: 
-		// 1. get graphic queue fenceComplete value
-		// 2. find item from retired pool
-
-		// 3. can not found a retired item from pool
-		// call init
-		auto item = new ItemType();
-		// 4. add item to pending pool
-		lock.Acquire();
-		retiring.PushBack(item);
-		lock.Release();
-		return item;
-	}
-
-	// retire all items
-	template <class ItemType> unsigned int Transient<ItemType>::RetireAll(unsigned int fence)
-	{
-		lock.Acquire();
-		for(auto iter = retiring.Begin(); iter != retiring.End(); iter++) {
-			(*iter).retire(fence);
-		}
-		// clear all retiring items
-		retiring.Reset();
-		lock.Release();
-		return item;
-	}
-
-	// retire item
-	template <class ItemType> void Transient<ItemType>::retire(unsigned int fence)
-	{
-		fenceValue = fence;
-		retired.Insert(this);
-	}
 
 	/*
 		command context
 	*/
 	class D3D12CommandContext : public Transient<D3D12CommandContext>
 	{
+		friend Transient<D3D12CommandContext>;
 	public:
 
 	private:
-		// create new command context
-		void init();
+		// reset transient resource status
+		void resetTransient() {};
 	private:
 		// context type
 		enum class COMMAND_CONTEXT_TYPE {
 			GRAPHIC,
 			COMPUTE,
+			COPY,
 			COUNT,
 		};
 		// command list
@@ -112,11 +45,67 @@ namespace D3D12Renderer {
 
 
 	/*
+		Descriptor Heap
+	*/
+	class D3D12DescriptorHeap : public Transient<D3D12DescriptorHeap>
+	{
+	private:
+		// reset
+		void resetTransient() {};
+	};
+
+
+	/*
+		root signature
+	*/
+	class D3D12RootSignature : public Transient<D3D12RootSignature>
+	{
+	public:
+
+	private:
+		// reset tansient resource
+		void resetTransient() {};
+	private:
+		// rootsignature
+		ID3D12RootSignature* rootSignature;
+	};
+
+	/*
+		pipleline state
+	*/
+	class D3D12PipelineState
+	{
+	public:
+	private:
+		// pipeline state
+		ID3D12PipelineState* pipelineState;
+	};
+
+
+	class D3D12Resource;
+
+	/*
 		the render interface
 	*/
 	class D3D12RenderInterface : public RenderInterface
 	{
-
+	public:
+		// create texture
+		int CreateTexture2D(R_TEXTURE2D_DESC* desc);
+		// destory buffer
+		int DestoryTexture2D(int id);
+		// create texture
+		int CreateBuffer(R_BUFFER_DESC* desc);
+		// destory buffer
+		int DestoryBuffer(int id);
+	private:
+		// get resource
+		D3D12Resource* GetResource(int id);
+		// destory resource
+		void DestoryResource(int id);
+	private:
+		// device
+		ID3D12Device * d3d12Device;
 	};
 
 

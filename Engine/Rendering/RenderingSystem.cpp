@@ -89,7 +89,7 @@ int RenderingSystem::Initialize() {
 
 
 	// for test
-	auto cmdContext = D3D12CommandContext::Alloc();
+	auto cmdContext = D3D12CommandContext::AllocTransient();
 	return 0;
 }
 

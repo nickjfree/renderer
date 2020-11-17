@@ -243,6 +243,9 @@ typedef struct R_TEXTURE2D_DESC {
 	R_BIND_FLAG BindFlag;
 	R_CPU_ACCESS CPUAccess;
 	R_MISC MiscFlag;
+	// cpudata
+	void* CpuData;
+	unsigned int Size;
 	// debug name
 	wchar_t * DebugName;
 }R_TEXTURE2D_DESC;
@@ -293,20 +296,6 @@ enum R_CMP_FUNC {
 	GREATER_EQUAL = 7,
 	ALWAYS = 8
 };
-
-/*
-	typedef struct DEPTH_STENCIL_DESC {
-  BOOL                       DepthEnable;
-  DEPTH_WRITE_MASK     DepthWriteMask;
-  COMPARISON_FUNC      DepthFunc;
-  BOOL                       StencilEnable;
-  UINT8                      StencilReadMask;
-  UINT8                      StencilWriteMask;
-  DEPTH_STENCILOP_DESC FrontFace;
-  DEPTH_STENCILOP_DESC BackFace;
-} DEPTH_STENCIL_DESC;
-*/
-
 
 typedef enum R_STENCIL_OP {
 	KEEP = 1,

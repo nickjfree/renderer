@@ -25,11 +25,15 @@ namespace D3D12Renderer {
 		friend Transient<D3D12CommandContext>;
 	public:
 		// alloc transient command context
-		D3D12CommandContext* AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		static D3D12CommandContext* AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
 		// alloc command context
-		D3D12CommandContext* Alloc(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		static D3D12CommandContext* Alloc(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
 		// release
 		void Release();
+		// getcmdList
+		ID3D12GraphicsCommandList1* GetCmdList() { return cmdList; }
+		// flush
+		UINT64 Flush(bool wait);
 	private:
 		// reset transient resource status
 		void resetTransient();
@@ -154,9 +158,9 @@ namespace D3D12Renderer {
 		void InitD3D12Device();
 	private:
 		// device
-		ID3D12Device* d3d12Device;
+		ID3D12Device* d3d12Device = nullptr;
 		// rtxDevice
-		ID3D12Device5* rtxDevice;
+		ID3D12Device5* rtxDevice = nullptr;
 		// descriptor heaps
 		D3D12DescriptorHeap* descHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		// back buffer size

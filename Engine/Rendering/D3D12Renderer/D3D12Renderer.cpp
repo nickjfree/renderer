@@ -19,7 +19,7 @@ D3D12CommandContext* D3D12CommandContext::AllocTransient(ID3D12Device* d3d12Devi
 {
 	auto cmdContext = allocTransient(
 		[&](D3D12CommandContext* newContext) {
-			create(d3d12Device, cmdType);
+			newContext->create(d3d12Device, cmdType);
 		},
 		[&](D3D12CommandContext* retiredContext) {
 			return retiredContext->cmdType == cmdType;
@@ -42,10 +42,21 @@ void D3D12CommandContext::resetTransient() {
 
 void D3D12CommandContext::Release()
 {
+	// free all resources
 	cmdList->Reset(cmdAllocator, nullptr);
 	cmdAllocator->Reset();
 	cmdList->Release();
 	cmdAllocator->Release();
+}
+
+// flush
+UINT64 D3D12CommandContext::Flush(bool wait)
+{
+	cmdList->Close();
+	// TODO: execute cmdlist
+
+	// after execute cmdlist, we can reset the cmdlist
+	cmdList->Reset(cmdAllocator, nullptr);
 }
 
 void D3D12DescriptorHeap::create(ID3D12Device* d3d12Device, unsigned int size, D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag)
@@ -191,11 +202,12 @@ int D3D12RenderInterface::CreateTexture2D(R_TEXTURE2D_DESC* desc)
 	// alloc resource index
 	auto resourceDesc = (ResourceDescribe *)desc;
 	auto texture = TextureResource::CreateResource(d3d12Device, resourceDesc);
-	return texture->resourceId;
+	return texture->resourceId | (unsigned int)D3D12Resource::RESOURCE_TYPES::TEXTURE << 24;
 }
 
 int D3D12RenderInterface::DestoryTexture2D(int id)
 {
+	DestoryResource(id);
 	return 0;
 }
 
@@ -204,11 +216,11 @@ int D3D12RenderInterface::CreateBuffer(R_BUFFER_DESC* desc)
 	// alloc resource index
 	auto resourceDesc = (ResourceDescribe*)desc;
 	auto buffer = BufferResource::CreateResource(d3d12Device, resourceDesc);
-	return buffer->resourceId;
+	return buffer->resourceId | (unsigned int)D3D12Resource::RESOURCE_TYPES::BUFFER << 24;
 }
-
 
 int D3D12RenderInterface::DestoryBuffer(int id)
 {
+	DestoryResource(id);
 	return 0;
 }

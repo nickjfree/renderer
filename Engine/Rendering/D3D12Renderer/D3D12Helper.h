@@ -74,7 +74,7 @@ namespace D3D12Renderer {
 		// 3. can not found a retired item from pool
 		if (!found) {
 			item = new ItemType();
-			// call create callbacl
+			// call create callback
 			createCallback(item);
 		}
 		// 4. add item to inflight pool

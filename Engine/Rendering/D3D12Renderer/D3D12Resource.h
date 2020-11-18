@@ -54,15 +54,13 @@ namespace D3D12Renderer {
 			TLAS,
 			COUNT,
 		};
-		// resource type
-		RESOURCE_TYPES resourceType;
 		// resource state
 		D3D12_RESOURCE_STATES state;
-	private: 
+	protected: 
 		// views
 		D3D12_CPU_DESCRIPTOR_HANDLE  views[(int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		// resource
-		ID3D12Resource* resource;
+		ID3D12Resource* resource = nullptr;
 	};
 
 	/*
@@ -104,6 +102,12 @@ namespace D3D12Renderer {
 		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
 		// release
 		void Release();
+	private:
+		// upload 
+		void upload(ID3D12Device* d3d12Device, void* cpuData, unsigned int size);
+	private:
+		// isCube
+		bool isCube = false;
 	};
 
 	/*
@@ -142,6 +146,8 @@ namespace D3D12Renderer {
 		D3D12_GPU_VIRTUAL_ADDRESS GetCurrentGpuVirtualAddress() { return resource->GetGPUVirtualAddress() + currentOffset; }
 		// cpu address
 		void*  GetCurrentCpuVirtualAddress() { return (void*)((UINT64)cpuBaseAddress + currentOffset); }
+		// get
+		ID3D12Resource* Get() { return resource; }
 	private:
 		// reset
 		void resetTransient() { currentOffset = 0; }

@@ -87,9 +87,9 @@ int RenderingSystem::Initialize() {
 	context->RegisterObject<Terrain>();
 	context->RegisterObject<TerrainNode>();
 
-
 	// for test
-	auto cmdContext = D3D12CommandContext::AllocTransient();
+	auto render = new D3D12RenderInterface();
+	render->Initialize(3840, 2160);
 	return 0;
 }
 

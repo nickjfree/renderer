@@ -52,8 +52,26 @@ void Geometry::Release()
 	Free();
 }
 
+UploadHeap* UploadHeap::Alloc(ID3D12Device* d3d12Device, unsigned int size)
+{
+	auto uploadHeap = new UploadHeap();
+	uploadHeap->create(d3d12Device, size);
+	return uploadHeap;
+}
 
-void UploadHeap::Create(ID3D12Device* d3d12Device, unsigned int size)
+UploadHeap* UploadHeap::AllocTransient(ID3D12Device* d3d12Device, unsigned int size)
+{
+	auto uploadHeap = allocTransient(
+	[&](UploadHeap* uploadHeap) {
+		uploadHeap->create(d3d12Device, size);
+	},
+	[&](UploadHeap* uploadHeap) {
+		return true;
+	});
+	return uploadHeap;
+}
+
+void UploadHeap::create(ID3D12Device* d3d12Device, unsigned int size)
 {
 	D3D12_HEAP_TYPE heapType{};
 	resource = CreateCommitedResource(d3d12Device,
@@ -64,20 +82,23 @@ void UploadHeap::Create(ID3D12Device* d3d12Device, unsigned int size)
 
 void UploadHeap::Release()
 {
+	resetTransient();
 	resource->Release();
+	delete this;
 }
 
-void* UploadHeap::SubAlloc(unsigned int allocSize)
+bool UploadHeap::SubAlloc(unsigned int allocSize)
 {
 
 	int alignedSize = (allocSize + const_buffer_align - 1) & ~(const_buffer_align - 1);
 
 	if (currentOffset + alignedSize > size) {
 		// not enough space
-		return nullptr;
+		return false;
 	}
 	// 
 	currentOffset += alignedSize;
+	return true;
 }
 
 /*
@@ -92,8 +113,7 @@ void* RingConstantBuffer::AllocTransientConstantBuffer(unsigned int size, void**
 	// suballoc constant buffer space
 	if (!currentUploadHeap || !currentUploadHeap->SubAlloc(size)) {
 		// alloc a new transient const buffer
-		currentUploadHeap = UploadHeap::AllocTransient();
-		currentUploadHeap->Create(d3d12Device, max_upload_heap_size);
+		currentUploadHeap = UploadHeap::AllocTransient(d3d12Device, max_upload_heap_size);
 	}
 	*gpuAddress = (void*)currentUploadHeap->GetCurrentGpuVirtualAddress();
 	return currentUploadHeap->GetCurrentCpuVirtualAddress();

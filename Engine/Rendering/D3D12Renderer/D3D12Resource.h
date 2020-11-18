@@ -15,18 +15,6 @@ namespace D3D12Renderer {
 	constexpr auto max_geometry_number = 8192;
 
 	/*
-		descripter type
-	*/
-	enum class DESCRIPTOR_HANDLE_TYPES {
-		SRV,
-		UAV,
-		RTV,
-		DSV,
-		COUNT,
-	};
-
-
-	/*
 		resource describe
 	*/
 	typedef struct ResourceDescribe {
@@ -72,15 +60,32 @@ namespace D3D12Renderer {
 		D3D12_RESOURCE_STATES state;
 	private: 
 		// views
-		D3D12_CPU_DESCRIPTOR_HANDLE  views[(int)DESCRIPTOR_HANDLE_TYPES::COUNT];
+		D3D12_CPU_DESCRIPTOR_HANDLE  views[(int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		// resource
 		ID3D12Resource* resource;
 	};
 
 	/*
+		pool resource	
+	*/
+	template <class T, int size>
+	class PoolResource : public ResourcePool<T, size>, public D3D12Resource
+	{
+	public:
+		static T* CreateResource(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
+	};
+
+	template <class T, int size> T* PoolResource<T, size>::CreateResource(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc)
+	{
+		T* resource = Alloc();
+		resource->Create(d3d12Device, resourceDesc);
+		return resource;
+	}
+
+	/*
 		buffer (shader resource or uav)
 	*/
-	class BufferResource : public D3D12Resource, public ResourcePool<BufferResource, max_buffer_number>
+	class BufferResource : public PoolResource<BufferResource, max_buffer_number>
 	{
 	public:
 		// create
@@ -92,7 +97,7 @@ namespace D3D12Renderer {
 	/*
 		texture ( render targets, shader resource or uav)
 	*/
-	class TextureResource : public D3D12Resource, public ResourcePool<BufferResource, max_texture_number>
+	class TextureResource : public PoolResource<BufferResource, max_texture_number>
 	{
 	public:
 		// create
@@ -104,7 +109,7 @@ namespace D3D12Renderer {
 	/*
 		vertexbuffer + indexbuffer
 	*/
-	class Geometry: public ResourcePool<BufferResource, max_geometry_number>
+	class Geometry: public PoolResource<BufferResource, max_geometry_number>
 	{
 	public:
 	public:
@@ -125,12 +130,14 @@ namespace D3D12Renderer {
 	{
 		friend Transient<UploadHeap>;
 	public:
-		// create 
-		void Create(ID3D12Device* d3d12Device, unsigned int size);
-		// release
+		// Alloc transient
+		static UploadHeap* AllocTransient(ID3D12Device* d3d12Device, unsigned int size);
+		// Alloc
+		static UploadHeap* Alloc(ID3D12Device* d3d12Device, unsigned int size);
+		// release resource
 		void Release();
 		// suballoc
-		void* SubAlloc(unsigned int allocSize);
+		bool SubAlloc(unsigned int allocSize);
 		// gpu virtual address
 		D3D12_GPU_VIRTUAL_ADDRESS GetCurrentGpuVirtualAddress() { return resource->GetGPUVirtualAddress() + currentOffset; }
 		// cpu address
@@ -138,7 +145,8 @@ namespace D3D12Renderer {
 	private:
 		// reset
 		void resetTransient() { currentOffset = 0; }
-		
+		// create 
+		void create(ID3D12Device* d3d12Device, unsigned int size);
 	private:
 		// resource
 		ID3D12Resource* resource;

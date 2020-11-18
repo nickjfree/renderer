@@ -1,6 +1,7 @@
 #ifndef __D3D12_HELPER__
 #define __D3D12_HELPER__
 
+#include <functional>
 #include "Container/List.h"
 #include "Container/Vector.h"
 #include "Tasks/Mutex.h"
@@ -17,11 +18,11 @@ namespace D3D12Renderer {
 	class Transient
 	{
 	public:
-		// alloc item 
-		static ItemType* AllocTransient();
 		// retire all
 		static unsigned int RetireAll(unsigned int fence);
-	
+	protected:
+		// alloc item 
+		static ItemType* allocTransient(std::function<void(ItemType*)> createCallback, std::function<bool(ItemType*)> matchCallback);
 	private:
 		// retire
 		void retire(unsigned int fence);
@@ -33,35 +34,52 @@ namespace D3D12Renderer {
 		// retired pool
 		static List<ItemType> retired;
 		// vector pending item to retire
-		static Vector<ItemType*> retiring;
+		static Vector<ItemType*> inflight;
 		// fence
 		unsigned int fenceValue = 0;
 	};
 
 	// initalization of the retired pool
 	template <class ItemType> List<ItemType> Transient<ItemType>::retired;
-	// initalization of the retiring pool
-	template <class ItemType> Vector<ItemType*> Transient<ItemType>::retiring;
+	// initalization of the inflight pool
+	template <class ItemType> Vector<ItemType*> Transient<ItemType>::inflight;
 	//  initalization of the lock
 	template <class ItemType> Mutex Transient<ItemType>::lock;
 
-
-	// alloc an transient item
-	template <class ItemType> ItemType* Transient<ItemType>::AllocTransient()
-	{
-		// TODO: 
+	/*
+		alloc an transient item
+	*	createCallback: create resource when not found	
+	*   matchCallback:  match an item in the retired pool
+	*/
+	template <class ItemType> ItemType* Transient<ItemType>::allocTransient(
+		std::function<void(ItemType*)> createCallback, 
+		std::function<bool(ItemType*)> matchCallback)
+	{	
 		// 1. get graphic queue fenceComplete value
+		UINT64 currentFence = 100;	
 		// 2. find item from retired pool
-
-		// 3. can not found a retired item from pool
-		// call init
-		auto item = new ItemType();
-		if (true) { // if found
-			item->resetTransient();
-		}
-		// 4. add item to pending pool
+		ItemType* item = nullptr;
+		bool found = false;
 		lock.Acquire();
-		retiring.PushBack(item);
+		for (auto iter = retired.Begin(); iter != retired.End(); iter++) {
+			item = *iter;
+			if (/*Queue->FenceComplete(FenceValue)*/true && matchCallback(item)) {
+				retired.Remove(iter);
+				item->resetTransient();
+				found = true;
+				break;
+			}
+		}
+		lock.Release();
+		// 3. can not found a retired item from pool
+		if (!found) {
+			item = new ItemType();
+			// call create callbacl
+			createCallback(item);
+		}
+		// 4. add item to inflight pool
+		lock.Acquire();
+		inflight.PushBack(item);
 		lock.Release();
 		return item;
 	}
@@ -70,11 +88,11 @@ namespace D3D12Renderer {
 	template <class ItemType> unsigned int Transient<ItemType>::RetireAll(unsigned int fence)
 	{
 		lock.Acquire();
-		for (auto iter = retiring.Begin(); iter != retiring.End(); iter++) {
+		for (auto iter = inflight.Begin(); iter != inflight.End(); iter++) {
 			(*iter).retire(fence);
 		}
 		// clear all retiring items
-		retiring.Reset();
+		inflight.Reset();
 		lock.Release();
 		return item;
 	}

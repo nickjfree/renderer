@@ -16,6 +16,7 @@
 
 namespace D3D12Renderer {
 
+	constexpr auto max_descriptor_heap_size = 16384;
 	/*
 		command context
 	*/
@@ -23,10 +24,17 @@ namespace D3D12Renderer {
 	{
 		friend Transient<D3D12CommandContext>;
 	public:
-
+		// alloc transient command context
+		D3D12CommandContext* AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		// alloc command context
+		D3D12CommandContext* Alloc(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		// release
+		void Release();
 	private:
 		// reset transient resource status
-		void resetTransient() {};
+		void resetTransient();
+		// create
+		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
 	private:
 		// context type
 		enum class COMMAND_CONTEXT_TYPE {
@@ -35,12 +43,14 @@ namespace D3D12Renderer {
 			COPY,
 			COUNT,
 		};
-		// command list
-		ID3D12CommandList* cmdList;
+		// context type
+		D3D12_COMMAND_LIST_TYPE  cmdType;
+		// graphic cmdList
+		ID3D12GraphicsCommandList1* cmdList = nullptr;
 		// command allocator
-		ID3D12CommandAllocator* CommandAllocator;
+		ID3D12CommandAllocator* cmdAllocator = nullptr;
 		// rt commandlist
-		ID3D12GraphicsCommandList5* rtCommandList;
+		ID3D12GraphicsCommandList5* rtCommandList = nullptr;
 	};
 
 
@@ -49,9 +59,43 @@ namespace D3D12Renderer {
 	*/
 	class D3D12DescriptorHeap : public Transient<D3D12DescriptorHeap>
 	{
+		friend Transient<D3D12DescriptorHeap>;
+	public:
+		// alloc
+		static D3D12DescriptorHeap* Alloc(ID3D12Device* d3d12Device, unsigned int size, D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag);
+		// alloc transient
+		static D3D12DescriptorHeap* AllocTransient(ID3D12Device* d3d12Device);
+		// get gpu handle
+		D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle(unsigned int index);
+		// get cpu handle
+		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(unsigned int index);
+		// release
+		void Release();
 	private:
 		// reset
-		void resetTransient() {};
+		void resetTransient() { currentIndex = 0; }
+		// Create
+		void create(ID3D12Device* d3d12Device, unsigned int size, D3D12_DESCRIPTOR_HEAP_TYPE heapType, D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag);
+
+	public:
+		// descripter type
+		enum class DESCRIPTOR_HANDLE_TYPES {
+			SRV,
+			UAV,
+			RTV,
+			DSV,
+			SAMPLER,
+			COUNT,
+		};
+	private:
+		// the heap
+		ID3D12DescriptorHeap* descriptorHeap = nullptr;
+		// size
+		unsigned int size = 0;
+		// int current index
+		unsigned int currentIndex = 0;
+		// increment size
+		unsigned int incrementSize = 0;
 	};
 
 
@@ -90,6 +134,7 @@ namespace D3D12Renderer {
 	class D3D12RenderInterface : public RenderInterface
 	{
 	public:
+		int Initialize(int width, int height);
 		// create texture
 		int CreateTexture2D(R_TEXTURE2D_DESC* desc);
 		// destory buffer
@@ -103,9 +148,20 @@ namespace D3D12Renderer {
 		D3D12Resource* GetResource(int id);
 		// destory resource
 		void DestoryResource(int id);
+		// init descriptor heaps
+		void InitDescriptorHeaps();
+		// init d3d12Device
+		void InitD3D12Device();
 	private:
 		// device
-		ID3D12Device * d3d12Device;
+		ID3D12Device* d3d12Device;
+		// rtxDevice
+		ID3D12Device5* rtxDevice;
+		// descriptor heaps
+		D3D12DescriptorHeap* descHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
+		// back buffer size
+		unsigned int backbufferWidth = 0;
+		unsigned int backbufferHeight = 0;
 	};
 
 

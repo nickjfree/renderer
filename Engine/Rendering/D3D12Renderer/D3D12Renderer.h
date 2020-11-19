@@ -58,8 +58,6 @@ namespace D3D12Renderer {
 		// backbuffer
 		D3D12BackBuffer backBuffer;
 	};
-
-
 }
 
 #endif

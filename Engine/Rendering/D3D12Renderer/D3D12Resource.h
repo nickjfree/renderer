@@ -1,9 +1,11 @@
 #ifndef __D3D12_RESOURCE__
 #define __D3D12_RESOURCE__
 
-#include "D3D12Renderer.h"
+#include "D3D12Common.h"
 
 namespace D3D12Renderer {
+
+	class UploadHeap;
 
 	// const buffer
 	constexpr auto max_upload_heap_size = 2048 * 256;
@@ -14,6 +16,9 @@ namespace D3D12Renderer {
 	constexpr auto max_buffer_number = 8192;
 	constexpr auto max_geometry_number = 8192;
 
+	// backbuffer count
+	constexpr auto backbuffer_count = 2;
+
 	/*
 		resource describe
 	*/
@@ -21,6 +26,7 @@ namespace D3D12Renderer {
 		union {
 			R_TEXTURE2D_DESC textureDesc;
 			R_BUFFER_DESC bufferDesc;
+			R_GEOMETRY_DESC geometryDesc;
 		};
 	}ResourceDescribe;
 
@@ -36,14 +42,30 @@ namespace D3D12Renderer {
 		virtual void Release() = 0;
 		// set state (issue a transfer barrier)
 		void SetResourceState(D3D12CommandContext *cmdContext, D3D12_RESOURCE_STATES targetState);
+		// create descriptor handles in cpuHeap
+		virtual void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
 		// srv
-		D3D12_GPU_DESCRIPTOR_HANDLE  GetSrv();
+		D3D12_CPU_DESCRIPTOR_HANDLE  GetSrv() 
+		{ 
+			return views[static_cast<int>(D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV)];
+		}
 		// uav
-		D3D12_GPU_DESCRIPTOR_HANDLE  GetUav();
+		D3D12_CPU_DESCRIPTOR_HANDLE  GetUav() 
+		{
+			return views[static_cast<int>(D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV)];
+		}
 		// rtv
-		D3D12_CPU_DESCRIPTOR_HANDLE  GetRtv();
+		D3D12_CPU_DESCRIPTOR_HANDLE  GetRtv()
+		{
+			return views[static_cast<int>(D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::RTV)];
+		}
 		// dsv
-		D3D12_CPU_DESCRIPTOR_HANDLE  GetDsv();
+		D3D12_CPU_DESCRIPTOR_HANDLE  GetDsv()
+		{
+			return views[static_cast<int>(D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::DSV)];
+		}
+	private:
+
 	public:
 		// resource types
 		enum class RESOURCE_TYPES {
@@ -55,10 +77,10 @@ namespace D3D12Renderer {
 			COUNT,
 		};
 		// resource state
-		D3D12_RESOURCE_STATES state;
+		D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON;
 	protected: 
 		// views
-		D3D12_CPU_DESCRIPTOR_HANDLE  views[(int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
+		D3D12_CPU_DESCRIPTOR_HANDLE  views[(int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT] = {};
 		// resource
 		ID3D12Resource* resource = nullptr;
 	};
@@ -90,24 +112,38 @@ namespace D3D12Renderer {
 		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
 		// release
 		void Release();
+		// update
+		void Upload(ID3D12Device* d3d12Device, D3D12CommandContext* copyContext, UploadHeap* uploadHeap, void* cpuData, unsigned int size);
+		// create descriptors in cpu heap
+		void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
 	};
+
 
 	/*
 		texture ( render targets, shader resource or uav)
 	*/
+	class D3D12BackBuffer;
+
 	class TextureResource : public PoolResource<BufferResource, max_texture_number>
 	{
+		friend D3D12BackBuffer;
 	public:
 		// create
 		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
 		// release
 		void Release();
-	private:
 		// upload 
-		void upload(ID3D12Device* d3d12Device, void* cpuData, unsigned int size);
+		void Upload(ID3D12Device* d3d12Device, D3D12CommandContext* cmdContext, UploadHeap* uploadHeap, std::vector<D3D12_SUBRESOURCE_DATA>& subresources);
+		// create descriptors in cpu heap
+		void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
 	private:
 		// isCube
 		bool isCube = false;
+		// rtv dsv format used for pipelinestate
+		union {
+			DXGI_FORMAT dsvFormat;
+			DXGI_FORMAT rtvFormat;
+		};
 	};
 
 	/*
@@ -122,10 +158,49 @@ namespace D3D12Renderer {
 		// release
 		void Release();
 	private:
-		BufferResource* vertextBuffer;
+		// buffers
+		BufferResource* vertexBuffer;
 		BufferResource* indexBuffer;
+		// vertex stride
+		unsigned int vertexStride;
+		// vertex size
+		unsigned int vertexBufferSize;
+		// index num
+		unsigned int numIndices;
+		// toplogy format
+		R_PRIMITIVE_TOPOLOGY primitiveToplogy;
 	};
 
+	/*
+		backbuffer
+	*/
+	class D3D12BackBuffer
+	{
+	public:
+		// create
+		void Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory, HWND hWnd, int width, int height, D3D12DescriptorHeap* rtvHeap);
+		// get rtv
+		D3D12_CPU_DESCRIPTOR_HANDLE GetRtv();
+		// get frameIndex
+		int GetFrameIndex() { return frameIndex; }
+		// present
+		UINT64 Present(D3D12CommandContext* cmdContext);
+		// wait for next
+		void WaitForNextFrame();
+	public:
+		// backbuffer size
+		int width;
+		int height;
+	private:
+		// backbufer textures
+		TextureResource backBuffers[backbuffer_count];
+		// swapchains
+		IDXGISwapChain3* swapChain = nullptr;
+		// current backbuffer index
+		int frameIndex = -1;
+		// prev frame fence
+		UINT64 prevFrameFence[backbuffer_count];
+	};
 
 	/*
 		UploadHeap
@@ -137,7 +212,7 @@ namespace D3D12Renderer {
 		// Alloc transient
 		static UploadHeap* AllocTransient(ID3D12Device* d3d12Device, unsigned int size);
 		// Alloc
-		static UploadHeap* Alloc(ID3D12Device* d3d12Device, unsigned int size);
+		static UploadHeap* Alloc(ID3D12Device* d3d12Device, UINT64 size);
 		// release resource
 		void Release();
 		// suballoc
@@ -152,7 +227,7 @@ namespace D3D12Renderer {
 		// reset
 		void resetTransient() { currentOffset = 0; }
 		// create 
-		void create(ID3D12Device* d3d12Device, unsigned int size);
+		void create(ID3D12Device* d3d12Device, UINT64 size);
 	private:
 		// resource
 		ID3D12Resource* resource;

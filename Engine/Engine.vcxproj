@@ -157,6 +157,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\Camera.h" />
     <ClInclude Include="Rendering\CullingTask.h" />
     <ClInclude Include="Rendering\D3D11Render\Structs.h" />
+    <ClInclude Include="Rendering\D3D12Renderer\D3D12Common.h" />
     <ClInclude Include="Rendering\D3D12Renderer\D3D12Helper.h" />
     <ClInclude Include="Rendering\D3D12Renderer\D3D12Renderer.h" />
     <ClInclude Include="Rendering\D3D12Renderer\D3d12Resource.h" />

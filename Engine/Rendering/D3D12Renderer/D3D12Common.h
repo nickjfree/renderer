@@ -60,20 +60,85 @@ namespace D3D12Renderer {
 		// increment size
 		unsigned int incrementSize = 0;
 	};
-
+	
+	
 	/*
 		root signature
 	*/
+	constexpr auto max_descriptor_table_size = 16;
+	constexpr auto max_descriptor_table_num = 8;
+	constexpr auto max_root_descriptor_num = 8;
+	constexpr auto max_srv_slot_num = 64;
+	constexpr auto max_uav_slot_num = 64;
+	constexpr auto max_sampler_slot_num = 64;
+
+
 	class D3D12RootSignature : public Transient<D3D12RootSignature>
 	{
+		friend Transient;
 	public:
-
+		// alloc transient
+		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local);
+		// set samplers
+		void SetSamplerTable(ID3D12CommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 	private:
+		// create
+		void create(ID3D12Device* d3d12Device, bool local);
+		// init
+		void initRootSignature(ID3D12Device* d3d12Device, bool local, D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
+		// init desc table cache
+		void initDescriptorTableCache(int tableIndex, int rootParameterIndex, D3D12_ROOT_PARAMETER1* rootParameter);
+		// init mapping
+		void initMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
 		// reset tansient resource
 		void resetTransient() {};
 	private:
+		// mappings
+			// descriptor table cache
+		typedef struct DescriptorTable {
+			int rootSlot;
+			int size;
+			D3D12_DESCRIPTOR_RANGE_TYPE descriptorType;
+			int resourceId[max_descriptor_table_size];
+			D3D12_CPU_DESCRIPTOR_HANDLE handles[max_descriptor_table_size];
+			bool dirty;
+			bool invalid;
+		} DescriptorTable;
+
+		// descriptor table slot info
+		typedef struct DescTableSlot {
+			int rootSlot;
+			int tableIndex;
+			int offset;
+		}DescTable;
+
+		// constant buffer slot. Const buffers only use root parameters.
+		typedef struct RootDescriptorSlot {
+			int rootSlot;
+			int dirty;
+			union {
+				D3D12_CONSTANT_BUFFER_VIEW_DESC constDesc;
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+			};
+		} RootDescriptorSlot;
 		// rootsignature
 		ID3D12RootSignature* rootSignature;
+		// local or not
+		bool local = false;
+		// descriptor tables
+		DescriptorTable  descTables[max_descriptor_table_num];
+		// root constants or srv
+		RootDescriptorSlot rootDescriptors[max_root_descriptor_num];
+		// srv slot
+		DescTableSlot srvs[max_srv_slot_num];
+		// uav slot
+		DescTableSlot uavs[max_uav_slot_num];
+		// sampler slot
+		DescTableSlot samplers[max_sampler_slot_num];
+		// desc table number
+		int numDescriptorTables = 0;
+		// root descriptor number
+		int numRootDescriptors = 0;
 	};
 
 	/*

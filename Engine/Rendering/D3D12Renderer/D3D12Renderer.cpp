@@ -139,6 +139,184 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3D12DescriptorHeap::GetCpuHandle(unsigned int index
 }
 
 /************************************************************************/
+// RootSignature
+/************************************************************************/
+
+D3D12RootSignature* D3D12RootSignature::AllocTransient(ID3D12Device* d3d12Device, bool local)
+{
+	auto rootSignature = allocTransient(
+		[&](D3D12RootSignature* rootSignature) {
+			rootSignature->create(d3d12Device, local);
+		},
+		[&](D3D12RootSignature* rootSignature) {
+			return rootSignature->local == local;
+		}
+		);
+	return rootSignature;
+}
+
+void D3D12RootSignature::initRootSignature(ID3D12Device* d3d12Device, bool local, D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters) {
+
+	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC RootSig(numRootParameters, rootParameters, 0, 0, local ? D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE : D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	ID3DBlob* pSerializedRootSig;
+	ID3DBlob* pError;
+	HRESULT result = D3D12SerializeVersionedRootSignature(&RootSig, &pSerializedRootSig, &pError);
+	result = d3d12Device->CreateRootSignature(0, pSerializedRootSig->GetBufferPointer(),
+		pSerializedRootSig->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	// init slot mapping
+	initMapping(rootParameters, numRootParameters);
+	// InitCache(rootParameters, numRootParameters);
+}
+
+void D3D12RootSignature::initDescriptorTableCache(int tableIndex, int rootParameterIndex, D3D12_ROOT_PARAMETER1* rootParameter) {
+	// get cache
+	auto& descTable = descTables[tableIndex];
+	// init descriptor table cache
+	descTable.dirty = false;
+	descTable.rootSlot = rootParameterIndex;
+	descTable.descriptorType = rootParameter->DescriptorTable.pDescriptorRanges[0].RangeType;
+	descTable.invalid = true;
+	// init all descriptor handle to null
+	for (int n = 0; n < max_descriptor_table_size; n++) {
+		descTable.resourceId[n] = -1;
+		descTable.handles[n] = CD3DX12_CPU_DESCRIPTOR_HANDLE();
+	}
+	descTable.size = rootParameter->DescriptorTable.pDescriptorRanges[0].NumDescriptors;
+}
+
+void D3D12RootSignature::initMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters) {
+	int i = 0;
+	int offset = 0;
+	int tableIndex = 0;
+
+	for (int i = 0; i < numRootParameters; i++) {
+
+		if (rootParameters[i].ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE) {
+			// tables
+			if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
+				// srv tables
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
+					srvs[slot].tableIndex = tableIndex;
+					srvs[slot].offset = index;
+					srvs[slot].rootSlot = i;
+				}
+				// init table cache
+				initDescriptorTableCache(tableIndex, i, &rootParameters[i]);
+				// increment cached tables count
+				++numDescriptorTables;
+			}
+			else if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
+				// uva tables
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
+					uavs[slot].tableIndex = tableIndex;
+					uavs[slot].offset = index;
+					uavs[slot].rootSlot = i;
+				}
+				// init table cache
+				initDescriptorTableCache(tableIndex, i, &rootParameters[i]);
+				// increment cached tables count
+				++numDescriptorTables;
+			}
+			else if (rootParameters[i].DescriptorTable.pDescriptorRanges[0].RangeType == D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER) {
+				// sampler tables
+				for (unsigned int index = 0; index < rootParameters[i].DescriptorTable.pDescriptorRanges[0].NumDescriptors; index++) {
+					auto slot = rootParameters[i].DescriptorTable.pDescriptorRanges[0].BaseShaderRegister + index;
+					// samplers don't use cache
+					samplers[slot].tableIndex = 0;
+					samplers[slot].offset = index;
+					samplers[slot].rootSlot = i;
+				}
+				// init table cache
+				initDescriptorTableCache(tableIndex, i, &rootParameters[i]);
+			}
+			// increase descriptor table index
+			++tableIndex;
+		}
+		else if (rootParameters[i].ParameterType == D3D12_ROOT_PARAMETER_TYPE_CBV) {
+			// constants buffer view
+			auto slot = rootParameters[i].Descriptor.ShaderRegister;
+			rootDescriptors[slot].rootSlot = i;
+			rootDescriptors[slot].dirty = 0;
+			// increment constant buffer view count
+			++numRootDescriptors;
+		}
+
+	}
+}
+
+// create
+void D3D12RootSignature::create(ID3D12Device* d3d12Device, bool local)
+{
+	if (!local) {
+		// init graphic root signature
+		CD3DX12_DESCRIPTOR_RANGE1 DescRange[5] = {};
+		// texture materials src t 0-7
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 8, 0, 0);
+		// texture g-buffer srv t 8-13
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 6, 8, 0);
+		// texture misc srv t 14-20
+		DescRange[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 7, 14, 0);
+		// uavs  u 0-8
+		DescRange[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 8, 0, 0);
+		// samplers  s 0-2. samplers use static descriptors
+		DescRange[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 3, 0);
+		/*
+			b0  PerObject
+			b1  PerLight
+			b2  PerFrame
+			b3  Animation
+			b4  Misc
+			b5  Not Used
+			table  t0-t8
+			table  t9-t13
+			table  t14-t20
+			table  u0-u7
+			table  s0-s2
+		*/
+		CD3DX12_ROOT_PARAMETER1 RP[16] = {};
+		// constant buffer
+		RP[0].InitAsConstantBufferView(0, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b0
+		RP[1].InitAsConstantBufferView(1, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b1
+		RP[2].InitAsConstantBufferView(2, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b2
+		RP[3].InitAsConstantBufferView(3, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b3
+		RP[4].InitAsConstantBufferView(4, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b4
+		RP[5].InitAsConstantBufferView(5, 0, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // b5
+		// tables
+		RP[6].InitAsDescriptorTable(1, &DescRange[0]);
+		RP[7].InitAsDescriptorTable(1, &DescRange[1]);
+		RP[8].InitAsDescriptorTable(1, &DescRange[2]);
+		RP[9].InitAsDescriptorTable(1, &DescRange[3]);
+		RP[10].InitAsDescriptorTable(1, &DescRange[4]);
+
+		initRootSignature(d3d12Device, false, RP, 11);
+	} else {
+		// init local rootsignuatre
+		CD3DX12_DESCRIPTOR_RANGE1 DescRange[2] = {};
+		// texture materials src t 3-10
+		DescRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 4, 2, 1);
+		// uavs  u 0-8
+		DescRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 4, 0, 1);
+
+		CD3DX12_ROOT_PARAMETER1 RP[16]{};
+		// constant buffer
+		RP[0].InitAsShaderResourceView(0, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t0  vertex buffer
+		RP[1].InitAsShaderResourceView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t1  index buffer
+		RP[2].InitAsConstants(1, 0, 1, D3D12_SHADER_VISIBILITY_ALL); // b0  
+		RP[3].InitAsDescriptorTable(1, &DescRange[0]); // b1
+		initRootSignature(d3d12Device, false, RP, 4);
+	}
+}
+
+// set samplers
+void D3D12RootSignature::SetSamplerTable(ID3D12CommandList* cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle)
+{
+	return;
+}
+
+
+/************************************************************************/
 // CommandQueue
 /************************************************************************/
 

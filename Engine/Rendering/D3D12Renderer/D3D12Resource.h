@@ -257,6 +257,54 @@ namespace D3D12Renderer {
 		// device
 		ID3D12Device* d3d12Device;
 	};
+
+	/*
+		input layouts	
+	*/
+	class D3D12InputLayout : public ResourcePool<D3D12InputLayout, 32>
+	{
+	public:
+		D3D12_INPUT_LAYOUT_DESC Layout;
+		D3D12_INPUT_ELEMENT_DESC Element[32];
+		char Names[32][32];
+
+	};
+
+	/* 
+		shaders 
+	*/
+	class D3D12Shader : public ResourcePool<D3D12Shader, 32>
+	{
+	public:
+		D3D12_SHADER_BYTECODE ByteCode;
+		void* RawCode;
+	};
+
+	/*
+		state describe
+	*/
+	typedef struct StateDescribe {
+		union {
+			R_BLEND_STATUS blendDesc;
+			R_RASTERIZER_DESC rasterizerDesc;
+			R_DEPTH_STENCIL_DESC depthStencilDesc;
+		};
+	}StateDescribe;
+
+	/*
+	*	render state
+	*/
+	class D3D12RenderState : public ResourcePool<D3D12RenderState, 128> 
+	{
+	public:
+		union {
+			D3D12_DEPTH_STENCIL_DESC Depth;
+			D3D12_RASTERIZER_DESC Raster;
+			D3D12_BLEND_DESC Blend;
+		};
+		unsigned char StencilRef;
+	};
+
 }
 
 

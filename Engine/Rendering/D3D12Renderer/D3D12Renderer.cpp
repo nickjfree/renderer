@@ -305,7 +305,7 @@ void D3D12RootSignature::create(ID3D12Device* d3d12Device, bool local)
 		RP[1].InitAsShaderResourceView(1, 1, D3D12_ROOT_DESCRIPTOR_FLAG_NONE); // t1  index buffer
 		RP[2].InitAsConstants(1, 0, 1, D3D12_SHADER_VISIBILITY_ALL); // b0  
 		RP[3].InitAsDescriptorTable(1, &DescRange[0]); // b1
-		initRootSignature(d3d12Device, false, RP, 4);
+		initRootSignature(d3d12Device, true, RP, 4);
 	}
 }
 
@@ -372,6 +372,128 @@ UINT64 D3D12CommandQueue::ExecuteCommandList(ID3D12CommandList* cmdList)
 	cmdQueue->Signal(cmdFence, newFenceValue);
 	lock.Release();
 	return newFenceValue;
+}
+
+
+
+/************************************************************************/
+// PipelineStateCache
+/************************************************************************/
+
+D3D12PipelineStateCache::D3D12PipelineStateCache() : hash(-1), VS(-1), PS(-1), GS(-1), DS(-1), HS(-1), InputLayout(-1), NumRTV(0),
+Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0), Top(R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED) {
+	memset(RTVFormat, -1, sizeof(DXGI_FORMAT) * 8);
+	DSVFormat = DXGI_FORMAT_FORCE_UINT;
+}
+
+
+D3D12PipelineStateCache::operator int() const {
+	if (!Dirty) {
+		return hash;
+	}
+	else {
+		hash = 0;
+		hash = (hash << 5) + VS;
+		hash = (hash << 5) + PS;
+		hash = (hash << 5) + GS;
+		hash = (hash << 5) + DS;
+		hash = (hash << 5) + HS;
+		hash = (hash << 5) + InputLayout;
+		hash = (hash << 5) + Depth;
+		hash = (hash << 5) + Rasterizer;
+		hash = (hash << 5) + Blend;
+		return hash;
+	}
+}
+
+bool D3D12PipelineStateCache::operator==(const D3D12PipelineStateCache& rh) {
+	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
+		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
+			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool D3D12PipelineStateCache::operator!=(const D3D12PipelineStateCache& rh) {
+	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
+		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
+			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+
+HashMap<D3D12PipelineStateCache, ID3D12PipelineState*> D3D12PipelineStateCache::psoTable;
+Mutex D3D12PipelineStateCache::lock;
+
+ID3D12PipelineState* D3D12PipelineStateCache::GetPipelineState(ID3D12Device* d3d12Device, ID3D12RootSignature* rootSignature, const D3D12PipelineStateCache& cache)
+{
+	// lock the table
+	lock.Acquire();
+	auto iter = psoTable.Find(cache);
+	ID3D12PipelineState* ret;
+	if (iter == psoTable.End()) {
+		// create new pso
+		ret = CreatePipelineState(d3d12Device, rootSignature, cache);
+		psoTable[cache] = ret;
+	}
+	else {
+		ret = *iter;
+	}
+	lock.Release();
+	return ret;
+}
+
+
+ID3D12PipelineState* D3D12PipelineStateCache::CreatePipelineState(ID3D12Device* d3d12Device, ID3D12RootSignature* rootSignature, const D3D12PipelineStateCache& cache)
+{
+	// set a lot pso descriptions
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc = {};
+	Desc.pRootSignature = rootSignature;
+	// we only use ps and vs
+	if (cache.VS != -1) {
+		Desc.VS = D3D12Shader::Get(cache.VS)->ByteCode;
+	}
+	if (cache.PS != -1) {
+		Desc.PS = D3D12Shader::Get(cache.PS)->ByteCode;
+	}
+	if (cache.Blend != -1) {
+		Desc.BlendState = D3D12RenderState::Get(cache.Blend)->Blend;
+	}
+	Desc.SampleMask = 0xffffffff;
+	if (cache.Rasterizer != -1) {
+		Desc.RasterizerState = D3D12RenderState::Get(cache.Rasterizer)->Raster;
+	}
+	if (cache.Depth != -1) {
+		Desc.DepthStencilState = D3D12RenderState::Get(cache.Depth)->Depth;
+	}
+	if (cache.InputLayout != -1) {
+		Desc.InputLayout = D3D12InputLayout::Get(cache.InputLayout)->Layout;
+	}
+	Desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+	Desc.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)cache.Top;   //  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	Desc.NumRenderTargets = cache.NumRTV;
+	memcpy(Desc.RTVFormats, cache.RTVFormat, cache.NumRTV * sizeof(DXGI_FORMAT));
+	Desc.DSVFormat = cache.DSVFormat;
+	Desc.SampleDesc.Count = 1;
+	Desc.SampleDesc.Quality = 0;
+	Desc.NodeMask = 0;
+	Desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	// create it
+	ID3D12PipelineState* pso;
+	HRESULT result = d3d12Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&pso));
+	if (pso == nullptr) {
+		printf("CreatePso failed result:%d, rtvcount %d\n", result, Desc.NumRenderTargets);
+	}
+	psoTable.Set(cache, pso);
+	return pso;
 }
 
 /************************************************************************/
@@ -557,4 +679,102 @@ int D3D12RenderInterface::DestoryGeometry(int id)
 {
 	DestoryResource(id);
 	return 0;
+}
+
+
+int D3D12RenderInterface::CreateShader(void* byteCode, unsigned int size, int flag)
+{
+	auto shader = D3D12Shader::Alloc();
+	shader->RawCode = new char[size];
+	memcpy(shader->RawCode, byteCode, size);
+	shader->ByteCode.pShaderBytecode = shader->RawCode;
+	shader->ByteCode.BytecodeLength = size;
+	return shader->resourceId;
+}
+
+
+int D3D12RenderInterface::CreateInputLayout(R_INPUT_ELEMENT* elements, int count)
+{
+	auto layout = D3D12InputLayout::Alloc();
+	for (int i = 0; i < count; i++) {
+		D3D12_INPUT_ELEMENT_DESC& desc = layout->Element[i];
+		desc.AlignedByteOffset = elements[i].Offset;
+		desc.Format = (DXGI_FORMAT)elements[i].Format;
+		desc.InputSlot = elements[i].Slot;
+		if (elements[i].Type == R_INSTANCE) {
+			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+			desc.InstanceDataStepRate = 1;
+		}
+		else {
+			desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+			desc.InstanceDataStepRate = 0;
+		}
+		desc.SemanticIndex = elements[i].SemanticIndex;
+		strcpy_s(layout->Names[i], elements[i].Semantic);
+		desc.SemanticName = layout->Names[i];
+	}
+	layout->Layout.NumElements = count;
+	layout->Layout.pInputElementDescs = layout->Element;
+	return layout->resourceId;
+}
+
+int D3D12Renderer::D3D12RenderInterface::CreateBlendStatus(R_BLEND_STATUS* Desc)
+{
+	auto state = D3D12RenderState::Alloc();
+	state->Blend.AlphaToCoverageEnable = Desc->AlphaToCoverage;
+	state->Blend.IndependentBlendEnable = FALSE;
+	state->Blend.RenderTarget[0].BlendEnable = Desc->Enable;
+	state->Blend.RenderTarget[0].BlendOp = (D3D12_BLEND_OP)Desc->BlendOp;
+	state->Blend.RenderTarget[0].BlendOpAlpha = (D3D12_BLEND_OP)Desc->BlendOpAlpha;
+	state->Blend.RenderTarget[0].DestBlend = (D3D12_BLEND)Desc->DestBlend;
+	state->Blend.RenderTarget[0].DestBlendAlpha = (D3D12_BLEND)Desc->DestBlendAlpha;
+	state->Blend.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	state->Blend.RenderTarget[0].LogicOpEnable = FALSE;
+	state->Blend.RenderTarget[0].RenderTargetWriteMask = Desc->Mask;;
+	state->Blend.RenderTarget[0].SrcBlend = (D3D12_BLEND)Desc->SrcBlend;
+	state->Blend.RenderTarget[0].SrcBlendAlpha = (D3D12_BLEND)Desc->SrcBlendAlpha;
+	return state->resourceId;
+}
+
+int D3D12Renderer::D3D12RenderInterface::CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc)
+{
+	auto state = D3D12RenderState::Alloc();
+	// back face
+	state->Depth.BackFace.StencilDepthFailOp = (D3D12_STENCIL_OP)Desc->DepthFailBack;
+	state->Depth.BackFace.StencilFailOp = (D3D12_STENCIL_OP)Desc->StencilFailBack;
+	state->Depth.BackFace.StencilFunc = (D3D12_COMPARISON_FUNC)Desc->StencilFuncBack;
+	state->Depth.BackFace.StencilPassOp = (D3D12_STENCIL_OP)Desc->StencilPassBack;
+	// front face
+	state->Depth.FrontFace.StencilDepthFailOp = (D3D12_STENCIL_OP)Desc->DepthFailFront;
+	state->Depth.FrontFace.StencilFailOp = (D3D12_STENCIL_OP)Desc->StencilFailFront;
+	state->Depth.FrontFace.StencilFunc = (D3D12_COMPARISON_FUNC)Desc->StencilFuncFront;
+	state->Depth.FrontFace.StencilPassOp = (D3D12_STENCIL_OP)Desc->StencilPassFront;
+	// depth
+	state->Depth.DepthEnable = Desc->ZTestEnable;
+	state->Depth.DepthFunc = (D3D12_COMPARISON_FUNC)Desc->DepthFunc;
+	state->Depth.DepthWriteMask = (D3D12_DEPTH_WRITE_MASK)Desc->ZWriteEnable;
+	// stencil
+	state->Depth.StencilEnable = Desc->StencilEnable;
+	state->Depth.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	state->Depth.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+
+	state->StencilRef = Desc->StencilRef;
+	return state->resourceId;
+}
+
+int D3D12Renderer::D3D12RenderInterface::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc)
+{
+	auto state = D3D12RenderState::Alloc();
+	state->Raster.AntialiasedLineEnable = Desc->AntialiasedLineEnable;
+	state->Raster.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+	state->Raster.CullMode = (D3D12_CULL_MODE)Desc->CullMode;
+	state->Raster.DepthBias = Desc->DepthBias;
+	state->Raster.DepthBiasClamp = Desc->DepthBiasClamp;
+	state->Raster.DepthClipEnable = Desc->DepthClipEnable;
+	state->Raster.FillMode = (D3D12_FILL_MODE)Desc->FillMode;
+	state->Raster.ForcedSampleCount = 0;
+	state->Raster.FrontCounterClockwise = Desc->FrontCounterClockwise;
+	state->Raster.MultisampleEnable = Desc->MultisampleEnable;
+	state->Raster.SlopeScaledDepthBias = Desc->SlopeScaledDepthBias;
+	return state->resourceId;
 }

@@ -526,6 +526,7 @@ enum R_BIDING
 	R_UAV_BUFFER,
 	R_UAV_TEXTURE,
 	R_VERTEX_BUFFER,
+	R_CONSTANT_BUFFER,
 };
 
 typedef struct R_RESOURCE_BINDING
@@ -533,7 +534,8 @@ typedef struct R_RESOURCE_BINDING
 	R_BIDING BindingType;
 	int Slot;
 	int ResourceId;
-	int reserved;
+	void* GPUConstantBufferAddr;
+	unsigned int ConstantBufferSize;
 }R_RESOURCE_BINDING;
 
 
@@ -564,5 +566,64 @@ typedef struct R_RAYTRACING_INSTANCE
 }R_RAYTRACING_INSTANCE;
 
 
+// view port
+typedef struct R_VIEW_PORT {
+	unsigned int Top;
+	unsigned int Left;
+	unsigned int Width;
+	unsigned int Height;
+}R_VIEW_PORT;
+
+
+// rendering job type
+enum R_RENDERING_TYPE {
+	QUAD,
+	DRAW,
+	INSTANCE,
+	DISPATCH,
+	TRACERAY,
+};
+
+// rendering jobs
+typedef struct R_RENDERING_JOB {
+	// job type
+	R_RENDERING_TYPE RenderingType;
+	// resource binfdings number
+	int NumBindings;
+	// resource binfdings
+	R_RESOURCE_BINDING Bindings[32];
+	// job describe
+	union {
+		// graphics job describe
+		typedef struct R_GRAPHICS_JOB_DESC {
+			int Geometry;
+			int VS;
+			int PS;
+			int Rasterizer;
+			int BlendState;
+			int DepthStencilState;
+			R_VIEW_PORT ViewPort;
+			void* InstanceBuffer;
+			unsigned int InstanceBufferSize;
+			unsigned int InstanceStride;
+		}R_GRAPHICS_JOB_DESC;
+
+		// compute job describe
+		typedef struct R_COMPUTE_JOB_DESC {
+			int CS;
+			int Width;
+			int Height;
+		}R_COMPUTE_JOB_DESC;
+
+		// raytracing job describe
+		typedef struct R_RAYTRACING_JOB_DESC {
+			int ShaderId;
+			int Width;
+			int Height;
+		}R_RAYTRACING_JOB_DESC;
+	};
+}R_RENDERING_JOB;
+
+constexpr auto rendering_job_size = sizeof(R_RENDERING_JOB);
 
 #endif

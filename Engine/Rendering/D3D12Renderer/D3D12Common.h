@@ -13,6 +13,7 @@
 #include "Tasks/Mutex.h"
 #include "Container/List.h"
 #include "Container/Vector.h"
+#include "Container/HashMap.h"
 
 namespace D3D12Renderer {
 	/*
@@ -81,6 +82,8 @@ namespace D3D12Renderer {
 		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local);
 		// set samplers
 		void SetSamplerTable(ID3D12CommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
+		// invalidate bindings
+		void SetStale() { stale = true; }
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device, bool local);
@@ -123,6 +126,8 @@ namespace D3D12Renderer {
 		} RootDescriptorSlot;
 		// rootsignature
 		ID3D12RootSignature* rootSignature;
+		// bindings are stale, must be rebind
+		bool stale = true;
 		// local or not
 		bool local = false;
 		// descriptor tables
@@ -144,12 +149,48 @@ namespace D3D12Renderer {
 	/*
 		pipleline state
 	*/
-	class D3D12PipelineState
+	class D3D12PipelineStateCache
 	{
 	public:
+		D3D12PipelineStateCache();
+		// find pso by current psocache or create a new one
+		static ID3D12PipelineState* GetPipelineState(ID3D12Device* d3d12Device, ID3D12RootSignature* rootSignature, const D3D12PipelineStateCache& cache);
+		// operator int
+		operator int() const;
+		bool operator == (const D3D12PipelineStateCache& rh);
+		bool operator != (const D3D12PipelineStateCache& rh);
 	private:
-		// pipeline state
-		ID3D12PipelineState* pipelineState;
+		// create new pso
+		static ID3D12PipelineState* CreatePipelineState(ID3D12Device* d3d12Device, ID3D12RootSignature* rootSignature, const D3D12PipelineStateCache& cache);
+	private:
+		// hash value
+		mutable unsigned int hash;
+	public:
+		// dirty flag
+		int Dirty;
+		// ids of shaders
+		int VS;
+		int PS;
+		int GS;
+		int DS;
+		int HS;
+		// id of render state
+		int Depth;
+		int Rasterizer;
+		int Blend;
+		// int input element
+		int InputLayout;
+		// render target and format;
+		int NumRTV;
+		DXGI_FORMAT RTVFormat[8];
+		DXGI_FORMAT DSVFormat;
+		// geometry topology
+		R_PRIMITIVE_TOPOLOGY_TYPE Top;
+	private:
+		// pipelinestate lookup table
+		static HashMap<D3D12PipelineStateCache, ID3D12PipelineState*> psoTable;
+		// lock
+		static Mutex lock;
 	};
 
 
@@ -165,6 +206,8 @@ namespace D3D12Renderer {
 	/*
 		command context
 	*/
+	class RingConstantBuffer;
+
 	class D3D12CommandContext : public Transient<D3D12CommandContext>
 	{
 		friend Transient<D3D12CommandContext>;
@@ -181,6 +224,12 @@ namespace D3D12Renderer {
 		UINT64 Flush(bool wait);
 		// add barrier
 		void AddBarrier(D3D12_RESOURCE_BARRIER& barrier);
+
+		/*
+		*  rendering functions
+		*/
+		
+
 	private:
 		// reset transient resource status
 		void resetTransient();
@@ -199,6 +248,13 @@ namespace D3D12Renderer {
 		ID3D12GraphicsCommandList5* rtCommandList = nullptr;
 		// resource barriers
 		Vector<D3D12_RESOURCE_BARRIER> barriers;
+		// current rootsignatures
+		D3D12RootSignature* graphicsRootSignature = nullptr;
+		D3D12RootSignature* computeRootSignature = nullptr;
+		// constant buffer allocater
+		RingConstantBuffer* ringConstantBuffer = nullptr;
+		// current pipeline state
+		D3D12PipelineStateCache piplineStateCache;
 	};
 
 

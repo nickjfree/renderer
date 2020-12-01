@@ -31,6 +31,23 @@ namespace D3D12Renderer {
 		int CreateGeometry(R_GEOMETRY_DESC* desc);
 		// destory geometry
 		int DestoryGeometry(int id);
+
+		// shaders
+		int CreateShader(void* byteCode, unsigned int size, int flag);
+		int CreateVertexShader(void* byteCode, unsigned int size, int flag) { return CreateShader(byteCode, size, flag); }
+		int CreatePixelShader(void* byteCode, unsigned int size, int flag) { return CreateShader(byteCode, size, flag); }
+		int CreateComputeShader(void* byteCode, unsigned int size, int flag) { return CreateShader(byteCode, size, flag); }
+		
+		// inputlayouts
+		int CreateInputLayout(R_INPUT_ELEMENT* elements, int count);
+		/* render state */
+		// blend state
+		int CreateBlendStatus(R_BLEND_STATUS* Desc);
+		// deothstencil state
+		int CreateDepthStencilStatus(R_DEPTH_STENCIL_DESC* Desc);
+		// rasterizer state
+		int CreateRasterizerStatus(R_RASTERIZER_DESC* Desc);
+
 	private:
 		// get resource
 		D3D12Resource* GetResource(int id);

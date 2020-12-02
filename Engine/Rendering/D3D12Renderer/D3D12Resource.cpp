@@ -438,6 +438,17 @@ void* RingConstantBuffer::AllocTransientConstantBuffer(unsigned int size, void**
 	return currentUploadHeap->GetCurrentCpuVirtualAddress();
 }
 
+RingConstantBuffer* RingConstantBuffer::Alloc(ID3D12Device* d3d12Device) {
+	auto ring = new RingConstantBuffer();
+	ring->d3d12Device = d3d12Device;
+	return ring;
+}
+
+void RingConstantBuffer::Release()
+{
+	delete this;
+}
+
 void RingConstantBuffer::Reset()
 {
 	currentUploadHeap = nullptr;
@@ -491,7 +502,7 @@ void D3D12BackBuffer::Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory,
 		auto reservedId = TextureResource::Alloc();
 		// get backbuffer resource
 		swapChain->GetBuffer(n, IID_PPV_ARGS(&backBuffers[n].resource));
-		auto textureResource = backBuffers[n];
+		auto& textureResource = backBuffers[n];
 		textureResource.rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		textureResource.state = D3D12_RESOURCE_STATE_PRESENT;
 		// create views
@@ -512,8 +523,20 @@ void D3D12BackBuffer::Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory,
 
 D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetRtv()
 {
-	auto textureResource = backBuffers[frameIndex];
+	auto& textureResource = backBuffers[frameIndex];
 	return textureResource.GetRtv();
+}
+
+ID3D12Resource* D3D12BackBuffer::GetResource()
+{
+	auto& textureResource = backBuffers[frameIndex];
+	return textureResource.GetResource();
+}
+
+void D3D12BackBuffer::SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState)
+{
+	auto& textureResource = backBuffers[frameIndex];
+	textureResource.SetResourceState(cmdContext, targetState);
 }
 
 UINT64 D3D12BackBuffer::Present(D3D12CommandContext* cmdContext)
@@ -521,7 +544,7 @@ UINT64 D3D12BackBuffer::Present(D3D12CommandContext* cmdContext)
 	// Indicate that the back buffer will be used as present.
 	D3D12_RESOURCE_BARRIER barrier = {};
 	// Indicate that the back buffer will now be used to present.
-	auto textureResource = backBuffers[frameIndex];
+	auto& textureResource = backBuffers[frameIndex];
 	textureResource.SetResourceState(cmdContext, D3D12_RESOURCE_STATE_PRESENT);
 	// test code. test async compute function
 	UINT64 fenceValue = cmdContext->Flush(0);

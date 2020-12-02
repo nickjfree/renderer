@@ -46,6 +46,11 @@ cbuffer PerFrame: register(b2)
     int  gAbsoluteTime;
     int  gFrameNumber;
     int  pad;
+
+    // screen size
+    float4 gScreenSize;
+    float4x4 pad1;
+
     // post pass 
     float4   gSampleOffsets[4];
     float4   gSampleWeights[4];

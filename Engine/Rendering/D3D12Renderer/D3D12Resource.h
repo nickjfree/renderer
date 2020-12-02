@@ -40,6 +40,8 @@ namespace D3D12Renderer {
 		virtual void Create(ID3D12Device * d3d12Device, ResourceDescribe* resourceDesc) = 0;
 		// Release
 		virtual void Release() = 0;
+		// Get 
+		ID3D12Resource* GetResource() { return resource; }
 		// set state (issue a transfer barrier)
 		void SetResourceState(D3D12CommandContext *cmdContext, D3D12_RESOURCE_STATES targetState);
 		// create descriptor handles in cpuHeap
@@ -181,10 +183,14 @@ namespace D3D12Renderer {
 		void Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory, HWND hWnd, int width, int height, D3D12DescriptorHeap* rtvHeap);
 		// get rtv
 		D3D12_CPU_DESCRIPTOR_HANDLE GetRtv();
+		// GetResource
+		ID3D12Resource* GetResource();
 		// get frameIndex
 		int GetFrameIndex() { return frameIndex; }
 		// present
 		UINT64 Present(D3D12CommandContext* cmdContext);
+		// set status
+		void SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState);
 		// wait for next
 		void WaitForNextFrame();
 	public:
@@ -251,11 +257,15 @@ namespace D3D12Renderer {
 		void* AllocTransientConstantBuffer(unsigned int size, void ** gpuAddress);
 		// reset
 		void Reset();
+		// release
+		void Release();
+		// create
+		static RingConstantBuffer* Alloc(ID3D12Device* d3d12Device);
 	private:
 		// current upload heap
 		UploadHeap* currentUploadHeap = nullptr;
 		// device
-		ID3D12Device* d3d12Device;
+		ID3D12Device* d3d12Device = nullptr;
 	};
 
 	/*

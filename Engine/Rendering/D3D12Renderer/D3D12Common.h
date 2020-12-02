@@ -35,6 +35,8 @@ namespace D3D12Renderer {
 		D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(unsigned int index);
 		// release
 		void Release();
+		// get
+		ID3D12DescriptorHeap* Get() { return descriptorHeap; }
 	private:
 		// reset
 		void resetTransient() { currentIndex = 0; }
@@ -84,6 +86,8 @@ namespace D3D12Renderer {
 		void SetSamplerTable(ID3D12CommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// invalidate bindings
 		void SetStale() { stale = true; }
+		// get rootsignature
+		ID3D12RootSignature* Get() { return rootSignature; }
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device, bool local);
@@ -213,7 +217,7 @@ namespace D3D12Renderer {
 		friend Transient<D3D12CommandContext>;
 	public:
 		// alloc transient command context
-		static D3D12CommandContext* AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		static D3D12CommandContext* AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap** descHeaps);
 		// alloc command context
 		static D3D12CommandContext* Alloc(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
 		// release
@@ -226,18 +230,67 @@ namespace D3D12Renderer {
 		void AddBarrier(D3D12_RESOURCE_BARRIER& barrier);
 
 		/*
+			mode functions
+		*/
+		// use async compute
+		void SetAsyncComputeMode(bool enabled) { isAsyncCompute = enabled; }
+		// set to compute mode
+		void SetComputeMode(bool enabled);
+
+		/*
 		*  rendering functions
 		*/
-		
+		// alloc transient constant buffer
+		void* AllocTransientConstantBuffer(unsigned int size, void** gpuAddress);
+		// set shader resource
+		void SetSRV(int slot, int resourceId);
+		// set uav
+		void SetUAV(int slot, int resourceId);
+		// set render targets
+		void SetRenderTargets(int* targets, int numTargets, int depth);
+		// set constant buffer
+		void SetConstantBuffer(int slot, void* gpuAddress, unsigned int size);
+		// set renderstate
+		void SetRasterizer(int id);
+		// set blend state
+		void SetBlendState(int id);
+		// set depthstencilstate
+		void SetDepthStencilState(int id);
+		// set viewport
+		void SetViewPort(int x, int y, int w, int h);
+		// set vertext shader
+		void SetVertexShader(int id);
+		// set pixel shader
+		void SetPixelShader(int id);
+		// draw single geometry
+		void Draw(int geometryId);
+		// draw instance
+		void DrawInstanced(int geometryId, void* instanceBuffer, unsigned int stride, unsigned int numInstances);
+		// draw full screen quad
+		void Quad();
+		// dispatch rays
+		void DispatchRays(int shaderId, int width, int height);
+		// dispatch
+		void Dispatch(int width, int height);
 
 	private:
 		// reset transient resource status
 		void resetTransient();
 		// create
-		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType);
+		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap* samplerHeap);
 		// apply barriers
 		void applyBarriers();
+		// initialize state
+		void initialize();
+		// bind heaps
+		void bindDescriptorHeap(D3D12DescriptorHeap* heap);
 	private:
+		// async compute
+		bool isAsyncCompute = false;
+		// compute
+		bool isCompute = false;
+		// device
+		ID3D12Device* d3d12Device;
 		// context type
 		D3D12_COMMAND_LIST_TYPE  cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		// graphic cmdList
@@ -251,8 +304,12 @@ namespace D3D12Renderer {
 		// current rootsignatures
 		D3D12RootSignature* graphicsRootSignature = nullptr;
 		D3D12RootSignature* computeRootSignature = nullptr;
+		D3D12RootSignature* currentRootSignature = nullptr;
 		// constant buffer allocater
 		RingConstantBuffer* ringConstantBuffer = nullptr;
+		// descriptorheap
+		D3D12DescriptorHeap* descriptorHeap = nullptr;
+		D3D12DescriptorHeap* samplerHeap = nullptr;
 		// current pipeline state
 		D3D12PipelineStateCache piplineStateCache;
 	};

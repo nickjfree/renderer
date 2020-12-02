@@ -18,6 +18,9 @@ namespace D3D12Renderer {
 	class D3D12RenderInterface : public RenderInterface
 	{
 	public:
+		// get self
+		static D3D12RenderInterface* Get() { return self; }
+		// init
 		int Initialize(int width, int height);
 		// create texture
 		int CreateTexture2D(R_TEXTURE2D_DESC* desc);
@@ -48,7 +51,13 @@ namespace D3D12Renderer {
 		// rasterizer state
 		int CreateRasterizerStatus(R_RASTERIZER_DESC* Desc);
 
+		// get resources
+		D3D12BackBuffer* GetBackBuffer() { return &backBuffer; }
+		// get sampler heap
+		D3D12DescriptorHeap** GetHeaps() { return descHeaps; }
 	private:
+		// this
+		static D3D12RenderInterface* self;
 		// get resource
 		D3D12Resource* GetResource(int id);
 		// destory resource

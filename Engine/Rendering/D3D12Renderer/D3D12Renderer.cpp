@@ -6,7 +6,7 @@ using namespace D3D12Renderer;
 // CommandContext
 /************************************************************************/
 
-void D3D12CommandContext::create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType)
+void D3D12CommandContext::create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap* samplerHeap)
 {
 	d3d12Device->CreateCommandAllocator(cmdType, IID_PPV_ARGS(&cmdAllocator));
 	if (cmdAllocator) {
@@ -14,31 +14,94 @@ void D3D12CommandContext::create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_T
 		cmdList->QueryInterface(IID_PPV_ARGS(&rtCommandList));
 	}
 	this->cmdType = cmdType;
+	this->samplerHeap = samplerHeap;
 }
 
-D3D12CommandContext* D3D12CommandContext::AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType)
+D3D12CommandContext* D3D12CommandContext::AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap** descHeaps)
 {
 	auto cmdContext = allocTransient(
 		[&](D3D12CommandContext* newContext) {
-			newContext->create(d3d12Device, cmdType);
+			newContext->create(d3d12Device, cmdType, descHeaps[(int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SAMPLER]);
 		},
 		[&](D3D12CommandContext* retiredContext) {
 			return retiredContext->cmdType == cmdType;
 		}
 	);
+	cmdContext->initialize();
 	return cmdContext;
 }
 
 D3D12CommandContext* D3D12CommandContext::Alloc(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType)
 {
 	auto cmdContext = new D3D12CommandContext();
-	cmdContext->create(d3d12Device, cmdType);
+	// temp context don't use samplers
+	cmdContext->create(d3d12Device, cmdType, nullptr);
 	return cmdContext;
 }
 
+void D3D12CommandContext::bindDescriptorHeap(D3D12DescriptorHeap* heap)
+{
+	ID3D12DescriptorHeap* heaps[2] = { heap->Get(), samplerHeap->Get() };
+	cmdList->SetDescriptorHeaps(2, heaps);
+}
+
+void D3D12CommandContext::initialize()
+{
+	// ensure rootsignatures
+	if (!graphicsRootSignature) {
+		graphicsRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false);
+		cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
+	}
+	if (!computeRootSignature) {
+		computeRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false);
+		cmdList->SetComputeRootSignature(computeRootSignature->Get());
+	}
+	// ensure descriptor heaps
+	if (!descriptorHeap) {
+		descriptorHeap = D3D12DescriptorHeap::AllocTransient(d3d12Device);
+		bindDescriptorHeap(descriptorHeap);
+	}
+	// ensure constant buffers
+	if (!ringConstantBuffer) {
+		ringConstantBuffer = RingConstantBuffer::Alloc(d3d12Device);
+	}
+	// defualt to graphics context
+	SetComputeMode(false);
+	SetAsyncComputeMode(false);
+}
+
+void D3D12CommandContext::SetComputeMode(bool enabled)
+{
+	if (isCompute != enabled) {
+		// stale rootsignatures
+		graphicsRootSignature->SetStale();
+		computeRootSignature->SetStale();
+	}
+	if (isCompute) {
+		cmdList->SetGraphicsRootSignature(nullptr);
+		cmdList->SetComputeRootSignature(computeRootSignature->Get());
+		currentRootSignature = computeRootSignature;
+	} else {
+		cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
+		cmdList->SetComputeRootSignature(nullptr);
+		currentRootSignature = graphicsRootSignature;
+	}
+	isCompute = enabled;
+}
+
 void D3D12CommandContext::resetTransient() {
+	// reset cmdList
 	cmdList->Reset(cmdAllocator, nullptr);
 	cmdAllocator->Reset();
+	// reset constant buffer allocater
+	ringConstantBuffer->Reset();
+	// reset rootsignarue
+	graphicsRootSignature = nullptr;
+	computeRootSignature = nullptr;
+	// reset descriptorheap
+	descriptorHeap = nullptr;
+	// reset barriers
+	barriers.Reset();
 }
 
 void D3D12CommandContext::Release()
@@ -48,6 +111,9 @@ void D3D12CommandContext::Release()
 	cmdAllocator->Reset();
 	cmdList->Release();
 	cmdAllocator->Release();
+	if (ringConstantBuffer) {
+		ringConstantBuffer->Release();
+	}
 	delete this;
 }
 
@@ -55,6 +121,115 @@ void D3D12CommandContext::Release()
 void D3D12CommandContext::AddBarrier(D3D12_RESOURCE_BARRIER& barrier)
 {
 	barriers.PushBack(barrier);
+}
+
+
+void* D3D12CommandContext::AllocTransientConstantBuffer(unsigned int size, void** gpuAddress)
+{
+	return ringConstantBuffer->AllocTransientConstantBuffer(size, gpuAddress);
+}
+
+void D3D12CommandContext::SetSRV(int slot, int resourceId)
+{
+}
+
+void D3D12CommandContext::SetUAV(int slot, int resourceId)
+{
+}
+
+void D3D12CommandContext::SetRenderTargets(int* targets, int numTargets, int depth)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handles[8] = {};
+	for (auto i = 0; i < numTargets; i++) {
+		DXGI_FORMAT rtvFormat{};
+		if (targets[i] == 0) {
+			// backbuffer
+			auto backbuffer = D3D12RenderInterface::Get()->GetBackBuffer();
+			handles[i] = backbuffer->GetRtv();
+			// barrier
+			backbuffer->SetResourceState(this, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			rtvFormat = backbuffer->GetResource()->GetDesc().Format;
+		} else {
+			// framebuffer
+			auto texture = TextureResource::Get(targets[i]);
+			handles[i] = texture->GetRtv();
+			// barrier
+			texture->SetResourceState(this, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			rtvFormat = texture->GetResource()->GetDesc().Format;
+		}
+		// set pso rtv formats
+		if (piplineStateCache.RTVFormat[i] != rtvFormat) {
+			piplineStateCache.RTVFormat[i] = rtvFormat;
+			piplineStateCache.Dirty = true;
+		}
+	}
+	piplineStateCache.NumRTV = numTargets;
+	D3D12_CPU_DESCRIPTOR_HANDLE* depthHandle = nullptr;
+	if (depth != -1) {
+		auto depthBuffer = TextureResource::Get(depth);
+		auto handle = depthBuffer->GetDsv();
+		depthHandle = &handle;
+		// barrier
+		depthBuffer->SetResourceState(this, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+		// set pso dsv format
+		DXGI_FORMAT dsvFormat = depthBuffer->GetResource()->GetDesc().Format;
+		if (dsvFormat == FORMAT_R32_TYPELESS) {
+			dsvFormat = (DXGI_FORMAT)FORMAT_D32_FLOAT;
+		}
+		if (piplineStateCache.DSVFormat != dsvFormat) {
+			piplineStateCache.DSVFormat = dsvFormat;
+			piplineStateCache.Dirty = true;
+		}
+	}
+	cmdList->OMSetRenderTargets(numTargets, handles, false, depthHandle);
+}
+
+void D3D12CommandContext::SetConstantBuffer(int slot, void* gpuAddress, unsigned int size)
+{
+}
+
+void D3D12CommandContext::SetRasterizer(int id)
+{
+}
+
+void D3D12CommandContext::SetBlendState(int id)
+{
+}
+
+void D3D12CommandContext::SetDepthStencilState(int id)
+{
+}
+
+void D3D12CommandContext::SetViewPort(int x, int y, int w, int h)
+{
+}
+
+void D3D12CommandContext::SetVertexShader(int id)
+{
+}
+
+void D3D12CommandContext::SetPixelShader(int id)
+{
+}
+
+void D3D12CommandContext::Draw(int geometryId)
+{
+}
+
+void D3D12CommandContext::DrawInstanced(int geometryId, void* instanceBuffer, unsigned int stride, unsigned int numInstances)
+{
+}
+
+void D3D12CommandContext::Quad()
+{
+}
+
+void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
+{
+}
+
+void D3D12CommandContext::Dispatch(int width, int height)
+{
 }
 
 void D3D12CommandContext::applyBarriers()
@@ -500,6 +675,8 @@ ID3D12PipelineState* D3D12PipelineStateCache::CreatePipelineState(ID3D12Device* 
 // The Rendering Interface
 /************************************************************************/
 
+D3D12RenderInterface* D3D12RenderInterface::self;
+
 HWND D3D12RenderInterface::CreateRenderWindow(int width, int height)
 {
 	HWND RenderWindow = NULL;
@@ -624,6 +801,8 @@ void D3D12RenderInterface::InitBackBuffer(int width, int height)
 
 int D3D12RenderInterface::Initialize(int width, int height)
 {
+	// init self
+	self = this;
 	// create the device
 	InitD3D12Device();
 	// create decriptor heaps for resource descriptors

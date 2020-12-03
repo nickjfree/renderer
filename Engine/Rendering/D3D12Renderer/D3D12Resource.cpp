@@ -397,13 +397,20 @@ void UploadHeap::create(ID3D12Device* d3d12Device, UINT64 size)
 void UploadHeap::Release()
 {
 	resetTransient();
+	if (cpuBaseAddress) {
+		resource->Unmap(0, nullptr);
+		cpuBaseAddress = nullptr;
+	}
 	resource->Release();
 	delete this;
 }
 
 bool UploadHeap::SubAlloc(unsigned int allocSize)
 {
-
+	// make the resource mapped
+	if (!cpuBaseAddress) {
+		resource->Map(0, nullptr, &cpuBaseAddress);
+	}
 	int alignedSize = (allocSize + const_buffer_align - 1) & ~(const_buffer_align - 1);
 
 	if (currentOffset + alignedSize > size) {
@@ -427,14 +434,14 @@ bool UploadHeap::SubAlloc(unsigned int allocSize)
 *	return:
 *		cpu address
 */
-void* RingConstantBuffer::AllocTransientConstantBuffer(unsigned int size, void** gpuAddress)
+void* RingConstantBuffer::AllocTransientConstantBuffer(unsigned int size, D3D12_GPU_VIRTUAL_ADDRESS* gpuAddress)
 {
 	// suballoc constant buffer space
 	if (!currentUploadHeap || !currentUploadHeap->SubAlloc(size)) {
 		// alloc a new transient const buffer
 		currentUploadHeap = UploadHeap::AllocTransient(d3d12Device, max_upload_heap_size);
 	}
-	*gpuAddress = (void*)currentUploadHeap->GetCurrentGpuVirtualAddress();
+	*gpuAddress = currentUploadHeap->GetCurrentGpuVirtualAddress();
 	return currentUploadHeap->GetCurrentCpuVirtualAddress();
 }
 

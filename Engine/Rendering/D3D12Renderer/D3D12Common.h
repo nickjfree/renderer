@@ -16,6 +16,26 @@
 #include "Container/HashMap.h"
 
 namespace D3D12Renderer {
+
+
+	/*
+		memeory
+	*/
+	class Memory {
+	public:
+		// alloc
+		static Memory* Alloc(unsigned int size);
+		// free
+		void Free();
+		// append
+		void Resize(unsigned int size);
+		// dtor
+		~Memory();
+	public:
+		void* m_data = nullptr;
+		unsigned int m_size = 0;
+	};
+
 	/*
 	   Descriptor Heap
 	*/
@@ -211,6 +231,26 @@ namespace D3D12Renderer {
 		command context
 	*/
 	class RingConstantBuffer;
+	class D3D12CommandContext;
+
+	constexpr auto max_constant_buffer_num = 8;
+
+	// constant buffer cache
+	class ConstantCache {
+
+	public:
+		// update
+		void Update(int slot, unsigned int offset, void* buffer, unsigned int size);
+		// flush to gpu
+		void Upload(int slot, void* cpuDst, unsigned int size);
+	public:
+		// max 8 constant buffers
+		Memory  constantBuffer[max_constant_buffer_num] = {};
+		// modifyed
+		bool dirty[max_constant_buffer_num] = {};
+	};
+
+
 
 	class D3D12CommandContext : public Transient<D3D12CommandContext>
 	{
@@ -240,8 +280,6 @@ namespace D3D12Renderer {
 		/*
 		*  rendering functions
 		*/
-		// alloc transient constant buffer
-		void* AllocTransientConstantBuffer(unsigned int size, void** gpuAddress);
 		// set shader resource
 		void SetSRV(int slot, int resourceId);
 		// set uav
@@ -249,7 +287,9 @@ namespace D3D12Renderer {
 		// set render targets
 		void SetRenderTargets(int* targets, int numTargets, int depth);
 		// set constant buffer
-		void SetConstantBuffer(int slot, void* gpuAddress, unsigned int size);
+		void UpdateConstantBuffer(int slot, unsigned int offset, void* buffer, unsigned int size);
+		// update constant
+		void SetConstantBuffer(int slot, unsigned int size);
 		// set renderstate
 		void SetRasterizer(int id);
 		// set blend state
@@ -284,6 +324,8 @@ namespace D3D12Renderer {
 		void initialize();
 		// bind heaps
 		void bindDescriptorHeap(D3D12DescriptorHeap* heap);
+		// alloc transient constant buffer
+		void* allocTransientConstantBuffer(unsigned int size, D3D12_GPU_VIRTUAL_ADDRESS* gpuAddr);
 	private:
 		// async compute
 		bool isAsyncCompute = false;
@@ -312,6 +354,8 @@ namespace D3D12Renderer {
 		D3D12DescriptorHeap* samplerHeap = nullptr;
 		// current pipeline state
 		D3D12PipelineStateCache piplineStateCache;
+		// constant buffer cache
+		ConstantCache  constantCache;
 	};
 
 

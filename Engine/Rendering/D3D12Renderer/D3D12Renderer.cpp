@@ -2,6 +2,78 @@
 
 using namespace D3D12Renderer;
 
+
+/************************************************************************/
+// Memory
+/************************************************************************/
+
+Memory* Memory::Alloc(unsigned int size)
+{
+	auto data = new char* [size];
+	return new Memory{ data, size };
+}
+
+
+void Memory::Free()
+{
+	if (m_data) {
+		delete m_data;
+		m_data = nullptr;
+		m_size = 0;
+	}
+	delete this;
+}
+
+Memory::~Memory()
+{
+	if (m_data) {
+		delete m_data;
+	}
+}
+
+void Memory::Resize(unsigned int size)
+{
+	if (size <= m_size) {
+		// nothing todo
+		return;
+	}
+	if (m_size && size > m_size) {
+		auto data = new char* [size];
+		memcpy(data, m_data, m_size);
+		delete m_data;
+		m_data = data;
+	} else {
+		m_data = new char* [size];
+	}
+	m_size = size;
+}
+
+
+/************************************************************************/
+// ConstantBufferCache
+/************************************************************************/
+
+void ConstantCache::Update(int slot, unsigned int offset, void* buffer, unsigned int size)
+{
+	auto& constant = constantBuffer[slot];
+	constant.Resize(offset + size);
+	memcpy((unsigned char*)constant.m_data + offset, buffer, size);
+	// mark slot dirty
+	dirty[slot] = true;
+}
+
+
+void ConstantCache::Upload(int slot, void* cpuDst, unsigned int size)
+{
+	if (dirty[slot]) {
+		auto& constant = constantBuffer[slot];
+		memcpy(cpuDst, constant.m_data, size);
+		// clear dirty flag
+		dirty[slot] = false;
+	}
+}
+
+
 /************************************************************************/
 // CommandContext
 /************************************************************************/
@@ -117,16 +189,23 @@ void D3D12CommandContext::Release()
 	delete this;
 }
 
+void* D3D12CommandContext::allocTransientConstantBuffer(unsigned int size, D3D12_GPU_VIRTUAL_ADDRESS* gpuAddr)
+{
+	return ringConstantBuffer->AllocTransientConstantBuffer(size, gpuAddr);
+}
 
 void D3D12CommandContext::AddBarrier(D3D12_RESOURCE_BARRIER& barrier)
 {
 	barriers.PushBack(barrier);
 }
 
-
-void* D3D12CommandContext::AllocTransientConstantBuffer(unsigned int size, void** gpuAddress)
+void D3D12CommandContext::SetConstantBuffer(int slot, unsigned int size)
 {
-	return ringConstantBuffer->AllocTransientConstantBuffer(size, gpuAddress);
+	// alloc transient constant buffer
+	D3D12_GPU_VIRTUAL_ADDRESS gpuAddr;
+	auto cpuData = allocTransientConstantBuffer(size, &gpuAddr);
+	constantCache.Upload(slot, cpuData, size);
+	// TODO: set cbv to current rootsignature
 }
 
 void D3D12CommandContext::SetSRV(int slot, int resourceId)
@@ -184,8 +263,9 @@ void D3D12CommandContext::SetRenderTargets(int* targets, int numTargets, int dep
 	cmdList->OMSetRenderTargets(numTargets, handles, false, depthHandle);
 }
 
-void D3D12CommandContext::SetConstantBuffer(int slot, void* gpuAddress, unsigned int size)
+void D3D12CommandContext::UpdateConstantBuffer(int slot, unsigned int offset, void* buffer, unsigned int size)
 {
+	constantCache.Update(slot, offset, buffer, size);
 }
 
 void D3D12CommandContext::SetRasterizer(int id)

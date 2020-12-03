@@ -254,7 +254,7 @@ namespace D3D12Renderer {
 	{
 	public:
 		// Alloc transient constant buffer
-		void* AllocTransientConstantBuffer(unsigned int size, void ** gpuAddress);
+		void* AllocTransientConstantBuffer(unsigned int size, D3D12_GPU_VIRTUAL_ADDRESS* gpuAddress);
 		// reset
 		void Reset();
 		// release

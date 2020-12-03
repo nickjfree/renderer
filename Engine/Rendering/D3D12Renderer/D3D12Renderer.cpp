@@ -9,7 +9,11 @@ using namespace D3D12Renderer;
 
 Memory* Memory::Alloc(unsigned int size)
 {
+<<<<<<< HEAD
 	auto data = new char[size];
+=======
+	auto data = new char* [size];
+>>>>>>> 4e122dc949cc13707327d9b7254c1398724a57df
 	return new Memory{ data, size };
 }
 
@@ -48,6 +52,7 @@ void Memory::Resize(unsigned int size)
 		m_data = new char[newSize];
 	}
 	m_size = newSize;
+
 }
 
 

@@ -55,11 +55,14 @@ namespace D3D12Renderer {
 		D3D12BackBuffer* GetBackBuffer() { return &backBuffer; }
 		// get sampler heap
 		D3D12DescriptorHeap** GetHeaps() { return descHeaps; }
+		// get resource
+		D3D12Resource* GetResource(int id);
+		// rendering functions
+
+
 	private:
 		// this
 		static D3D12RenderInterface* self;
-		// get resource
-		D3D12Resource* GetResource(int id);
 		// destory resource
 		void DestoryResource(int id);
 		// create window
@@ -72,6 +75,12 @@ namespace D3D12Renderer {
 		void InitD3D12Device();
 		// init backbuffer
 		void InitBackBuffer(int width, int height);
+		// init primitive geomotry
+		void InitPrimitiveGeometry();
+		// init samplers
+		void InitSamplers();
+		// endframe
+		void EndFrame(D3D12CommandContext* cmdContext);
 	private:
 		// DXGIFactory
 		IDXGIFactory4* dxgiFactory = nullptr;

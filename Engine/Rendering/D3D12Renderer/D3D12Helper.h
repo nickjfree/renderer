@@ -11,6 +11,8 @@
 
 namespace D3D12Renderer {
 
+	class D3D12CommandQueue;
+
 	/*
 		transient item pool
 	*/
@@ -19,13 +21,13 @@ namespace D3D12Renderer {
 	{
 	public:
 		// retire all
-		static unsigned int RetireAll(unsigned int fence);
+		static unsigned int RetireAll(UINT64 fence);
 	protected:
 		// alloc item 
 		static ItemType* allocTransient(std::function<void(ItemType*)> createCallback, std::function<bool(ItemType*)> matchCallback);
 	private:
 		// retire
-		void retire(unsigned int fence);
+		void retire(UINT64 fence);
 		// reset transient resource status
 		virtual void resetTransient() = 0;
 	private:
@@ -36,7 +38,7 @@ namespace D3D12Renderer {
 		// vector pending item to retire
 		static Vector<ItemType*> inflight;
 		// fence
-		unsigned int fenceValue = 0;
+		UINT64 fenceValue = 0;
 	};
 
 	// initalization of the retired pool
@@ -56,14 +58,15 @@ namespace D3D12Renderer {
 		std::function<bool(ItemType*)> matchCallback)
 	{	
 		// 1. get graphic queue fenceComplete value
-		UINT64 currentFence = 100;	
+		// UINT64 currentFence = 100;	
 		// 2. find item from retired pool
 		ItemType* item = nullptr;
 		bool found = false;
 		lock.Acquire();
 		for (auto iter = retired.Begin(); iter != retired.End(); iter++) {
 			item = *iter;
-			if (/*Queue->FenceComplete(FenceValue)*/true && matchCallback(item)) {
+			auto queue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+			if (queue->IsFenceComplete(item->fenceValue) && matchCallback(item)) {
 				retired.Remove(iter);
 				item->resetTransient();
 				found = true;
@@ -85,23 +88,24 @@ namespace D3D12Renderer {
 	}
 
 	// retire all items
-	template <class ItemType> unsigned int Transient<ItemType>::RetireAll(unsigned int fence)
+	template <class ItemType> unsigned int Transient<ItemType>::RetireAll(UINT64 fence)
 	{
 		lock.Acquire();
 		for (auto iter = inflight.Begin(); iter != inflight.End(); iter++) {
-			(*iter).retire(fence);
+			(*iter)->retire(fence);
 		}
+		auto numRetired = inflight.Size();
 		// clear all retiring items
 		inflight.Reset();
 		lock.Release();
-		return item;
+		return numRetired;
 	}
 
 	// retire item
-	template <class ItemType> void Transient<ItemType>::retire(unsigned int fence)
+	template <class ItemType> void Transient<ItemType>::retire(UINT64 fence)
 	{
 		fenceValue = fence;
-		retired.Insert(this);
+		retired.Insert(static_cast<ItemType*>(this));
 	}
 
 

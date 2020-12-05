@@ -126,7 +126,7 @@ namespace D3D12Renderer {
 	*/
 	class D3D12BackBuffer;
 
-	class TextureResource : public PoolResource<BufferResource, max_texture_number>
+	class TextureResource : public PoolResource<TextureResource, max_texture_number>
 	{
 		friend D3D12BackBuffer;
 	public:
@@ -151,7 +151,7 @@ namespace D3D12Renderer {
 	/*
 		vertexbuffer + indexbuffer
 	*/
-	class Geometry: public PoolResource<BufferResource, max_geometry_number>
+	class Geometry: public PoolResource<Geometry, max_geometry_number>
 	{
 	public:
 	public:

@@ -32,6 +32,9 @@ void D3D12Resource::SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESO
 {
 	if (state && state != targetState) {
 		cmdContext->AddBarrier(CD3DX12_RESOURCE_BARRIER::Transition(resource, state, targetState));
+	} else if (targetState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS && state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) {
+		// the resource state is not changed, but it is a uav resource. this means the caller wants to issue a uav barrier
+		cmdContext->AddBarrier(CD3DX12_RESOURCE_BARRIER::UAV(resource));
 	}
 	state = targetState;
 }
@@ -74,7 +77,7 @@ void BufferResource::Create(ID3D12Device* d3d12Device, ResourceDescribe* resourc
 	if (bufferDesc.CPUData && bufferDesc.Size) {
 		// alloc command context and uploadHeap
 		auto uploadBufferSize = GetRequiredIntermediateSize(resource, 0, 1);
-		auto copyContext = D3D12CommandContext::Alloc(d3d12Device, D3D12_COMMAND_LIST_TYPE_COPY);
+		auto copyContext = D3D12CommandContext::Alloc(d3d12Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		auto uploadHeap = UploadHeap::Alloc(d3d12Device, uploadBufferSize);
 		// do the upload
 		Upload(d3d12Device, copyContext, uploadHeap, bufferDesc.CPUData, bufferDesc.Size);
@@ -162,7 +165,7 @@ void TextureResource::Create(ID3D12Device* d3d12Device, ResourceDescribe* resour
 		state = D3D12_RESOURCE_STATE_COPY_DEST;
 		// get resource size
 		auto uploadBufferSize = GetRequiredIntermediateSize(resource, 0, static_cast<UINT>(subresources.size()));
-		auto copyContext = D3D12CommandContext::Alloc(d3d12Device, D3D12_COMMAND_LIST_TYPE_COPY);
+		auto copyContext = D3D12CommandContext::Alloc(d3d12Device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		auto uploadHeap = UploadHeap::Alloc(d3d12Device, uploadBufferSize);
 		Upload(d3d12Device, copyContext, uploadHeap, subresources);
 		// resource barrier

@@ -57,6 +57,10 @@ namespace D3D12Renderer {
 		void Release();
 		// get
 		ID3D12DescriptorHeap* Get() { return descriptorHeap; }
+		// stage descriptors
+		D3D12_GPU_DESCRIPTOR_HANDLE StageDescriptors(D3D12_CPU_DESCRIPTOR_HANDLE* handles, int num);
+		// has space
+		bool HasSpace(int num);
 	private:
 		// reset
 		void resetTransient() { currentIndex = 0; }
@@ -74,6 +78,8 @@ namespace D3D12Renderer {
 			COUNT,
 		};
 	private:
+		// the device
+		ID3D12Device* d3d12Device;
 		// the heap
 		ID3D12DescriptorHeap* descriptorHeap = nullptr;
 		// size
@@ -94,7 +100,7 @@ namespace D3D12Renderer {
 	constexpr auto max_srv_slot_num = 64;
 	constexpr auto max_uav_slot_num = 64;
 	constexpr auto max_sampler_slot_num = 64;
-
+	constexpr auto sampler_slot = 4;
 
 	class D3D12RootSignature : public Transient<D3D12RootSignature>
 	{
@@ -103,11 +109,19 @@ namespace D3D12Renderer {
 		// alloc transient
 		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local);
 		// set samplers
-		void SetSamplerTable(ID3D12CommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
+		void SetSamplerTable(ID3D12GraphicsCommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// invalidate bindings
-		void SetStale() { stale = true; }
+		void SetStale();
 		// get rootsignature
 		ID3D12RootSignature* Get() { return rootSignature; }
+		// set srv
+		void SetSRV(int slot, D3D12_CPU_DESCRIPTOR_HANDLE handle);
+		// set uav
+		void SetUAV(int slot, D3D12_CPU_DESCRIPTOR_HANDLE handle);
+		// set constant
+		void SetConstantBuffer(int slot, D3D12_GPU_VIRTUAL_ADDRESS buffer, unsigned int size);
+		// flush bindings to commandList
+		bool Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap);
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device, bool local);
@@ -119,6 +133,7 @@ namespace D3D12Renderer {
 		void initMapping(D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
 		// reset tansient resource
 		void resetTransient() {};
+
 	private:
 		// mappings
 			// descriptor table cache
@@ -128,8 +143,10 @@ namespace D3D12Renderer {
 			D3D12_DESCRIPTOR_RANGE_TYPE descriptorType;
 			int resourceId[max_descriptor_table_size];
 			D3D12_CPU_DESCRIPTOR_HANDLE handles[max_descriptor_table_size];
+			// need to flush
 			bool dirty;
-			bool invalid;
+			// bindings stale
+			bool stales[max_descriptor_table_size];
 		} DescriptorTable;
 
 		// descriptor table slot info
@@ -150,6 +167,8 @@ namespace D3D12Renderer {
 		} RootDescriptorSlot;
 		// rootsignature
 		ID3D12RootSignature* rootSignature;
+		// mode
+		bool isCompute = false;
 		// bindings are stale, must be rebind
 		bool stale = true;
 		// local or not
@@ -168,6 +187,11 @@ namespace D3D12Renderer {
 		int numDescriptorTables = 0;
 		// root descriptor number
 		int numRootDescriptors = 0;
+		// null handles
+		D3D12_CPU_DESCRIPTOR_HANDLE nullSRV;
+		D3D12_CPU_DESCRIPTOR_HANDLE nullUAV;
+		// max handles to flush per batch
+		unsigned int maxFlushSize = 0;
 	};
 
 	/*
@@ -326,13 +350,15 @@ namespace D3D12Renderer {
 		void bindDescriptorHeap(D3D12DescriptorHeap* heap);
 		// alloc transient constant buffer
 		void* allocTransientConstantBuffer(unsigned int size, D3D12_GPU_VIRTUAL_ADDRESS* gpuAddr);
+		// flush rendering state
+		void flushState();
 	private:
 		// async compute
 		bool isAsyncCompute = false;
 		// compute
 		bool isCompute = false;
 		// device
-		ID3D12Device* d3d12Device;
+		ID3D12Device* d3d12Device = nullptr;
 		// context type
 		D3D12_COMMAND_LIST_TYPE  cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		// graphic cmdList
@@ -353,7 +379,7 @@ namespace D3D12Renderer {
 		D3D12DescriptorHeap* descriptorHeap = nullptr;
 		D3D12DescriptorHeap* samplerHeap = nullptr;
 		// current pipeline state
-		D3D12PipelineStateCache piplineStateCache;
+		D3D12PipelineStateCache pipelineStateCache;
 		// constant buffer cache
 		ConstantCache  constantCache;
 	};

@@ -461,6 +461,9 @@
     <ClInclude Include="Rendering\D3D12Renderer\D3D12Common.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\CommandBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -914,6 +917,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\D3D12Renderer\D3d12Resource.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\CommandBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

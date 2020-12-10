@@ -155,6 +155,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\BasicPartition.h" />
     <ClInclude Include="Rendering\BatchCompiler.h" />
     <ClInclude Include="Rendering\Camera.h" />
+    <ClInclude Include="Rendering\CommandBuffer.h" />
     <ClInclude Include="Rendering\CullingTask.h" />
     <ClInclude Include="Rendering\D3D11Render\Structs.h" />
     <ClInclude Include="Rendering\D3D12Renderer\D3D12Common.h" />
@@ -288,6 +289,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\BasicPartition.cpp" />
     <ClCompile Include="Rendering\BatchCompiler.cpp" />
     <ClCompile Include="Rendering\Camera.cpp" />
+    <ClCompile Include="Rendering\CommandBuffer.cpp" />
     <ClCompile Include="Rendering\CullingTask.cpp" />
     <ClCompile Include="Rendering\D3D12Renderer\D3D12Renderer.cpp" />
     <ClCompile Include="Rendering\D3D12Renderer\D3d12Resource.cpp" />

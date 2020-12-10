@@ -276,7 +276,7 @@ namespace D3D12Renderer {
 
 
 
-	class D3D12CommandContext : public Transient<D3D12CommandContext>
+	class D3D12CommandContext : public Transient<D3D12CommandContext>, public RenderCommandContext
 	{
 		friend Transient<D3D12CommandContext>;
 	public:
@@ -335,7 +335,12 @@ namespace D3D12Renderer {
 		// dispatch rays
 		void DispatchRays(int shaderId, int width, int height);
 		// dispatch
-		void Dispatch(int width, int height);
+		void DispatchCompute(int width, int height);
+
+		/*
+		*	sync 
+		*/
+		void Wait(UINT64 syncPoint, bool asyncCompute);
 
 	private:
 		// reset transient resource status

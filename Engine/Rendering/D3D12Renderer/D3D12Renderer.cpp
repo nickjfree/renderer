@@ -183,8 +183,9 @@ void D3D12CommandContext::resetTransient() {
 void D3D12CommandContext::Release()
 {
 	// free all resources
-	//cmdList->Reset(cmdAllocator, nullptr);
-	//cmdAllocator->Reset();
+	/*cmdList->Close();
+	cmdList->Reset(cmdAllocator, nullptr);
+	cmdAllocator->Reset();*/
 	cmdList->Release();
 	cmdAllocator->Release();
 	if (ringConstantBuffer) {
@@ -346,7 +347,7 @@ void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
 {
 }
 
-void D3D12CommandContext::Dispatch(int width, int height)
+void D3D12CommandContext::DispatchCompute(int width, int height)
 {
 }
 
@@ -385,6 +386,30 @@ UINT64 D3D12CommandContext::Flush(bool wait)
 		cmdQueue->CpuWait(fenceValue);
 	}
 	return fenceValue;
+}
+
+void D3D12CommandContext::Wait(UINT64 syncPoint, bool asyncCompute)
+{
+	if (asyncCompute == isAsyncCompute) {
+		// the queues are in same mode. no need to wait
+		return;
+	}
+	// get queue to wait for
+	D3D12CommandQueue* queueToWait = nullptr;
+	D3D12CommandQueue* queue = nullptr;
+	if (asyncCompute) {
+		queueToWait = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	} else {
+		queueToWait = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	}
+	auto fence = queueToWait->GetFence();
+	// get queue 
+	if (isAsyncCompute) {
+		queue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	} else {
+		queue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+	}
+	queue->GpuWait(fence, syncPoint);
 }
 
 /************************************************************************/
@@ -1300,7 +1325,7 @@ int D3D12RenderInterface::CreateRasterizerStatus(R_RASTERIZER_DESC* Desc)
 	return state->resourceId;
 }
 
-void D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
+UINT64 D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
 {
 	// present
 	UINT64 fenceValue = backBuffer.Present(cmdContext);
@@ -1310,4 +1335,30 @@ void D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
 	D3D12CommandContext::RetireAll(fenceValue);
 	UploadHeap::RetireAll(fenceValue);
 	// TODO: retire rtScene
+
+	return fenceValue;
+}
+
+
+RenderCommandContext* D3D12RenderInterface::BeginContext(bool asyncCompute)
+{
+	if (asyncCompute) {
+		auto cmdContext = D3D12CommandContext::AllocTransient(d3d12Device, D3D12_COMMAND_LIST_TYPE_COMPUTE, descHeaps);
+		cmdContext->SetAsyncComputeMode(true);
+		return cmdContext;
+	} else {
+		auto cmdContext = D3D12CommandContext::AllocTransient(d3d12Device, D3D12_COMMAND_LIST_TYPE_DIRECT, descHeaps);
+		return cmdContext;
+	}
+}
+
+UINT64 D3D12RenderInterface::EndContext(RenderCommandContext* cmdContext, bool present=false)
+{
+	auto d3d12Context = static_cast<D3D12CommandContext*>(cmdContext);
+	if (present) {
+		return EndFrame(d3d12Context);
+	} else {
+		return d3d12Context->Flush(false);
+	}
+
 }

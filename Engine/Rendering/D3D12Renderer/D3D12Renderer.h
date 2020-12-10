@@ -57,8 +57,10 @@ namespace D3D12Renderer {
 		D3D12DescriptorHeap** GetHeaps() { return descHeaps; }
 		// get resource
 		D3D12Resource* GetResource(int id);
-		// rendering functions
-
+		// begin context
+		RenderCommandContext* BeginContext(bool asyncCompute);
+		// end
+		UINT64 EndContext(RenderCommandContext* cmdContext, bool present);
 
 	private:
 		// this
@@ -80,7 +82,7 @@ namespace D3D12Renderer {
 		// init samplers
 		void InitSamplers();
 		// endframe
-		void EndFrame(D3D12CommandContext* cmdContext);
+		UINT64 EndFrame(D3D12CommandContext* cmdContext);
 	private:
 		// DXGIFactory
 		IDXGIFactory4* dxgiFactory = nullptr;

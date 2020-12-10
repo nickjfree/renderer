@@ -491,7 +491,7 @@ bool Shader::IsInstance(int Stage) {
 	return tech->Instance;
 }
 
-int Shader::MakeInstance(BatchCompiler* Compiler, int Stage, Dict& ObjectParameter, void* Buffer) {
+int Shader::MakeInstance(int Stage, Dict& ObjectParameter, void* Buffer) {
 	int Ret = 0;
 	Vector<InstanceElement>& InstanceElements = Techs[Stage].InstanceElements;
 	for (auto Iter = InstanceElements.Begin(); Iter != InstanceElements.End(); Iter++) {

@@ -5,9 +5,53 @@
 #include "RenderDesc.h"
 #include "windows.h"
 
+
 /*
-	Renderer interface. This is a Direct3D 11 like interface because the engine is mainly targeting to windows platforms.
-	But can be impletement with any APIs. eg. OpenGL
+	renderer command context
+*/
+
+class RenderCommandContext
+{
+public:
+	// set to compute mode
+	virtual void SetComputeMode(bool enabled) = 0;
+	// set shader resource
+	virtual void SetSRV(int slot, int resourceId) = 0;
+	// set uav
+	virtual void SetUAV(int slot, int resourceId) = 0;
+	// set render targets
+	virtual void SetRenderTargets(int* targets, int numTargets, int depth) = 0;
+	// set constant buffer
+	virtual void UpdateConstantBuffer(int slot, unsigned int offset, void* buffer, unsigned int size) = 0;
+	// update constant
+	virtual void SetConstantBuffer(int slot, unsigned int size) = 0;
+	// set renderstate
+	virtual void SetRasterizer(int id) = 0;
+	// set blend state
+	virtual void SetBlendState(int id) = 0;
+	// set depthstencilstate
+	virtual void SetDepthStencilState(int id) = 0;
+	// set viewport
+	virtual void SetViewPort(int x, int y, int w, int h) = 0;
+	// set vertext shader
+	virtual void SetVertexShader(int id) = 0;
+	// set pixel shader
+	virtual void SetPixelShader(int id) = 0;
+	// draw single geometry
+	virtual void Draw(int geometryId) = 0;
+	// draw instance
+	virtual void DrawInstanced(int geometryId, void* instanceBuffer, unsigned int stride, unsigned int numInstances) = 0;
+	// draw full screen quad
+	virtual void Quad() = 0;
+	// dispatch rays
+	virtual void DispatchRays(int shaderId, int width, int height) = 0;
+	// dispatch
+	virtual void DispatchCompute(int width, int height) = 0;
+};
+
+
+/*
+	Renderer interface. 
 */
 
 class RenderInterface
@@ -31,6 +75,12 @@ public:
 
 	// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
 	virtual int CreateGeometry(void* VBuffer, unsigned int VBSize, unsigned int VertexSize, void* IBuffer, unsigned int IBSize, R_FORMAT IndexFormat, R_PRIMITIVE_TOPOLOGY Top) {
+		Debug("creategeometry\n");
+		return -1;
+	}
+
+	// create geometry. with raw vertext and index datas. the buffer pool is set to dynamic by default
+	virtual int CreateGeometry(R_GEOMETRY_DESC* desc) {
 		Debug("creategeometry\n");
 		return -1;
 	}
@@ -157,11 +207,15 @@ public:
 
 	/* Profile */
 
-	// begine event
+	// begin event
 	virtual int BeginEvent(UINT64 color, const char* message) { return 0; }
 	// end event
 	virtual int EndEvent() { return 0; }
 
+	/* rendercommandcontext	*/
+	virtual RenderCommandContext* BeginContext(bool asyncCompute) { return nullptr; }
+
+	virtual UINT64 EndContext(RenderCommandContext* cmdContext, bool present) { return 0; }
 };
 
 #endif

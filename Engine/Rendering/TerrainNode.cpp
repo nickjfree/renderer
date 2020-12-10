@@ -80,7 +80,7 @@ int TerrainNode::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 		compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
 		if (shader->IsInstance(Stage)) {
 			unsigned char instanceBuffer[64 * 4];
-			auto instanceSize = shader->MakeInstance(Compiler, Stage, StageParameter, instanceBuffer);
+			auto instanceSize = shader->MakeInstance(Stage, StageParameter, instanceBuffer);
 			// quad
 			compiled += Compiler->Instance(0, instanceBuffer, instanceSize);
 		}

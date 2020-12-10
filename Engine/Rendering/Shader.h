@@ -193,7 +193,7 @@ public:
 	virtual int OnLoadComplete(Variant& Parameter);
 	virtual int OnCreateComplete(Variant& Parameter);
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context);
-	virtual int MakeInstance(BatchCompiler* Compiler, int Stage, Dict& ObjectParameter, void* Buffer);
+	virtual int MakeInstance(int Stage, Dict& ObjectParameter, void* Buffer);
 };
 
 

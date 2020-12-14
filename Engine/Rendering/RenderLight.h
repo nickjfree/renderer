@@ -72,6 +72,8 @@ public:
 	~RenderLight();
 	// compile
 	int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
+	// qeueu cmdbuffer
+	int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
 	// update raytracing structure
 	int UpdateRaytracingStructure(RenderContext* Context);
 	// set light type

@@ -4,7 +4,7 @@
 #include "ShaderLibrary.h"
 
 USING_ALLOCATER(RenderObject);
-RenderObject::RenderObject() : BlendShape_(nullptr)
+RenderObject::RenderObject()
 {
 	Type = Node::RENDEROBJECT;
 }
@@ -113,6 +113,49 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 		}
 	}
 	return Compiled;
+}
+
+int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)
+{
+	auto cmd = cmdBuffer->AllocCommand();
+	auto& cmdParameters = cmd->cmdParameters;
+	if (stage == R_STAGE_GBUFFER) {
+		stage = 0;
+	} else if (stage == R_STAGE_SHADOW) {
+		stage = 2;
+	} else if (stage == R_STAGE_OIT) {
+		stage = 3;
+	}
+	// prepare perObject constants
+	Matrix4x4& Transform = GetWorldMatrix();
+	// per-object position
+	Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &cmdParameters["gPrevWorldViewProjection"].as<Matrix4x4>());
+	// instance data
+	cmdParameters["InstanceWV"].as<Matrix4x4>() = cmdParameters["gWorldViewMatrix"].as<Matrix4x4>();
+	cmdParameters["InstanceWVP"].as<Matrix4x4>() = cmdParameters["gWorldViewProjection"].as<Matrix4x4>();
+	// constexpr String PWVP("InstancePWVP");
+	cmdParameters["InstancePWVP"].as<Matrix4x4>() = cmdParameters["gPrevWorldViewProjection"].as<Matrix4x4>();
+	// object id
+	cmdParameters["gObjectId"].as<int>() = get_object_id() + 1;
+	cmdParameters["InstanceObjectId"].as<int>() = get_object_id() + 1;
+	if (palette.Size) {
+		cmdParameters["gSkinMatrix"].as<ShaderParameterArray>() = palette;
+	}
+	// if there are  blend shapes
+	if (BlendShape_) {
+		cmdParameters["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
+		cmdParameters["gWeightsArray"].as<ShaderParameterArray>() = blendshape_;
+	}
+	auto mesh = model->MeshResource[lod];
+	// add to commandbuffer
+	if (material->GetShader()->IsInstance(stage)) {
+		cmdBuffer->DrawInstanced(cmd, mesh, GetMaterial(), stage);
+	} else {
+		cmdBuffer->Draw(cmd, mesh, GetMaterial(), stage);
+	}
+	return 0;
 }
 
 int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {

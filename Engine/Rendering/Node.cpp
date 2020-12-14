@@ -80,13 +80,17 @@ int Node::UpdateRaytracingStructure(RenderContext* Context) {
 	return 0;
 }
 
+int Node::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)
+{
+	return 0;
+}
+
 void Node::SyncCullingObject() {
 	Vector3 Center = CullingObj.LocalCenter;
 	//Center = Center * Rotation;
 	//Center = Center + Position;
 	Center = Center * GetWorldMatrix();
 	CullingObj.Translate(Center);
-
 }
 
 

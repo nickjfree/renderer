@@ -9,6 +9,7 @@
 #include "Container\Vector.h"
 #include "BatchCompiler.h"
 #include "RenderingCamera.h"
+#include "CommandBuffer.h"
 
 /*
 	spatial tree node
@@ -79,6 +80,9 @@ public:
 	Matrix4x4& GetWorldMatrix();
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
 	virtual int UpdateRaytracingStructure(RenderContext* Context);
+	// queue render command
+	virtual int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
+
 	void SetPosition(Vector3& Position_);
 	void SetRotation(Quaternion& Rot);
 	Vector3& GetPosition() { return Position; }

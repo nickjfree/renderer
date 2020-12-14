@@ -57,7 +57,7 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 		}
 	}
 	// error, 
-	printf("shader dosn;t support instancing %s\n", shader->GetUrl().ToStr());
+	printf("shader dosen't support instancing %s\n", shader->GetUrl().ToStr());
 }
 
 void CommandBuffer::DispatchRays(RenderingCommand* cmd, const String& shaderName, Material* material, int w, int h)

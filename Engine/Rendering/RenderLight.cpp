@@ -124,6 +124,65 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 	return Compiled;
 }
 
+int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)
+{
+	Matrix4x4 Transform = GetWorldMatrix();
+	Matrix4x4 Scale;
+	Scale.Scale(Vector3(Radius, Radius, Radius));
+	Transform = Scale * Transform;
+	// draw sphere geometry for point light
+	{
+		if (LightType == POINT) {
+			auto cmd = cmdBuffer->AllocCommand();
+			auto& cmdParameters = cmd->cmdParameters;
+			cmdParameters.Clear();
+			// perlight position
+			Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
+			Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
+			// light parameters
+			cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
+			cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
+			cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+			cmdParameters["gLightColor"].as<Vector3>() = Color;
+			cmdParameters["gShadowMap"].as<int>() = ShadowMap;
+			Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
+			auto mesh = model->MeshResource[lod];
+			cmdBuffer->Draw(cmd, mesh, GetMaterial(), 0);
+		}
+	}
+	{
+		// draw full screen quad
+		auto cmd = cmdBuffer->AllocCommand();
+		auto& cmdParameters = cmd->cmdParameters;
+		cmdParameters.Clear();
+		switch (LightType) {
+		case POINT:
+			stage = 1;
+			//return Compiled;
+			break;
+		case DIRECTION:
+			stage = 2;
+			//return Compiled;
+			break;
+		case ENV:
+			stage = 3;
+			// return Compiled;
+			break;
+		default:
+			stage = 1;
+		}
+		// light parameters
+		cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
+		cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
+		cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+		cmdParameters["gLightColor"].as<Vector3>() = Color;
+		cmdParameters["gShadowMap"].as<int>() = ShadowMap;
+		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
+		cmdBuffer->Draw(cmd, nullptr, GetMaterial(), stage);
+	}
+	return 0;
+}
+
 
 int RenderLight::UpdateRaytracingStructure(RenderContext* Context) {
 

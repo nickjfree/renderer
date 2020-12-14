@@ -9,6 +9,7 @@
 #define R_STAGE_SHADOW       0x00
 #define R_STAGE_RTT          0x0F
 #define R_STAGE_PREPASSS     0x10
+#define R_STAGE_GBUFFER      0x10
 
 #define R_STAGE_OIT          0x12
 

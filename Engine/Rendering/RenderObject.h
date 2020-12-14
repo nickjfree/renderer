@@ -17,22 +17,15 @@ class RenderObject : public Node
 	DECLARE_ALLOCATER(RenderObject);
 protected:
 	// geometry
-	Model* model;
+	Model* model = nullptr;
 	// Material
-	Material* material;
-	// parameter
-	// Dict Parameter;
-	// pre create keys for sorting
-	unsigned int SortKeyHigh;
-	unsigned int SortKeyLow;
-	// InstanceBuffer
-	// unsigned char InstanceBuffer[64 * 4];
+	Material* material = nullptr;
 	// matrix palette
-	ShaderParameterArray palette;
+	ShaderParameterArray palette = {};
 	// blendshapes parameters for shader
-	ShaderParameterArray blendshape_;
+	ShaderParameterArray blendshape_ = {};
 	// blendshape
-	BlendShape* BlendShape_;
+	BlendShape* BlendShape_ = nullptr;
 public:
 	RenderObject();
 	virtual ~RenderObject();
@@ -51,6 +44,8 @@ public:
 	// get render mesh
 	virtual int GetRenderMesh(int Stage, int Lod) const;
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
+	// queue render command
+	virtual int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
 	// update raytracing
 	virtual int UpdateRaytracingStructure(RenderContext* Context);
 	// set matrix palette

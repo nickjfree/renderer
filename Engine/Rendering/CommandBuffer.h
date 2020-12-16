@@ -166,6 +166,8 @@ private:
 	unsigned char instanceBuffer[max_instance_buffer_size];
 	// size
 	size_t usedInstanceBuffer;
+	// global parameters
+	Dict globalParameters;
 };
 
 #endif

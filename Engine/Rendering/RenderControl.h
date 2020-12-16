@@ -9,6 +9,8 @@
 #include "Tasks\OsEvent.h"
 #include "RenderingCamera.h"
 #include "Tasks\WorkQueue.h"
+#include "FrameGraph.h"
+
 /*
 	render control
 */

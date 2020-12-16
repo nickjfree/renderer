@@ -51,7 +51,7 @@ private:
 	// intensity
 	float Intensity;
 	// spot angle
-	float SpotAngle;
+	float SpotAngle = 0;
 	// shadow cast
 	int ShadowCast;
 	// light camera
@@ -59,7 +59,7 @@ private:
 	// light type
 	int LightType;
 	// showmap id
-	int ShadowMap;
+	int ShadowMap = -1;
 	enum {
 		POINT,
 		DIRECTION,

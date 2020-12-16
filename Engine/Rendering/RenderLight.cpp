@@ -135,7 +135,6 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 		if (LightType == POINT) {
 			auto cmd = cmdBuffer->AllocCommand();
 			auto& cmdParameters = cmd->cmdParameters;
-			cmdParameters.Clear();
 			// perlight position
 			Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
 			Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
@@ -154,7 +153,6 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 		// draw full screen quad
 		auto cmd = cmdBuffer->AllocCommand();
 		auto& cmdParameters = cmd->cmdParameters;
-		cmdParameters.Clear();
 		switch (LightType) {
 		case POINT:
 			stage = 1;

@@ -178,6 +178,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\D3D12Render\RootSignature.h" />
     <ClInclude Include="Rendering\D3D12Render\ShaderBindingTable.h" />
     <ClInclude Include="Rendering\D3D12Render\Structs.h" />
+    <ClInclude Include="Rendering\FrameGraph.h" />
     <ClInclude Include="Rendering\Light.h" />
     <ClInclude Include="Rendering\Opcode.h" />
     <ClInclude Include="Rendering\PostpassStage.h" />
@@ -305,6 +306,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\D3D12Render\ReuseHeap.cpp" />
     <ClCompile Include="Rendering\D3D12Render\RootSignature.cpp" />
     <ClCompile Include="Rendering\D3D12Render\ShaderBindingTable.cpp" />
+    <ClCompile Include="Rendering\FrameGraph.cpp" />
     <ClCompile Include="Rendering\Light.cpp" />
     <ClCompile Include="Rendering\PostpassStage.cpp" />
     <ClCompile Include="Rendering\PrepassStage.cpp" />

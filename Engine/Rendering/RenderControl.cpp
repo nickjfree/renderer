@@ -6,6 +6,8 @@
 #include "RaytracingStage.h"
 #include "RenderToTextureStage.h"
 #include "Opcode.h"
+#include "FrameGraph.h"
+
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
 {
@@ -40,6 +42,8 @@ int RenderControl::Initialize() {
 	Stage = new RaytracingStage(Context);
 	LightPrePass->Stages.PushBack(Stage);
 	RenderPath[LIGHT_PRE] = LightPrePass;
+
+	initFrameGraph();
 	return 0;
 }
 
@@ -60,7 +64,7 @@ int RenderControl::Execute() {
 
 	while (numCamera--) {
 		RenderingCamera* cam = Cameras[numCamera];
-		StartCamera(cam);
+		startCamera(cam);
 	}
 
 	// wait for tasks finish
@@ -78,7 +82,7 @@ int RenderControl::Execute() {
 	return 0;
 }
 
-void RenderControl::StartCamera(RenderingCamera* Camera) {
+void RenderControl::startCamera(RenderingCamera* Camera) {
 	// light pre pass only
 	RenderingPath* path = RenderPath[LIGHT_PRE];
 	int stages = path->Stages.Size();
@@ -108,4 +112,43 @@ int RenderControl::RemoveCamera(RenderingCamera* Camera) {
 		}
 	}
 	return 0;
+}
+
+
+void RenderControl::initFrameGraph()
+{
+	// test gbuffer pass
+	typedef struct GBufferPassData {
+		RenderResource diffuse;
+		RenderResource compact;
+		RenderResource depth;
+		RenderResource specular;
+		RenderResource motion;
+		RenderResource prevCompact;
+	}GBufferPassData;
+	
+	auto renderContext = Context;
+	auto renderInterface = renderContext->GetRenderInterface();
+	auto gbuffer = frameGraph.AddRenderPass<GBufferPassData>("gbuffer",
+		[&](GraphBuilder& builder, GBufferPassData& passData) {
+			passData.diffuse = builder.Create("diffuse",
+				[&]() {
+					R_TEXTURE2D_DESC desc = {};
+					desc.Width = Context->FrameWidth;
+					desc.Height = Context->FrameHeight;
+					desc.ArraySize = 1;
+					desc.CPUAccess = (R_CPU_ACCESS)0;
+					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+					desc.MipLevels = 1;
+					desc.Usage = DEFAULT;
+					desc.Format = FORMAT_R32_FLOAT;
+					desc.SampleDesc.Count = 1;
+					// linearz
+					desc.DebugName = L"linear_depth";
+					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+				});
+		},
+		[=](GBufferPassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+		});
+
 }

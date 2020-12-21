@@ -31,12 +31,13 @@ private:
 	// OsEvent for frame sync
 	int EventCount = 0;
 	Vector<OsEvent*> Events;
-	// test rendertarget
-	int DepthBuffer;
-	// test Coler buffer
-	int ColorBuffer;
+	// framgraph
+	FrameGraph frameGraph;
 private:
-	void StartCamera(RenderingCamera* Camera);
+	// render for camera
+	void startCamera(RenderingCamera* Camera);
+	// init frame graph
+	void initFrameGraph();
 public:
 	Spatial* spatial;
 	// workqueue

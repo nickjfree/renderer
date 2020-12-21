@@ -723,7 +723,7 @@ void D3D12RootSignature::SetConstantBuffer(int slot, D3D12_GPU_VIRTUAL_ADDRESS b
 	rootDescriptors[slot].dirty = true;
 }
 
-bool D3D12Renderer::D3D12RootSignature::Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap)
+bool D3D12RootSignature::Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap)
 {
 	if (!heap->HasSpace(maxFlushSize)) {
 		// ensure the heap has enough space
@@ -770,6 +770,7 @@ bool D3D12Renderer::D3D12RootSignature::Flush(ID3D12GraphicsCommandList* cmdList
 	}
 	// clear stale state
 	stale = false;
+	return true;
 }
 
 

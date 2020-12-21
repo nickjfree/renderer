@@ -9,6 +9,7 @@ bool CommandBuffer::appendInstanceBuffer(size_t size)
 	} 
 	// append buffer
 	usedInstanceBuffer += size;
+	return true;
 }
 
 void CommandBuffer::Quad(RenderingCommand* cmd, Material* material, int passIndex)

@@ -105,7 +105,9 @@ namespace D3D12Renderer {
 	template <class ItemType> void Transient<ItemType>::retire(UINT64 fence)
 	{
 		fenceValue = fence;
+		lock.Acquire();
 		retired.Insert(static_cast<ItemType*>(this));
+		lock.Release();
 	}
 
 
@@ -147,6 +149,7 @@ namespace D3D12Renderer {
 	template <class ResType, int size> ResType* ResourcePool<ResType, size>::Alloc()
 	{
 		ResType* ret;
+		lock.Acquire();
 		if (freeList.Size()) {
 			// get from  free list
 			auto id = freeList.PopBack();
@@ -158,6 +161,7 @@ namespace D3D12Renderer {
 			ret = &resources[currentIndex];
 			ret->resourceId = currentIndex++;
 		}
+		lock.Release();
 		return ret;
 	}
 
@@ -165,7 +169,9 @@ namespace D3D12Renderer {
 	template <class ResType, int size> void ResourcePool<ResType, size>::Free()
 	{
 		auto index = 0x00ffffff & resourceId;
+		lock.Acquire();
 		freeList.PushBack(index);
+		lock.Release();
 	}
 
 	// get resource

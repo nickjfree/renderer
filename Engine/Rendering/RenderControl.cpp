@@ -7,6 +7,7 @@
 #include "RenderToTextureStage.h"
 #include "Opcode.h"
 #include "FrameGraph.h"
+#include "RenderPassRaster.h"
 
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -21,31 +22,66 @@ RenderControl::~RenderControl()
 
 
 int RenderControl::Initialize() {
-	RenderQueue_ = new RenderQueue();
-	// init render processer
-	RenderProcesser_ = new RenderProcesser(Context);
-	RenderingPath* LightPrePass = new RenderingPath(Context);
-	RenderStage* Stage = 0;
-	// initialize shadow map pass
-	Stage = new ShadowMapStage(Context);
-	LightPrePass->Stages.PushBack(Stage);
-	// initialize rtt pass
-	Stage = new RenderToTextureStage(Context);
-	LightPrePass->Stages.PushBack(Stage);
-	// initialize light-pre pass
-	Stage = new PrepassStage(Context);
-	LightPrePass->Stages.PushBack(Stage);
-	// initialize post pass
-	Stage = new PostpassStage(Context);
-	LightPrePass->Stages.PushBack(Stage);
-	// initialize raytracing stage
-	Stage = new RaytracingStage(Context);
-	LightPrePass->Stages.PushBack(Stage);
-	RenderPath[LIGHT_PRE] = LightPrePass;
+	//RenderQueue_ = new RenderQueue();
+	//// init render processer
+	//RenderProcesser_ = new RenderProcesser(Context);
+	//RenderingPath* LightPrePass = new RenderingPath(Context);
+	//RenderStage* Stage = 0;
+	//// initialize shadow map pass
+	//Stage = new ShadowMapStage(Context);
+	//LightPrePass->Stages.PushBack(Stage);
+	//// initialize rtt pass
+	//Stage = new RenderToTextureStage(Context);
+	//LightPrePass->Stages.PushBack(Stage);
+	//// initialize light-pre pass
+	//Stage = new PrepassStage(Context);
+	//LightPrePass->Stages.PushBack(Stage);
+	//// initialize post pass
+	//Stage = new PostpassStage(Context);
+	//LightPrePass->Stages.PushBack(Stage);
+	//// initialize raytracing stage
+	//Stage = new RaytracingStage(Context);
+	//LightPrePass->Stages.PushBack(Stage);
+	//RenderPath[LIGHT_PRE] = LightPrePass;
 
 	initFrameGraph();
 	return 0;
 }
+//
+//int RenderControl::Execute() {
+//
+//	// profile
+//	PIXScopedEvent(0xFFFFFF00, __FUNCTION__);
+//
+//	int numCamera = Cameras.Size();
+//
+//	if (!numCamera) {
+//		printf("no camera\n");
+//		char cmd[] = { OP_RENDER_TARGET, 1, 0, 0, 0, 0, OP_PRESENT, OP_END_EXECUTE };
+//		RenderQueue_->PushCommand(R_STAGE_PRESENT, cmd);
+//		RenderQueue_->Execute(RenderProcesser_);
+//		return 1;
+//	}
+//
+//	while (numCamera--) {
+//		RenderingCamera* cam = Cameras[numCamera];
+//		startCamera(cam);
+//	}
+//
+//	// wait for tasks finish
+//	int Count = Events.Size();
+//	OsEvent::Join(Count, &Events[0], 1);
+//	Events.Reset();
+//	RenderQueue_->Execute(RenderProcesser_);
+//	// end stages
+//	RenderingPath* path = RenderPath[LIGHT_PRE];
+//	int stages = path->Stages.Size();
+//	for (int i = 0; i < stages; i++) {
+//		RenderStage* Stage = path->Stages[i];
+//		Stage->End();
+//	} 
+//	return 0;
+//}
 
 int RenderControl::Execute() {
 
@@ -56,29 +92,14 @@ int RenderControl::Execute() {
 
 	if (!numCamera) {
 		printf("no camera\n");
-		char cmd[] = { OP_RENDER_TARGET, 1, 0, 0, 0, 0, OP_PRESENT, OP_END_EXECUTE };
-		RenderQueue_->PushCommand(R_STAGE_PRESENT, cmd);
-		RenderQueue_->Execute(RenderProcesser_);
 		return 1;
 	}
 
 	while (numCamera--) {
 		RenderingCamera* cam = Cameras[numCamera];
-		startCamera(cam);
+		// render the frame
+		frameGraph;
 	}
-
-	// wait for tasks finish
-	int Count = Events.Size();
-	OsEvent::Join(Count, &Events[0], 1);
-	Events.Reset();
-	RenderQueue_->Execute(RenderProcesser_);
-	// end stages
-	RenderingPath* path = RenderPath[LIGHT_PRE];
-	int stages = path->Stages.Size();
-	for (int i = 0; i < stages; i++) {
-		RenderStage* Stage = path->Stages[i];
-		Stage->End();
-	} 
 	return 0;
 }
 
@@ -117,38 +138,9 @@ int RenderControl::RemoveCamera(RenderingCamera* Camera) {
 
 void RenderControl::initFrameGraph()
 {
-	// test gbuffer pass
-	typedef struct GBufferPassData {
-		RenderResource diffuse;
-		RenderResource compact;
-		RenderResource depth;
-		RenderResource specular;
-		RenderResource motion;
-		RenderResource prevCompact;
-	}GBufferPassData;
-	
-	auto renderContext = Context;
-	auto renderInterface = renderContext->GetRenderInterface();
-	auto gbuffer = frameGraph.AddRenderPass<GBufferPassData>("gbuffer",
-		[&](GraphBuilder& builder, GBufferPassData& passData) {
-			passData.diffuse = builder.Create("diffuse",
-				[&]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = Context->FrameWidth;
-					desc.Height = Context->FrameHeight;
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
-					desc.Format = FORMAT_R32_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
-					desc.DebugName = L"linear_depth";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
-				});
-		},
-		[=](GBufferPassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-		});
-
+	// create all render state
+	CreateRenderState(Context);
+	// build the frame graph
+	auto gbuffer = AddGBufferPass(frameGraph, Context);
+	auto& gbufferData = gbuffer->Data();
 }

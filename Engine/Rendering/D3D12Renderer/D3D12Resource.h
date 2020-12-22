@@ -283,7 +283,7 @@ namespace D3D12Renderer {
 	/* 
 		shaders 
 	*/
-	class D3D12Shader : public ResourcePool<D3D12Shader, 32>
+	class D3D12Shader : public ResourcePool<D3D12Shader, 128>
 	{
 	public:
 		D3D12_SHADER_BYTECODE ByteCode;

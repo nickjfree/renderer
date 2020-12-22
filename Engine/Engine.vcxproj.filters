@@ -467,6 +467,9 @@
     <ClInclude Include="Rendering\FrameGraph.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\RenderPassRaster.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

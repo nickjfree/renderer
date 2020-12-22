@@ -63,7 +63,18 @@ int H3DMesh::OnSerialize(Deserializer& deserializer) {
 int H3DMesh::OnLoadComplete(Variant& Data) {
 	// create geometry in GPU
 	R_FORMAT format = IndexSize == 2 ? FORMAT_R16_UINT : FORMAT_R32_UINT;
-	id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, format, R_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// id = renderinterface->CreateGeometry(VBuffer, VBSize, VTSize, IBuffer, INum, format, R_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	R_GEOMETRY_DESC desc = {};
+	desc.DebugName = L"mesh";
+	desc.IndexBuffer = IBuffer;
+	desc.IndexFormat = format;
+	desc.NumIndices = INum;
+	desc.Top = R_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	desc.VertexBuffer = VBuffer;
+	desc.VertexBufferSize = VBSize;
+	desc.VertexStride = VTSize;
+	id = renderinterface->CreateGeometry(&desc);
 	// calc AABB 
 	float minx = 0, miny = 0, minz = 0;
 	float maxx = 0, maxy = 0, maxz = 0;

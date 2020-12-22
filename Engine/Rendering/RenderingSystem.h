@@ -16,9 +16,9 @@ typedef D3D11Render RenderImp;
 #endif
 
 #ifdef RENDER_D3D12
-#include "D3D12Render\D3D12Render.h"
-using D3D12API::D3D12Render;
-typedef D3D12Render RenderImp;
+//#include "D3D12Render\D3D12Render.h"
+//using D3D12API::D3D12Render;
+////typedef D3D12Render RenderImp;
 #endif
 
 
@@ -26,6 +26,7 @@ typedef D3D12Render RenderImp;
 #include "D3D12Renderer\D3D12Renderer.h"
 using D3D12Renderer::D3D12RenderInterface;
 using D3D12Renderer::D3D12CommandContext;
+typedef D3D12RenderInterface RenderImp;
 
 //#else
 //typedef RenderInterface RenderImp;

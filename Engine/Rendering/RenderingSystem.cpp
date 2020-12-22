@@ -88,8 +88,8 @@ int RenderingSystem::Initialize() {
 	context->RegisterObject<TerrainNode>();
 
 	// for test
-	auto render = new D3D12RenderInterface();
-	render->Initialize(3840, 2160);
+	// auto render = new D3D12RenderInterface();
+	// render->Initialize(3840, 2160);
 	return 0;
 }
 

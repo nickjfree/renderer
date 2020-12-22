@@ -271,7 +271,7 @@ namespace D3D12Renderer {
 	/*
 		input layouts	
 	*/
-	class D3D12InputLayout : public ResourcePool<D3D12InputLayout, 32>
+	class D3D12InputLayout : public ResourcePool<D3D12InputLayout, 512>
 	{
 	public:
 		D3D12_INPUT_LAYOUT_DESC Layout;
@@ -283,7 +283,7 @@ namespace D3D12Renderer {
 	/* 
 		shaders 
 	*/
-	class D3D12Shader : public ResourcePool<D3D12Shader, 128>
+	class D3D12Shader : public ResourcePool<D3D12Shader, 512>
 	{
 	public:
 		D3D12_SHADER_BYTECODE ByteCode;
@@ -304,7 +304,7 @@ namespace D3D12Renderer {
 	/*
 	*	render state
 	*/
-	class D3D12RenderState : public ResourcePool<D3D12RenderState, 128> 
+	class D3D12RenderState : public ResourcePool<D3D12RenderState, 512>
 	{
 	public:
 		union {

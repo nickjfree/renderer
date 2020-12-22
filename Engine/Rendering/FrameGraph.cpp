@@ -87,3 +87,27 @@ void BaseRenderPass::AddDependency(BaseRenderPass* dependency)
 	// add dependencies
 	dependencies.PushBack(dependency);
 }
+
+void FrameGraph::Resolve()
+{
+}
+
+void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* renderContext)
+{
+	// this is a test run, just run the first pass
+	auto renderInterface = renderContext->GetRenderInterface();
+	if (renderPasses.Size()) {
+		auto pass = renderPasses[0];
+		// get commandbuffer
+		auto cmdBuffer = CommandBuffer::Create();
+		cmdBuffer->Reset();
+		// execute the pass
+		pass->Execute(cmdBuffer, cam, spatial);
+		// flush the command buffer
+		auto renderCommandContext = renderInterface->BeginContext(pass->IsAsyncCompute());
+		cmdBuffer->Flush(renderCommandContext);
+		cmdBuffer->Recycle();
+		// present
+		renderInterface->EndContext(renderCommandContext, true);
+	}
+}

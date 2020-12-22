@@ -19,7 +19,12 @@ int Texture::OnCreateComplete(Variant& Parameter) {
 }
 
 int Texture::OnLoadComplete(Variant& Paramener) {
-	id = renderinterface->CreateTexture2D(NULL, Raw, Size, 0);
+	R_TEXTURE2D_DESC desc = {};
+	desc.CpuData = Raw;
+	desc.Size = Size;
+	desc.BindFlag = BIND_SHADER_RESOURCE;
+	desc.DebugName = L"texture";
+	id = renderinterface->CreateTexture2D(&desc);
 	// raw data can be released
 	DeSerial.Release();
 	return 0;

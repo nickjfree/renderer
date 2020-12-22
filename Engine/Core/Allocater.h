@@ -1,4 +1,3 @@
-
 #ifndef __Allocable__
 #define __Allocable__
 

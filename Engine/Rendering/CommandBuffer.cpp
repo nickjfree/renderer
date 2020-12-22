@@ -1,6 +1,18 @@
 #include "CommandBuffer.h"
 
 USING_RECYCLE(RenderingCommand)
+USING_RECYCLE(CommandBuffer)
+
+void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
+{
+	globalParameters.Clear();
+	Matrix4x4::Tranpose(cam->GetInvertView(), &globalParameters["gInvertViewMaxtrix"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
+	globalParameters["gViewPoint"].as<Vector3>() = cam->GetViewPoint();
+	globalParameters["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
+	// set renderContext
+	this->renderContext = renderContext;
+}
 
 bool CommandBuffer::appendInstanceBuffer(size_t size)
 {
@@ -30,7 +42,7 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 	// get prev cmd
 	RenderingCommand* prev = nullptr;
 	if (currentIndex > 0) {
-		prev = &renderingCommands[currentIndex - 1];
+		prev = &renderingCommands[currentIndex - 2];
 	}
 	// get current instance data
 	auto shader = material->GetShader();
@@ -56,9 +68,11 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 			cmd->draw.numInstances = 1;
 			cmd->draw.instanceStride = instanceStride;
 		}
+	} else {
+		// error, 
+		printf("shader dosen't support instancing %s\n", shader->GetUrl().ToStr());
 	}
-	// error, 
-	printf("shader dosen't support instancing %s\n", shader->GetUrl().ToStr());
+
 }
 
 void CommandBuffer::DispatchRays(RenderingCommand* cmd, const String& shaderName, Material* material, int w, int h)
@@ -95,7 +109,16 @@ void CommandBuffer::RenderTargets(RenderingCommand* cmd, int* targets, int numTa
 
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
-	//
+	// TODO: submit to rendercontext
+	auto i = 0;
+	while(i < currentIndex) {
+		auto& cmd = renderingCommands[i++];
+		if (cmd.cmdType != RenderingCommand::CommandType::RENDER_TARGET) {
+			printf("cmd type %d, mesh %s, material %s\n", cmd.cmdType, cmd.draw.mesh->GetUrl().ToStr(), cmd.draw.material->GetUrl().ToStr());
+		} else if (cmd.cmdType == RenderingCommand::CommandType::RENDER_TARGET) {
+			printf("cmd type set targets, num %d\n", cmd.renderTargets.numTargets);
+		}
+	}
 }
 
 // alloc a new command

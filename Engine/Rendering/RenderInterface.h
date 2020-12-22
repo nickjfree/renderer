@@ -70,6 +70,7 @@ public:
 	// create texture2d. with or without initial data.
 	virtual int CreateTexture2D(R_TEXTURE2D_DESC* Desc, void* RawData, int Size, int DataFlag) { return -1; };
 
+	virtual int CreateTexture2D(R_TEXTURE2D_DESC* desc) { return -1; }
 	// destroy texture 2D
 	virtual int DestroyTexture2D(int Id) { return -1; };
 
@@ -107,6 +108,9 @@ public:
 
 	// create input layout
 	virtual int CreateInputLayout(R_INPUT_ELEMENT* Element, int Count, void* ShaderCode, int Size) { return -1; };
+
+	virtual int CreateInputLayout(R_INPUT_ELEMENT* elements, int count) { return -1; }
+
 	// create shaders 
 	virtual int CreateVertexShader(void* ByteCode, unsigned int Size, int flag) { return -1; };
 	virtual int CreateGeometryShader(void* ByteCode, unsigned int Size, int flag) { return -1; };

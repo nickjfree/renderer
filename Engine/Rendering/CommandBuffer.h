@@ -10,7 +10,7 @@
 #include "Rendering/Mesh.h"
 #include "Rendering/Shader.h"
 #include "Rendering/ShaderLibrary.h"
-
+#include "RenderingCamera.h"
 
 
 // draw command
@@ -114,8 +114,6 @@ public:
 	
 	// constants and other parameters
 	Dict cmdParameters;
-	// rendercontext
-	RenderContext* renderContext;
 	union {
 		DrawCommand draw = {};
 		DispatchRaysCommand dispatchRays;
@@ -135,6 +133,7 @@ constexpr auto max_instance_buffer_size = max_instance_size * 2048;  // 512Kb
 
 class CommandBuffer
 {
+	DECLARE_RECYCLE(CommandBuffer)
 public:
 	// alloc a new command
 	RenderingCommand* AllocCommand();
@@ -154,6 +153,8 @@ public:
 	void Flush(RenderCommandContext* cmdContext);
 	// reset
 	void Reset() { currentIndex = 0; usedInstanceBuffer = 0; }
+	// set frame parameter
+	void SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);
@@ -168,6 +169,8 @@ private:
 	size_t usedInstanceBuffer;
 	// global parameters
 	Dict globalParameters;
+	// renderContext
+	RenderContext* renderContext = nullptr;
 };
 
 #endif

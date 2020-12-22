@@ -393,6 +393,8 @@ namespace D3D12Renderer {
 	/*
 		CommandQueue
 	*/
+	constexpr auto max_render_threads = 16;
+
 	class D3D12CommandQueue
 	{
 	public:
@@ -420,7 +422,7 @@ namespace D3D12Renderer {
 		// current fenceValue
 		UINT64  currentFenceValue = 0;
 		// event handle
-		HANDLE hEvent = 0;
+		HANDLE hEvents[max_render_threads] = {};
 		// mutext
 		Mutex lock;
 		// static queue

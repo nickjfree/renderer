@@ -91,14 +91,14 @@ int RenderControl::Execute() {
 	int numCamera = Cameras.Size();
 
 	if (!numCamera) {
-		printf("no camera\n");
+		//printf("no camera\n");
 		return 1;
 	}
 
 	while (numCamera--) {
 		RenderingCamera* cam = Cameras[numCamera];
 		// render the frame
-		frameGraph;
+		frameGraph.Execute(cam, spatial, Context);
 	}
 	return 0;
 }

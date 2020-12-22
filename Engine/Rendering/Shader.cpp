@@ -291,7 +291,8 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 			InstanceElements.PushBack(instance);
 		}
 		// create input layout
-		RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, NumElements, Shader, Size);
+		// RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, NumElements, Shader, Size);
+		RenderPass->InputLayout = renderinterface->CreateInputLayout(Elements, NumElements);
 	}
 
 	// get constant buffers

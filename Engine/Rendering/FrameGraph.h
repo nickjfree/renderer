@@ -6,7 +6,6 @@
 #include "Core/Str.h"
 #include "RenderContext.h"
 #include "CommandBuffer.h"
-#include "RenderingCamera.h"
 #include "Spatial.h"
 
 /*
@@ -159,6 +158,10 @@ public:
 		const String& name, 
 		std::function<void(GraphBuilder& builder, T& passData)> setup,
 		std::function<void(T& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial)> execute);
+	// resolve the graph
+	void Resolve();
+	// execute the graph
+	void Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* renderContext);
 private:
 	// render passes
 	Vector<BaseRenderPass*> renderPasses;

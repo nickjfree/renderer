@@ -161,6 +161,9 @@ namespace D3D12Renderer {
 			ret = &resources[currentIndex];
 			ret->resourceId = currentIndex++;
 		}
+		if (currentIndex >= size) {
+			printf("pool is full %s\n", __FUNCTION__);
+		}
 		lock.Release();
 		return ret;
 	}

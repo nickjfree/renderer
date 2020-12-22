@@ -177,7 +177,7 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 	auto gBufferPass = frameGraph.AddRenderPass<GBufferPassData>("gbuffer",
 		[&](GraphBuilder& builder, GBufferPassData& passData) {
 			passData.depth = builder.Create("linear_depth",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -191,11 +191,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"linear_depth";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.diffuse = builder.Create("diffuse",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -209,11 +209,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"diffuse";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.compact0 = builder.Create("compact_buffer-0",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -227,11 +227,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"compact_buffer-0";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.compact1 = builder.Create("compact_buffer-1",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -245,11 +245,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"compact_buffer-1";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.specular = builder.Create("specular",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -263,11 +263,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"specular";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.motion = builder.Create("motion",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -281,11 +281,11 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"motion";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.zBuffer = builder.Create("zbuffer",
-				[&]() {
+				[=]() {
 					R_TEXTURE2D_DESC desc = {};
 					desc.Width = renderContext->FrameWidth;
 					desc.Height = renderContext->FrameHeight;
@@ -299,11 +299,14 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 					desc.SampleDesc.Count = 1;
 					// linearz
 					desc.DebugName = L"zbuffer";
-					return renderInterface->CreateTexture2D(&desc, 0, 0, 0);
+					return renderInterface->CreateTexture2D(&desc);
 
 				});
 		},
 		[=](GBufferPassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+			// cmdBuffer global pramerers setup
+			cmdBuffer->SetupFrameParameters(cam, renderContext);
+
 			// set gbuffer as render target
 			int targets[] = {
 				passData.diffuse.GetActualResource(),
@@ -315,11 +318,10 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 			auto compact1 = passData.compact1.GetActualResource();
 			auto zbuffer = passData.zBuffer.GetActualResource();
 			auto cmd = cmdBuffer->AllocCommand();
-			cmdBuffer->RenderTargets(cmd, targets, sizeof(targets), zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
+			cmdBuffer->RenderTargets(cmd, targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
 			// render objects
 			Vector<Node*> objects;
 			spatial->Query(cam->GetFrustum(), objects, Node::RENDEROBJECT);
-
 			for (auto iter = objects.Begin(); iter != objects.End(); iter++) {
 				auto obj = *iter;
 				obj->Render(cmdBuffer, R_STAGE_GBUFFER, 0, cam, renderContext);

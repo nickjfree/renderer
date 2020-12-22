@@ -256,7 +256,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 		rtvFormat = rtDesc.Format;
 	}
 	// dsv
-	if (textureDesc.BindFlag & BIND_RENDER_TARGET) {
+	if (textureDesc.BindFlag & BIND_DEPTH_STENCIL) {
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsDesc = {};
 		dsDesc.Format = (DXGI_FORMAT)textureDesc.Format;
 		if (textureDesc.Format == FORMAT_R32_TYPELESS) {
@@ -284,25 +284,28 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 		d3d12Device->CreateUnorderedAccessView(resource, nullptr, &udesc, handle);
 		views[uavIndex] = handle;
 	}
-	// always create srv
-	D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
-	D3D12_RESOURCE_DESC resDesc = resource->GetDesc();
-	vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	vdesc.Format = (DXGI_FORMAT)textureDesc.Format;
-	if (textureDesc.Format == FORMAT_R32_TYPELESS) {
-		vdesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
-	}
-	if (isCube) {
-		vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-		vdesc.TextureCube.MipLevels = resDesc.MipLevels;
-	} else {
+	//  create srv
+	if (textureDesc.BindFlag & BIND_SHADER_RESOURCE) {
+		D3D12_SHADER_RESOURCE_VIEW_DESC vdesc = {};
+		D3D12_RESOURCE_DESC resDesc = resource->GetDesc();
 		vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		vdesc.Texture2D.MipLevels = resDesc.MipLevels;
+		vdesc.Format = (DXGI_FORMAT)textureDesc.Format;
+		vdesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		if (textureDesc.Format == FORMAT_R32_TYPELESS) {
+			vdesc.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
+		}
+		if (isCube) {
+			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			vdesc.TextureCube.MipLevels = resDesc.MipLevels;
+		} else {
+			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+			vdesc.Texture2D.MipLevels = resDesc.MipLevels;
+		}
+		auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
+		auto handle = descHeaps[srvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
+		d3d12Device->CreateShaderResourceView(resource, &vdesc, handle);
+		views[srvIndex] = handle;
 	}
-	auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
-	auto handle = descHeaps[srvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
-	d3d12Device->CreateShaderResourceView(resource, &vdesc, handle);
-	views[srvIndex] = handle;
 }
 
 void TextureResource::Release()

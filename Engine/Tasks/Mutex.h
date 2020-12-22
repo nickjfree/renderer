@@ -10,6 +10,7 @@
 class Mutex
 {
 private:
+public:
 	CRITICAL_SECTION section;
 public:
 	Mutex();

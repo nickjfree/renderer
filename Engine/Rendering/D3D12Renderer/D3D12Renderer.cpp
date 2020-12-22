@@ -1,4 +1,5 @@
 #include "D3D12Renderer.h"
+#include "Tasks/ThreadLocal.h"
 
 using namespace D3D12Renderer;
 
@@ -91,6 +92,7 @@ void D3D12CommandContext::create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_T
 	}
 	this->cmdType = cmdType;
 	this->samplerHeap = samplerHeap;
+	this->d3d12Device = d3d12Device;
 }
 
 D3D12CommandContext* D3D12CommandContext::AllocTransient(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap** descHeaps)
@@ -166,9 +168,10 @@ void D3D12CommandContext::SetComputeMode(bool enabled)
 }
 
 void D3D12CommandContext::resetTransient() {
-	// reset cmdList
-	cmdList->Reset(cmdAllocator, nullptr);
+	// reset cmdList and allocater
+	cmdList->Close();
 	cmdAllocator->Reset();
+	cmdList->Reset(cmdAllocator, nullptr);
 	// reset constant buffer allocater
 	ringConstantBuffer->Reset();
 	// reset rootsignarue
@@ -796,7 +799,11 @@ D3D12CommandQueue* D3D12CommandQueue::Alloc(ID3D12Device* d3d12Device, D3D12_COM
 	// create fence
 	d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&commandQueue->cmdFence));
 	// event
-	commandQueue->hEvent = CreateEvent(0, 0, 0, 0);
+	// create fences, event, init fenvevalue
+	for (int i = 0; i < max_render_threads; i++) {
+		// event
+		commandQueue->hEvents[i] = CreateEvent(0, 0, 0, 0);
+	}
 	commandQueue->currentFenceValue = 0;
 	return nullptr;
 }
@@ -808,8 +815,10 @@ void D3D12CommandQueue::GpuWait(ID3D12Fence* d3d12Fence, UINT64 fenceValue)
 
 void D3D12CommandQueue::CpuWait(UINT64 fenceValue)
 {
-	cmdFence->SetEventOnCompletion(fenceValue, hEvent);
-	WaitForSingleObject(hEvent, -1);
+	// get the event to wait for current thread
+	size_t threadId = reinterpret_cast<size_t>(ThreadLocal::GetThreadLocal());
+	cmdFence->SetEventOnCompletion(fenceValue, hEvents[threadId]);
+	WaitForSingleObject(hEvents[threadId], -1);
 }
 
 bool D3D12CommandQueue::IsFenceComplete(UINT64 fenceValue)

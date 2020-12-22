@@ -8,7 +8,6 @@
 #include "Math\LinearMath.h"
 #include "Container\Vector.h"
 #include "BatchCompiler.h"
-#include "RenderingCamera.h"
 #include "CommandBuffer.h"
 
 /*

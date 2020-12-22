@@ -99,6 +99,8 @@ int RenderControl::Execute() {
 		RenderingCamera* cam = Cameras[numCamera];
 		// render the frame
 		frameGraph.Execute(cam, spatial, Context);
+		// update prev matrix. for motion vectors
+		cam->UpdatePrevMatrix();
 	}
 	return 0;
 }

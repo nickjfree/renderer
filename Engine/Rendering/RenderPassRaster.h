@@ -319,8 +319,13 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 			auto zbuffer = passData.zBuffer.GetActualResource();
 			auto cmd = cmdBuffer->AllocCommand();
 			cmdBuffer->RenderTargets(cmd, targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
+			// set prev compact buffer
+			Variant prevCompactBuffer;
+			prevCompactBuffer.as<int>() = compact1;
+			renderContext->SetResource("gPrevCompactBuffer", prevCompactBuffer);
 			// render objects
-			Vector<Node*> objects;
+			static Vector<Node*> objects;
+			objects.Reset();
 			spatial->Query(cam->GetFrustum(), objects, Node::RENDEROBJECT);
 			for (auto iter = objects.Begin(); iter != objects.End(); iter++) {
 				auto obj = *iter;

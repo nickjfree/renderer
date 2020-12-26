@@ -100,7 +100,17 @@ int ShaderLibrary::ReflectShader(void* Shader, unsigned int Size)
 				IsArray = 1;
 			}
 			cb.IsArray = IsArray;
-			Constants.PushBack(cb);
+			auto merged = false;
+			for (auto i = 0; i < Constants.Size(); ++i) {
+				if (Constants[i].Slot == cb.Slot && Constants[i].Space == cb.Space) {
+					// append constant buffer size
+					Constants[i].Size = max(cb.Size, Constants[i].Size);
+					merged = true;
+				}
+			}
+			if (!merged) {
+				Constants.PushBack(cb);
+			}
 			for (UINT j = 0; j < Description.Variables; j++) {   // Get the variable description and store it   
 				ID3D12ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
 				D3D12_SHADER_VARIABLE_DESC var_desc;
@@ -202,19 +212,6 @@ int ShaderLibrary::OnCreateComplete(Variant& Parameter)
 	return 0;
 }
 
-Variant* ShaderLibrary::GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext* Context) {
-	auto Iter = Material.Find(Name);
-	if (Iter != Material.End()) {
-		return &(*Iter).Value;
-	}
-	Iter = Object.Find(Name);
-	if (Iter != Object.End()) {
-		return &(*Iter).Value;
-	}
-	return rendercontext->GetResource(Name);
-}
-
-
 int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context)
 {
 	int Compiled = 0;
@@ -222,7 +219,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	int texture_units = TextureUnits.Size();
 	for (int i = 0; i < texture_units; i++) {
 		TextureUnit* unit = &TextureUnits[i];
-		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 		if (Value) {
 			int id = Value->as<int>();
 			Compiled += Compiler->SetTexture(unit->Slot, id);
@@ -232,7 +229,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	int buffer_units = BufferUnits.Size();
 	for (int i = 0; i < buffer_units; i++) {
 		BufferUnit* unit = &BufferUnits[i];
-		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 		if (Value) {
 			int id = Value->as<int>();
 			Compiled += Compiler->SetShaderResourceBuffer(unit->Slot, id);
@@ -242,7 +239,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	int rwbuffer_units = RWBufferUnits.Size();
 	for (int i = 0; i < rwbuffer_units; i++) {
 		RWBufferUnit* unit = &RWBufferUnits[i];
-		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 		if (Value) {
 			int id = Value->as<int>();
 			Compiled += Compiler->SetUnordedAccessBuffer(unit->Slot, id);
@@ -252,7 +249,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	int rwtexture_units = RWTextureUnits.Size();
 	for (int i = 0; i < rwtexture_units; i++) {
 		RWTextureUnit* unit = &RWTextureUnits[i];
-		Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+		Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 		if (Value) {
 			int id = Value->as<int>();
 			Compiled += Compiler->SetUnordedAccessTexture(unit->Slot, id);
@@ -268,7 +265,7 @@ int ShaderLibrary::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Ma
 	int parameters = Parameters.Size();
 	for (int i = 0; i < parameters; i++) {
 		ShaderParameter* parameter = &Parameters[i];
-		Variant* Value = GetParameter(parameter->Name, MaterialParam, ObjectParameter, Context);
+		Variant* Value = GetParameter(parameter->Name, Context, MaterialParam, ObjectParameter);
 		if (Value) {
 			if (!parameter->IsArray) {
 				Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);
@@ -302,7 +299,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectPa
 	for (int i = 0; i < texture_units; i++) {
 		TextureUnit* unit = &TextureUnits[i];
 		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
-			Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+			Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 			if (Value) {
 				int id = Value->as<int>();
 				bindings[index].BindingType = R_SRV_TEXTURE;
@@ -317,7 +314,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectPa
 	for (int i = 0; i < buffer_units; i++) {
 		BufferUnit* unit = &BufferUnits[i];
 		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
-			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			Variant* Value = GetParameter(unit->Name, Context, MaterialParam, MaterialParam);
 			if (Value) {
 				int id = Value->as<int>();
 				bindings[index].BindingType = R_SRV_BUFFER;
@@ -332,7 +329,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectPa
 	for (int i = 0; i < rwbuffer_units; i++) {
 		RWBufferUnit* unit = &RWBufferUnits[i];
 		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
-			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			Variant* Value = GetParameter(unit->Name, Context, MaterialParam, MaterialParam);
 			if (Value) {
 				int id = Value->as<int>();
 				bindings[index].BindingType = R_UAV_BUFFER;
@@ -347,7 +344,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectPa
 	for (int i = 0; i < rwtexture_units; i++) {
 		RWTextureUnit* unit = &RWTextureUnits[i];
 		if (unit->Space == RAYTRACING_SHADER_LOCAL_RESOURCE_SPACE) {
-			Variant* Value = GetParameter(unit->Name, MaterialParam, MaterialParam, Context);
+			Variant* Value = GetParameter(unit->Name, Context, MaterialParam, MaterialParam);
 			if (Value) {
 				int id = Value->as<int>();
 				bindings[index].BindingType = R_UAV_TEXTURE;
@@ -361,7 +358,7 @@ void ShaderLibrary::GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectPa
 	int parameters = Parameters.Size();
 	for (int i = 0; i < parameters; i++) {
 		ShaderParameter* parameter = &Parameters[i];
-		Variant* Value = GetParameter(parameter->Name, MaterialParam, MaterialParam, Context);
+		Variant* Value = GetParameter(parameter->Name, Context, MaterialParam, MaterialParam);
 		if (Value) {
 			if (!parameter->IsArray) {
 				// Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);

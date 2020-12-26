@@ -49,7 +49,7 @@ private:
 private:
 	int ReflectShader(void* Shader, unsigned int Size);
 	int AddFunction(char* Name);
-	Variant* GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext* Context);
+	template <class ... T> Variant* GetParameter(String& Name, RenderContext* Context, T& ... parameterList);
 public:
 	ShaderLibrary(Context* context);
 
@@ -59,6 +59,19 @@ public:
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context);
 	void GetLocalResourceBindings(Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context, R_RESOURCE_BINDING * bindings, int* count);
 };
+
+template <class ... T> Variant* ShaderLibrary::GetParameter(String& Name, RenderContext* Context, T& ... parameterList) {
+	// list of parameters to try
+	Dict* tries[] = { &parameterList... };
+
+	for (auto i = 0; i < sizeof...(parameterList); ++i) {
+		auto iter = tries[i]->Find(Name);
+		if (iter != tries[i]->End()) {
+			return &(*iter).Value;
+		}
+	}
+	return rendercontext->GetResource(Name);
+}
 
 
 #endif

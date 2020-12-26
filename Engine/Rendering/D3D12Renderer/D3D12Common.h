@@ -75,11 +75,12 @@ namespace D3D12Renderer {
 			RTV,
 			DSV,
 			SAMPLER,
+			UNBOUND,
 			COUNT,
 		};
 	private:
 		// the device
-		ID3D12Device* d3d12Device;
+		ID3D12Device* d3d12Device = nullptr;
 		// the heap
 		ID3D12DescriptorHeap* descriptorHeap = nullptr;
 		// size
@@ -107,7 +108,7 @@ namespace D3D12Renderer {
 		friend Transient;
 	public:
 		// alloc transient
-		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local);
+		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap);
 		// set samplers
 		void SetSamplerTable(ID3D12GraphicsCommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// invalidate bindings
@@ -124,7 +125,7 @@ namespace D3D12Renderer {
 		bool Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap);
 	private:
 		// create
-		void create(ID3D12Device* d3d12Device, bool local);
+		void create(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap);
 		// init
 		void initRootSignature(ID3D12Device* d3d12Device, bool local, D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
 		// init desc table cache
@@ -166,7 +167,7 @@ namespace D3D12Renderer {
 			};
 		} RootDescriptorSlot;
 		// rootsignature
-		ID3D12RootSignature* rootSignature;
+		ID3D12RootSignature* rootSignature = nullptr;
 		// mode
 		bool isCompute = false;
 		// bindings are stale, must be rebind
@@ -326,6 +327,8 @@ namespace D3D12Renderer {
 		void SetVertexShader(int id);
 		// set pixel shader
 		void SetPixelShader(int id);
+		// set inputpayout
+		void SetInputLayout(int id);
 		// draw single geometry
 		void Draw(int geometryId);
 		// draw instance
@@ -336,6 +339,8 @@ namespace D3D12Renderer {
 		void DispatchRays(int shaderId, int width, int height);
 		// dispatch
 		void DispatchCompute(int width, int height);
+		// clear render targets
+		void ClearRenderTargets(bool clearTargets, bool clearDepth);
 
 		/*
 		*	sync 
@@ -346,7 +351,7 @@ namespace D3D12Renderer {
 		// reset transient resource status
 		void resetTransient();
 		// create
-		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap* samplerHeap);
+		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap* samplerHeap, D3D12DescriptorHeap* nullHeap);
 		// apply barriers
 		void applyBarriers();
 		// initialize state
@@ -383,10 +388,17 @@ namespace D3D12Renderer {
 		// descriptorheap
 		D3D12DescriptorHeap* descriptorHeap = nullptr;
 		D3D12DescriptorHeap* samplerHeap = nullptr;
+		D3D12DescriptorHeap* nullHeap = nullptr;
 		// current pipeline state
 		D3D12PipelineStateCache pipelineStateCache;
 		// constant buffer cache
 		ConstantCache  constantCache;
+		// current targets and depth
+		D3D12_CPU_DESCRIPTOR_HANDLE targetsHandles[8];
+		// numtargets
+		int currentNumTargets = 0;
+		// depth
+		D3D12_CPU_DESCRIPTOR_HANDLE depthHandle;
 	};
 
 

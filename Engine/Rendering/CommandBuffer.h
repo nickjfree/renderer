@@ -158,6 +158,12 @@ public:
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);
+	// process rendertargets
+	void setRenderTargets(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// draw
+	void draw(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// draw instanced
+	void drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 private:
 	// commands
 	RenderingCommand renderingCommands[max_command_buffer_size];

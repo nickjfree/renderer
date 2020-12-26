@@ -143,7 +143,7 @@ namespace D3D12Renderer {
 		bool isCube = false;
 		// rtv dsv format used for pipelinestate
 		union {
-			DXGI_FORMAT dsvFormat;
+			DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN;
 			DXGI_FORMAT rtvFormat;
 		};
 	};
@@ -153,7 +153,7 @@ namespace D3D12Renderer {
 	*/
 	class Geometry: public PoolResource<Geometry, max_geometry_number>
 	{
-	public:
+		friend D3D12CommandContext;
 	public:
 		// create
 		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
@@ -161,16 +161,16 @@ namespace D3D12Renderer {
 		void Release();
 	private:
 		// buffers
-		BufferResource* vertexBuffer;
-		BufferResource* indexBuffer;
+		BufferResource* vertexBuffer = nullptr;
+		BufferResource* indexBuffer = nullptr;
 		// vertex stride
-		unsigned int vertexStride;
+		unsigned int vertexStride = 0;
 		// vertex size
-		unsigned int vertexBufferSize;
+		unsigned int vertexBufferSize = 0;
 		// index num
-		unsigned int numIndices;
+		unsigned int numIndices = 0;
 		// toplogy format
-		R_PRIMITIVE_TOPOLOGY primitiveToplogy;
+		R_PRIMITIVE_TOPOLOGY primitiveToplogy = R_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	};
 
 	/*
@@ -224,25 +224,27 @@ namespace D3D12Renderer {
 		// suballoc
 		bool SubAlloc(unsigned int allocSize);
 		// gpu virtual address
-		D3D12_GPU_VIRTUAL_ADDRESS GetCurrentGpuVirtualAddress() { return resource->GetGPUVirtualAddress() + currentOffset; }
+		D3D12_GPU_VIRTUAL_ADDRESS GetCurrentGpuVirtualAddress();
 		// cpu address
-		void*  GetCurrentCpuVirtualAddress() { return (void*)((UINT64)cpuBaseAddress + currentOffset); }
+		void* GetCurrentCpuVirtualAddress();
 		// get
 		ID3D12Resource* Get() { return resource; }
 	private:
 		// reset
-		void resetTransient() { currentOffset = 0; }
+		void resetTransient() { currentOffset = 0; currentRear = 0; }
 		// create 
 		void create(ID3D12Device* d3d12Device, UINT64 size);
 	private:
 		// resource
-		ID3D12Resource* resource;
+		ID3D12Resource* resource = nullptr;
 		// current offset
 		unsigned int currentOffset = 0;
+		// current end offset
+		unsigned int currentRear = 0;
 		// ALIGN
 		unsigned int align = 256;
 		// size
-		unsigned int size;
+		UINT64 size = 0;
 		// mapped cpu address
 		void* cpuBaseAddress = nullptr;
 	};

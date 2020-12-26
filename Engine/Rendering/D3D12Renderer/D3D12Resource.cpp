@@ -189,15 +189,16 @@ void TextureResource::Create(ID3D12Device* d3d12Device, ResourceDescribe* resour
 		resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		resourceDesc.MipLevels = textureDesc.MipLevels;
 
-		D3D12_RESOURCE_STATES createState = D3D12_RESOURCE_STATE_COPY_DEST;
+		D3D12_RESOURCE_STATES createState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 		D3D12_CLEAR_VALUE clear = {};
-		D3D12_CLEAR_VALUE* pClear = &clear;
+		D3D12_CLEAR_VALUE* pClear = nullptr;  
 
 		clear.Format = resourceDesc.Format;
 		if (textureDesc.BindFlag & BIND_DEPTH_STENCIL) {
 			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 			createState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
 			// clearvalue
+			pClear = &clear;
 			clear.DepthStencil.Depth = 1;
 			clear.DepthStencil.Stencil = 0;
 			if (clear.Format == FORMAT_R32_TYPELESS) {
@@ -207,6 +208,7 @@ void TextureResource::Create(ID3D12Device* d3d12Device, ResourceDescribe* resour
 			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 			createState = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			// clearvalue
+			pClear = &clear;
 			if (clear.Format == FORMAT_R32_TYPELESS) {
 				clear.Format = (DXGI_FORMAT)FORMAT_R32_FLOAT;
 			}
@@ -301,7 +303,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			vdesc.Texture2D.MipLevels = resDesc.MipLevels;
 		}
-		auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
+		auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
 		auto handle = descHeaps[srvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 		d3d12Device->CreateShaderResourceView(resource, &vdesc, handle);
 		views[srvIndex] = handle;
@@ -353,7 +355,7 @@ void Geometry::Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc)
 	// set property
 	vertexStride = geometryDesc.VertexStride;
 	// vertex size
-	vertexBufferSize = geometryDesc.VertexStride;
+	vertexBufferSize = geometryDesc.VertexBufferSize;
 	// index num
 	numIndices = geometryDesc.NumIndices;
 	// toplogy format
@@ -398,6 +400,7 @@ void UploadHeap::create(ID3D12Device* d3d12Device, UINT64 size)
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
 		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+	this->size = size;
 }
 
 void UploadHeap::Release()
@@ -415,17 +418,27 @@ bool UploadHeap::SubAlloc(unsigned int allocSize)
 {
 	// make the resource mapped
 	if (!cpuBaseAddress) {
-		resource->Map(0, nullptr, &cpuBaseAddress);
+		CD3DX12_RANGE readRange(0, 0);
+		resource->Map(0, &readRange, &cpuBaseAddress);
 	}
 	int alignedSize = (allocSize + const_buffer_align - 1) & ~(const_buffer_align - 1);
 
-	if (currentOffset + alignedSize > size) {
+	if (currentRear + alignedSize > size) {
 		// not enough space
 		return false;
 	}
 	// 
-	currentOffset += alignedSize;
+	currentOffset = currentRear;
+	currentRear += alignedSize;
 	return true;
+}
+
+void* UploadHeap::GetCurrentCpuVirtualAddress() {
+	return (void*)((UINT64)cpuBaseAddress + (UINT64)currentOffset); 
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS UploadHeap::GetCurrentGpuVirtualAddress() { 
+	return resource->GetGPUVirtualAddress() + (UINT64)currentOffset; 
 }
 
 /************************************************************************/
@@ -446,6 +459,11 @@ void* RingConstantBuffer::AllocTransientConstantBuffer(unsigned int size, D3D12_
 	if (!currentUploadHeap || !currentUploadHeap->SubAlloc(size)) {
 		// alloc a new transient const buffer
 		currentUploadHeap = UploadHeap::AllocTransient(d3d12Device, max_upload_heap_size);
+		if (!currentUploadHeap->SubAlloc(size)) {
+			// no space left, error
+			*gpuAddress = 0;
+			return nullptr;
+		}
 	}
 	*gpuAddress = currentUploadHeap->GetCurrentGpuVirtualAddress();
 	return currentUploadHeap->GetCurrentCpuVirtualAddress();

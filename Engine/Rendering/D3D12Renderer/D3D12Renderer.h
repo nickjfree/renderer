@@ -54,7 +54,7 @@ namespace D3D12Renderer {
 		// get resources
 		D3D12BackBuffer* GetBackBuffer() { return &backBuffer; }
 		// get sampler heap
-		D3D12DescriptorHeap** GetHeaps() { return descHeaps; }
+		// D3D12DescriptorHeap** GetHeaps() { return textureDescHeaps; }
 		// get resource
 		D3D12Resource* GetResource(int id);
 		// begin context
@@ -81,6 +81,8 @@ namespace D3D12Renderer {
 		void InitPrimitiveGeometry();
 		// init samplers
 		void InitSamplers();
+		// init null handles
+		void InitNullHandles();
 		// endframe
 		UINT64 EndFrame(D3D12CommandContext* cmdContext);
 	private:
@@ -91,7 +93,10 @@ namespace D3D12Renderer {
 		// rtxDevice
 		ID3D12Device5* rtxDevice = nullptr;
 		// descriptor heaps
-		D3D12DescriptorHeap* descHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
+		D3D12DescriptorHeap* textureDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
+		D3D12DescriptorHeap* bufferDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
+
+		// D3D12DescriptorHeap* descHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		// backbuffer
 		D3D12BackBuffer backBuffer;
 	};

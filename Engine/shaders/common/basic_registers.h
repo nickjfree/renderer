@@ -10,7 +10,7 @@ Texture2D gDiffuseMap0 : register(t0);
 
 Texture2D gNormalMap0 : register(t4);
 
-Texture2D gSpecularMap0 : register(t8);
+Texture2D gSpecularMap0 : register(t7);
 
 // // deferred shading gbuffer
 // Texture2D gDepthBuffer : register(t9);

@@ -70,7 +70,7 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 		}
 	} else {
 		// error, 
-		printf("shader dosen't support instancing %s\n", shader->GetUrl().ToStr());
+		printf("shader doesn't support instancing %s\n", shader->GetUrl().ToStr());
 	}
 
 }
@@ -107,6 +107,49 @@ void CommandBuffer::RenderTargets(RenderingCommand* cmd, int* targets, int numTa
 	cmd->renderTargets.height = h;
 }
 
+void CommandBuffer::setRenderTargets(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	cmdContext->SetRenderTargets(cmd->renderTargets.targets, cmd->renderTargets.numTargets, cmd->renderTargets.depth);
+	cmdContext->ClearRenderTargets(cmd->renderTargets.clearTarget, cmd->renderTargets.clearDepth);
+	if (cmd->renderTargets.width || cmd->renderTargets.height) {
+		cmdContext->SetViewPort(0, 0, cmd->renderTargets.width, cmd->renderTargets.height);
+	}
+}
+
+void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	// set material and constants
+	if (cmd->draw.material) {
+		auto material = cmd->draw.material;
+		auto shader = cmd->draw.material->GetShader();
+		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+	}
+	// draw
+	if (cmd->draw.mesh == 0) {
+		// no mesh set. draw full screen quad
+		cmdContext->Quad();
+	} else {
+		cmdContext->Draw(cmd->draw.mesh->GetId());
+	}
+}
+
+void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	// set material and constants
+	if (cmd->draw.material) {
+		auto material = cmd->draw.material;
+		auto shader = cmd->draw.material->GetShader();
+		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+	}
+	// draw
+	if (cmd->draw.mesh == 0) {
+		// no mesh set. draw full screen quad with instancing. id 0 is the full screen quad
+		cmdContext->DrawInstanced(0, cmd->draw.instanceBuffer, cmd->draw.instanceStride, cmd->draw.numInstances);
+	} else {
+		cmdContext->DrawInstanced(cmd->draw.mesh->GetId(), cmd->draw.instanceBuffer, cmd->draw.instanceStride, cmd->draw.numInstances);
+	}
+}
+
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
@@ -117,6 +160,20 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 			printf("cmd type %d, mesh %s, material %s\n", cmd.cmdType, cmd.draw.mesh->GetUrl().ToStr(), cmd.draw.material->GetUrl().ToStr());
 		} else if (cmd.cmdType == RenderingCommand::CommandType::RENDER_TARGET) {
 			printf("cmd type set targets, num %d\n", cmd.renderTargets.numTargets);
+		}
+		// 
+		switch (cmd.cmdType) {
+		case RenderingCommand::CommandType::RENDER_TARGET:
+			setRenderTargets(&cmd, cmdContext);
+			break;
+		case RenderingCommand::CommandType::DRAW:
+			draw(&cmd, cmdContext);
+			break;
+		case RenderingCommand::CommandType::DRAW_INSTANCED:
+			drawInstanced(&cmd, cmdContext);
+			break;
+		default:
+			break;
 		}
 	}
 }

@@ -103,11 +103,6 @@ Shader::~Shader()
 {
 }
 
-int Shader::Apply(int Stage, char* buffer, Dict& Parameter) {
-	return 0;
-}
-
-
 Deserializer Shader::AsyncLoad() {
 	String url = "Shader\\Shaders\\Shaders.xml\\0";
 	return Loader->GetDeserializer(url);
@@ -317,7 +312,17 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 			IsArray = 1;
 		}
 		cb.IsArray = IsArray;
-		RenderPass->Constants.PushBack(cb);
+		auto merged = false;
+		for (auto i = 0; i < RenderPass->Constants.Size(); ++i) {
+			if (RenderPass->Constants[i].Slot == cb.Slot && RenderPass->Constants[i].Space == cb.Space ) {
+				// append constant buffer size
+				RenderPass->Constants[i].Size = max(cb.Size, RenderPass->Constants[i].Size);
+				merged = true;
+			}
+		}
+		if (!merged) {
+			RenderPass->Constants.PushBack(cb);
+		}
 		for (UINT j = 0; j < Description.Variables; j++) {   // Get the variable description and store it   
 			ID3D12ShaderReflectionVariable* Variable = ConstBuffer->GetVariableByIndex(j);
 			D3D12_SHADER_VARIABLE_DESC var_desc;
@@ -383,18 +388,6 @@ int Shader::ReflectShader(Pass* RenderPass, void* Shader, unsigned int Size, Vec
 	return 0;
 }
 
-Variant* Shader::GetParameter(String& Name, Dict& Material, Dict& Object, RenderContext* Context) {
-	auto Iter = Material.Find(Name);
-	if (Iter != Material.End()) {
-		return &(*Iter).Value;
-	}
-	Iter = Object.Find(Name);
-	if (Iter != Object.End()) {
-		return &(*Iter).Value;
-	}
-	return rendercontext->GetResource(Name);
-}
-
 int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialParam, Dict& ObjectParameter, RenderContext* Context) {
 	int techs = Techs.Size();
 	int Compiled = 0;
@@ -408,7 +401,7 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			int texture_units = pass->TextureUnits.Size();
 			for (int i = 0; i < texture_units; i++) {
 				TextureUnit* unit = &pass->TextureUnits[i];
-				Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+				Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 				if (Value) {
 					int id = Value->as<int>();
 					Compiled += Compiler->SetTexture(unit->Slot, id);
@@ -418,7 +411,7 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			int buffer_units = pass->BufferUnits.Size();
 			for (int i = 0; i < buffer_units; i++) {
 				BufferUnit* unit = &pass->BufferUnits[i];
-				Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+				Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 				if (Value) {
 					int id = Value->as<int>();
 					Compiled += Compiler->SetShaderResourceBuffer(unit->Slot, id);
@@ -428,7 +421,7 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			int rwbuffer_units = pass->RWBufferUnits.Size();
 			for (int i = 0; i < rwbuffer_units; i++) {
 				RWBufferUnit* unit = &pass->RWBufferUnits[i];
-				Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+				Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 				if (Value) {
 					int id = Value->as<int>();
 					Compiled += Compiler->SetUnordedAccessBuffer(unit->Slot, id);
@@ -438,7 +431,7 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			int rwtexture_units = pass->RWTextureUnits.Size();
 			for (int i = 0; i < rwtexture_units; i++) {
 				RWTextureUnit* unit = &pass->RWTextureUnits[i];
-				Variant* Value = GetParameter(unit->Name, MaterialParam, ObjectParameter, Context);
+				Variant* Value = GetParameter(unit->Name, Context, MaterialParam, ObjectParameter);
 				if (Value) {
 					int id = Value->as<int>();
 					Compiled += Compiler->SetUnordedAccessTexture(unit->Slot, id);
@@ -448,7 +441,7 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			int parameters = pass->Parameters.Size();
 			for (int i = 0; i < parameters; i++) {
 				ShaderParameter* parameter = &pass->Parameters[i];
-				Variant* Value = GetParameter(parameter->Name, MaterialParam, ObjectParameter, Context);
+				Variant* Value = GetParameter(parameter->Name, Context, MaterialParam, ObjectParameter);
 				if (Value) {
 					if (!parameter->IsArray) {
 						Compiled += Compiler->SetShaderParameter(parameter->Slot, parameter->Offset, parameter->Size, Value);

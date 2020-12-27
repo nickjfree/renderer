@@ -30,7 +30,7 @@ ID3D12Resource* CreateCommittedResource(ID3D12Device* d3d12Device, _In_  const D
 
 void D3D12Resource::SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState)
 {
-	if (state && state != targetState) {
+	if (state != targetState) {
 		cmdContext->AddBarrier(CD3DX12_RESOURCE_BARRIER::Transition(resource, state, targetState));
 	} else if (targetState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS && state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) {
 		// the resource state is not changed, but it is a uav resource. this means the caller wants to issue a uav barrier
@@ -550,6 +550,7 @@ void D3D12BackBuffer::Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory,
 	// set size
 	this->width = width;
 	this->height = height;
+	this->hWnd = hWnd;
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetRtv()
@@ -581,15 +582,17 @@ UINT64 D3D12BackBuffer::Present(D3D12CommandContext* cmdContext)
 	UINT64 fenceValue = cmdContext->Flush(0);
 	swapChain->Present(1, 0);
 	prevFrameFence[frameIndex] = fenceValue;
-	// get new frame index
-	frameIndex = swapChain->GetCurrentBackBufferIndex();
+	// wait for prev frame to finish
+	WaitForNextFrame();
 	return fenceValue;
 }
 
-void D3D12BackBuffer::WaitForNextFrame() {
-
-	auto cmdQueue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
+void D3D12BackBuffer::WaitForNextFrame() 
+{
+	// get new frame index
+	frameIndex = swapChain->GetCurrentBackBufferIndex();
 	UINT64 fenceToWait = prevFrameFence[frameIndex];
 	// wait for prev frame
+	auto cmdQueue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	cmdQueue->CpuWait(fenceToWait);
 }

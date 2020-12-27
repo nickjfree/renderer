@@ -51,7 +51,7 @@ void RenderingSystem::PreloadingResource() {
 	RenderPreloading* Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[0], Preloading, Param);
 	// loading hdr shaders
-	Preloadings[1] = "Shader\\shaders\\HDR\\0";
+	Preloadings[1] = "Material\\Materials\\hdr.xml\\0";
 	Param.as<String*>() = &Preloadings[1];
 	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
 	// loading oit shaders

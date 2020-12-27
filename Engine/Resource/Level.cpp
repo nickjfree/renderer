@@ -296,6 +296,12 @@ int Level::InitScript() {
 			// global light and terrain  should follow camera
 			MainCamera->Attach(object);
 		}
+		if (object->GetName() == "Light1") {
+			// animate the point light
+			auto script = context->CreateObject<Script>();
+			script->SetScript("F:\\proj\\Game11\\Game\\Engine\\Script\\test\\light.lua");
+			object->AddComponent(script);
+		}
 		if (object->GetName() == "Terrain") {
 			// test terrain rendering. no cull and always at origin
 			object->SetTranslation(Vector3(0, 0, 0));

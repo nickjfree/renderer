@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<material>
+  <textures>
+  </textures>
+
+  <shader name="Basic" url="Shader\shaders\HDR\0"></shader>
+</material>

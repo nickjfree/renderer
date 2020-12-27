@@ -86,6 +86,13 @@ namespace D3D12Renderer {
 		// endframe
 		UINT64 EndFrame(D3D12CommandContext* cmdContext);
 	private:
+
+		typedef struct PerformanceInfo {
+			LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+			LARGE_INTEGER Frequency;
+			unsigned int DrawCallCount;
+		}PerformanceInfo;
+
 		// DXGIFactory
 		IDXGIFactory4* dxgiFactory = nullptr;
 		// device
@@ -99,6 +106,9 @@ namespace D3D12Renderer {
 		// D3D12DescriptorHeap* descHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		// backbuffer
 		D3D12BackBuffer backBuffer;
+		// performance info
+		PerformanceInfo performance;
+
 	};
 }
 

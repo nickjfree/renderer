@@ -5,13 +5,24 @@ USING_RECYCLE(CommandBuffer)
 
 void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
 {
-	globalParameters.Clear();
+	// globalParameters.Clear();
 	Matrix4x4::Tranpose(cam->GetInvertView(), &globalParameters["gInvertViewMaxtrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
 	globalParameters["gViewPoint"].as<Vector3>() = cam->GetViewPoint();
 	globalParameters["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
 	// set renderContext
 	this->renderContext = renderContext;
+}
+
+void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
+{
+	globalParameters[name] = data;
+}
+
+void CommandBuffer::Reset() {
+	currentIndex = 0;
+	usedInstanceBuffer = 0; 
+	globalParameters.Clear();
 }
 
 bool CommandBuffer::appendInstanceBuffer(size_t size)
@@ -156,11 +167,11 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 	auto i = 0;
 	while(i < currentIndex) {
 		auto& cmd = renderingCommands[i++];
-		if (cmd.cmdType != RenderingCommand::CommandType::RENDER_TARGET) {
+		/*if (cmd.cmdType != RenderingCommand::CommandType::RENDER_TARGET) {
 			printf("cmd type %d, mesh %s, material %s\n", cmd.cmdType, cmd.draw.mesh->GetUrl().ToStr(), cmd.draw.material->GetUrl().ToStr());
 		} else if (cmd.cmdType == RenderingCommand::CommandType::RENDER_TARGET) {
 			printf("cmd type set targets, num %d\n", cmd.renderTargets.numTargets);
-		}
+		}*/
 		// 
 		switch (cmd.cmdType) {
 		case RenderingCommand::CommandType::RENDER_TARGET:

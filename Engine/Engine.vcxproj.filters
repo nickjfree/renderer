@@ -470,6 +470,15 @@
     <ClInclude Include="Rendering\RenderPassRaster.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\RenderPassHDR.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderPassSSAO.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\RenderPassShadowMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

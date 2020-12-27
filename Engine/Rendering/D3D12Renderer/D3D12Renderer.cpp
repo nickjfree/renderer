@@ -248,16 +248,20 @@ void D3D12CommandContext::SetConstantBuffer(int slot, unsigned int size)
 
 void D3D12CommandContext::SetSRV(int slot, int resourceId)
 {
-	auto resource = D3D12RenderInterface::Get()->GetResource(resourceId);
-	currentRootSignature->SetSRV(slot, resource->GetSrv());
-	resource->SetResourceState(this, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	if (resourceId != -1) {
+		auto resource = D3D12RenderInterface::Get()->GetResource(resourceId);
+		currentRootSignature->SetSRV(slot, resource->GetSrv());
+		resource->SetResourceState(this, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	}
 }
 
 void D3D12CommandContext::SetUAV(int slot, int resourceId)
 {
-	auto resource = D3D12RenderInterface::Get()->GetResource(resourceId);
-	currentRootSignature->SetSRV(slot, resource->GetUav());
-	resource->SetResourceState(this, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	if (resourceId == -1) {
+		auto resource = D3D12RenderInterface::Get()->GetResource(resourceId);
+		currentRootSignature->SetSRV(slot, resource->GetUav());
+		resource->SetResourceState(this, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
 } 
 
 void D3D12CommandContext::SetRenderTargets(int* targets, int numTargets, int depth)
@@ -272,7 +276,8 @@ void D3D12CommandContext::SetRenderTargets(int* targets, int numTargets, int dep
 			handle = backbuffer->GetRtv();
 			// barrier
 			backbuffer->SetResourceState(this, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			rtvFormat = backbuffer->GetResource()->GetDesc().Format;
+			// rtvFormat = backbuffer->GetResource()->GetDesc().Format;
+			rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		} else {
 			// framebuffer
 			auto texture = TextureResource::Get(targets[i]);
@@ -416,9 +421,7 @@ void D3D12CommandContext::DrawInstanced(int geometryId, void* instanceBuffer, un
 		// make instance data
 		D3D12_GPU_VIRTUAL_ADDRESS instanceAddr{};
 		auto cpuData = allocTransientConstantBuffer(numInstances * stride, &instanceAddr);
-		memcpy(cpuData, instanceBuffer, numInstances * stride);
-		printf("setting instance data  size %d\n", numInstances * stride);
-		printf("end set cpuAddr %0lx\n", cpuData);
+		memcpy(cpuData, instanceBuffer, (size_t)numInstances * stride);
 		// set buffers
 		D3D12_VERTEX_BUFFER_VIEW vertex[2]{ 
 			{
@@ -449,6 +452,23 @@ void D3D12CommandContext::Quad()
 	pipelineStateCache.Top = R_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	// flush state
 	flushState();
+	auto geometry = Geometry::Get(0);
+
+	// set buffers
+	D3D12_VERTEX_BUFFER_VIEW vertex{
+		geometry->vertexBuffer->GetResource()->GetGPUVirtualAddress(),
+		geometry->vertexBufferSize,
+		geometry->vertexStride,
+	};
+	D3D12_INDEX_BUFFER_VIEW index{
+		geometry->indexBuffer->GetResource()->GetGPUVirtualAddress(),
+		geometry->numIndices * sizeof(WORD),
+		DXGI_FORMAT_R16_UINT,
+	};
+	cmdList->IASetVertexBuffers(0, 1, &vertex);
+	cmdList->IASetIndexBuffer(&index);
+	cmdList->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)geometry->primitiveToplogy);
+	cmdList->DrawIndexedInstanced(geometry->numIndices, 1, 0, 0, 0);
 }
 
 void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
@@ -466,7 +486,9 @@ void D3D12CommandContext::DispatchCompute(int width, int height)
 void D3D12CommandContext::ClearRenderTargets(bool clearTargets, bool clearDepth)
 {
 	// flush barriers
-	applyBarriers();
+	if (clearTargets || clearDepth) {
+		applyBarriers();
+	}
 	// clear targets
 	if (clearTargets) {
 		for (int i = 0; i < currentNumTargets; i++) {
@@ -1537,7 +1559,19 @@ UINT64 D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
 	UploadHeap::RetireAll(fenceValue);
 	// TODO: retire rtScene
 
-	return fenceValue;
+	backBuffer.WaitForNextFrame();
+	QueryPerformanceFrequency(&performance.Frequency);
+	QueryPerformanceCounter(&performance.EndingTime);
+	performance.ElapsedMicroseconds.QuadPart = performance.EndingTime.QuadPart - performance.StartingTime.QuadPart;
+	performance.StartingTime = performance.EndingTime;
+	performance.ElapsedMicroseconds.QuadPart *= 1000000;
+	performance.ElapsedMicroseconds.QuadPart /= performance.Frequency.QuadPart;
+	char title[256] = {};
+	sprintf_s(title, "Simple Renderer - D3D12(%d, %d) FPS: %lld  Draw Calls %d", backBuffer.width, backBuffer.height, 1000000 / performance.ElapsedMicroseconds.QuadPart, performance.DrawCallCount);
+	SetWindowTextA(backBuffer.hWnd, title);
+	performance.DrawCallCount = -1;
+
+	return fenceValue; 
 }
 
 

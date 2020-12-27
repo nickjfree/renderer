@@ -229,7 +229,7 @@
       </pass>
     </technique>
     <technique name="QuadPointLight">
-      <pass name="quad" depthstencil="NoZ" rasterizer="NoCull" blend="Additive">
+      <pass name="quad" depthstencil="Stencil" rasterizer="NoCull" blend="Additive">
         <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\point_light.ps"></ps>
       </pass>

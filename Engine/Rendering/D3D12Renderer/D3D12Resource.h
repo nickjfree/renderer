@@ -197,6 +197,7 @@ namespace D3D12Renderer {
 		// backbuffer size
 		int width;
 		int height;
+		HWND hWnd;
 	private:
 		// backbufer textures
 		TextureResource backBuffers[backbuffer_count];

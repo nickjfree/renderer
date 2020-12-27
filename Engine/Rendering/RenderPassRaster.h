@@ -1,4 +1,4 @@
-#ifndef __RENDER_PASS__
+#ifndef __RENDER_PASS_RASTER__
 #define __RENDER_PASS__
 
 #include "FrameGraph.h"
@@ -8,7 +8,8 @@
 /*
 *  create render states
 */
-void CreateRenderState(RenderContext* renderContext) {
+void CreateRenderState(RenderContext* renderContext) 
+{
 
 	auto renderInterface = renderContext->GetRenderInterface();
 
@@ -42,7 +43,22 @@ void CreateRenderState(RenderContext* renderContext) {
 	depth.StencilPassBack = R_STENCIL_OP::ZERO;
 	depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
 	depth.StencilRef = 0;
-	renderContext->RegisterRenderState("NoZ", renderInterface->CreateDepthStencilStatus(&depth));
+	renderContext->RegisterRenderState("Stencil", renderInterface->CreateDepthStencilStatus(&depth));
+	// shading pass depth
+	depth.ZTestEnable = 0;
+	depth.ZWriteEnable = 0;
+	depth.DepthFunc = R_CMP_FUNC::LESS;
+	depth.StencilEnable = 0;
+	depth.StencilFailFront = R_STENCIL_OP::KEEP;
+	depth.DepthFailFront = R_STENCIL_OP::KEEP;
+	depth.StencilPassFront = R_STENCIL_OP::ZERO;
+	depth.StencilFuncFront = R_CMP_FUNC::NOT_EQUAL;
+	depth.StencilFailBack = R_STENCIL_OP::KEEP;
+	depth.DepthFailBack = R_STENCIL_OP::KEEP;
+	depth.StencilPassBack = R_STENCIL_OP::ZERO;
+	depth.StencilFuncBack = R_CMP_FUNC::NOT_EQUAL;
+	depth.StencilRef = 0;
+	renderContext->RegisterRenderState("NoZTest", renderInterface->CreateDepthStencilStatus(&depth));
 	// normal depth
 	depth.ZTestEnable = 1;
 	depth.ZWriteEnable = 1;
@@ -160,9 +176,10 @@ void CreateRenderState(RenderContext* renderContext) {
 	Texture2D gPrevCompactBuffer: register(t13);
 
 */
-auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
+auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) 
+{
 
-	typedef struct GBufferPassData {
+	typedef struct PassData {
 		RenderResource diffuse;
 		RenderResource compact0;
 		RenderResource compact1;
@@ -171,142 +188,77 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 		RenderResource motion;
 
 		RenderResource zBuffer;
-	}GBufferPassData;
+	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
-	auto gBufferPass = frameGraph.AddRenderPass<GBufferPassData>("gbuffer",
-		[&](GraphBuilder& builder, GBufferPassData& passData) {
-			passData.depth = builder.Create("linear_depth",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
+	auto gBufferPass = frameGraph.AddRenderPass<PassData>("gbuffer",
+		[&](GraphBuilder& builder, PassData& passData) {
 
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+			R_TEXTURE2D_DESC desc = {};
+			desc.Width = renderContext->FrameWidth;
+			desc.Height = renderContext->FrameHeight;
+			desc.ArraySize = 1;
+			desc.CPUAccess = (R_CPU_ACCESS)0;
+			desc.MipLevels = 1;
+			desc.Usage = DEFAULT;
+			desc.SampleDesc.Count = 1;
+			desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+
+			passData.depth = builder.Create("linear_depth",
+				[=]() mutable {
 					desc.Format = FORMAT_R32_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"linear_depth";
 					return renderInterface->CreateTexture2D(&desc);
-
 				});
 			passData.diffuse = builder.Create("diffuse",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+				[=]() mutable {
 					desc.Format = FORMAT_R8G8B8A8_UNORM_SRGB;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"diffuse";
 					return renderInterface->CreateTexture2D(&desc);
-
 				});
+			
 			passData.compact0 = builder.Create("compact_buffer-0",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+				[=]() mutable {
 					desc.Format = FORMAT_R16G16B16A16_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"compact_buffer-0";
 					return renderInterface->CreateTexture2D(&desc);
-
 				});
 			passData.compact1 = builder.Create("compact_buffer-1",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+				[=]() mutable  {
 					desc.Format = FORMAT_R16G16B16A16_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"compact_buffer-1";
 					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.specular = builder.Create("specular",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+				[=]() mutable {
 					desc.Format = FORMAT_R8G8B8A8_UNORM;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"specular";
 					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.motion = builder.Create("motion",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
+				[=]() mutable {
 					desc.Format = FORMAT_R16G16B16A16_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"motion";
 					return renderInterface->CreateTexture2D(&desc);
 
 				});
 			passData.zBuffer = builder.Create("zbuffer",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
-
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
+				[=]() mutable {
 					desc.BindFlag = (R_BIND_FLAG)(BIND_DEPTH_STENCIL);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
 					desc.Format = FORMAT_D24_UNORM_S8_UINT;
-					desc.SampleDesc.Count = 1;
-					// linearz
 					desc.DebugName = L"zbuffer";
 					return renderInterface->CreateTexture2D(&desc);
 
 				});
 		},
-		[=](GBufferPassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// cmdBuffer global pramerers setup
 			cmdBuffer->SetupFrameParameters(cam, renderContext);
 
+			// flip compact buffer
+			passData.compact0.Flip(&passData.compact1);
 			// set gbuffer as render target
 			int targets[] = {
 				passData.diffuse.GetActualResource(),
@@ -317,12 +269,13 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 			};
 			auto compact1 = passData.compact1.GetActualResource();
 			auto zbuffer = passData.zBuffer.GetActualResource();
+			// record command
 			auto cmd = cmdBuffer->AllocCommand();
 			cmdBuffer->RenderTargets(cmd, targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
 			// set prev compact buffer
 			Variant prevCompactBuffer;
 			prevCompactBuffer.as<int>() = compact1;
-			renderContext->SetResource("gPrevCompactBuffer", prevCompactBuffer);
+			cmdBuffer->SetGlobalParameter("gPrevCompactBuffer", prevCompactBuffer);
 			// render objects
 			static Vector<Node*> objects;
 			objects.Reset();
@@ -331,11 +284,90 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext) {
 				auto obj = *iter;
 				obj->Render(cmdBuffer, R_STAGE_GBUFFER, 0, cam, renderContext);
 			}
-			// flip compact buffer
-			passData.compact0.Flip(&passData.compact1);
 		});
 	return gBufferPass;
 }
+
+
+/*
+	do simple lighiting with gbuffer data
+*/
+template <class T>
+auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData) 
+{
+	typedef struct PassData {
+		RenderResource diffuse;
+		RenderResource compact0;
+		RenderResource depth;
+		RenderResource specular;
+		RenderResource lighting;
+
+		RenderResource zBuffer;
+	}PassData;
+
+	auto renderInterface = renderContext->GetRenderInterface();
+	auto lightingPass = frameGraph.AddRenderPass<PassData>("lighting",
+		[&](GraphBuilder& builder, PassData& passData) {
+			// read input from gbuffer
+			passData.diffuse = builder.Read(&gbufferPassData.diffuse);
+			passData.compact0 = builder.Read(&gbufferPassData.compact0);
+			passData.depth = builder.Read(&gbufferPassData.depth);
+			passData.specular = builder.Read(&gbufferPassData.specular);
+			passData.zBuffer = builder.Write(&gbufferPassData.zBuffer);
+			// create the lighting buffer
+			passData.lighting = builder.Create("lighting",
+				[=]() {
+					R_TEXTURE2D_DESC desc = {};
+					desc.Width = renderContext->FrameWidth;
+					desc.Height = renderContext->FrameHeight;
+
+					desc.ArraySize = 1;
+					desc.CPUAccess = (R_CPU_ACCESS)0;
+					desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+					desc.MipLevels = 1;
+					desc.Usage = DEFAULT;
+					desc.Format = FORMAT_R16G16B16A16_FLOAT;
+					desc.SampleDesc.Count = 1;
+					// linearz
+					desc.DebugName = L"lighting";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+		},
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+			// set lighting as render target
+			cmdBuffer->SetupFrameParameters(cam, renderContext);
+			int targets[] = {
+				passData.lighting.GetActualResource(),
+				//0,
+			};
+			//int targets[] = {
+			//	0,
+			//};
+			auto zbuffer = passData.zBuffer.GetActualResource();
+			auto cmd = cmdBuffer->AllocCommand();
+			cmdBuffer->RenderTargets(cmd, targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+			// set gbuffer as input
+			Variant diffuse, compact0, specular, depth;
+			diffuse.as<int>() = passData.diffuse.GetActualResource();
+			compact0.as<int>() = passData.compact0.GetActualResource();
+			specular.as<int>() = passData.specular.GetActualResource();
+			depth.as<int>() = passData.depth.GetActualResource();
+			cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
+			cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
+			cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
+			cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+			// render all the lights
+			static Vector<Node*> lights;
+			lights.Reset();
+			spatial->Query(cam->GetFrustum(), lights, Node::LIGHT);
+			for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
+				auto light = *iter;
+				light->Render(cmdBuffer, 0, 0, cam, renderContext);
+			}
+		});
+	return lightingPass;
+}
+
 
 
 #endif

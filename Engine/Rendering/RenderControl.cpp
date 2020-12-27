@@ -7,7 +7,11 @@
 #include "RenderToTextureStage.h"
 #include "Opcode.h"
 #include "FrameGraph.h"
+
+#include "RenderPassShadowMap.h"
 #include "RenderPassRaster.h"
+#include "RenderPassHDR.h"
+#include "RenderPassSSAO.h"
 
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -144,5 +148,8 @@ void RenderControl::initFrameGraph()
 	CreateRenderState(Context);
 	// build the frame graph
 	auto gbuffer = AddGBufferPass(frameGraph, Context);
-	auto& gbufferData = gbuffer->Data();
+	auto shadow = AddShadowMapPass(frameGraph, Context);
+	auto lighting = AddLightingPass(frameGraph, Context, gbuffer->Data());
+	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
+	auto hdr = AddHDRPass(frameGraph, Context, ssao->Data());
 }

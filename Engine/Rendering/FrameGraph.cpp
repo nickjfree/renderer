@@ -34,6 +34,7 @@ RenderResource GraphBuilder::Read(RenderResource* input)
 	ret.direction = RenderResource::Direction::READ;
 	ret.input = input;
 	ret.owner = renderPass;
+	ret.name = input->name;
 	// dependency
 	renderPass->AddDependency(input->GetOwner());
 	return ret;
@@ -45,6 +46,7 @@ RenderResource GraphBuilder::Write(RenderResource* input)
 	ret.direction = RenderResource::Direction::WRITE;
 	ret.input = input;
 	ret.owner = renderPass;
+	ret.name = input->name;
 	// dependency
 	renderPass->AddDependency(input->GetOwner());
 	return ret;
@@ -90,21 +92,34 @@ void BaseRenderPass::AddDependency(BaseRenderPass* dependency)
 
 void FrameGraph::Resolve()
 {
+	// TODO
 }
 
 void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* renderContext)
 {
-	// this is a test run, just run the first pass
+	// this is a test run, just run the pass in order
 	auto renderInterface = renderContext->GetRenderInterface();
 	if (renderPasses.Size()) {
-		auto pass = renderPasses[0];
+		auto gbuffer = renderPasses[0];
+		auto shadow = renderPasses[1];
+		auto lighting = renderPasses[2];
+		auto ao = renderPasses[3];
+		auto hdr = renderPasses[4];
 		// get commandbuffer
 		auto cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Reset();
-		// execute the pass
-		pass->Execute(cmdBuffer, cam, spatial);
+		// execute the gbuffer pass
+		gbuffer->Execute(cmdBuffer, cam, spatial);
+		// execute the shadow pass
+		shadow->Execute(cmdBuffer, cam, spatial);
+		// execute the lighting pass
+		lighting->Execute(cmdBuffer, cam, spatial);
+		// do ssao
+		ao->Execute(cmdBuffer, cam, spatial);
+		// do hdr
+		hdr->Execute(cmdBuffer, cam, spatial);
 		// flush the command buffer
-		auto renderCommandContext = renderInterface->BeginContext(pass->IsAsyncCompute());
+		auto renderCommandContext = renderInterface->BeginContext(false);
 		cmdBuffer->Flush(renderCommandContext);
 		cmdBuffer->Recycle();
 		// present

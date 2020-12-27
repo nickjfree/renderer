@@ -152,9 +152,11 @@ public:
 	// flush and record commandlist
 	void Flush(RenderCommandContext* cmdContext);
 	// reset
-	void Reset() { currentIndex = 0; usedInstanceBuffer = 0; }
+	void Reset();
 	// set frame parameter
 	void SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
+	// get global parameter
+	void SetGlobalParameter(const String& name, Variant& data);
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);

@@ -74,7 +74,6 @@ enum R_MISC {
 	RESOURCE_MISC_GUARDED = 0x8000L,
 	RESOURCE_MISC_TILE_POOL = 0x20000L,
 	RESOURCE_MISC_TILED = 0x40000L
-
 };
 
 
@@ -269,6 +268,20 @@ typedef struct R_GEOMETRY_DESC {
 	R_PRIMITIVE_TOPOLOGY Top;
 	wchar_t* DebugName;
 }R_GEOMETRY_DESC;
+
+
+/*
+	rtGeomtry desc
+*/
+
+typedef struct R_RT_GEOMETRY_DESC {
+	// geomtry id
+	int geometryId;
+	// transient
+	bool transient;
+	// debug
+	wchar_t* DebugName;
+}R_RT_GEOMETRY_DESC;
 
 /*
 	Texture sample desc

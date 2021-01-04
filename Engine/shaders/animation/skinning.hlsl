@@ -9,7 +9,7 @@ PS_Input_GBuffer VS_Skinning_GBuffer(VS_Input_Skinning vs_input, uint VertexId :
     // do bone tranformation
     vs_input = transform_bone(vs_input);
     // save transformed vertex to uav
-    // gDeformableBuffer[VertexId] = vs_input;
+    gDeformableBuffer[VertexId] = vs_input;
     // transform to pixel shader
     PS_Input_GBuffer output;
     output = transform_to_view_gbuffer(vs_input.PosL, vs_input.Normal, 

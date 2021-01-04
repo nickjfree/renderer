@@ -89,7 +89,8 @@ public:
 		Debug("creategeometry\n");
 		return -1;
 	}
-
+	// create transient geometry buffer
+	virtual int CreateTransientGeometryBuffer(int geometryId) { return -1; }
 	// create bottom level as
 	virtual int CreateRaytracingGeometry(int GeometryId, bool Deformable, int* BufferId) { return -1; };
 	

@@ -105,24 +105,42 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto lighting = renderPasses[2];
 		auto ao = renderPasses[3];
 		auto hdr = renderPasses[4];
+
 		// get commandbuffer
 		auto cmdBuffer = CommandBuffer::Create();
 		cmdBuffer->Reset();
 		// execute the gbuffer pass
 		gbuffer->Execute(cmdBuffer, cam, spatial);
-		// execute the shadow pass
-		shadow->Execute(cmdBuffer, cam, spatial);
-		// execute the lighting pass
-		lighting->Execute(cmdBuffer, cam, spatial);
-		// do ssao
-		ao->Execute(cmdBuffer, cam, spatial);
-		// do hdr
-		hdr->Execute(cmdBuffer, cam, spatial);
-		// flush the command buffer
+
+		// sync point: flush the gbuffer command
 		auto renderCommandContext = renderInterface->BeginContext(false);
 		cmdBuffer->Flush(renderCommandContext);
 		cmdBuffer->Recycle();
-		// present
-		renderInterface->EndContext(renderCommandContext, true);
+		auto fence = renderInterface->EndContext(renderCommandContext, false);
+
+		{
+			// build the raytracing structure
+
+		}
+
+		{
+			// new command buffer
+			auto cmdBuffer = CommandBuffer::Create();
+			cmdBuffer->Reset();
+			// execute the shadow pass
+			shadow->Execute(cmdBuffer, cam, spatial);
+			// execute the lighting pass
+			lighting->Execute(cmdBuffer, cam, spatial);
+			// do ssao
+			ao->Execute(cmdBuffer, cam, spatial);
+			// do hdr
+			hdr->Execute(cmdBuffer, cam, spatial);
+			// flush the command buffer
+			auto renderCommandContext = renderInterface->BeginContext(false);
+			cmdBuffer->Flush(renderCommandContext);
+			cmdBuffer->Recycle();
+			// present
+			renderInterface->EndContext(renderCommandContext, true);
+		}
 	}
 }

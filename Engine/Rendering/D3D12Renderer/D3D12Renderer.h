@@ -34,6 +34,8 @@ namespace D3D12Renderer {
 		int CreateGeometry(R_GEOMETRY_DESC* desc);
 		// destory geometry
 		int DestoryGeometry(int id);
+		// transient as
+		int CreateTransientGeometryBuffer(int geometryId);
 
 		// shaders
 		int CreateShader(void* byteCode, unsigned int size, int flag);
@@ -55,6 +57,10 @@ namespace D3D12Renderer {
 		D3D12BackBuffer* GetBackBuffer() { return &backBuffer; }
 		// get sampler heap
 		// D3D12DescriptorHeap** GetHeaps() { return textureDescHeaps; }
+		// get texture heaps
+		D3D12DescriptorHeap**  GetTextureHeaps() { return textureDescHeaps; }
+		// get buffer heaps
+		D3D12DescriptorHeap**  GetBufferHeaps() { return bufferDescHeaps; }
 		// get resource
 		D3D12Resource* GetResource(int id);
 		// begin context

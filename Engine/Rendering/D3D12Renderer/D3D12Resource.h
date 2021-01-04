@@ -15,6 +15,7 @@ namespace D3D12Renderer {
 	constexpr auto max_texture_number = 8192;
 	constexpr auto max_buffer_number = 8192;
 	constexpr auto max_geometry_number = 8192;
+	constexpr auto max_rt_geometry_number = 8192;
 
 	// backbuffer count
 	constexpr auto backbuffer_count = 2;
@@ -27,6 +28,7 @@ namespace D3D12Renderer {
 			R_TEXTURE2D_DESC textureDesc;
 			R_BUFFER_DESC bufferDesc;
 			R_GEOMETRY_DESC geometryDesc;
+			R_RT_GEOMETRY_DESC rtGeometryDesc;
 		};
 	}ResourceDescribe;
 
@@ -43,7 +45,7 @@ namespace D3D12Renderer {
 		// Get 
 		ID3D12Resource* GetResource() { return resource; }
 		// set state (issue a transfer barrier)
-		void SetResourceState(D3D12CommandContext *cmdContext, D3D12_RESOURCE_STATES targetState);
+		virtual void SetResourceState(D3D12CommandContext *cmdContext, D3D12_RESOURCE_STATES targetState);
 		// create descriptor handles in cpuHeap
 		virtual void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
 		// srv
@@ -149,16 +151,53 @@ namespace D3D12Renderer {
 	};
 
 	/*
+		raytracing as
+	*/
+	class Geometry;
+
+	class RaytracingGeomtry: public PoolResource<RaytracingGeomtry, max_rt_geometry_number>
+	{
+	public:
+		// retire all
+		static void RetireAllTransientGeometry();
+		// create
+		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
+		// retire
+		void Retire();
+		// release
+		void Release();
+		// transinet
+		void SetTransient();
+		// set resource state
+		virtual void SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState);
+	private:
+		// parent geometry
+		Geometry* geometry = nullptr;
+		// transient
+		bool isTransient = false;
+		// as buffers
+		BufferResource* transientBuffer = nullptr;
+		BufferResource* asBuffer = nullptr;
+		BufferResource* scratchBuffer = nullptr;
+		// inflight transient items
+		static Vector<RaytracingGeomtry*> inflightRtGeometries;
+		//TODO: add some build desc
+	};
+
+	/*
 		vertexbuffer + indexbuffer
 	*/
 	class Geometry: public PoolResource<Geometry, max_geometry_number>
 	{
 		friend D3D12CommandContext;
+		friend RaytracingGeomtry;
 	public:
 		// create
 		void Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc);
 		// release
 		void Release();
+		// create regeomtry
+		int CreateRtGeometry(ID3D12Device* d3d12Device, bool isTransient);
 	private:
 		// buffers
 		BufferResource* vertexBuffer = nullptr;
@@ -171,6 +210,10 @@ namespace D3D12Renderer {
 		unsigned int numIndices = 0;
 		// toplogy format
 		R_PRIMITIVE_TOPOLOGY primitiveToplogy = R_PRIMITIVE_TOPOLOGY_UNDEFINED;
+		// rt geometries
+		Vector<RaytracingGeomtry*> transientRtGeometries;
+		// static rtgeometry
+		RaytracingGeomtry* staticRtGeometry;
 	};
 
 	/*

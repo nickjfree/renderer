@@ -9,7 +9,7 @@ PS_Input_GBuffer VS_Terrain_GBuffer(VS_Input_Simple vs_input, uint VertexId : SV
     // do bone tranformation
     vs_input = transform_terrain(vs_input);
     // transform terrain
-    // gDeformableBuffer[VertexId] = vs_input;
+    gDeformableBuffer[VertexId] = vs_input;
     // transform to pixel shader
     PS_Input_GBuffer output;
     output = transform_to_view_gbuffer(vs_input.PosL, vs_input.Normal, 

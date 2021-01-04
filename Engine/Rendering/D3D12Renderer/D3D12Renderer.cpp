@@ -257,9 +257,9 @@ void D3D12CommandContext::SetSRV(int slot, int resourceId)
 
 void D3D12CommandContext::SetUAV(int slot, int resourceId)
 {
-	if (resourceId == -1) {
+	if (resourceId != -1) {
 		auto resource = D3D12RenderInterface::Get()->GetResource(resourceId);
-		currentRootSignature->SetSRV(slot, resource->GetUav());
+		currentRootSignature->SetUAV(slot, resource->GetUav());
 		resource->SetResourceState(this, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	}
 } 
@@ -1183,6 +1183,9 @@ D3D12Resource* D3D12RenderInterface::GetResource(int id)
 	case static_cast<int>(D3D12Resource::RESOURCE_TYPES::GEOMETRY):
 		resource = Geometry::Get(id);
 		break;
+	case static_cast<int>(D3D12Resource::RESOURCE_TYPES::BLAS):
+		resource = RaytracingGeomtry::Get(id);
+		break;
 	}
 	return resource;
 }
@@ -1450,6 +1453,13 @@ int D3D12RenderInterface::DestoryGeometry(int id)
 	return 0;
 }
 
+int D3D12Renderer::D3D12RenderInterface::CreateTransientGeometryBuffer(int geometryId)
+{
+	auto geometry = Geometry::Get(geometryId);
+	auto transientBufferId = geometry->CreateRtGeometry(d3d12Device, true);
+	return transientBufferId;
+}
+
 
 int D3D12RenderInterface::CreateShader(void* byteCode, unsigned int size, int flag)
 {
@@ -1557,8 +1567,9 @@ UINT64 D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
 	D3D12RootSignature::RetireAll(fenceValue);
 	D3D12CommandContext::RetireAll(fenceValue);
 	UploadHeap::RetireAll(fenceValue);
+	// retire transient rtGeometries
+	RaytracingGeomtry::RetireAllTransientGeometry();
 	// TODO: retire rtScene
-
 	backBuffer.WaitForNextFrame();
 	QueryPerformanceFrequency(&performance.Frequency);
 	QueryPerformanceCounter(&performance.EndingTime);

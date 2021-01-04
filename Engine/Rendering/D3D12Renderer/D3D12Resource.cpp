@@ -124,12 +124,12 @@ void BufferResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* re
 	udesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
 	// srv
-	auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
+	auto constexpr srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
 	auto handle = descHeaps[srvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 	d3d12Device->CreateShaderResourceView(resource, &vdesc, handle);
 	views[srvIndex] = handle;
 	// uav
-	auto uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
+	auto constexpr uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
 	handle = descHeaps[uavIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 	d3d12Device->CreateUnorderedAccessView(resource, nullptr, &udesc, handle);
 	views[uavIndex] = handle;
@@ -250,7 +250,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 		rtDesc.Format = (DXGI_FORMAT)textureDesc.Format;
 		rtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		rtDesc.Texture2D.MipSlice = 0;
-		auto rtvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::RTV;
+		auto constexpr rtvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::RTV;
 		auto handle = descHeaps[rtvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 		d3d12Device->CreateRenderTargetView(resource, &rtDesc, handle);
 		views[rtvIndex] = handle;
@@ -267,7 +267,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 		dsDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 		dsDesc.Texture2D.MipSlice = 0;
 		
-		auto dsvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::DSV;
+		auto constexpr dsvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::DSV;
 		auto handle = descHeaps[dsvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 		d3d12Device->CreateDepthStencilView(resource, &dsDesc, handle);
 		views[dsvIndex] = handle;
@@ -281,7 +281,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 		udesc.Format = (DXGI_FORMAT)textureDesc.Format;
 		udesc.Texture2D.MipSlice = 0;
 		udesc.Texture2D.PlaneSlice = 0;
-		auto uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
+		auto constexpr uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
 		auto handle = descHeaps[uavIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 		d3d12Device->CreateUnorderedAccessView(resource, nullptr, &udesc, handle);
 		views[uavIndex] = handle;
@@ -303,7 +303,7 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 			vdesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			vdesc.Texture2D.MipLevels = resDesc.MipLevels;
 		}
-		auto srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
+		auto constexpr srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
 		auto handle = descHeaps[srvIndex]->GetCpuHandle(resourceId & 0x00ffffff);
 		d3d12Device->CreateShaderResourceView(resource, &vdesc, handle);
 		views[srvIndex] = handle;
@@ -370,6 +370,104 @@ void Geometry::Release()
 	Free();
 }
 
+
+int Geometry::CreateRtGeometry(ID3D12Device* d3d12Device, bool isTransient)
+{
+	RaytracingGeomtry* rtGeometry = nullptr;
+	if (isTransient && transientRtGeometries.Size()) {
+		rtGeometry = transientRtGeometries.PopBack();
+	} else  {
+		// not found, create a new one
+		R_RT_GEOMETRY_DESC desc{};
+		desc.DebugName = L"blas";
+		desc.geometryId = resourceId;
+		desc.transient = isTransient;
+		rtGeometry = RaytracingGeomtry::CreateResource(d3d12Device, (ResourceDescribe*)&desc);
+		rtGeometry->resourceId |= (unsigned int)D3D12Resource::RESOURCE_TYPES::BLAS << 24;
+	}
+	if (isTransient) {
+		rtGeometry->SetTransient();
+	}
+	return rtGeometry->resourceId;
+}
+
+
+/************************************************************************/
+// raytracing geometry
+/************************************************************************/
+
+Vector<RaytracingGeomtry*> RaytracingGeomtry::inflightRtGeometries;
+
+void RaytracingGeomtry::RetireAllTransientGeometry()
+{
+	while (inflightRtGeometries.Size()) {
+		auto rtGeomtry = inflightRtGeometries.PopBack();
+		rtGeomtry->Retire();
+	}
+}
+
+void RaytracingGeomtry::Create(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc)
+{
+	auto rtDesc = (R_RT_GEOMETRY_DESC*)resourceDesc;
+	// set parent
+	geometry = Geometry::Get(rtDesc->geometryId);
+	if (rtDesc->transient) {
+		// create transient buffer
+		R_BUFFER_DESC bufferDesc{};
+		bufferDesc.BindFlags = R_BIND_FLAG::BIND_UNORDERED_ACCESS;
+		bufferDesc.Size = geometry->vertexBufferSize;
+		bufferDesc.StructureByteStride = geometry->vertexStride;
+		bufferDesc.DebugName = L"transient-geometry-buffer";
+		transientBuffer = BufferResource::CreateResource(d3d12Device, (ResourceDescribe*)&bufferDesc);
+		transientBuffer->CreateViews(d3d12Device, (ResourceDescribe*)&bufferDesc, D3D12RenderInterface::Get()->GetBufferHeaps());
+		// get srv 
+		auto constexpr srvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::SRV;
+		views[srvIndex] = transientBuffer->GetSrv();
+		// get uav
+		auto constexpr  uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
+		views[uavIndex] = transientBuffer->GetUav();
+	} 
+	//TODO:: create blas buffer and scratch buffer
+}
+
+void RaytracingGeomtry::SetTransient()
+{
+	// set transient
+	isTransient = true;
+	// add this to inflight vector
+	auto rtGeometry = this;
+	inflightRtGeometries.PushBack(rtGeometry);
+}
+
+void RaytracingGeomtry::SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState)
+{
+	if (transientBuffer) {
+		transientBuffer->SetResourceState(cmdContext, targetState);
+	}
+}
+
+void RaytracingGeomtry::Retire()
+{
+	if (isTransient) {
+		auto rtGeometry = this;
+		geometry->transientRtGeometries.PushBack(rtGeometry);
+	}
+}
+
+void RaytracingGeomtry::Release()
+{
+	if (transientBuffer) {
+		transientBuffer->Release();
+	}
+	if (asBuffer) {
+		asBuffer->Release();
+	}
+	if (scratchBuffer) {
+		scratchBuffer->Release();
+	}
+}
+
+
 /************************************************************************/
 // UploadHeap
 /************************************************************************/
@@ -423,7 +521,7 @@ bool UploadHeap::SubAlloc(unsigned int allocSize)
 	}
 	int alignedSize = (allocSize + const_buffer_align - 1) & ~(const_buffer_align - 1);
 
-	if (currentRear + alignedSize > size) {
+	if ((UINT64)currentRear + alignedSize > size) {
 		// not enough space
 		return false;
 	}

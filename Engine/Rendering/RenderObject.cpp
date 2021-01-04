@@ -126,6 +126,8 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	} else if (stage == R_STAGE_OIT) {
 		stage = 3;
 	}
+	// interface
+	auto renderInterface = renderContext->GetRenderInterface();
 	// prepare perObject constants
 	Matrix4x4& Transform = GetWorldMatrix();
 	// per-object position
@@ -140,15 +142,18 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	// object id
 	cmdParameters["gObjectId"].as<int>() = get_object_id() + 1;
 	cmdParameters["InstanceObjectId"].as<int>() = get_object_id() + 1;
-	if (palette.Size) {
+	auto mesh = model->MeshResource[lod];
+	if (palette.Size || Type & CLIPMAP) {
 		cmdParameters["gSkinMatrix"].as<ShaderParameterArray>() = palette;
+		if (stage == 0) {
+			cmdParameters["gDeformableBuffer"].as<int>() = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
+		}
 	}
 	// if there are  blend shapes
 	if (BlendShape_) {
 		cmdParameters["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
 		cmdParameters["gWeightsArray"].as<ShaderParameterArray>() = blendshape_;
-	}
-	auto mesh = model->MeshResource[lod];
+	} 
 	// add to commandbuffer
 	if (material->GetShader()->IsInstance(stage)) {
 		cmdBuffer->DrawInstanced(cmd, mesh, GetMaterial(), stage);

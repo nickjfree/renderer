@@ -12,6 +12,7 @@
 #include "RenderPassRaster.h"
 #include "RenderPassHDR.h"
 #include "RenderPassSSAO.h"
+#include "RenderPassRaytracing.h"
 
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -152,4 +153,6 @@ void RenderControl::initFrameGraph()
 	auto lighting = AddLightingPass(frameGraph, Context, gbuffer->Data());
 	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
 	auto hdr = AddHDRPass(frameGraph, Context, ssao->Data());
+	// build as
+	auto as = AddBuildASPass(frameGraph, Context);
 }

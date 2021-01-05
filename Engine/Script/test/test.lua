@@ -32,6 +32,7 @@ end
 function reset()
     collectgarbage()
     loader:UnloadLevel("Level\\levels\\desktop.level\\0")
+    collectgarbage()
 end
 
 function control()

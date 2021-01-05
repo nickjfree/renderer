@@ -230,10 +230,13 @@ void D3D12CommandContext::Release()
 	/*cmdList->Close();
 	cmdList->Reset(cmdAllocator, nullptr);
 	cmdAllocator->Reset();*/
-	cmdList->Release();
 	if (rtCommandList) {
 		rtCommandList->Release();
 	}
+	cmdList->Close();
+	cmdList->Reset(cmdAllocator, nullptr);
+	cmdList->Release();
+	cmdAllocator->Reset();
 	cmdAllocator->Release();
 	if (ringConstantBuffer) {
 		ringConstantBuffer->Release();

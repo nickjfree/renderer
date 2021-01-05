@@ -127,6 +127,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			auto computeCommandContext = renderInterface->BeginContext(true);
 			computeCommandContext->Wait(graphicsFence, false);
 			cmdBuffer->Flush(computeCommandContext);
+			cmdBuffer->Recycle();
 			computeFence = renderInterface->EndContext(computeCommandContext, false);
 		}
 		{

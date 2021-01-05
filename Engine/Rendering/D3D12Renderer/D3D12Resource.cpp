@@ -366,6 +366,14 @@ void Geometry::Release()
 {
 	vertexBuffer->Release();
 	indexBuffer->Release();
+	// free rtGeometries
+	while (transientRtGeometries.Size()) {
+		auto rtGeometry = transientRtGeometries.PopBack();
+		rtGeometry->Release();
+	}
+	if (staticRtGeometry) {
+		staticRtGeometry->Release();
+	}
 	// add to freeList
 	Free();
 }
@@ -376,7 +384,7 @@ int Geometry::CreateRtGeometry(ID3D12Device* d3d12Device, bool isTransient)
 	RaytracingGeomtry* rtGeometry = nullptr;
 	if (isTransient && transientRtGeometries.Size()) {
 		rtGeometry = transientRtGeometries.PopBack();
-	} else  {
+	} else if (isTransient || !staticRtGeometry) {
 		// not found, create a new one
 		R_RT_GEOMETRY_DESC desc{};
 		desc.DebugName = L"blas";
@@ -384,9 +392,14 @@ int Geometry::CreateRtGeometry(ID3D12Device* d3d12Device, bool isTransient)
 		desc.transient = isTransient;
 		rtGeometry = RaytracingGeomtry::CreateResource(d3d12Device, (ResourceDescribe*)&desc);
 		rtGeometry->resourceId |= (unsigned int)D3D12Resource::RESOURCE_TYPES::BLAS << 24;
+	} else {
+		rtGeometry = staticRtGeometry;
 	}
 	if (isTransient) {
 		rtGeometry->SetTransient();
+	} else {
+		// static geometry
+		staticRtGeometry = rtGeometry;
 	}
 	return rtGeometry->resourceId;
 }
@@ -427,11 +440,64 @@ void RaytracingGeomtry::Create(ID3D12Device* d3d12Device, ResourceDescribe* reso
 		auto constexpr  uavIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UAV;
 		views[uavIndex] = transientBuffer->GetUav();
 	} 
-	//TODO:: create blas buffer and scratch buffer
+	// create blas buffer and scratch buffer
+	{
+		// input
+		D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
+		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+		geometryDesc.Triangles.IndexBuffer = geometry->indexBuffer->GetResource()->GetGPUVirtualAddress();
+		geometryDesc.Triangles.IndexCount = geometry->numIndices;
+		geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_R16_UINT;
+		geometryDesc.Triangles.Transform3x4 = 0;
+		geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+		geometryDesc.Triangles.VertexCount = geometry->vertexBufferSize / geometry->vertexStride;
+		if (rtDesc->transient) {
+			geometryDesc.Triangles.VertexBuffer.StartAddress = transientBuffer->GetResource()->GetGPUVirtualAddress();
+		} else {
+			geometryDesc.Triangles.VertexBuffer.StartAddress = geometry->vertexBuffer->GetResource()->GetGPUVirtualAddress();
+		}
+		geometryDesc.Triangles.VertexBuffer.StrideInBytes = geometry->vertexStride;
+		geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+
+		bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+		auto flags = rtDesc->transient ?
+			D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE :
+			D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_COMPACTION;
+		bottomLevelInputs.Flags = flags;
+		bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
+		bottomLevelInputs.pGeometryDescs = &geometryDesc;
+		bottomLevelInputs.NumDescs = 1;
+
+		D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO bottomLevelPrebuildInfo = {};
+
+		ID3D12Device5* rtxDevice = nullptr;
+		d3d12Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
+		// get resource size needed
+		rtxDevice->GetRaytracingAccelerationStructurePrebuildInfo(&bottomLevelInputs, &bottomLevelPrebuildInfo);
+		rtxDevice->Release();
+		// create scratch buffer
+		scratchBuffer = CreateCommittedResource(d3d12Device,
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(bottomLevelPrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+				D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+				nullptr);
+		// create blas buffer
+		asBuffer = CreateCommittedResource(d3d12Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(bottomLevelPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr);
+		scratchBuffer->SetName(L"scratch-buffer");
+		asBuffer->SetName(L"blas");
+	}
 }
 
 void RaytracingGeomtry::SetTransient()
 {
+	// need re-initialize
+	initialized = false;
 	// set transient
 	isTransient = true;
 	// add this to inflight vector
@@ -445,6 +511,47 @@ void RaytracingGeomtry::SetResourceState(D3D12CommandContext* cmdContext, D3D12_
 		transientBuffer->SetResourceState(cmdContext, targetState);
 	}
 }
+
+void RaytracingGeomtry::PreBuild(D3D12CommandContext* cmdContext)
+{
+	if (initialized || !isTransient) {
+		return;
+	}
+	// add barriers
+	if (transientBuffer->GetResourceState() != D3D12_RESOURCE_STATE_COPY_DEST) {
+		// make sure the transientBuffer is initialized
+		constexpr auto state = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+		transientBuffer->SetResourceState(cmdContext, state);
+	}
+}
+
+void RaytracingGeomtry::Build(D3D12CommandContext* cmdContext)
+{
+	if (!initialized) {
+		return;
+	}
+	if (isTransient && transientBuffer->GetResourceState() == D3D12_RESOURCE_STATE_COPY_DEST) {
+		// transientBuffer is no initialized
+		return;
+	}
+	auto rtCmdList = cmdContext->GetRtCmdList();
+	// get build desc
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+	buildDesc.DestAccelerationStructureData = asBuffer->GetGPUVirtualAddress();
+	buildDesc.ScratchAccelerationStructureData = scratchBuffer->GetGPUVirtualAddress();
+	buildDesc.SourceAccelerationStructureData = 0;
+	buildDesc.Inputs = bottomLevelInputs;
+	rtCmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
+	// add barriers
+	auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(asBuffer);
+	cmdContext->AddBarrier(barrier);
+	initialized = true;
+}
+
+void RaytracingGeomtry::PostBuild(D3D12CommandContext* cmdContext)
+{
+}
+
 
 void RaytracingGeomtry::Retire()
 {
@@ -465,6 +572,7 @@ void RaytracingGeomtry::Release()
 	if (scratchBuffer) {
 		scratchBuffer->Release();
 	}
+	Free();
 }
 
 

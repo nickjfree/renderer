@@ -155,12 +155,12 @@ void D3D12CommandContext::bindDescriptorHeap(D3D12DescriptorHeap* heap)
 void D3D12CommandContext::initialize()
 {
 	// ensure rootsignatures
-	if (!graphicsRootSignature) {
-		graphicsRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false, nullHeap);
+	if (!graphicsRootSignature && cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+		graphicsRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false, false, nullHeap);
 		cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
 	}
 	if (!computeRootSignature) {
-		computeRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false, nullHeap);
+		computeRootSignature = D3D12RootSignature::AllocTransient(d3d12Device, false, true, nullHeap);
 		cmdList->SetComputeRootSignature(computeRootSignature->Get());
 	}
 	// defualt to graphics context
@@ -179,13 +179,20 @@ void D3D12CommandContext::initialize()
 
 void D3D12CommandContext::SetComputeMode(bool enabled)
 {
+	if (cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
+		// can't set to graphics mode with compute queue
+		isCompute = true;
+		enabled = true;
+	}
 	if (isCompute != enabled) {
 		// stale rootsignatures
 		graphicsRootSignature->SetStale();
 		computeRootSignature->SetStale();
 	}
 	if (isCompute) {
-		cmdList->SetGraphicsRootSignature(nullptr);
+		if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+			cmdList->SetGraphicsRootSignature(nullptr);
+		}
 		cmdList->SetComputeRootSignature(computeRootSignature->Get());
 		currentRootSignature = computeRootSignature;
 	} else {
@@ -194,6 +201,11 @@ void D3D12CommandContext::SetComputeMode(bool enabled)
 		currentRootSignature = graphicsRootSignature;
 	}
 	isCompute = enabled;
+}
+
+void D3D12CommandContext::SetAsyncComputeMode(bool enabled)
+{
+	isAsyncCompute = cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE ? true : enabled;
 }
 
 void D3D12CommandContext::resetTransient() {
@@ -219,6 +231,9 @@ void D3D12CommandContext::Release()
 	cmdList->Reset(cmdAllocator, nullptr);
 	cmdAllocator->Reset();*/
 	cmdList->Release();
+	if (rtCommandList) {
+		rtCommandList->Release();
+	}
 	cmdAllocator->Release();
 	if (ringConstantBuffer) {
 		ringConstantBuffer->Release();
@@ -666,14 +681,14 @@ bool D3D12DescriptorHeap::HasSpace(int num)
 // RootSignature
 /************************************************************************/
 
-D3D12RootSignature* D3D12RootSignature::AllocTransient(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap)
+D3D12RootSignature* D3D12RootSignature::AllocTransient(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap)
 {
 	auto rootSignature = allocTransient(
 		[&](D3D12RootSignature* rootSignature) {
-			rootSignature->create(d3d12Device, local, nullHeap);
+			rootSignature->create(d3d12Device, local, compute, nullHeap);
 		},
 		[&](D3D12RootSignature* rootSignature) {
-			return rootSignature->local == local;
+			return rootSignature->local == local && rootSignature->isCompute == compute;
 		}
 		);
 	return rootSignature;
@@ -775,7 +790,7 @@ void D3D12RootSignature::initMapping(D3D12_ROOT_PARAMETER1* rootParameters, int 
 
 
 // create
-void D3D12RootSignature::create(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap)
+void D3D12RootSignature::create(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap)
 {
 	if (!local) {
 		// init graphic root signature
@@ -838,6 +853,8 @@ void D3D12RootSignature::create(ID3D12Device* d3d12Device, bool local, D3D12Desc
 	// init null handles
 	nullSRV = nullHeap->GetCpuHandle(0);
 	nullUAV = nullHeap->GetCpuHandle(1);
+	//
+	isCompute = compute;
 }
 
 void D3D12RootSignature::SetStale() 
@@ -1191,7 +1208,7 @@ D3D12Resource* D3D12RenderInterface::GetResource(int id)
 }
 
 // destory resource
-void D3D12RenderInterface::DestoryResource(int id)
+void D3D12RenderInterface::DestroyResource(int id)
 {
 	auto resource = GetResource(id);
 	resource->Release();
@@ -1417,9 +1434,9 @@ int D3D12RenderInterface::CreateTexture2D(R_TEXTURE2D_DESC* desc)
 	return texture->resourceId | (unsigned int)D3D12Resource::RESOURCE_TYPES::TEXTURE << 24;
 }
 
-int D3D12RenderInterface::DestoryTexture2D(int id)
+int D3D12RenderInterface::DestroyTexture2D(int id)
 {
-	DestoryResource(id);
+	DestroyResource(id);
 	return 0;
 }
 
@@ -1433,9 +1450,9 @@ int D3D12RenderInterface::CreateBuffer(R_BUFFER_DESC* desc)
 	return buffer->resourceId | (unsigned int)D3D12Resource::RESOURCE_TYPES::BUFFER << 24;
 }
 
-int D3D12RenderInterface::DestoryBuffer(int id)
+int D3D12RenderInterface::DestroyBuffer(int id)
 {
-	DestoryResource(id);
+	DestroyResource(id);
 	return 0;
 }
 
@@ -1447,9 +1464,9 @@ int D3D12RenderInterface::CreateGeometry(R_GEOMETRY_DESC* desc)
 	return geometry->resourceId | (unsigned int)D3D12Resource::RESOURCE_TYPES::GEOMETRY << 24;
 }
 
-int D3D12RenderInterface::DestoryGeometry(int id)
+int D3D12RenderInterface::DestroyGeometry(int id)
 {
-	DestoryResource(id);
+	DestroyResource(id);
 	return 0;
 }
 

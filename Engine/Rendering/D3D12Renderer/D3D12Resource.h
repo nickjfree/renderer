@@ -46,6 +46,8 @@ namespace D3D12Renderer {
 		ID3D12Resource* GetResource() { return resource; }
 		// set state (issue a transfer barrier)
 		virtual void SetResourceState(D3D12CommandContext *cmdContext, D3D12_RESOURCE_STATES targetState);
+		// get state
+		virtual D3D12_RESOURCE_STATES GetResourceState() { return state; }
 		// create descriptor handles in cpuHeap
 		virtual void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
 		// srv
@@ -170,18 +172,29 @@ namespace D3D12Renderer {
 		void SetTransient();
 		// set resource state
 		virtual void SetResourceState(D3D12CommandContext* cmdContext, D3D12_RESOURCE_STATES targetState);
+		// isInitialized
+		bool IsInitialized() { return initialized; }
+		// pre-build
+		void PreBuild(D3D12CommandContext* cmdContext);
+		// build
+		void Build(D3D12CommandContext* cmdContext);
+		// post-build
+		void PostBuild(D3D12CommandContext* cmdContext);
 	private:
 		// parent geometry
 		Geometry* geometry = nullptr;
 		// transient
 		bool isTransient = false;
+		// init
+		bool initialized = false;
 		// as buffers
 		BufferResource* transientBuffer = nullptr;
-		BufferResource* asBuffer = nullptr;
-		BufferResource* scratchBuffer = nullptr;
+		ID3D12Resource* asBuffer = nullptr;
+		ID3D12Resource* scratchBuffer = nullptr;
 		// inflight transient items
 		static Vector<RaytracingGeomtry*> inflightRtGeometries;
-		//TODO: add some build desc
+		// build inputs
+		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS bottomLevelInputs = {};
 	};
 
 	/*
@@ -213,7 +226,7 @@ namespace D3D12Renderer {
 		// rt geometries
 		Vector<RaytracingGeomtry*> transientRtGeometries;
 		// static rtgeometry
-		RaytracingGeomtry* staticRtGeometry;
+		RaytracingGeomtry* staticRtGeometry = nullptr;
 	};
 
 	/*

@@ -105,6 +105,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto lighting = renderPasses[2];
 		auto ao = renderPasses[3];
 		auto hdr = renderPasses[4];
+		auto as = renderPasses[5];
 
 		// get commandbuffer
 		auto cmdBuffer = CommandBuffer::Create();
@@ -116,13 +117,18 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto renderCommandContext = renderInterface->BeginContext(false);
 		cmdBuffer->Flush(renderCommandContext);
 		cmdBuffer->Recycle();
-		auto fence = renderInterface->EndContext(renderCommandContext, false);
-
+		auto graphicsFence = renderInterface->EndContext(renderCommandContext, false);
+		UINT64 computeFence = 0;
 		{
 			// build the raytracing structure
-
+			auto cmdBuffer = CommandBuffer::Create();
+			cmdBuffer->Reset();
+			as->Execute(cmdBuffer, cam, spatial);
+			auto computeCommandContext = renderInterface->BeginContext(true);
+			computeCommandContext->Wait(graphicsFence, false);
+			cmdBuffer->Flush(computeCommandContext);
+			computeFence = renderInterface->EndContext(computeCommandContext, false);
 		}
-
 		{
 			// new command buffer
 			auto cmdBuffer = CommandBuffer::Create();
@@ -137,6 +143,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			hdr->Execute(cmdBuffer, cam, spatial);
 			// flush the command buffer
 			auto renderCommandContext = renderInterface->BeginContext(false);
+			renderCommandContext->Wait(computeFence, true);
 			cmdBuffer->Flush(renderCommandContext);
 			cmdBuffer->Recycle();
 			// present

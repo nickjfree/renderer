@@ -108,7 +108,7 @@ namespace D3D12Renderer {
 		friend Transient;
 	public:
 		// alloc transient
-		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap);
+		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap);
 		// set samplers
 		void SetSamplerTable(ID3D12GraphicsCommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// invalidate bindings
@@ -125,7 +125,7 @@ namespace D3D12Renderer {
 		bool Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap);
 	private:
 		// create
-		void create(ID3D12Device* d3d12Device, bool local, D3D12DescriptorHeap* nullHeap);
+		void create(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap);
 		// init
 		void initRootSignature(ID3D12Device* d3d12Device, bool local, D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters);
 		// init desc table cache
@@ -289,6 +289,8 @@ namespace D3D12Renderer {
 		void Release();
 		// getcmdList
 		ID3D12GraphicsCommandList1* GetCmdList() { return cmdList; }
+		// getrtcmdListt
+		ID3D12GraphicsCommandList5* GetRtCmdList() { return rtCommandList; }
 		// flush
 		UINT64 Flush(bool wait);
 		// add barrier
@@ -298,7 +300,7 @@ namespace D3D12Renderer {
 			mode functions
 		*/
 		// use async compute
-		void SetAsyncComputeMode(bool enabled) { isAsyncCompute = enabled; }
+		void SetAsyncComputeMode(bool enabled);
 		// set to compute mode
 		void SetComputeMode(bool enabled);
 

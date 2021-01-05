@@ -25,15 +25,15 @@ namespace D3D12Renderer {
 		// create texture
 		int CreateTexture2D(R_TEXTURE2D_DESC* desc);
 		// destory buffer
-		int DestoryTexture2D(int id);
+		int DestroyTexture2D(int id);
 		// create texture
 		int CreateBuffer(R_BUFFER_DESC* desc);
 		// destory buffer
-		int DestoryBuffer(int id);
+		int DestroyBuffer(int id);
 		// create geometry
 		int CreateGeometry(R_GEOMETRY_DESC* desc);
 		// destory geometry
-		int DestoryGeometry(int id);
+		int DestroyGeometry(int id);
 		// transient as
 		int CreateTransientGeometryBuffer(int geometryId);
 
@@ -72,7 +72,7 @@ namespace D3D12Renderer {
 		// this
 		static D3D12RenderInterface* self;
 		// destory resource
-		void DestoryResource(int id);
+		void DestroyResource(int id);
 		// create window
 		HWND CreateRenderWindow(int width, int height);
 		// init descriptor heaps

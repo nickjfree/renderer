@@ -51,6 +51,8 @@ public:
 	virtual void DispatchCompute(int width, int height) = 0;
 	// clear render targets and depth
 	virtual void ClearRenderTargets(bool clearTargets, bool clearDepth) = 0;
+	// wait
+	virtual void Wait(UINT64 syncPoint, bool asyncCompute) = 0;
 };
 
 

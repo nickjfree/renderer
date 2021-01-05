@@ -95,10 +95,10 @@ void CommandBuffer::DispatchRays(RenderingCommand* cmd, const String& shaderName
 	cmd->dispatchRays.height = h;
 }
 
-void CommandBuffer::BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, bool deformable, int materialId, int flag)
+void CommandBuffer::BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag)
 {
 	cmd->cmdType = RenderingCommand::CommandType::BUILD_AS;
-	cmd->buildAS.deformable = deformable;
+	cmd->buildAS.transientGeometryId = transientGeometryId;
 	cmd->buildAS.materialId = materialId;
 	cmd->buildAS.flag = flag;
 	cmd->buildAS.material = material;
@@ -161,6 +161,20 @@ void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* c
 	}
 }
 
+void CommandBuffer::buildAccelerationStructure(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	auto material = cmd->buildAS.material;
+	auto rtShader = material->GetShaderLibrary(0);
+	if (rtShader) {
+		R_RAYTRACING_INSTANCE instance = {};
+		instance.Flag = cmd->buildAS.flag;
+		instance.MaterialId = cmd->buildAS.materialId;
+		instance.rtGeometry = cmd->buildAS.transientGeometryId != -1? cmd->buildAS.transientGeometryId: cmd->buildAS.mesh->GetId();
+		instance.Transform = cmd->buildAS.transform;
+		material->GetRtShaderBindings(renderContext, &instance);
+	}
+}
+
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
@@ -182,6 +196,9 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 			break;
 		case RenderingCommand::CommandType::DRAW_INSTANCED:
 			drawInstanced(&cmd, cmdContext);
+			break;
+		case RenderingCommand::CommandType::BUILD_AS:
+			buildAccelerationStructure(&cmd, cmdContext);
 			break;
 		default:
 			break;

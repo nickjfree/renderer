@@ -56,7 +56,7 @@ typedef struct BuildAccelerationStructureCommand
 	// transform
 	Matrix4x4 transform;
 	// deformable
-	bool deformable;
+	int transientGeometryId;
 }BuildAccelerationStructureCommand;
 
 
@@ -146,7 +146,7 @@ public:
 	// dispatch rays
 	void DispatchRays(RenderingCommand* cmd, const String& shaderName, Material* material, int w, int h);
 	// dispatch rays
-	void BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, bool deformable, int materialId, int flag);
+	void BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag);
 	// render targets
 	void RenderTargets(RenderingCommand* cmd, int* targets, int numTargets, int depth, bool clearTargets, bool clearDepth, int w, int h);
 	// flush and record commandlist
@@ -166,6 +166,8 @@ private:
 	void draw(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// draw instanced
 	void drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// build as
+	void buildAccelerationStructure(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 private:
 	// commands
 	RenderingCommand renderingCommands[max_command_buffer_size];

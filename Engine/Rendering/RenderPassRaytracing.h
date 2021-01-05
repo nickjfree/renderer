@@ -17,7 +17,7 @@ auto AddBuildASPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			// no input
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			auto cmd = cmdBuffer->AllocCommand();
+			// auto cmd = cmdBuffer->AllocCommand();
 			// build as
 			
 		});

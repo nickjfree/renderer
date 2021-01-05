@@ -47,7 +47,7 @@ public:
 	// queue render command
 	virtual int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
 	// update raytracing
-	virtual int UpdateRaytracingStructure(RenderContext* Context);
+	virtual int UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext);
 	// set matrix palette
 	void SetMatrixPalette(Matrix4x4* palette, unsigned int NumMatrix);
 	// set blendshape desc

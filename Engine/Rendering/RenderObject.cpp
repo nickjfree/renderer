@@ -146,7 +146,8 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	if (palette.Size || Type & CLIPMAP) {
 		cmdParameters["gSkinMatrix"].as<ShaderParameterArray>() = palette;
 		if (stage == 0) {
-			cmdParameters["gDeformableBuffer"].as<int>() = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
+			DeformableBuffer = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
+			cmdParameters["gDeformableBuffer"].as<int>() = DeformableBuffer;
 		}
 	}
 	// if there are  blend shapes
@@ -163,38 +164,13 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	return 0;
 }
 
-int RenderObject::UpdateRaytracingStructure(RenderContext* Context) {
-	
-	// get geometry
-	int Geometry = GetRenderMesh(0, 0);
-
-	// get raytracing shader library to get the resource bindings
-	Variant* Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
-
-	auto material = GetMaterial();
-	auto rtShader = material->GetShaderLibrary(0);
-
-	if (rtShader) {
-
-		auto renderInterface = Context->GetRenderInterface();
-		if (Geometry != -1) {
-			if (RaytracingGeometry == -1 && palette.Size == 0 && !(Type & CLIPMAP)) {
-				// create it, static geometry
-				RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
-			}
-			if (RaytracingGeometry != -1) {
-				// add instance
-				R_RAYTRACING_INSTANCE instance = {};
-				instance.Flag = 0;
-				instance.MaterialId = 0;
-				instance.rtGeometry = RaytracingGeometry;
-				instance.Transform = GetWorldMatrix();
-				// make local resource bindings
-				material->GetRtShaderBindings(Context, &instance);
-				renderInterface->AddRaytracingInstance(instance);
-			}
-		}
-	}
+int RenderObject::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext) 
+{
+	auto cmd = cmdBuffer->AllocCommand();
+	auto mesh = model->MeshResource[0];
+	cmdBuffer->BuildAccelerationStructure(cmd, mesh, GetMaterial(), GetWorldMatrix(), DeformableBuffer, 0, 0);
+	// the deformableBuffer shoud be re-create each  frame
+	DeformableBuffer = -1;
 	return 0;
 }
 

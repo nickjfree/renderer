@@ -35,7 +35,6 @@ int LevelLoader::Update(int ms) {
 	//  // try to get that resource 
 	Level* level = Cache->Get<Level>(LevelUrl);
 	if (levels_.Empty()) {
-		test_frames = 0;
 		LoadLevel(LevelUrl);
 	}
 
@@ -44,8 +43,11 @@ int LevelLoader::Update(int ms) {
 		if (!level->Destroyed) {
 			level->Update(ms);
 			// test
-			test_frames++;
-			if (test_frames == 100) {
+			if (!level->DestroyedFrames) test_frames++;
+			//printf("frames %d\n", test_frames);
+			if (test_frames > 500) {
+				//printf("unload level\n");
+				test_frames = 0;
 				//UnloadLevel(LevelUrl);
 			}
 			// end test

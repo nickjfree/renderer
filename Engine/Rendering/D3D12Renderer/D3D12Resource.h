@@ -265,6 +265,24 @@ namespace D3D12Renderer {
 		UINT64 prevFrameFence[backbuffer_count];
 	};
 
+
+	/*
+		rt Scene
+	*/
+	class RaytracingScene : public Transient<RaytracingScene>
+	{
+	public:
+		// Alloc transient
+		static RaytracingScene* AllocTransient(ID3D12Device* d3d12Device);
+	private:
+		// instances be build
+		Vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDesc;
+		// bottom level
+		Vector<RaytracingGeomtry*> bottomLevelGeometries;
+	};
+
+
+
 	/*
 		UploadHeap
 	*/

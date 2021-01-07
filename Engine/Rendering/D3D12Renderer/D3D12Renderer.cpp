@@ -203,6 +203,11 @@ void D3D12CommandContext::SetComputeMode(bool enabled)
 	isCompute = enabled;
 }
 
+void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
+{
+
+}
+
 void D3D12CommandContext::SetAsyncComputeMode(bool enabled)
 {
 	isAsyncCompute = cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE ? true : enabled;

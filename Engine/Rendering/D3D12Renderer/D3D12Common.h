@@ -305,6 +305,11 @@ namespace D3D12Renderer {
 		void SetComputeMode(bool enabled);
 
 		/*
+			add rt instance
+		*/
+		void AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance);
+
+		/*
 		*  rendering functions
 		*/
 		// set shader resource

@@ -180,6 +180,8 @@ namespace D3D12Renderer {
 		void Build(D3D12CommandContext* cmdContext);
 		// post-build
 		void PostBuild(D3D12CommandContext* cmdContext);
+		// GetBottomLevel
+		ID3D12Resource* GetBottomLevel() { return asBuffer; }
 	private:
 		// parent geometry
 		Geometry* geometry = nullptr;
@@ -193,6 +195,8 @@ namespace D3D12Renderer {
 		ID3D12Resource* scratchBuffer = nullptr;
 		// inflight transient items
 		static Vector<RaytracingGeomtry*> inflightRtGeometries;
+		// geometry desc
+		D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
 		// build inputs
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS bottomLevelInputs = {};
 	};
@@ -265,24 +269,6 @@ namespace D3D12Renderer {
 		UINT64 prevFrameFence[backbuffer_count];
 	};
 
-
-	/*
-		rt Scene
-	*/
-	class RaytracingScene : public Transient<RaytracingScene>
-	{
-	public:
-		// Alloc transient
-		static RaytracingScene* AllocTransient(ID3D12Device* d3d12Device);
-	private:
-		// instances be build
-		Vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDesc;
-		// bottom level
-		Vector<RaytracingGeomtry*> bottomLevelGeometries;
-	};
-
-
-
 	/*
 		UploadHeap
 	*/
@@ -322,6 +308,109 @@ namespace D3D12Renderer {
 		UINT64 size = 0;
 		// mapped cpu address
 		void* cpuBaseAddress = nullptr;
+	};
+
+
+	/*
+		shader record
+	*/
+	typedef struct ShaderRecord
+	{
+		// shader identifier
+		unsigned char identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
+		// 4 root parameters 32 bytes
+		UINT64 rootParams[4];
+	}ShaderRecord;
+
+	/*
+		shader binding table
+	*/
+	constexpr auto max_ray_types = 4;
+	constexpr auto default_sbt_size = 1024 * 1024;
+
+	class ShaderBindingTable
+	{
+	public:
+		// alloc
+		ShaderRecord* AllocShaderRecord(int materialId);
+		// reset
+		void Reset();
+		// create
+		void Create(ID3D12Device* d3d12Device);
+	private:
+		// SBT data
+		Vector<ShaderRecord> hitGroups;
+		// raygen table
+		ShaderRecord rayGen[max_ray_types];
+		// miss table
+		ShaderRecord miss[max_ray_types];
+		// sbt size
+		UINT64 sbtSize = 0;
+		// sbt in gpu
+		ID3D12Resource* sbt = nullptr;
+		// upload heap
+		ID3D12Resource* sbtCpu = nullptr;
+		// sbt ptr
+		void* sbtPtr = nullptr;
+		// devuce
+		ID3D12Device* d3d12Device = nullptr;
+	};
+
+	/*
+		rt pso
+	*/
+	class RaytracingStateObject
+	{
+
+	};
+
+	/*
+		rt Scene
+	*/
+	constexpr auto default_top_level_as_size = 1024 * 1024 * 4;
+
+	class RaytracingScene : public Transient<RaytracingScene>
+	{
+		friend Transient<RaytracingScene>;
+	public:
+		// Alloc transient
+		static RaytracingScene* AllocTransient(ID3D12Device* d3d12Device);
+		// add instance
+		void AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform);
+		// build
+		void Build(D3D12CommandContext* cmdContext);
+	private:
+		// create
+		void create(ID3D12Device* d3d12Device);
+		// reset transient
+		virtual void resetTransient();
+	private:
+		// instances to build
+		Vector<D3D12_RAYTRACING_INSTANCE_DESC> instanceDesc;
+		// bottom level as to build
+		Vector<RaytracingGeomtry*> bottomLevelGeometries;
+		// toplevel as
+		ID3D12Resource* topLevelAs = nullptr;
+		// toplevel scratch
+		ID3D12Resource* topLevelScratch = nullptr;
+		// instance buffer
+		ID3D12Resource* instanceBuffer = nullptr;
+		// sizes
+		UINT64 topLevelSize = 0;
+		UINT64 scratchSize = 0;
+		UINT64 instanceSize = 0;
+		// instance buffer pointer
+		void* instancePtr = nullptr;
+		// descripter heap
+		D3D12DescriptorHeap* descHeap = nullptr;
+		// shader binding table
+		ShaderBindingTable sbt = {};
+		// rt state object
+		RaytracingStateObject stateObject = {};
+		// device
+		ID3D12Device* d3d12Device = nullptr;
+		// rtxDevice
+		ID3D12Device5* rtxDevice = nullptr;
 	};
 
 	/*

@@ -172,6 +172,8 @@ void CommandBuffer::buildAccelerationStructure(RenderingCommand* cmd, RenderComm
 		instance.rtGeometry = cmd->buildAS.transientGeometryId != -1? cmd->buildAS.transientGeometryId: cmd->buildAS.mesh->GetId();
 		instance.Transform = cmd->buildAS.transform;
 		material->GetRtShaderBindings(renderContext, &instance);
+		// add instance
+		cmdContext->AddRaytracingInstance(&instance);
 	}
 }
 
@@ -179,6 +181,7 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
 	auto i = 0;
+	bool hasAs = false;
 	while(i < currentIndex) {
 		auto& cmd = renderingCommands[i++];
 		/*if (cmd.cmdType != RenderingCommand::CommandType::RENDER_TARGET) {
@@ -199,10 +202,14 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 			break;
 		case RenderingCommand::CommandType::BUILD_AS:
 			buildAccelerationStructure(&cmd, cmdContext);
+			hasAs = true;
 			break;
 		default:
 			break;
 		}
+	}
+	if (hasAs) {
+		cmdContext->BuildAccelerationStructure();
 	}
 }
 

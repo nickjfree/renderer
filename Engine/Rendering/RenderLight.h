@@ -75,7 +75,7 @@ public:
 	// qeueu cmdbuffer
 	int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
 	// update raytracing structure
-	int UpdateRaytracingStructure(RenderContext* Context);
+	int UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext);
 	// set light type
 	void SetLightType(int Type);
 	// set radius

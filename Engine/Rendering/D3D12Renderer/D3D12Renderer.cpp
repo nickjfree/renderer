@@ -205,7 +205,23 @@ void D3D12CommandContext::SetComputeMode(bool enabled)
 
 void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
 {
+	auto resourceType = (instance->rtGeometry & 0xff000000) >> 24;
+	RaytracingGeomtry* rtGeometry = nullptr;
+	if (resourceType == static_cast<int>(D3D12Resource::RESOURCE_TYPES::GEOMETRY)) {
+		auto geometry = Geometry::Get(instance->rtGeometry);
+		geometry->CreateRtGeometry(d3d12Device, false);
+		rtGeometry = geometry->staticRtGeometry;
+	} else {
+		rtGeometry = RaytracingGeomtry::Get(instance->rtGeometry);
+	}
+	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	rtScene->AddInstance(rtGeometry, instance->Transform);
+}
 
+void D3D12CommandContext::BuildAccelerationStructure()
+{
+	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	rtScene->Build(this);
 }
 
 void D3D12CommandContext::SetAsyncComputeMode(bool enabled)
@@ -510,7 +526,7 @@ void D3D12CommandContext::ClearRenderTargets(bool clearTargets, bool clearDepth)
 {
 	// flush barriers
 	if (clearTargets || clearDepth) {
-		applyBarriers();
+		ApplyBarriers();
 	}
 	// clear targets
 	if (clearTargets) {
@@ -524,7 +540,7 @@ void D3D12CommandContext::ClearRenderTargets(bool clearTargets, bool clearDepth)
 	}
 }
 
-void D3D12CommandContext::applyBarriers()
+void D3D12CommandContext::ApplyBarriers()
 {
 	if (barriers.Size()) {
 		cmdList->ResourceBarrier(barriers.Size(), barriers.GetData());
@@ -540,7 +556,7 @@ void D3D12CommandContext::applyBarriers()
 void D3D12CommandContext::flushState()
 {	
 	// flush barriers
-	applyBarriers();
+	ApplyBarriers();
 	// flush rootsignature
 	if (!currentRootSignature->Flush(cmdList, descriptorHeap)) {
 		// alloc a new descripter heap
@@ -562,7 +578,7 @@ void D3D12CommandContext::flushState()
 UINT64 D3D12CommandContext::Flush(bool wait)
 {
 	// flush any pending barriers
-	applyBarriers();
+	ApplyBarriers();
 	// close the list
 	cmdList->Close();
 	auto cmdQueue = D3D12CommandQueue::GetQueue(cmdType);
@@ -1594,7 +1610,9 @@ UINT64 D3D12RenderInterface::EndFrame(D3D12CommandContext* cmdContext)
 	UploadHeap::RetireAll(fenceValue);
 	// retire transient rtGeometries
 	RaytracingGeomtry::RetireAllTransientGeometry();
-	// TODO: retire rtScene
+	// retire the rtScene
+	RaytracingScene::RetireAll(fenceValue);
+	rtScene = nullptr;
 	backBuffer.WaitForNextFrame();
 	QueryPerformanceFrequency(&performance.Frequency);
 	QueryPerformanceCounter(&performance.EndingTime);
@@ -1632,4 +1650,13 @@ UINT64 D3D12RenderInterface::EndContext(RenderCommandContext* cmdContext, bool p
 		return d3d12Context->Flush(false);
 	}
 
+}
+
+RaytracingScene* D3D12RenderInterface::GetRaytracingScene()
+{
+	if (rtScene) {
+		return rtScene;
+	}
+	rtScene = RaytracingScene::AllocTransient(d3d12Device);
+	return rtScene;
 }

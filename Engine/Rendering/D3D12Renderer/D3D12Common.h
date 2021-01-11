@@ -308,7 +308,8 @@ namespace D3D12Renderer {
 			add rt instance
 		*/
 		void AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance);
-
+		// build as
+		void BuildAccelerationStructure();
 		/*
 		*  rendering functions
 		*/
@@ -348,7 +349,8 @@ namespace D3D12Renderer {
 		void DispatchCompute(int width, int height);
 		// clear render targets
 		void ClearRenderTargets(bool clearTargets, bool clearDepth);
-
+		// apply barriers
+		void ApplyBarriers();
 		/*
 		*	sync 
 		*/
@@ -359,8 +361,6 @@ namespace D3D12Renderer {
 		void resetTransient();
 		// create
 		void create(ID3D12Device* d3d12Device, D3D12_COMMAND_LIST_TYPE cmdType, D3D12DescriptorHeap* samplerHeap, D3D12DescriptorHeap* nullHeap);
-		// apply barriers
-		void applyBarriers();
 		// initialize state
 		void initialize();
 		// bind heaps

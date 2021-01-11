@@ -78,7 +78,7 @@ public:
 	virtual int Query(Vector<Node*>& Result, int Types);
 	Matrix4x4& GetWorldMatrix();
 	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context);
-	virtual int UpdateRaytracingStructure(RenderContext* Context);
+	virtual int UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext);
 	// queue render command
 	virtual int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
 

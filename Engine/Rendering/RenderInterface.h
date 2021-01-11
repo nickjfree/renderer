@@ -45,6 +45,10 @@ public:
 	virtual void DrawInstanced(int geometryId, void* instanceBuffer, unsigned int stride, unsigned int numInstances) = 0;
 	// draw full screen quad
 	virtual void Quad() = 0;
+	// add raytracing instance
+	virtual void AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance) = 0;
+	// build as
+	virtual void BuildAccelerationStructure() = 0;
 	// dispatch rays
 	virtual void DispatchRays(int shaderId, int width, int height) = 0;
 	// dispatch

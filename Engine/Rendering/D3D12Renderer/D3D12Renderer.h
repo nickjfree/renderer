@@ -61,6 +61,8 @@ namespace D3D12Renderer {
 		D3D12DescriptorHeap**  GetTextureHeaps() { return textureDescHeaps; }
 		// get buffer heaps
 		D3D12DescriptorHeap**  GetBufferHeaps() { return bufferDescHeaps; }
+		// get rtScene
+		RaytracingScene* GetRaytracingScene();
 		// get resource
 		D3D12Resource* GetResource(int id);
 		// begin context
@@ -105,6 +107,8 @@ namespace D3D12Renderer {
 		ID3D12Device* d3d12Device = nullptr;
 		// rtxDevice
 		ID3D12Device5* rtxDevice = nullptr;
+		// raytracing scene
+		RaytracingScene* rtScene = nullptr;
 		// descriptor heaps
 		D3D12DescriptorHeap* textureDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];
 		D3D12DescriptorHeap* bufferDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::COUNT];

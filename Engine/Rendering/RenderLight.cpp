@@ -182,35 +182,7 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 }
 
 
-int RenderLight::UpdateRaytracingStructure(RenderContext* Context) {
-
-	// get geometry
-	int Geometry = GetRenderMesh(0, 0);
-
-	// get raytracing shader library to get the resource bindings
-	auto material = GetMaterial();
-	auto rtShader = material->GetShaderLibrary(0);
-
-	if (rtShader) {
-		auto renderInterface = Context->GetRenderInterface();
-		if (Geometry != -1) {
-			if (RaytracingGeometry == -1 && palette.Size == 0 && !(Type & CLIPMAP)) {
-				// create it, static geometry
-				RaytracingGeometry = renderInterface->CreateRaytracingGeometry(Geometry, false, nullptr);
-			}
-			if (RaytracingGeometry != -1) {
-				// add instance
-				R_RAYTRACING_INSTANCE instance = {};
-				instance.Flag = 0;
-				instance.MaterialId = 1;
-				instance.rtGeometry = RaytracingGeometry;
-				instance.Transform = GetWorldMatrix();
-				// make local resource bindings
-				material->GetRtShaderBindings(Context, &instance);
-				renderInterface->AddRaytracingInstance(instance);
-			}
-		}
-	}
+int RenderLight::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext) {
 	return 0;
 }
 

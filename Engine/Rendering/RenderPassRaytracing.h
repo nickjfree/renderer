@@ -17,9 +17,14 @@ auto AddBuildASPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			// no input
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// auto cmd = cmdBuffer->AllocCommand();
 			// build as
-			
+			static Vector<Node*> objects;
+			objects.Reset();
+			spatial->Query(objects, Node::RENDEROBJECT);
+			for (auto iter = objects.Begin(); iter != objects.End(); iter++) {
+				auto node = *iter;
+				node->UpdateRaytracingStructure(cmdBuffer, cam, renderContext);
+			}
 		});
 	return buildAsPass;
 }

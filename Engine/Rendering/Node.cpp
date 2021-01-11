@@ -76,7 +76,7 @@ int Node::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParame
 /*
 	update  raytracing infos need for raytracing. bottom level as, top level as. and shader tables
 */
-int Node::UpdateRaytracingStructure(RenderContext* Context) {
+int Node::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext) {
 	return 0;
 }
 

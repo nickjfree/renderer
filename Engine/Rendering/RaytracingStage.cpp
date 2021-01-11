@@ -148,7 +148,7 @@ int RaytracingStage::BuildRaytracingScene(RenderingCamera* Camera, Spatial* spat
 	for (auto Iter = rtInstances.Begin(); Iter != rtInstances.End(); Iter++) {
 		auto renderObject = *Iter;
 		//renderObject->Compile();
-		renderObject->UpdateRaytracingStructure(Context);
+		// renderObject->UpdateRaytracingStructure(Context);
 	}
 	auto Value = Context->GetResource("Material\\Materials\\reflection.xml\\0");
 	if (Value) {

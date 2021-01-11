@@ -443,7 +443,6 @@ void RaytracingGeomtry::Create(ID3D12Device* d3d12Device, ResourceDescribe* reso
 	// create blas buffer and scratch buffer
 	{
 		// input
-		D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc = {};
 		geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 		geometryDesc.Triangles.IndexBuffer = geometry->indexBuffer->GetResource()->GetGPUVirtualAddress();
 		geometryDesc.Triangles.IndexCount = geometry->numIndices;
@@ -515,6 +514,7 @@ void RaytracingGeomtry::SetResourceState(D3D12CommandContext* cmdContext, D3D12_
 void RaytracingGeomtry::PreBuild(D3D12CommandContext* cmdContext)
 {
 	if (initialized || !isTransient) {
+		// already build
 		return;
 	}
 	// add barriers
@@ -527,7 +527,7 @@ void RaytracingGeomtry::PreBuild(D3D12CommandContext* cmdContext)
 
 void RaytracingGeomtry::Build(D3D12CommandContext* cmdContext)
 {
-	if (!initialized) {
+	if (initialized) {
 		return;
 	}
 	if (isTransient && transientBuffer->GetResourceState() == D3D12_RESOURCE_STATE_COPY_DEST) {
@@ -577,6 +577,188 @@ void RaytracingGeomtry::Release()
 
 
 /************************************************************************/
+// rt Scene
+/************************************************************************/
+
+RaytracingScene* RaytracingScene::AllocTransient(ID3D12Device* d3d12Device)
+{
+	auto rtScene = allocTransient(
+		[&](RaytracingScene* newRtScene) {
+			newRtScene->create(d3d12Device);
+		},
+		[&](RaytracingScene* newRtScene) {
+			return true;
+		}
+		);
+	return rtScene;
+}
+
+
+void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform)
+{
+	// instanceDesc.PushBack(instance);
+	auto blas = rtGeometry->GetBottomLevel();
+	D3D12_RAYTRACING_INSTANCE_DESC instance{};
+	instance.AccelerationStructure = blas->GetGPUVirtualAddress();
+	instance.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_TRIANGLE_CULL_DISABLE;
+	instance.InstanceID = 0;
+	instance.InstanceMask = 1;
+	instance.InstanceContributionToHitGroupIndex = instanceDesc.Size();
+	// set transform 
+	Matrix4x4 trans;
+	transform.Tranpose(transform, &trans);
+	memcpy(instance.Transform, &trans, sizeof(float) * 12);
+	// push instance
+	instanceDesc.PushBack(instance);
+	bottomLevelGeometries.PushBack(rtGeometry);
+}
+
+
+void RaytracingScene::create(ID3D12Device* d3d12Device)
+{
+	// create top level as
+	topLevelAs = CreateCommittedResource(d3d12Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(default_top_level_as_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+		D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+		nullptr);
+	topLevelAs->SetName(L"tlas");
+	topLevelSize = default_top_level_as_size;
+	// create blas buffer
+	topLevelScratch = CreateCommittedResource(d3d12Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(default_top_level_as_size, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+		nullptr);
+	topLevelScratch->SetName(L"toplevel-scratch");
+	scratchSize = default_top_level_as_size;
+	// create instance buffer
+	instanceBuffer = CreateCommittedResource(d3d12Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(default_top_level_as_size, D3D12_RESOURCE_FLAG_NONE),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr);
+	instanceBuffer->SetName(L"rt-instance");
+	instanceSize = default_top_level_as_size;
+	instanceBuffer->Map(0, nullptr, &instancePtr);
+	// create heaps
+	descHeap = D3D12DescriptorHeap::Alloc(d3d12Device, 16, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+	desc.RaytracingAccelerationStructure.Location = topLevelAs->GetGPUVirtualAddress();
+	desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	d3d12Device->CreateShaderResourceView(nullptr, &desc, descHeap->GetCpuHandle(0));
+	// create sbt
+	sbt.Create(d3d12Device);
+	// set device
+	this->d3d12Device = d3d12Device;
+	d3d12Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
+}
+
+void RaytracingScene::resetTransient()
+{
+	instanceDesc.Reset();
+	bottomLevelGeometries.Reset();
+}
+
+void RaytracingScene::Build(D3D12CommandContext* cmdContext)
+{
+	// prebuild (set barriers)
+	for (auto iter = bottomLevelGeometries.Begin(); iter != bottomLevelGeometries.End(); iter++) {
+		auto blas = *iter;
+		blas->PreBuild(cmdContext);
+	}
+	cmdContext->ApplyBarriers();
+	// build
+	for (auto iter = bottomLevelGeometries.Begin(); iter != bottomLevelGeometries.End(); iter++) {
+		auto blas = *iter;
+		blas->Build(cmdContext);
+	}
+	// build top level
+	// 1. copy instance desc to upload buffer
+	if (instanceDesc.Size()) {
+
+		auto instanceSize = instanceDesc.Size() * sizeof(D3D12_RAYTRACING_INSTANCE_DESC);
+		if (instanceSize > this->instanceSize) {
+			// resize instance buffer
+			instanceBuffer->Unmap(0, nullptr);
+			instanceBuffer->Release();
+			instanceBuffer = CreateCommittedResource(d3d12Device,
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(instanceSize, D3D12_RESOURCE_FLAG_NONE),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr);
+			this->instanceSize = instanceSize;
+			instanceBuffer->SetName(L"rt-instance");
+			instanceBuffer->Map(0, nullptr, &instancePtr);
+		}
+		memcpy(instancePtr, instanceDesc.GetData(), instanceSize);
+	}
+	cmdContext->ApplyBarriers();
+	// 2. get toplevel size
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS topLevelInputs = {};
+	topLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+	topLevelInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+	topLevelInputs.NumDescs = instanceDesc.Size();
+	topLevelInputs.pGeometryDescs = nullptr;
+	topLevelInputs.ppGeometryDescs = nullptr;
+	topLevelInputs.InstanceDescs = instanceBuffer->GetGPUVirtualAddress();
+	topLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+
+	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO topLevelPrebuildInfo = {};
+
+	rtxDevice->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
+
+	// 3. reallocate top level data size
+	if (topLevelPrebuildInfo.ScratchDataSizeInBytes > scratchSize) {
+		topLevelScratch->Release();
+		topLevelScratch = CreateCommittedResource(d3d12Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(topLevelPrebuildInfo.ScratchDataSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+			nullptr);
+		topLevelScratch->SetName(L"toplevelscratch");
+		scratchSize = topLevelPrebuildInfo.ScratchDataSizeInBytes;
+	}
+	if (topLevelPrebuildInfo.ResultDataMaxSizeInBytes > topLevelSize) {
+		topLevelAs->Release();
+		topLevelAs = CreateCommittedResource(d3d12Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(topLevelPrebuildInfo.ResultDataMaxSizeInBytes, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE,
+			nullptr);
+		topLevelAs->SetName(L"tlas");
+		topLevelSize = topLevelPrebuildInfo.ResultDataMaxSizeInBytes;
+		// create srv
+		D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
+		desc.RaytracingAccelerationStructure.Location = topLevelAs->GetGPUVirtualAddress();
+		desc.ViewDimension = D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE;
+		desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		d3d12Device->CreateShaderResourceView(nullptr, &desc, descHeap->GetCpuHandle(0));
+	}
+	// 4. build top level as
+	auto cmdList = cmdContext->GetRtCmdList();
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc = {};
+	buildDesc.DestAccelerationStructureData = topLevelAs->GetGPUVirtualAddress();
+	buildDesc.ScratchAccelerationStructureData = topLevelScratch->GetGPUVirtualAddress();
+	buildDesc.SourceAccelerationStructureData = 0;
+	buildDesc.Inputs = topLevelInputs;
+	cmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
+
+	// 6. uav barriar
+	CD3DX12_RESOURCE_BARRIER UAVBarriers[2] = { CD3DX12_RESOURCE_BARRIER::UAV(topLevelAs),  CD3DX12_RESOURCE_BARRIER::UAV(topLevelScratch) };
+	cmdList->ResourceBarrier(2, UAVBarriers);
+}
+
+
+/************************************************************************/
 // UploadHeap
 /************************************************************************/
 
@@ -606,6 +788,7 @@ void UploadHeap::create(ID3D12Device* d3d12Device, UINT64 size)
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), D3D12_HEAP_FLAG_NONE,
 		&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
 		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr);
+	resource->SetName(L"upload-heap");
 	this->size = size;
 }
 
@@ -646,6 +829,7 @@ void* UploadHeap::GetCurrentCpuVirtualAddress() {
 D3D12_GPU_VIRTUAL_ADDRESS UploadHeap::GetCurrentGpuVirtualAddress() { 
 	return resource->GetGPUVirtualAddress() + (UINT64)currentOffset; 
 }
+
 
 /************************************************************************/
 // Ring Constant Buffer
@@ -801,4 +985,45 @@ void D3D12BackBuffer::WaitForNextFrame()
 	// wait for prev frame
 	auto cmdQueue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	cmdQueue->CpuWait(fenceToWait);
+}
+
+/************************************************************************/
+// BackBuffer
+/************************************************************************/
+
+
+ShaderRecord* ShaderBindingTable::AllocShaderRecord(int materialId)
+{
+	// we ignore materialId for now
+	ShaderRecord Record{};
+	int index = hitGroups.PushBack(Record);
+	return &hitGroups[index];
+}
+
+void ShaderBindingTable::Reset()
+{
+	hitGroups.Reset();
+}
+
+
+void ShaderBindingTable::Create(ID3D12Device* d3d12Device)
+{
+	// create sbt table
+	sbt = CreateCommittedResource(d3d12Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(default_sbt_size, D3D12_RESOURCE_FLAG_NONE),
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+		nullptr);
+	sbt->SetName(L"sbt");
+	sbtSize = default_sbt_size;
+	// create sbt cpu buffer
+	sbtCpu = CreateCommittedResource(d3d12Device,
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(default_top_level_as_size, D3D12_RESOURCE_FLAG_NONE),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr);
+	sbtCpu->SetName(L"sbt-cpu");
+	sbtCpu->Map(0, nullptr, &sbtPtr);
 }

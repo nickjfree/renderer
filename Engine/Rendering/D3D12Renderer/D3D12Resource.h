@@ -314,10 +314,15 @@ namespace D3D12Renderer {
 	/*
 		shader record
 	*/
+	typedef struct ShaderIdetifier {
+		unsigned char identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
+	}ShaderIdetifier;
+
+
 	typedef struct ShaderRecord
 	{
 		// shader identifier
-		unsigned char identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
+		ShaderIdetifier identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
 		// 4 root parameters 32 bytes
 		UINT64 rootParams[4];
 	}ShaderRecord;
@@ -357,14 +362,6 @@ namespace D3D12Renderer {
 	};
 
 	/*
-		rt pso
-	*/
-	class RaytracingStateObject
-	{
-
-	};
-
-	/*
 		rt Scene
 	*/
 	constexpr auto default_top_level_as_size = 1024 * 1024 * 4;
@@ -379,6 +376,10 @@ namespace D3D12Renderer {
 		void AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform);
 		// build
 		void Build(D3D12CommandContext* cmdContext);
+		// trace ray
+		void TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height);
+		// get desc heap
+		D3D12DescriptorHeap* GetDescriptorHeap() { return descHeap; }
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device);
@@ -405,7 +406,7 @@ namespace D3D12Renderer {
 		D3D12DescriptorHeap* descHeap = nullptr;
 		// shader binding table
 		ShaderBindingTable sbt = {};
-		// rt state object
+		// rtpso
 		RaytracingStateObject stateObject = {};
 		// device
 		ID3D12Device* d3d12Device = nullptr;
@@ -454,6 +455,22 @@ namespace D3D12Renderer {
 	public:
 		D3D12_SHADER_BYTECODE ByteCode;
 		void* RawCode;
+	};
+
+	/*
+		raytracing shader and collection
+	*/
+	class RaytracingShader : public ResourcePool<RaytracingShader, 512>
+	{
+	public:
+		//
+	public:
+		// collection
+		ID3D12StateObject* collection;
+		// shader indentifier 
+		ShaderIdetifier raygen;
+		ShaderIdetifier hitGroup;
+		ShaderIdetifier miss;
 	};
 
 	/*

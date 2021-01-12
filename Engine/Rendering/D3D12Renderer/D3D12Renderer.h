@@ -43,6 +43,12 @@ namespace D3D12Renderer {
 		int CreatePixelShader(void* byteCode, unsigned int size, int flag) { return CreateShader(byteCode, size, flag); }
 		int CreateComputeShader(void* byteCode, unsigned int size, int flag) { return CreateShader(byteCode, size, flag); }
 		
+		// raytracing shader
+		int CreateRayTracingShader(void* ByteCode, unsigned int Size,
+			const wchar_t* Raygen, const wchar_t* Miss,
+			const wchar_t* HitGroup,
+			const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection);
+
 		// inputlayouts
 		int CreateInputLayout(R_INPUT_ELEMENT* elements, int count);
 		/* render state */

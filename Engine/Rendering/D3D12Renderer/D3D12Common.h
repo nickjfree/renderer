@@ -109,6 +109,10 @@ namespace D3D12Renderer {
 	public:
 		// alloc transient
 		static D3D12RootSignature* AllocTransient(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap);
+		// alloc
+		static D3D12RootSignature* Alloc(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap);
+		// release
+		void Release();
 		// set samplers
 		void SetSamplerTable(ID3D12GraphicsCommandList * cmdList, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		// invalidate bindings
@@ -253,6 +257,28 @@ namespace D3D12Renderer {
 	};
 
 	/*
+		rt pso
+	*/
+	class RaytracingStateObject
+	{
+	public:
+		// set stale
+		static void SetStale();
+		// refresh
+		void Refresh(ID3D12Device5* rtxDevice);
+		// get
+		ID3D12StateObject* Get() { return stateObject; }
+	private:
+		// state object
+		ID3D12StateObject* stateObject = nullptr;
+		// version
+		static UINT64 version;
+		// current version
+		UINT64 currentVersion = 0;
+	};
+
+
+	/*
 		command context
 	*/
 	class RingConstantBuffer;
@@ -300,9 +326,11 @@ namespace D3D12Renderer {
 			mode functions
 		*/
 		// use async compute
-		void SetAsyncComputeMode(bool enabled);
+		void SetGraphicsMode();
 		// set to compute mode
-		void SetComputeMode(bool enabled);
+		void SetComputeMode();
+		// set raytracing mod
+		void SetRaytracingMode();
 
 		/*
 			add rt instance

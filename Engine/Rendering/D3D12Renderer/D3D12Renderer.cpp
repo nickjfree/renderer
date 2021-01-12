@@ -164,8 +164,12 @@ void D3D12CommandContext::initialize()
 		cmdList->SetComputeRootSignature(computeRootSignature->Get());
 	}
 	// defualt to graphics context
-	SetComputeMode(false);
-	SetAsyncComputeMode(false);
+	if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+		SetGraphicsMode();
+	} else if (cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
+		SetComputeMode();
+		isAsyncCompute = true;
+	}
 	// ensure descriptor heaps
 	if (!descriptorHeap) {
 		descriptorHeap = D3D12DescriptorHeap::AllocTransient(d3d12Device);
@@ -177,30 +181,40 @@ void D3D12CommandContext::initialize()
 	}
 }
 
-void D3D12CommandContext::SetComputeMode(bool enabled)
+void D3D12CommandContext::SetGraphicsMode()
 {
 	if (cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
 		// can't set to graphics mode with compute queue
-		isCompute = true;
-		enabled = true;
+		return;
 	}
-	if (isCompute != enabled) {
-		// stale rootsignatures
-		graphicsRootSignature->SetStale();
-		computeRootSignature->SetStale();
+	isCompute = false;
+	graphicsRootSignature->SetStale();
+	cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
+	cmdList->SetComputeRootSignature(nullptr);
+	currentRootSignature = graphicsRootSignature;
+}
+
+void D3D12CommandContext::SetComputeMode()
+{
+	if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+		// nothing to change
+		cmdList->SetGraphicsRootSignature(nullptr);
 	}
-	if (isCompute) {
-		if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
-			cmdList->SetGraphicsRootSignature(nullptr);
-		}
-		cmdList->SetComputeRootSignature(computeRootSignature->Get());
-		currentRootSignature = computeRootSignature;
-	} else {
-		cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
-		cmdList->SetComputeRootSignature(nullptr);
-		currentRootSignature = graphicsRootSignature;
-	}
-	isCompute = enabled;
+	computeRootSignature->SetStale();
+	cmdList->SetComputeRootSignature(computeRootSignature->Get());
+	currentRootSignature = computeRootSignature;
+	isCompute = true;
+}
+
+void D3D12CommandContext::SetRaytracingMode()
+{
+	// set to compute mode 
+	SetComputeMode();
+	// bind the raytracing heap
+	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	descriptorHeap = rtScene->GetDescriptorHeap();
+	bindDescriptorHeap(descriptorHeap);
+	currentRootSignature->SetStale();
 }
 
 void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
@@ -222,11 +236,6 @@ void D3D12CommandContext::BuildAccelerationStructure()
 {
 	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
 	rtScene->Build(this);
-}
-
-void D3D12CommandContext::SetAsyncComputeMode(bool enabled)
-{
-	isAsyncCompute = cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE ? true : enabled;
 }
 
 void D3D12CommandContext::resetTransient() {
@@ -718,6 +727,18 @@ D3D12RootSignature* D3D12RootSignature::AllocTransient(ID3D12Device* d3d12Device
 	return rootSignature;
 }
 
+D3D12RootSignature* D3D12RootSignature::Alloc(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap)
+{
+	auto rootSignature = new D3D12RootSignature();
+	rootSignature->create(d3d12Device, local, compute, nullHeap);
+	return rootSignature;
+}
+
+void D3D12RootSignature::Release()
+{
+	rootSignature->Release();
+}
+
 void D3D12RootSignature::initRootSignature(ID3D12Device* d3d12Device, bool local, D3D12_ROOT_PARAMETER1* rootParameters, int numRootParameters) {
 
 	CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC RootSig(numRootParameters, rootParameters, 0, 0, local ? D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE : D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -731,6 +752,13 @@ void D3D12RootSignature::initRootSignature(ID3D12Device* d3d12Device, bool local
 	// get flushSize
 	for (auto i = 0; i < numDescriptorTables; ++i) {
 		maxFlushSize += descTables[i].size;
+	}
+	// clear
+	if (pSerializedRootSig) {
+		pSerializedRootSig->Release();
+	}
+	if (pError) {
+		pError->Release();
 	}
 }
 
@@ -1171,6 +1199,41 @@ ID3D12PipelineState* D3D12PipelineStateCache::CreatePipelineState(ID3D12Device* 
 	return pso;
 }
 
+
+/************************************************************************/
+// RTPSO
+/************************************************************************/
+
+UINT64 RaytracingStateObject::version = 0;
+
+void RaytracingStateObject::SetStale()
+{
+	InterlockedIncrement(&version);
+}
+
+void RaytracingStateObject::Refresh(ID3D12Device5* rtxDevice)
+{
+	if (currentVersion != version) {
+		// release the old one
+		if (stateObject) {
+			stateObject->Release();
+		}
+		// create a new one
+		CD3DX12_STATE_OBJECT_DESC raytracingStateObject{ D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE };
+		// assume version equals shader count
+		for (auto ray = 0; ray < version; ray++) {
+			auto shader = RaytracingShader::Get(ray);
+			auto collection = raytracingStateObject.CreateSubobject<CD3DX12_EXISTING_COLLECTION_SUBOBJECT>();
+			collection->SetExistingCollection(shader->collection);
+		}
+		rtxDevice->CreateStateObject(raytracingStateObject, IID_PPV_ARGS(&stateObject));
+		// update version
+		currentVersion = version;
+	}
+}
+
+
+
 /************************************************************************/
 // The Rendering Interface
 /************************************************************************/
@@ -1513,6 +1576,98 @@ int D3D12RenderInterface::CreateShader(void* byteCode, unsigned int size, int fl
 }
 
 
+int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, unsigned int Size, const wchar_t* Raygen, const wchar_t* Miss, const wchar_t* HitGroup, const wchar_t* ClosestHit, const wchar_t* AnyHit, const wchar_t* Intersection)
+{
+	auto shader = RaytracingShader::Alloc();
+	// create collection
+	CD3DX12_STATE_OBJECT_DESC raytracingCollection{ D3D12_STATE_OBJECT_TYPE_COLLECTION };
+
+	auto lib = raytracingCollection.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
+	D3D12_SHADER_BYTECODE libdxil = CD3DX12_SHADER_BYTECODE(ByteCode, Size);
+	lib->SetDXILLibrary(&libdxil);
+	// Define which shader exports to surface from the library.
+	// If no shader exports are defined for a DXIL library subobject, all shaders will be surfaced.
+	{
+		if (ClosestHit) {
+			lib->DefineExport(ClosestHit);
+		}
+		if (AnyHit) {
+			lib->DefineExport(AnyHit);
+		}
+		if (Intersection) {
+			lib->DefineExport(Intersection);
+		}
+		if (Raygen) {
+			lib->DefineExport(Raygen);
+		}
+		if (Miss) {
+			lib->DefineExport(Miss);
+		}
+	}
+	// Triangle hit group
+	// A hit group specifies closest hit, any hit and intersection shaders to be executed when a ray intersects the geometry's triangle/AABB.
+	auto hitGroup = raytracingCollection.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
+	hitGroup->SetClosestHitShaderImport(ClosestHit);
+	//hitGroup->SetAnyHitShaderImport(AnyHit);
+	//hitGroup->SetIntersectionShaderImport(Intersection);
+	// gen hotgroup name
+	hitGroup->SetHitGroupExport(HitGroup);
+	hitGroup->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
+	// rs
+	auto nullHeap = textureDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UNBOUND];
+	auto localRs = D3D12RootSignature::Alloc(d3d12Device, true, true, nullHeap);
+	auto globalRs = D3D12RootSignature::Alloc(d3d12Device, false, true, nullHeap);
+	// Add assosiations
+	{
+		// local rs
+		auto localRootSignature = raytracingCollection.CreateSubobject<CD3DX12_LOCAL_ROOT_SIGNATURE_SUBOBJECT>();
+		localRootSignature->SetRootSignature(localRs->Get());
+		// Shader association
+		auto localRootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		localRootSignatureAssociation->SetSubobjectToAssociate(*localRootSignature);
+		localRootSignatureAssociation->AddExport(HitGroup);
+		// global rs
+		auto globalRootSignature = raytracingCollection.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
+		globalRootSignature->SetRootSignature(globalRs->Get());
+		// Shader association
+		auto globalRootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
+		globalRootSignatureAssociation->SetSubobjectToAssociate(*globalRootSignature);
+		globalRootSignatureAssociation->AddExport(Raygen);
+		globalRootSignatureAssociation->AddExport(Miss);
+		globalRootSignatureAssociation->AddExport(HitGroup);
+	}
+	// shader config
+	{
+		auto shaderConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
+		shaderConfig->Config(sizeof(float) * 4, sizeof(float) * 2);
+	}
+	// pipeline config
+	{
+		auto pipelineConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
+		pipelineConfig->Config(1);
+	}
+	// pipeline config 
+	// create collection
+	rtxDevice->CreateStateObject(raytracingCollection, IID_PPV_ARGS(&shader->collection));
+
+	ID3D12StateObjectProperties* properties;
+	shader->collection->QueryInterface(IID_PPV_ARGS(&properties));
+	shader->hitGroup = *(ShaderIdetifier*)properties->GetShaderIdentifier(HitGroup);
+	if (Raygen) {
+		shader->raygen = *(ShaderIdetifier*)properties->GetShaderIdentifier(Raygen);
+	}
+	if (Miss) {
+		shader->miss = *(ShaderIdetifier*)properties->GetShaderIdentifier(Miss);
+	}
+	// cleanup
+	properties->Release();
+	localRs->Release();
+	globalRs->Release();
+	// rtPipeline state changed
+	RaytracingStateObject::SetStale();
+	return shader->resourceId;
+}
+
 int D3D12RenderInterface::CreateInputLayout(R_INPUT_ELEMENT* elements, int count)
 {
 	auto layout = D3D12InputLayout::Alloc();
@@ -1633,7 +1788,6 @@ RenderCommandContext* D3D12RenderInterface::BeginContext(bool asyncCompute)
 {
 	if (asyncCompute) {
 		auto cmdContext = D3D12CommandContext::AllocTransient(d3d12Device, D3D12_COMMAND_LIST_TYPE_COMPUTE, textureDescHeaps);
-		cmdContext->SetAsyncComputeMode(true);
 		return cmdContext;
 	} else {
 		auto cmdContext = D3D12CommandContext::AllocTransient(d3d12Device, D3D12_COMMAND_LIST_TYPE_DIRECT, textureDescHeaps);

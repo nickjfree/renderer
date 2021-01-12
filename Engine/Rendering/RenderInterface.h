@@ -14,7 +14,7 @@ class RenderCommandContext
 {
 public:
 	// set to compute mode
-	virtual void SetComputeMode(bool enabled) = 0;
+	virtual void SetComputeMode() = 0;
 	// set shader resource
 	virtual void SetSRV(int slot, int resourceId) = 0;
 	// set uav

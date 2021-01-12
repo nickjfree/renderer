@@ -757,6 +757,16 @@ void RaytracingScene::Build(D3D12CommandContext* cmdContext)
 	cmdList->ResourceBarrier(2, UAVBarriers);
 }
 
+void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height)
+{
+	// TODO: 
+	auto rtCmdList = cmdContext->GetRtCmdList();
+	// flush sbt
+	// refresh the rtpso
+	stateObject.Refresh(rtxDevice);
+	rtCmdList->SetPipelineState1(stateObject.Get());
+}
+
 
 /************************************************************************/
 // UploadHeap

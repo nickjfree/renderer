@@ -179,10 +179,16 @@ void D3D12CommandContext::initialize()
 	if (!ringConstantBuffer) {
 		ringConstantBuffer = RingConstantBuffer::Alloc(d3d12Device);
 	}
+	// pipeline state default to dirty
+	pipelineStateCache.Dirty = true;
 }
 
 void D3D12CommandContext::SetGraphicsMode()
 {
+	if (mode == Mode::GRAPHICS) {
+		// nothing to change
+		return;
+	}
 	if (cmdType == D3D12_COMMAND_LIST_TYPE_COMPUTE) {
 		// can't set to graphics mode with compute queue
 		return;
@@ -192,22 +198,39 @@ void D3D12CommandContext::SetGraphicsMode()
 	cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
 	cmdList->SetComputeRootSignature(nullptr);
 	currentRootSignature = graphicsRootSignature;
+	// bind heaps
+	if (descriptorHeap) {
+		bindDescriptorHeap(descriptorHeap);
+	}
+	mode = Mode::GRAPHICS;
 }
 
 void D3D12CommandContext::SetComputeMode()
 {
-	if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
+	if (mode == Mode::COMPUTE) {
 		// nothing to change
+		return;
+	}
+	if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
 		cmdList->SetGraphicsRootSignature(nullptr);
 	}
 	computeRootSignature->SetStale();
 	cmdList->SetComputeRootSignature(computeRootSignature->Get());
 	currentRootSignature = computeRootSignature;
+	// bind heaps
+	if (descriptorHeap) {
+		bindDescriptorHeap(descriptorHeap);
+	}
 	isCompute = true;
+	mode = Mode::COMPUTE;
 }
 
 void D3D12CommandContext::SetRaytracingMode()
 {
+	if (mode == Mode::RAYTRACING) {
+		// nothing to change
+		return;
+	}
 	// set to compute mode 
 	SetComputeMode();
 	// bind the raytracing heap
@@ -215,6 +238,7 @@ void D3D12CommandContext::SetRaytracingMode()
 	descriptorHeap = rtScene->GetDescriptorHeap();
 	bindDescriptorHeap(descriptorHeap);
 	currentRootSignature->SetStale();
+	mode = Mode::RAYTRACING;
 }
 
 void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
@@ -229,6 +253,52 @@ void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
 		rtGeometry = RaytracingGeomtry::Get(instance->rtGeometry);
 	}
 	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	// get vertex and index buffer
+	D3D12_GPU_VIRTUAL_ADDRESS vertexAddr = rtGeometry->geometry->vertexBuffer->GetResource()->GetGPUVirtualAddress();
+	D3D12_GPU_VIRTUAL_ADDRESS indexAddr = rtGeometry->geometry->indexBuffer->GetResource()->GetGPUVirtualAddress();
+	// add shader recrod for each ray types
+	for (auto ray = 0; ray < instance->NumShaders; ray++) {
+		// R_SHADER_RESOURCE_BINDINGS
+		R_RAYTRACING_SHADER_BINDINGS& bindings = instance->ShaderBindings[ray];
+		// get a shader record
+		auto record = rtScene->AllocShaderRecord(instance->MaterialId);
+		// fill the hitgroup identifier
+		auto shader = RaytracingShader::Get(bindings.ShaderId);
+		record->identifier = shader->hitGroup;
+		// get raytracing's descriptor heap for local srv uav
+		auto descHeap = rtScene->GetDescriptorHeap();
+		// get raytracing's local root rs
+		auto localRootSignature = rtScene->GetLocalRootSignature();
+		// set bindings
+		for (auto i = 0; i < bindings.NumBindings; i++) {
+			auto binding = bindings.Bindings[i];
+
+			int ResourceIndex = 0;
+			int HandleIndex = 0;
+			D3D12_CPU_DESCRIPTOR_HANDLE handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(CD3DX12_DEFAULT());
+
+			auto resource = D3D12RenderInterface::Get()->GetResource(binding.ResourceId);
+
+			switch (binding.BindingType) {
+			case R_SRV_TEXTURE:
+			case R_SRV_BUFFER:
+				localRootSignature->SetSRV(binding.Slot, resource->GetSrv());
+				break;
+			case R_UAV_TEXTURE:
+			case R_UAV_BUFFER:
+				localRootSignature->SetUAV(binding.Slot, resource->GetUav());
+				break;
+			}
+		}
+		// set vertex and index buffer rootparams
+		record->rootParams[0] = vertexAddr;
+		record->rootParams[1] = indexAddr;
+		// set vertext stride as local root constant
+		*(unsigned int*)&record->rootParams[2] = rtGeometry->geometry->vertexStride;
+		// flush localrootsig to sbt and rtScene's local descriptor heap
+		localRootSignature->FlushShaderBinginds(cmdList, descHeap, record);
+	}
+	// add rt instance
 	rtScene->AddInstance(rtGeometry, instance->Transform);
 }
 
@@ -302,6 +372,13 @@ void D3D12CommandContext::SetSRV(int slot, int resourceId)
 		resource->SetResourceState(this, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	}
 }
+
+void D3D12CommandContext::SetRaytracingScene(int slot)
+{
+	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	currentRootSignature->SetSRV(slot, rtScene->GetSrv());
+} 
+
 
 void D3D12CommandContext::SetUAV(int slot, int resourceId)
 {
@@ -523,6 +600,9 @@ void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
 {
 	// flush state
 	flushState();
+	// trace ray
+	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
+	rtScene->TraceRay(this, shaderId, width, height);
 }
 
 void D3D12CommandContext::DispatchCompute(int width, int height)
@@ -622,7 +702,7 @@ void D3D12CommandContext::Wait(UINT64 syncPoint, bool asyncCompute)
 		queue = D3D12CommandQueue::GetQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 	}
 	queue->GpuWait(fence, syncPoint);
-}
+} 
 
 /************************************************************************/
 // DescriptorHeap
@@ -1004,6 +1084,54 @@ bool D3D12RootSignature::Flush(ID3D12GraphicsCommandList* cmdList, D3D12Descript
 			} else {
 				cmdList->SetGraphicsRootConstantBufferView(rootDescriptor.rootSlot, rootDescriptor.constDesc.BufferLocation);
 			}
+			rootDescriptor.dirty = false;
+		}
+	}
+	// clear stale state
+	stale = false;
+	return true;
+}
+
+bool D3D12RootSignature::FlushShaderBinginds(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap, ShaderRecord* shaderRecord)
+{
+	if (!heap->HasSpace(maxFlushSize)) {
+		// ensure the heap has enough space
+		return false;
+	}
+	// flush tables
+	for (auto i = 0; i < numDescriptorTables; ++i) {
+		auto& table = descTables[i];
+		if (table.size) {
+			for (auto slot = 0; slot < table.size; ++slot) {
+				if (table.stales[slot]) {
+					// all tables must be flushed with null handles
+					if (table.descriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_SRV) {
+						table.handles[slot] = nullSRV;
+					}
+					if (table.descriptorType == D3D12_DESCRIPTOR_RANGE_TYPE_UAV) {
+						table.handles[slot] = nullUAV;
+					}
+				}
+				// set stale
+				table.stales[slot] = true;
+			}
+			if (table.dirty || stale) {
+				auto tableGPUAddr = heap->StageDescriptors(table.handles, table.size);
+				shaderRecord->rootParams[table.rootSlot] = tableGPUAddr.ptr;
+				// set prevraytracinghandle
+				table.prevRaytracingTable = tableGPUAddr;
+				table.dirty = false;
+			} else {
+				// bindings not changed, use prev table hanle
+				shaderRecord->rootParams[table.rootSlot] = table.prevRaytracingTable.ptr;
+			}
+		}
+	}
+	// flush constant buffers
+	for (auto i = 0; i < numRootDescriptors; ++i) {
+		auto& rootDescriptor = rootDescriptors[i];
+		if (rootDescriptor.dirty) {
+			shaderRecord->rootParams[rootDescriptor.rootSlot] = rootDescriptor.constDesc.BufferLocation;
 			rootDescriptor.dirty = false;
 		}
 	}

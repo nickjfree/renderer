@@ -159,6 +159,7 @@ namespace D3D12Renderer {
 
 	class RaytracingGeomtry: public PoolResource<RaytracingGeomtry, max_rt_geometry_number>
 	{
+		friend D3D12CommandContext;
 	public:
 		// retire all
 		static void RetireAllTransientGeometry();
@@ -312,17 +313,17 @@ namespace D3D12Renderer {
 
 
 	/*
-		shader record
+		shader idetifier
 	*/
 	typedef struct ShaderIdetifier {
 		unsigned char identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
 	}ShaderIdetifier;
 
-
+	// shader record (64 bytes)
 	typedef struct ShaderRecord
 	{
-		// shader identifier
-		ShaderIdetifier identifier[D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES];
+		// shader identifier 32 bytes
+		ShaderIdetifier identifier;
 		// 4 root parameters 32 bytes
 		UINT64 rootParams[4];
 	}ShaderRecord;
@@ -333,6 +334,12 @@ namespace D3D12Renderer {
 	constexpr auto max_ray_types = 4;
 	constexpr auto default_sbt_size = 1024 * 1024;
 
+	constexpr unsigned int raygen_table_offset = 0;
+	constexpr unsigned int miss_table_offset = max_ray_types * sizeof(ShaderRecord);
+	constexpr unsigned int hitgroup_table_offset = 2 * max_ray_types * sizeof(ShaderRecord);
+	constexpr unsigned int raygen_table_size = max_ray_types * sizeof(ShaderRecord);
+	constexpr unsigned int miss_table_size = max_ray_types * sizeof(ShaderRecord);
+
 	class ShaderBindingTable
 	{
 	public:
@@ -342,6 +349,12 @@ namespace D3D12Renderer {
 		void Reset();
 		// create
 		void Create(ID3D12Device* d3d12Device);
+		// Set ray
+		void SetRay(int rayIndex);
+		// stage
+		void Stage(D3D12CommandContext* cmdContext, D3D12_DISPATCH_RAYS_DESC* rayDesc);
+		// isDirty
+		bool IsDirty() { return dirty; }
 	private:
 		// SBT data
 		Vector<ShaderRecord> hitGroups;
@@ -359,6 +372,8 @@ namespace D3D12Renderer {
 		void* sbtPtr = nullptr;
 		// devuce
 		ID3D12Device* d3d12Device = nullptr;
+		// dirty
+		bool dirty = false;
 	};
 
 	/*
@@ -372,6 +387,8 @@ namespace D3D12Renderer {
 	public:
 		// Alloc transient
 		static RaytracingScene* AllocTransient(ID3D12Device* d3d12Device);
+		// alloc shader record
+		ShaderRecord* AllocShaderRecord(int materialId);
 		// add instance
 		void AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform);
 		// build
@@ -379,7 +396,11 @@ namespace D3D12Renderer {
 		// trace ray
 		void TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height);
 		// get desc heap
-		D3D12DescriptorHeap* GetDescriptorHeap() { return descHeap; }
+		D3D12DescriptorHeap* GetDescriptorHeap();
+		// get lcoal rs
+		D3D12RootSignature* GetLocalRootSignature() { return localRootSignature; }
+		// get srv
+		D3D12_CPU_DESCRIPTOR_HANDLE GetSrv();
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device);
@@ -404,10 +425,16 @@ namespace D3D12Renderer {
 		void* instancePtr = nullptr;
 		// descripter heap
 		D3D12DescriptorHeap* descHeap = nullptr;
+		// binding heap
+		D3D12DescriptorHeap* bindingHeap = nullptr;
+		// local rs
+		D3D12RootSignature* localRootSignature = nullptr;
 		// shader binding table
 		ShaderBindingTable sbt = {};
 		// rtpso
 		RaytracingStateObject stateObject = {};
+		// ray desc
+		D3D12_DISPATCH_RAYS_DESC rayDesc = {};
 		// device
 		ID3D12Device* d3d12Device = nullptr;
 		// rtxDevice

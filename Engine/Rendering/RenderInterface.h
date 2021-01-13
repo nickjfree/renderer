@@ -13,12 +13,18 @@
 class RenderCommandContext
 {
 public:
+	// set to graphics mode
+	virtual void SetGraphicsMode() = 0;
 	// set to compute mode
 	virtual void SetComputeMode() = 0;
+	// set raytracing mod
+	virtual void SetRaytracingMode() = 0;
 	// set shader resource
 	virtual void SetSRV(int slot, int resourceId) = 0;
 	// set uav
 	virtual void SetUAV(int slot, int resourceId) = 0;
+	// set raytracing scene
+	virtual void SetRaytracingScene(int slot) = 0;
 	// set render targets
 	virtual void SetRenderTargets(int* targets, int numTargets, int depth) = 0;
 	// set constant buffer

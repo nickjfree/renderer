@@ -82,13 +82,9 @@ void Raygen()
     RayPayload payload;
     payload.color = color;
 
-    [unroll]
-    for(int i = 0; i < 4; i++) {
-        TraceReflectionRay(origin, world_look, world_normal, roughness, seed, payload);
-        color = color + payload.color;
-    }
+    TraceReflectionRay(origin, world_look, world_normal, roughness, seed, payload);
     // target
-    RenderTarget[DispatchRaysIndex().xy] = color;
+    RenderTarget[DispatchRaysIndex().xy] = payload.color;
     // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
 }
 

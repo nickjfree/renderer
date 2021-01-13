@@ -155,4 +155,6 @@ void RenderControl::initFrameGraph()
 	auto hdr = AddHDRPass(frameGraph, Context, ssao->Data());
 	// build as
 	auto as = AddBuildASPass(frameGraph, Context);
+	// rt-relection
+	auto relection = AddRaytracingPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
 }

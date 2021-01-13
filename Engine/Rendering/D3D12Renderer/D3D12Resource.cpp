@@ -593,6 +593,10 @@ RaytracingScene* RaytracingScene::AllocTransient(ID3D12Device* d3d12Device)
 	return rtScene;
 }
 
+ShaderRecord* RaytracingScene::AllocShaderRecord(int materialId)
+{
+	return sbt.AllocShaderRecord(materialId);
+}
 
 void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform)
 {
@@ -613,6 +617,11 @@ void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& tran
 	bottomLevelGeometries.PushBack(rtGeometry);
 }
 
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3D12Renderer::RaytracingScene::GetSrv()
+{
+	return descHeap->GetCpuHandle(0);
+}
 
 void RaytracingScene::create(ID3D12Device* d3d12Device)
 {
@@ -653,6 +662,10 @@ void RaytracingScene::create(ID3D12Device* d3d12Device)
 	d3d12Device->CreateShaderResourceView(nullptr, &desc, descHeap->GetCpuHandle(0));
 	// create sbt
 	sbt.Create(d3d12Device);
+	// create local rs
+	auto textureDescHeaps = D3D12RenderInterface::Get()->GetTextureHeaps();
+	auto nullHeap = textureDescHeaps[(unsigned int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::UNBOUND];
+	localRootSignature = D3D12RootSignature::Alloc(d3d12Device, true, true, nullHeap);
 	// set device
 	this->d3d12Device = d3d12Device;
 	d3d12Device->QueryInterface(IID_PPV_ARGS(&rtxDevice));
@@ -662,6 +675,11 @@ void RaytracingScene::resetTransient()
 {
 	instanceDesc.Reset();
 	bottomLevelGeometries.Reset();
+	// reset sbt
+	sbt.Reset();
+	// forget the heap
+	bindingHeap = nullptr;
+	localRootSignature->SetStale();
 }
 
 void RaytracingScene::Build(D3D12CommandContext* cmdContext)
@@ -759,14 +777,29 @@ void RaytracingScene::Build(D3D12CommandContext* cmdContext)
 
 void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height)
 {
-	// TODO: 
 	auto rtCmdList = cmdContext->GetRtCmdList();
 	// flush sbt
+	rayDesc.Width = width;
+	rayDesc.Height = height;
+	rayDesc.Depth = 1;
+	sbt.SetRay(shaderIndex);
+	if (sbt.IsDirty()) {
+		sbt.Stage(cmdContext, &rayDesc);
+	}
 	// refresh the rtpso
 	stateObject.Refresh(rtxDevice);
 	rtCmdList->SetPipelineState1(stateObject.Get());
+	// trace ray
+	rtCmdList->DispatchRays(&rayDesc);
 }
 
+D3D12DescriptorHeap* RaytracingScene::GetDescriptorHeap()
+{
+	if (!bindingHeap) {
+		bindingHeap = D3D12DescriptorHeap::AllocTransient(d3d12Device);
+	}
+	return bindingHeap;
+}
 
 /************************************************************************/
 // UploadHeap
@@ -998,7 +1031,7 @@ void D3D12BackBuffer::WaitForNextFrame()
 }
 
 /************************************************************************/
-// BackBuffer
+// SBT
 /************************************************************************/
 
 
@@ -1007,6 +1040,8 @@ ShaderRecord* ShaderBindingTable::AllocShaderRecord(int materialId)
 	// we ignore materialId for now
 	ShaderRecord Record{};
 	int index = hitGroups.PushBack(Record);
+	// mark dirty
+	dirty = true;
 	return &hitGroups[index];
 }
 
@@ -1031,9 +1066,78 @@ void ShaderBindingTable::Create(ID3D12Device* d3d12Device)
 	sbtCpu = CreateCommittedResource(d3d12Device,
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(default_top_level_as_size, D3D12_RESOURCE_FLAG_NONE),
+		&CD3DX12_RESOURCE_DESC::Buffer(default_sbt_size, D3D12_RESOURCE_FLAG_NONE),
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr);
 	sbtCpu->SetName(L"sbt-cpu");
 	sbtCpu->Map(0, nullptr, &sbtPtr);
+}
+
+void ShaderBindingTable::SetRay(int rayIndex)
+{
+	auto shader = RaytracingShader::Get(rayIndex);
+	if (memcmp(&rayGen->identifier, &shader->raygen, sizeof(shader->raygen))) {
+		rayGen->identifier = shader->raygen;
+		dirty = true;
+	}
+	if (memcmp(&miss->identifier, &shader->miss, sizeof(shader->miss))) {
+		miss->identifier = shader->miss;
+		dirty = true;
+	}
+}
+
+void ShaderBindingTable::Stage(D3D12CommandContext* cmdContext, D3D12_DISPATCH_RAYS_DESC* rayDesc)
+{
+	auto hitGroupSize = hitGroups.Size() * sizeof(ShaderRecord);
+	// get totle sbt size
+	auto size = hitGroupSize + hitgroup_table_offset;
+	// ensure the size
+	if (sbtSize < size) {
+		sbt->Unmap(0, nullptr);
+		sbt->Release();
+		// create sbt table
+		sbt = CreateCommittedResource(d3d12Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			nullptr);
+		sbt->SetName(L"sbt");
+		sbtSize = size;
+		// create sbt cpu buffer
+		sbtCpu = CreateCommittedResource(d3d12Device,
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr);
+		sbtCpu->SetName(L"sbt-cpu");
+		sbtCpu->Map(0, nullptr, &sbtPtr);
+	}
+	auto cmdList = cmdContext->GetCmdList();
+	// copy raygen
+	memcpy((char*)sbtPtr + raygen_table_offset, rayGen, raygen_table_size);
+	// copy miss
+	memcpy((char*)sbtPtr + miss_table_offset, miss, miss_table_size);
+	// copy hitgroups
+	memcpy((char*)sbtPtr + hitgroup_table_offset, hitGroups.GetData(), hitGroupSize);
+	// copy to sbt shader visible buffer
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
+	cmdList->CopyResource(sbt, sbtCpu);
+	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+	// update table pointers
+	auto tableAddress = sbt->GetGPUVirtualAddress();
+
+	rayDesc->RayGenerationShaderRecord.StartAddress = tableAddress + raygen_table_offset;
+	rayDesc->RayGenerationShaderRecord.SizeInBytes = 64;
+
+	rayDesc->MissShaderTable.StartAddress = tableAddress + miss_table_offset;
+	rayDesc->MissShaderTable.SizeInBytes = miss_table_size;
+	rayDesc->MissShaderTable.StrideInBytes = sizeof(ShaderRecord);
+
+	rayDesc->HitGroupTable.StartAddress = tableAddress + hitgroup_table_offset;
+	rayDesc->HitGroupTable.SizeInBytes = hitGroupSize;
+	rayDesc->HitGroupTable.StrideInBytes = sizeof(ShaderRecord);
+	// clear dirty flag
+	dirty = false;
 }

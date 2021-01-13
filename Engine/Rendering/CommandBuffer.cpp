@@ -8,6 +8,8 @@ void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* re
 	// globalParameters.Clear();
 	Matrix4x4::Tranpose(cam->GetInvertView(), &globalParameters["gInvertViewMaxtrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(cam->GetViewMatrix(), &globalParameters["gViewMatrix"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(cam->GetViewProjection(), &globalParameters["gViewProjectionMatrix"].as<Matrix4x4>());
 	globalParameters["gViewPoint"].as<Vector3>() = cam->GetViewPoint();
 	globalParameters["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
 	// set renderContext
@@ -129,6 +131,7 @@ void CommandBuffer::setRenderTargets(RenderingCommand* cmd, RenderCommandContext
 
 void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext)
 {
+	cmdContext->SetGraphicsMode();
 	// set material and constants
 	if (cmd->draw.material) {
 		auto material = cmd->draw.material;
@@ -146,6 +149,7 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 
 void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext)
 {
+	cmdContext->SetGraphicsMode();
 	// set material and constants
 	if (cmd->draw.material) {
 		auto material = cmd->draw.material;
@@ -177,6 +181,19 @@ void CommandBuffer::buildAccelerationStructure(RenderingCommand* cmd, RenderComm
 	}
 }
 
+void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	cmdContext->SetRaytracingMode();
+	auto material = cmd->dispatchRays.material;
+	auto rtShader = material->GetShaderLibrary(0);
+	if (rtShader) {
+		// apply shader
+		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		// dispatch rays
+		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.width, cmd->dispatchRays.height);
+	}
+}
+
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
@@ -203,6 +220,9 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 		case RenderingCommand::CommandType::BUILD_AS:
 			buildAccelerationStructure(&cmd, cmdContext);
 			hasAs = true;
+			break;
+		case RenderingCommand::CommandType::DISPATCH_RAYS:
+			dispatchRays(&cmd, cmdContext);
 			break;
 		default:
 			break;

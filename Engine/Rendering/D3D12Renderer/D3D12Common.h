@@ -103,6 +103,8 @@ namespace D3D12Renderer {
 	constexpr auto max_sampler_slot_num = 64;
 	constexpr auto sampler_slot = 4;
 
+	struct ShaderRecord;
+
 	class D3D12RootSignature : public Transient<D3D12RootSignature>
 	{
 		friend Transient;
@@ -127,6 +129,8 @@ namespace D3D12Renderer {
 		void SetConstantBuffer(int slot, D3D12_GPU_VIRTUAL_ADDRESS buffer, unsigned int size);
 		// flush bindings to commandList
 		bool Flush(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap);
+		// flush bindings to sbt
+		bool FlushShaderBinginds(ID3D12GraphicsCommandList* cmdList, D3D12DescriptorHeap* heap, ShaderRecord* shaderRecord);
 	private:
 		// create
 		void create(ID3D12Device* d3d12Device, bool local, bool compute, D3D12DescriptorHeap* nullHeap);
@@ -152,6 +156,8 @@ namespace D3D12Renderer {
 			bool dirty;
 			// bindings stale
 			bool stales[max_descriptor_table_size];
+			// prev raytracing table handle
+			D3D12_GPU_DESCRIPTOR_HANDLE prevRaytracingTable;
 		} DescriptorTable;
 
 		// descriptor table slot info
@@ -343,6 +349,8 @@ namespace D3D12Renderer {
 		*/
 		// set shader resource
 		void SetSRV(int slot, int resourceId);
+		// set rt scene
+		void SetRaytracingScene(int slot);
 		// set uav
 		void SetUAV(int slot, int resourceId);
 		// set render targets
@@ -402,6 +410,14 @@ namespace D3D12Renderer {
 		bool isAsyncCompute = false;
 		// compute
 		bool isCompute = false;
+		// current mode
+		enum class Mode {
+			NONE,
+			GRAPHICS,
+			COMPUTE,
+			RAYTRACING,
+		};
+		Mode mode = Mode::NONE;
 		// device
 		ID3D12Device* d3d12Device = nullptr;
 		// context type

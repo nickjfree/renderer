@@ -168,6 +168,8 @@ private:
 	void drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// build as
 	void buildAccelerationStructure(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// dispatch rays
+	void dispatchRays(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 private:
 	// commands
 	RenderingCommand renderingCommands[max_command_buffer_size];

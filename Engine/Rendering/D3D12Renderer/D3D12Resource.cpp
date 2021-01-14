@@ -374,6 +374,10 @@ void Geometry::Release()
 	if (staticRtGeometry) {
 		staticRtGeometry->Release();
 	}
+	// set pointers to null
+	vertexBuffer = nullptr;
+	indexBuffer = nullptr;
+	staticRtGeometry = nullptr;
 	// add to freeList
 	Free();
 }
@@ -565,13 +569,19 @@ void RaytracingGeomtry::Release()
 {
 	if (transientBuffer) {
 		transientBuffer->Release();
+		transientBuffer = nullptr;
 	}
 	if (asBuffer) {
 		asBuffer->Release();
+		asBuffer = nullptr;
 	}
 	if (scratchBuffer) {
 		scratchBuffer->Release();
+		scratchBuffer = nullptr;
 	}
+	initialized = false;
+	isTransient = false;
+	geometry = nullptr;
 	Free();
 }
 

@@ -104,9 +104,11 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto shadow = renderPasses[1];
 		auto lighting = renderPasses[2];
 		auto ao = renderPasses[3];
-		auto hdr = renderPasses[4];
-		auto as = renderPasses[5];
-		auto reflection = renderPasses[6];
+		auto reflection = renderPasses[4];
+		auto resolve = renderPasses[5];
+		auto hdr = renderPasses[6];
+		auto as = renderPasses[7];
+		
 
 		// get commandbuffer
 		auto cmdBuffer = CommandBuffer::Create();
@@ -143,6 +145,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			ao->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection
 			reflection->Execute(cmdBuffer, cam, spatial);
+			// do resolve
+			resolve->Execute(cmdBuffer, cam, spatial);
 			// do hdr
 			hdr->Execute(cmdBuffer, cam, spatial);
 			// flush the command buffer

@@ -10,7 +10,7 @@
 *		lighting buffer
 */
 template <class T>
-auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassData) 
+auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolvedPassData)
 {
 
 	constexpr auto max_hdr_lum_buffer = 8;
@@ -18,7 +18,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassD
 
 	typedef struct PassData {
 		// input
-		RenderResource lighting;
+		RenderResource resolved;
 		// scale array to get avg lum
 		RenderResource scaleArray[8];
 		// adapt lum buffers of prev and current
@@ -48,7 +48,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassD
 			// init time
 			passData.time = GetCurrentTime();
 			// read lighting input
-			passData.lighting = builder.Read(&aoPassData.ao);
+			passData.resolved = builder.Read(&resolvedPassData.resolved);
 			// create the scale array
 			{
 				int width = 4096;
@@ -214,7 +214,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassD
 					cmdBuffer->RenderTargets(cmd, &scaled, 1, -1, false, false, 1024, 1024);
 					// draw quoad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.resolved.GetActualResource();
 					cmdBuffer->Quad(cmd, hdrMaterial, 0);
 				}
 				// get avg lum
@@ -261,7 +261,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassD
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
 					// set parameters
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.resolved.GetActualResource();
 					cmd->cmdParameters["gDiffuseMap0"].as<int>() = passData.adaptLum0.GetActualResource();
 					cmdBuffer->Quad(cmd, hdrMaterial, 3);
 				}
@@ -316,7 +316,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& aoPassD
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.resolved.GetActualResource();
 					cmd->cmdParameters["gDiffuseMap0"].as<int>() = passData.adaptLum0.GetActualResource();
 					cmd->cmdParameters["gDiffuseMap1"].as<int>() = passData.bloom2.GetActualResource();
 					cmdBuffer->Quad(cmd, hdrMaterial, 5);

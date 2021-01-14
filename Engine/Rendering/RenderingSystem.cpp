@@ -66,6 +66,10 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[4] = "Shader\\shaders\\Denoising\\0";
 	Param.as<String*>() = &Preloadings[4];
 	Cache->AsyncLoadResource(Preloadings[4], Preloading, Param);
+	// load resolve shaders
+	Preloadings[5] = "Material\\Materials\\resolve.xml\\0";
+	Param.as<String*>() = &Preloadings[5];
+	Cache->AsyncLoadResource(Preloadings[5], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

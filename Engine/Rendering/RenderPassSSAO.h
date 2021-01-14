@@ -9,8 +9,8 @@ template <class T, class U>
 auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData)
 {
 	typedef struct PassData {
-		// input
-		RenderResource lighting;
+		// lighting input
+		// RenderResource lighting;
 		RenderResource diffuse;
 		RenderResource compact0;
 		RenderResource depth;
@@ -23,7 +23,7 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 	auto ssaoPass = frameGraph.AddRenderPass<PassData>("ssao",
 		[&](GraphBuilder& builder, PassData& passData) {
 			// input
-			passData.lighting = builder.Read(&lightingPassData.lighting);
+			// passData.lighting = builder.Read(&lightingPassData.lighting);
 			passData.diffuse = builder.Read(&gbufferPassData.diffuse);
 			passData.compact0 = builder.Read(&gbufferPassData.compact0);
 			passData.depth = builder.Read(&gbufferPassData.depth);
@@ -39,8 +39,8 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 					desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
 					desc.MipLevels = 1;
 					desc.Usage = DEFAULT;
-					desc.Format = FORMAT_R16G16B16A16_FLOAT;
-					desc.SampleDesc.Count = 1;
+					desc.Format = FORMAT_R16_FLOAT;
+					desc.SampleDesc.Count = 1; 
 					// linearz
 					desc.DebugName = L"ssao";
 					return renderInterface->CreateTexture2D(&desc);
@@ -59,7 +59,7 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 				cmdBuffer->RenderTargets(cmd, &target, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 				// draw quoad
 				cmd = cmdBuffer->AllocCommand();
-				cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+				// cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
 				cmdBuffer->Quad(cmd, ssaoMaterial, 0);
 			}
 		});

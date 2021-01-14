@@ -94,7 +94,7 @@ PS_Output_Simple PS_ImageBased_Light(PS_Input_Simple ps_input)
     // IBL Specular
     float3 SpecularColor = gbuffer.Specular;
     float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
-    float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
+    float3 specular = SpecularIBL(SpecularColor, roughness, N, V) * 0.0f;
 
     // IBL Diffuse
     float3 diffuse = irradiance * albedo.xyz;

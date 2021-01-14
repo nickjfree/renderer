@@ -108,7 +108,7 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	// calc convex hull
 #ifndef _DEBUG
 	if (Count <= 10000) {
-		//ComputeConvexHull();
+		ComputeConvexHull();
 	}
 #endif 
 	return 0;

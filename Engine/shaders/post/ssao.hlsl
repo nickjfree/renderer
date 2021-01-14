@@ -54,7 +54,7 @@ PS_Output_Simple PS(PS_Input_Simple input)
     float3 Position = GetPosition(uv);
 
     if (length(Position) < 0.001) {
-        output.Color = Color;
+        output.Color.x = 1;
         return output;
     }
 
@@ -77,11 +77,11 @@ PS_Output_Simple PS(PS_Input_Simple input)
     }
     ao /= float(iterations) * 4;
     ao = saturate(ao);
-    output.Color = lerp(Color, 0.01 * Color, ao);
+    output.Color.x = 1 - ao;
 
     if(isnan(output.Color.x)) 
     {
-        output.Color = Color;
+        output.Color.x = 1;
     }
     
     return output;

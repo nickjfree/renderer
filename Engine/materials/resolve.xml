@@ -7,7 +7,5 @@
     <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\iblDiffuseHDR.dds\0">irr</texture>
   </textures>
 
-  <shader name="denoising" url="Shader\shaders\Denoising\0"></shader>
-  <!-- <shader name="reflection" url="Shader\shaders\Reflection\0"></shader> -->
-  <library name="rtReflection" url="ShaderLibrary\shaders\raytracing.cso"></library>
+  <shader name="reflection" url="Shader\shaders\Reflection\0"></shader>
 </material>

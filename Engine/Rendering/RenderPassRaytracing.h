@@ -40,8 +40,15 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 		RenderResource compact0;
 		RenderResource specular;
 		RenderResource depth;
+		RenderResource motion;
 		// reflection
 		RenderResource reflectionRaw;
+		// svgf-color-0 svgf-color-1
+		RenderResource color0;
+		RenderResource color1;
+		// svgf-moments-0 svgf-moments-1
+		RenderResource moment0;
+		RenderResource moment1;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -53,22 +60,49 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 			passData.compact0 = builder.Read(&gbufferPassData.compact0);
 			passData.depth = builder.Read(&gbufferPassData.depth);
 			passData.specular = builder.Read(&gbufferPassData.specular);
-			// create raytracing result buffer
-			passData.reflectionRaw = builder.Create("rt-reflection-raw",
-				[=]() {
-					R_TEXTURE2D_DESC desc = {};
-					desc.Width = renderContext->FrameWidth;
-					desc.Height = renderContext->FrameHeight;
+			passData.motion = builder.Read(&gbufferPassData.motion);
 
-					desc.ArraySize = 1;
-					desc.CPUAccess = (R_CPU_ACCESS)0;
-					desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE);
-					desc.MipLevels = 1;
-					desc.Usage = DEFAULT;
-					desc.Format = FORMAT_R16G16B16A16_FLOAT;
-					desc.SampleDesc.Count = 1;
-					// linearz
+			// create the output buffers
+			R_TEXTURE2D_DESC desc = {};
+			desc.Width = renderContext->FrameWidth;
+			desc.Height = renderContext->FrameHeight;
+
+			desc.ArraySize = 1;
+			desc.CPUAccess = (R_CPU_ACCESS)0;
+			desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE | BIND_RENDER_TARGET);
+			desc.MipLevels = 1;
+			desc.Usage = DEFAULT;
+			desc.Format = FORMAT_R16G16B16A16_FLOAT;
+			desc.SampleDesc.Count = 1;
+
+			// rt-result
+			passData.reflectionRaw = builder.Create("rt-reflection-raw",
+				[=]() mutable  {
 					desc.DebugName = L"rt-reflection-raw";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// color0
+			passData.color0 = builder.Create("svgf-color0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// color1
+			passData.color1 = builder.Create("svgf-color1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color1";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment0
+			passData.moment0 = builder.Create("svgf-moment-0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment1
+			passData.moment1 = builder.Create("svgf-moment-1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-1";
 					return renderInterface->CreateTexture2D(&desc);
 				});
 		},
@@ -86,23 +120,163 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 			}
 			if (material) {
 				auto reflectionRaw = passData.reflectionRaw.GetActualResource();
-				// 
-				Variant compact0, specular, depth;
-				compact0.as<int>() = passData.compact0.GetActualResource();
-				specular.as<int>() = passData.specular.GetActualResource();
-				depth.as<int>() = passData.depth.GetActualResource();
-				cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
-				cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
-				cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+				// set up 
+				{
+					Variant compact0, specular, depth, motion;
+					compact0.as<int>() = passData.compact0.GetActualResource();
+					specular.as<int>() = passData.specular.GetActualResource();
+					depth.as<int>() = passData.depth.GetActualResource();
+					motion.as<int>() = passData.motion.GetActualResource();
+					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
+					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
+					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+					cmdBuffer->SetGlobalParameter("gMotionVector", motion);
+				}
 				// disptach rays
-				auto cmd = cmdBuffer->AllocCommand();
-				cmd->cmdParameters["RenderTarget"].as<int>() = passData.reflectionRaw.GetActualResource();
-				cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
-				cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
-				cmdBuffer->DispatchRays(cmd, "default", material, renderContext->FrameWidth, renderContext->FrameHeight);
+				{
+					auto cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["RenderTarget"].as<int>() = passData.reflectionRaw.GetActualResource();
+					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
+					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmdBuffer->DispatchRays(cmd, "default", material, renderContext->FrameWidth, renderContext->FrameHeight);
+				}
+				// flip color & moment buffer
+				passData.color0.Flip(&passData.color1);
+				passData.moment0.Flip(&passData.moment1);
+				// accumulation 
+				{
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = {
+						passData.color0.GetActualResource(),
+						passData.moment0.GetActualResource(),
+					};
+					cmdBuffer->RenderTargets(cmd, targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gPrevColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gPrevMoment"].as<int>() = passData.moment1.GetActualResource();
+					cmd->cmdParameters["gCurrentColor"].as<int>() = passData.reflectionRaw.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 0);
+				}
+				// filter variance
+				{
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color1.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color0.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 2);
+				}
+				{
+					// filter
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color0.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 1);
+				}
+
 			}
 		});
 	return raytracingPass;
 }
 
+/*
+	reflection resolve
+*/
+template <class T, class U, class V, class W>
+auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightingPassData, V& aoPassData, W& rtPassData)
+{
+	typedef struct PassData {
+		RenderResource lighting;
+		RenderResource compact0;
+		RenderResource specular;
+		RenderResource depth;
+		// ao
+		RenderResource ao;
+		// rt reflection
+		RenderResource reflection;
+		// result
+		RenderResource resolved;
+	}PassData;
+
+	auto renderInterface = renderContext->GetRenderInterface();
+
+	auto resolvePass = frameGraph.AddRenderPass<PassData>("resolve",
+		[&](GraphBuilder& builder, PassData& passData) {
+			// input
+			passData.lighting = builder.Read(&lightingPassData.lighting);
+			passData.compact0 = builder.Read(&gbufferPassData.compact0);
+			passData.depth = builder.Read(&gbufferPassData.depth);
+			passData.specular = builder.Read(&gbufferPassData.specular);
+			passData.ao = builder.Read(&aoPassData.ao);
+			passData.reflection = builder.Read(&rtPassData.color0);
+
+			// create the output buffers
+			R_TEXTURE2D_DESC desc = {};
+			desc.Width = renderContext->FrameWidth;
+			desc.Height = renderContext->FrameHeight;
+
+			desc.ArraySize = 1;
+			desc.CPUAccess = (R_CPU_ACCESS)0;
+			desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE | BIND_RENDER_TARGET);
+			desc.MipLevels = 1;
+			desc.Usage = DEFAULT;
+			desc.Format = FORMAT_R16G16B16A16_FLOAT;
+			desc.SampleDesc.Count = 1;
+
+			// resolved
+			passData.resolved = builder.Create("resolved",
+				[=]() mutable {
+					desc.DebugName = L"resolved";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+		},
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+			// setup
+			cmdBuffer->SetupFrameParameters(cam, renderContext);
+			// get shader
+			Variant* value = renderContext->GetResource("Material\\Materials\\resolve.xml\\0");
+			Material* material = nullptr;
+			// add frame number
+			static int frameNumber = 0;
+			++frameNumber;
+			if (value) {
+				material = value->as<Material*>();
+			}
+			if (material) {
+				// set up 
+				{
+					Variant compact0, specular, depth;
+					compact0.as<int>() = passData.compact0.GetActualResource();
+					specular.as<int>() = passData.specular.GetActualResource();
+					depth.as<int>() = passData.depth.GetActualResource();
+					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
+					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth); 
+					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+				}
+				{
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.resolved.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gRaytracingBuffer"].as<int>() = passData.reflection.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmd->cmdParameters["gAO"].as<int>() = passData.ao.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 0); 
+				}
+
+			}
+		});
+	return resolvePass;
+}
 #endif

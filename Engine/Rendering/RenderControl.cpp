@@ -152,9 +152,10 @@ void RenderControl::initFrameGraph()
 	auto shadow = AddShadowMapPass(frameGraph, Context);
 	auto lighting = AddLightingPass(frameGraph, Context, gbuffer->Data());
 	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
-	auto hdr = AddHDRPass(frameGraph, Context, ssao->Data());
-	// build as
-	auto as = AddBuildASPass(frameGraph, Context);
 	// rt-relection
 	auto relection = AddRaytracingPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
+	auto resolved = AddResolvePass(frameGraph, Context, gbuffer->Data(), lighting->Data(), ssao->Data(), relection->Data());
+	auto hdr = AddHDRPass(frameGraph, Context, resolved->Data());
+	// build as
+	auto as = AddBuildASPass(frameGraph, Context);
 }

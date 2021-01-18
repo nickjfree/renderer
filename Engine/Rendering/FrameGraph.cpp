@@ -139,6 +139,15 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			cmdBuffer->Reset();
 			// execute the shadow pass
 			shadow->Execute(cmdBuffer, cam, spatial);
+			auto renderCommandContext = renderInterface->BeginContext(false);
+			cmdBuffer->Flush(renderCommandContext);
+			cmdBuffer->Recycle();
+			renderInterface->EndContext(renderCommandContext, false);
+		}
+		{
+			// new command buffer
+			auto cmdBuffer = CommandBuffer::Create();
+			cmdBuffer->Reset();
 			// execute the lighting pass
 			lighting->Execute(cmdBuffer, cam, spatial);
 			// do ssao

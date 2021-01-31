@@ -5,7 +5,7 @@
 #include <gl\GL.h>
 #include <gl\GLU.h>
 
-
+#define DEBUG_PHYSICS
 
 USING_ALLOCATER(PhysicsSystem);
 

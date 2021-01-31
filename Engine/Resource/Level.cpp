@@ -282,7 +282,7 @@ int Level::InitScript() {
 		if (object->GetName() == "Player" || object->GetName() == "NPC") {
 			auto Character = context->CreateObject<CharacterController>();
 			// creat convext hulls for collision shape
-			object->SetTranslation(Vector3(0, 0, 0));
+			object->SetTranslation(Vector3(0, 10, 0));
 			MeshRenderer* render = (MeshRenderer*)object->GetComponent("Renderer");
 			Model* model = render->GetModel();
 			Character->SetCeterOffset(Vector3(0, 6.6f, 0));

@@ -33,7 +33,7 @@ int CharacterController::OnAttach(GameObject* GameObj) {
 	Shape->Shared = 0;
 	// shape should has refcount == 1
 	Shape->AddRef();
-	// create ghost object
+	// create ghost object  
 	GhostOBject_ = new btPairCachingGhostObject();
 	GhostOBject_->setCollisionShape(Shape->Shapes.Capsule);
 	// set collision flag

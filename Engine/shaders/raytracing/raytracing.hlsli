@@ -3,7 +3,7 @@
 
 
 #include "../common/deferred.h"
-#include "../lighting/lighting.h"
+#include "../lighting/lighting.hlsli"
 
 ByteAddressBuffer Vertices : register(t0, space1);
 ByteAddressBuffer Indices : register(t1, space1);

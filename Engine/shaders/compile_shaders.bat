@@ -35,6 +35,8 @@ fxc /T ps_5_1 /E PS_Direction_Light /Fo direction_light.ps lighting/lighting.hls
 fxc /T ps_5_1 /E PS_ImageBased_Light /Fo ibl.ps lighting/lighting.hlsl
 
 
+fxc /T ps_5_1 /E PS /Fo emissive.ps  post/emissive.hlsl
+
 fxc /T ps_5_1 /E PS /Fo ssao.ps  post/ssao.hlsl
 
 

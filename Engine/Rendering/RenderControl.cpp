@@ -151,6 +151,7 @@ void RenderControl::initFrameGraph()
 	auto gbuffer = AddGBufferPass(frameGraph, Context);
 	auto shadow = AddShadowMapPass(frameGraph, Context);
 	auto lighting = AddLightingPass(frameGraph, Context, gbuffer->Data());
+	auto emissive = AddEmissivePass(frameGraph, Context, gbuffer->Data(), lighting->Data());
 	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
 	// rt-relection
 	auto relection = AddRaytracingPass(frameGraph, Context, lighting->Data(), gbuffer->Data());

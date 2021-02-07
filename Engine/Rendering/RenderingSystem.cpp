@@ -70,6 +70,10 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[5] = "Material\\Materials\\resolve.xml\\0";
 	Param.as<String*>() = &Preloadings[5];
 	Cache->AsyncLoadResource(Preloadings[5], Preloading, Param);
+	// load emissive shaders
+	Preloadings[6] = "Material\\Materials\\emissive.xml\\0";
+	Param.as<String*>() = &Preloadings[6];
+	Cache->AsyncLoadResource(Preloadings[6], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

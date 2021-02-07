@@ -23,6 +23,7 @@ int Skeleton::OnSerialize(Deserializer& serializer) {
 		bone.Id = i;
 		bone.ParentId = char(entry.parent);
 		bone.Name = entry.name;
+		printf("name %s\n", bone.Name.ToStr());
 		Matrix4x4 Mat = Matrix4x4(entry.m00, entry.m01, entry.m02, entry.m03,
 			entry.m10, entry.m11, entry.m12, entry.m13,
 			entry.m20, entry.m21, entry.m22, entry.m23,

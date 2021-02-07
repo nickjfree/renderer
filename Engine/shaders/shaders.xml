@@ -221,7 +221,7 @@
     </technique>
    </shader>
 
-  <shader name="PointLight">
+  <shader name="Light">
     <technique name="stencil">
       <pass name="stencil" depthstencil="TwoSideStencil" rasterizer="NoCull" blend="NoFrame">
         <vs url="Shaders\shaders\basic-simple.vs"></vs>
@@ -248,6 +248,14 @@
     </technique>
   </shader>
   
+  <shader name="Emissive">
+    <technique name="emissive">
+      <pass name="stencil" depthstencil="NoZTest" rasterizer="NoCull" blend="Additive">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\emissive.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
   
   <shader name="SSAO">
     <technique name="ssao">
@@ -260,7 +268,7 @@
 
   <shader name="Reflection">
     <technique name="reflection">
-      <pass name="ssao" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+      <pass name="reflection" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\reflection.ps"></ps>
       </pass>

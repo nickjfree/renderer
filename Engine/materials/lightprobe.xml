@@ -6,5 +6,5 @@
     <texture unit="gLdCube" name="ldcube" url="Texture\textures\iblSpecularHDR.dds\0">pre</texture>
     <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\iblDiffuseHDR.dds\0">irr</texture>
   </textures>
-  <shader name="PointLight" url="Shader\shaders\PointLight\0"></shader>
+  <shader name="PointLight" url="Shader\shaders\Light\0"></shader>
 </material>

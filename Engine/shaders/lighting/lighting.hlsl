@@ -1,4 +1,4 @@
-#include "lighting.h"
+#include "lighting.hlsli"
 
 
 /*

@@ -2,5 +2,6 @@
 <material>
   <textures>
   </textures>
-  <shader name="PointLight" url="Shader\shaders\Light\0"></shader>
+
+  <shader name="Basic" url="Shader\shaders\Emissive\0"></shader>
 </material>

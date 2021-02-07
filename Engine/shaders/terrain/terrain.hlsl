@@ -56,7 +56,7 @@ PS_Output_GBuffer PS_Terrain_GBuffer(PS_Input_GBuffer ps_input)
     output.Compact.xy = EncodeNormal(normal.xyz);
     // depth: view space z value
     output.Depth.x = ps_input.Depth;
-    output.Diffuse = diffuse;
+    output.Diffuse = float4(diffuse.xyz, 1);
     // x: specular  y: roughness  z: metallic
     output.Specular = float4(gSpecular, 0.2, 0, 0);
     // compact info: object id

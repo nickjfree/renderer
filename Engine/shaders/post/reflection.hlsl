@@ -1,7 +1,7 @@
 
 #include "../common/deferred.h"
 #include "../common/basic_layout.h"
-#include "../lighting/lighting.h"
+#include "../lighting/lighting.hlsli"
 #include "../common/post.h"
 
 // raytracing result

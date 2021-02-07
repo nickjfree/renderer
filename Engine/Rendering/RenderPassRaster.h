@@ -338,11 +338,7 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 			cmdBuffer->SetupFrameParameters(cam, renderContext);
 			int targets[] = {
 				passData.lighting.GetActualResource(),
-				//0,
 			};
-			//int targets[] = {
-			//	0,
-			//};
 			auto zbuffer = passData.zBuffer.GetActualResource();
 			auto cmd = cmdBuffer->AllocCommand();
 			cmdBuffer->RenderTargets(cmd, targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
@@ -368,6 +364,67 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 	return lightingPass;
 }
 
+
+/*
+	 emissive pass
+*/
+template <class T, class U>
+auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightingPassData)
+{
+	typedef struct PassData {
+		RenderResource diffuse;
+		RenderResource compact0;
+		RenderResource depth;
+		RenderResource specular;
+		RenderResource lighting;
+
+		RenderResource zBuffer;
+	}PassData;
+
+	auto renderInterface = renderContext->GetRenderInterface();
+	auto lightingPass = frameGraph.AddRenderPass<PassData>("emiisive",
+		[&](GraphBuilder& builder, PassData& passData) {
+			// read input from gbuffer
+			passData.diffuse = builder.Read(&gbufferPassData.diffuse);
+			passData.compact0 = builder.Read(&gbufferPassData.compact0);
+			passData.depth = builder.Read(&gbufferPassData.depth);
+			passData.specular = builder.Read(&gbufferPassData.specular);
+			passData.zBuffer = builder.Write(&gbufferPassData.zBuffer);
+			// create the lighting buffer
+			passData.lighting = builder.Write(&lightingPassData.lighting);
+		},
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+			Variant* Value = renderContext->GetResource("Material\\Materials\\emissive.xml\\0");
+			Material* emissiveMaterial = nullptr;
+			if (Value) {
+				emissiveMaterial = Value->as<Material*>();
+			}
+			if (emissiveMaterial) {
+				// set lighting as render target
+				cmdBuffer->SetupFrameParameters(cam, renderContext);
+				int targets[] = {
+					passData.lighting.GetActualResource(),
+				};
+				// set gbuffer as input
+				Variant diffuse, compact0, specular, depth;
+				diffuse.as<int>() = passData.diffuse.GetActualResource();
+				compact0.as<int>() = passData.compact0.GetActualResource();
+				specular.as<int>() = passData.specular.GetActualResource();
+				depth.as<int>() = passData.depth.GetActualResource();
+				cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
+				cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
+				cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
+				cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+				// emissive pass
+				auto cmd = cmdBuffer->AllocCommand();
+				cmdBuffer->RenderTargets(cmd, targets, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+				// draw quad
+				cmdBuffer->Quad(cmd, emissiveMaterial, 0);
+			}
+
+		});
+	return lightingPass;
+}
 
 
 #endif

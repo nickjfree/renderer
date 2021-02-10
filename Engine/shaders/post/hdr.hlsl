@@ -102,7 +102,7 @@ PS_Output_Simple PS_ToneMapping(PS_Input_Simple input)
     vSample.xyz /= (1.0f + vSample);
 
     // bloom effect
-    vSample += vBloom.xyz * 1.0f;
+    vSample += vBloom.xyz * 0.3f;
     output.Color = float4(vSample, 0);
     // output.Color = gPostBuffer.Sample(gSam,input.TexCoord);
     //output.Color = input.TexCoord.x;

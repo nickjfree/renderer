@@ -102,7 +102,7 @@ int ResourceCache::AsyncUnLoadResource(const String& URL, Resource* Caller, Vari
 		Resource* sub = *iter;
 		if (sub->ResourceType == Resource::R_SHADER) {
 			// do not unload shaders
-			sub->RemoveOwner(Caller);
+			sub->RemoveOwner(Caller); 
 			return 1;
 		}
 		if (sub->GetAsyncStatus() == Resource::S_ACTIVED) {

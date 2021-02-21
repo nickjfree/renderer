@@ -58,8 +58,8 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[2] = "Shader\\shaders\\OIT\\0";
 	Param.as<String*>() = &Preloadings[2];
 	Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);
-	// load reflection materials
-	Preloadings[3] = "Material\\Materials\\reflection.xml\\0";
+	// load raytracing shaders materials
+	Preloadings[3] = "Material\\Materials\\raytracing.xml\\0";
 	Param.as<String*>() = &Preloadings[3];
 	Cache->AsyncLoadResource(Preloadings[3], Preloading, Param);
 	// load  denoising shaders

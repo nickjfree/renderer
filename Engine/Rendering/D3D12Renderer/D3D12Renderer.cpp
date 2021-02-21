@@ -299,7 +299,7 @@ void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
 		localRootSignature->FlushShaderBinginds(cmdList, descHeap, record);
 	}
 	// add rt instance
-	rtScene->AddInstance(rtGeometry, instance->Transform);
+	rtScene->AddInstance(rtGeometry, instance->Transform, instance->NumShaders);
 }
 
 void D3D12CommandContext::BuildAccelerationStructure()
@@ -1715,27 +1715,37 @@ int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, 
 	lib->SetDXILLibrary(&libdxil);
 	// Define which shader exports to surface from the library.
 	// If no shader exports are defined for a DXIL library subobject, all shaders will be surfaced.
+	wchar_t clossetHitRename[128]{};
+	wchar_t anyhitHitRename[128]{};
+	wchar_t intersectionRename[128]{};
+	wchar_t missRename[128]{};
+	wchar_t raygenRename[128]{};
 	{
 		if (ClosestHit) {
-			lib->DefineExport(ClosestHit);
+			swprintf_s(clossetHitRename, L"%lS_%d", ClosestHit, shader->resourceId);
+			lib->DefineExport(clossetHitRename, ClosestHit);
 		}
 		if (AnyHit) {
-			lib->DefineExport(AnyHit);
+			swprintf_s(anyhitHitRename, L"%lS_%d", AnyHit, shader->resourceId);
+			lib->DefineExport(anyhitHitRename, AnyHit);
 		}
 		if (Intersection) {
-			lib->DefineExport(Intersection);
+			swprintf_s(intersectionRename, L"%lS_%d", Intersection, shader->resourceId);
+			lib->DefineExport(intersectionRename, Intersection);
 		}
 		if (Raygen) {
-			lib->DefineExport(Raygen);
+			swprintf_s(raygenRename, L"%lS_%d", Raygen, shader->resourceId);
+			lib->DefineExport(raygenRename, Raygen);
 		}
 		if (Miss) {
-			lib->DefineExport(Miss);
+			swprintf_s(missRename, L"%lS_%d", Miss, shader->resourceId);
+			lib->DefineExport(missRename, Miss);
 		}
 	}
 	// Triangle hit group
 	// A hit group specifies closest hit, any hit and intersection shaders to be executed when a ray intersects the geometry's triangle/AABB.
 	auto hitGroup = raytracingCollection.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
-	hitGroup->SetClosestHitShaderImport(ClosestHit);
+	hitGroup->SetClosestHitShaderImport(clossetHitRename);
 	//hitGroup->SetAnyHitShaderImport(AnyHit);
 	//hitGroup->SetIntersectionShaderImport(Intersection);
 	// gen hotgroup name
@@ -1760,8 +1770,8 @@ int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, 
 		// Shader association
 		auto globalRootSignatureAssociation = raytracingCollection.CreateSubobject<CD3DX12_SUBOBJECT_TO_EXPORTS_ASSOCIATION_SUBOBJECT>();
 		globalRootSignatureAssociation->SetSubobjectToAssociate(*globalRootSignature);
-		globalRootSignatureAssociation->AddExport(Raygen);
-		globalRootSignatureAssociation->AddExport(Miss);
+		globalRootSignatureAssociation->AddExport(raygenRename);
+		globalRootSignatureAssociation->AddExport(missRename);
 		globalRootSignatureAssociation->AddExport(HitGroup);
 	}
 	// shader config
@@ -1782,10 +1792,10 @@ int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, 
 	shader->collection->QueryInterface(IID_PPV_ARGS(&properties));
 	shader->hitGroup = *(ShaderIdetifier*)properties->GetShaderIdentifier(HitGroup);
 	if (Raygen) {
-		shader->raygen = *(ShaderIdetifier*)properties->GetShaderIdentifier(Raygen);
+		shader->raygen = *(ShaderIdetifier*)properties->GetShaderIdentifier(raygenRename);
 	}
 	if (Miss) {
-		shader->miss = *(ShaderIdetifier*)properties->GetShaderIdentifier(Miss);
+		shader->miss = *(ShaderIdetifier*)properties->GetShaderIdentifier(missRename);
 	}
 	// cleanup
 	properties->Release();

@@ -54,7 +54,8 @@ fxc /T ps_5_1 /E AOITSPClearPS /D dohdr=1   /Fo oit-clear.ps  oit/oit.hlsl
 
 fxc /T ps_5_1 /E PS  /Fo reflection.ps  post/reflection.hlsl
 
-dxc  -Zi -Fo raytracing.cso -T lib_6_3  -nologo raytracing\raytracing.hlsl
+dxc  -Zi -Fo rt-reflection.cso -T lib_6_3  -nologo raytracing\rt-reflection.hlsl
+dxc  -Zi -Fo rt-lighting.cso -T lib_6_3  -nologo raytracing\rt-lighting.hlsl
 
 fxc /T ps_5_1 /E PS_TemporalAccumulation  /Fo temporal_accumulation.ps  raytracing/denoising.hlsl
 

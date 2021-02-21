@@ -608,7 +608,7 @@ ShaderRecord* RaytracingScene::AllocShaderRecord(int materialId)
 	return sbt.AllocShaderRecord(materialId);
 }
 
-void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform)
+void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform, int numRays)
 {
 	// instanceDesc.PushBack(instance);
 	auto blas = rtGeometry->GetBottomLevel();
@@ -617,7 +617,7 @@ void RaytracingScene::AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& tran
 	instance.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_TRIANGLE_CULL_DISABLE;
 	instance.InstanceID = 0;
 	instance.InstanceMask = 1;
-	instance.InstanceContributionToHitGroupIndex = instanceDesc.Size();
+	instance.InstanceContributionToHitGroupIndex = instanceDesc.Size() * numRays;
 	// set transform 
 	Matrix4x4 trans;
 	transform.Tranpose(transform, &trans);
@@ -796,6 +796,8 @@ void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex,
 	if (sbt.IsDirty()) {
 		sbt.Stage(cmdContext, &rayDesc);
 	}
+	// set raygen start address offset
+	rayDesc.RayGenerationShaderRecord.StartAddress += shaderIndex * sizeof(ShaderRecord);
 	// refresh the rtpso
 	stateObject.Refresh(rtxDevice);
 	rtCmdList->SetPipelineState1(stateObject.Get());
@@ -1086,12 +1088,12 @@ void ShaderBindingTable::Create(ID3D12Device* d3d12Device)
 void ShaderBindingTable::SetRay(int rayIndex)
 {
 	auto shader = RaytracingShader::Get(rayIndex);
-	if (memcmp(&rayGen->identifier, &shader->raygen, sizeof(shader->raygen))) {
-		rayGen->identifier = shader->raygen;
+	if (memcmp(&rayGen[rayIndex].identifier, &shader->raygen, sizeof(shader->raygen))) {
+		rayGen[rayIndex].identifier = shader->raygen;
 		dirty = true;
 	}
-	if (memcmp(&miss->identifier, &shader->miss, sizeof(shader->miss))) {
-		miss->identifier = shader->miss;
+	if (memcmp(&miss[rayIndex].identifier, &shader->miss, sizeof(shader->miss))) {
+		miss[rayIndex].identifier = shader->miss;
 		dirty = true;
 	}
 }

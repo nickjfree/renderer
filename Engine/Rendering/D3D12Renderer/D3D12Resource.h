@@ -390,7 +390,7 @@ namespace D3D12Renderer {
 		// alloc shader record
 		ShaderRecord* AllocShaderRecord(int materialId);
 		// add instance
-		void AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform);
+		void AddInstance(RaytracingGeomtry* rtGeometry, Matrix4x4& transform, int numRays);
 		// build
 		void Build(D3D12CommandContext* cmdContext);
 		// trace ray

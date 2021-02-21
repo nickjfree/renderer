@@ -88,11 +88,11 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 
 }
 
-void CommandBuffer::DispatchRays(RenderingCommand* cmd, const String& shaderName, Material* material, int w, int h)
+void CommandBuffer::DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h)
 {
 	cmd->cmdType = RenderingCommand::CommandType::DISPATCH_RAYS;
 	cmd->dispatchRays.material = material;
-	cmd->dispatchRays.shaderName = shaderName;
+	cmd->dispatchRays.rayId = rayId;
 	cmd->dispatchRays.width = w;
 	cmd->dispatchRays.height = h;
 }
@@ -185,7 +185,7 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 {
 	cmdContext->SetRaytracingMode();
 	auto material = cmd->dispatchRays.material;
-	auto rtShader = material->GetShaderLibrary(0);
+	auto rtShader = material->GetShaderLibrary(cmd->dispatchRays.rayId);
 	if (rtShader) {
 		// apply shader
 		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);

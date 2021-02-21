@@ -204,7 +204,7 @@ int ShaderLibrary::OnCreateComplete(Variant& Parameter)
 	wchar_t HitGroupName[32];
 	swprintf_s(HitGroupName, L"HitGroup_%S", File.ToStr());
 	// create the shader
-	renderinterface->CreateRayTracingShader(DeSerial.Raw(), DeSerial.Length(), RaygenShaderName, MissShaderName, 
+	id = renderinterface->CreateRayTracingShader(DeSerial.Raw(), DeSerial.Length(), RaygenShaderName, MissShaderName, 
 		HitGroupName, ClosestHitShaderName, AnyHitShaderName, IntersectionShaderName);
 
 	// release 

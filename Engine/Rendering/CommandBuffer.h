@@ -35,8 +35,8 @@ typedef struct DispatchRaysCommand
 {
 	// material
 	Material* material;
-	// shader name
-	String shaderName;
+	// ray id
+	int rayId;
 	// scale
 	int width;
 	int height;
@@ -144,7 +144,7 @@ public:
 	// draw instanced
 	void DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex);
 	// dispatch rays
-	void DispatchRays(RenderingCommand* cmd, const String& shaderName, Material* material, int w, int h);
+	void DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h);
 	// dispatch rays
 	void BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag);
 	// render targets

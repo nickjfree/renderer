@@ -33,7 +33,7 @@ auto AddBuildASPass(FrameGraph& frameGraph, RenderContext* renderContext)
 	ray tracing
 */
 template <class T, class U>
-auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData)
+auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData)
 {
 	typedef struct PassData {
 		RenderResource lighting;
@@ -53,7 +53,7 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 
 	auto renderInterface = renderContext->GetRenderInterface();
 
-	auto raytracingPass = frameGraph.AddRenderPass<PassData>("raytracing",
+	auto raytracingPass = frameGraph.AddRenderPass<PassData>("raytraced-reflection",
 		[&](GraphBuilder& builder, PassData& passData) {
 			// input
 			passData.lighting = builder.Read(&lightingPassData.lighting);
@@ -110,7 +110,7 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 			// setup
 			cmdBuffer->SetupFrameParameters(cam, renderContext);
 			// trace reflection ray
-			Variant* value = renderContext->GetResource("Material\\Materials\\reflection.xml\\0");
+			Variant* value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
 			Material* material = nullptr;
 			// add frame number
 			static int frameNumber = 0;
@@ -138,7 +138,7 @@ auto AddRaytracingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& 
 					cmd->cmdParameters["RenderTarget"].as<int>() = passData.reflectionRaw.GetActualResource();
 					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
 					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
-					cmdBuffer->DispatchRays(cmd, "default", material, renderContext->FrameWidth, renderContext->FrameHeight);
+					cmdBuffer->DispatchRays(cmd, 0, material, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 				// flip color & moment buffer
 				passData.color0.Flip(&passData.color1);
@@ -278,5 +278,162 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 			}
 		});
 	return resolvePass;
+}
+
+/*
+	ray traced lighting (direct lighting)
+*/
+template <class T>
+auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData)
+{
+	typedef struct PassData {
+		RenderResource compact0;
+		RenderResource specular;
+		RenderResource depth;
+		RenderResource motion;
+		// rt-lighting
+		RenderResource rtLighting;
+		// TODO: reused render targets
+		// svgf-color-0 svgf-color-1
+		RenderResource color0;
+		RenderResource color1;
+		// svgf-moments-0 svgf-moments-1
+		RenderResource moment0;
+		RenderResource moment1;
+	}PassData;
+
+	auto renderInterface = renderContext->GetRenderInterface();
+
+	auto raytracingPass = frameGraph.AddRenderPass<PassData>("raytraced-lighting",
+		[&](GraphBuilder& builder, PassData& passData) {
+			// input
+			passData.compact0 = builder.Read(&gbufferPassData.compact0);
+			passData.depth = builder.Read(&gbufferPassData.depth);
+			passData.specular = builder.Read(&gbufferPassData.specular);
+			passData.motion = builder.Read(&gbufferPassData.motion);
+
+			// create the output buffers
+			R_TEXTURE2D_DESC desc = {};
+			desc.Width = renderContext->FrameWidth;
+			desc.Height = renderContext->FrameHeight;
+
+			desc.ArraySize = 1;
+			desc.CPUAccess = (R_CPU_ACCESS)0;
+			desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE | BIND_RENDER_TARGET);
+			desc.MipLevels = 1;
+			desc.Usage = DEFAULT;
+			desc.Format = FORMAT_R16G16B16A16_FLOAT;
+			desc.SampleDesc.Count = 1;
+
+			// rt-result
+			passData.rtLighting = builder.Create("rt-lighting",
+				[=]() mutable {
+					desc.DebugName = L"rt-lighting";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// color0
+			passData.color0 = builder.Create("svgf-color0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// color1
+			passData.color1 = builder.Create("svgf-color1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color1";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment0
+			passData.moment0 = builder.Create("svgf-moment-0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment1
+			passData.moment1 = builder.Create("svgf-moment-1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-1";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+		},
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+			// setup
+			cmdBuffer->SetupFrameParameters(cam, renderContext);
+			// trace reflection ray
+			Variant* value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
+			Material* material = nullptr;
+			// add frame number
+			static int frameNumber = 0;
+			++frameNumber;
+			if (value) {
+				material = value->as<Material*>();
+			}
+			if (material) {
+				auto rtLighting = passData.rtLighting.GetActualResource();
+				// set up 
+				{
+					Variant compact0, specular, depth, motion;
+					compact0.as<int>() = passData.compact0.GetActualResource();
+					specular.as<int>() = passData.specular.GetActualResource();
+					depth.as<int>() = passData.depth.GetActualResource();
+					motion.as<int>() = passData.motion.GetActualResource();
+					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
+					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
+					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+					cmdBuffer->SetGlobalParameter("gMotionVector", motion);
+				}
+				// disptach rays
+				{
+					auto cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["RenderTarget"].as<int>() = passData.rtLighting.GetActualResource();
+					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
+					cmdBuffer->DispatchRays(cmd, 1, material, renderContext->FrameWidth, renderContext->FrameHeight);
+				}
+				// flip color & moment buffer
+				passData.color0.Flip(&passData.color1);
+				passData.moment0.Flip(&passData.moment1);
+				// accumulation 
+				{
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = {
+						passData.color0.GetActualResource(),
+						passData.moment0.GetActualResource(),
+					};
+					cmdBuffer->RenderTargets(cmd, targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gPrevColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gPrevMoment"].as<int>() = passData.moment1.GetActualResource();
+					cmd->cmdParameters["gCurrentColor"].as<int>() = passData.rtLighting.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 0);
+				}
+				// filter variance
+				{
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color1.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color0.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 2);
+				}
+				{
+					// filter
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color0.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, material, 1);
+				}
+
+			}
+		});
+	return raytracingPass;
 }
 #endif

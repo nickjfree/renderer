@@ -7,5 +7,5 @@
     <texture unit="gLightProbeIrradiance" name="irradiance" url="Texture\textures\iblDiffuseHDR.dds\0">irr</texture>
   </textures>
 
-  <shader name="reflection" url="Shader\shaders\Reflection\0"></shader>
+  <shader name="reflection" url="Shader\shaders\Resolve\0"></shader>
 </material>

@@ -266,11 +266,11 @@
     </technique>
   </shader>
 
-  <shader name="Reflection">
-    <technique name="reflection">
+  <shader name="Resolve">
+    <technique name="resolve">
       <pass name="reflection" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <vs url="Shaders\shaders\quad.vs"></vs>
-        <ps url="Shaders\shaders\reflection.ps"></ps>
+        <ps url="Shaders\shaders\resolve.ps"></ps>
       </pass>
     </technique>
   </shader>

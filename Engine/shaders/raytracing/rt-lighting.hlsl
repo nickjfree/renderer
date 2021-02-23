@@ -17,6 +17,7 @@
 #include "../common/post.h"
 #include "random.hlsli"
 #include "monte_carlo.hlsli"
+#include "../lighting/lighting.hlsli"
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
@@ -30,13 +31,11 @@ struct RayPayload
 };
 
 
-void TraceReflectionRay(float3 origin, float3 look, float3 normal, float roughness, uint seed, inout RayPayload payload) 
+void TraceShadowRay(float3 origin, float3 look, float3 normal, float roughness, uint seed, inout RayPayload payload) 
 {
-    float2 randsample = float2(Rand(seed), Rand(seed));
-    float4 sample = GenerateReflectedRayDirection(look, normal, roughness, randsample);
+    // float2 randsample = float2(Rand(seed), Rand(seed));
+    float4 sample = normalize(float4(1, 1, 1, 0));
     float3 rayDir = sample.xyz;
-    float invPDF = sample.w;
-    FixSampleDirectionIfNeeded(normal, rayDir);
     // get ray
     RayDesc ray;
     ray.Origin = origin;
@@ -45,7 +44,7 @@ void TraceReflectionRay(float3 origin, float3 look, float3 normal, float roughne
     // TMin should be kept small to prevent missing geometry at close contact areas.
     ray.TMin = 0.005;
     ray.TMax = 10000.0;
-    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 1, 1, 0, ray, payload);
+    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 1, 1, 1, ray, payload);
 }
 
 
@@ -61,7 +60,7 @@ void Raygen()
     float3 viewPos = gbuffer.Position.xyz;
 
     if (length(viewPos) < 0.001) {
-        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0.0, 0, 1);
+        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
         return;
     }
   
@@ -82,9 +81,14 @@ void Raygen()
     RayPayload payload;
     payload.color = color;
 
-    TraceReflectionRay(origin, world_look, world_normal, roughness, seed, payload);
-    // target
-    RenderTarget[DispatchRaysIndex().xy] = payload.color;
+    TraceShadowRay(origin, world_look, world_normal, roughness, seed, payload);
+    // sun light
+    float3 L = float3(1, 1, 1);
+    L = mul(float4(normalize(L),0), gViewMatrix).xyz;
+    // deferred lighting
+    float3 lighting_color = 3 * float3(1, 1, 1) * deferred_lighting(gbuffer, L).xyz;
+    // test shadow
+    RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, 0);
     // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
 }
 
@@ -92,38 +96,14 @@ void Raygen()
 [shader("closesthit")]
 void ClosestHit(inout RayPayload payload, in SimpleAttributes attr)
 {
-    if (InstanceID() == 1) {
-        payload.color = float4(0, 50, 0, RayTCurrent());
-        return;
-    }
-    // try get the color from screen space
-    float3 hitPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
-    float4 screenPosition = mul(float4(hitPosition, 1), gViewProjectionMatrix);
-    screenPosition.x = screenPosition.x / screenPosition.w * 0.5 + 0.5;
-    screenPosition.y = -screenPosition.y / screenPosition.w * 0.5 + 0.5;
-    // get gbuffer 
-    if ((saturate(screenPosition.x) == screenPosition.x) && (saturate(screenPosition.y) == screenPosition.y)) {
-        // in screen space
-        GBuffer gbuffer = GetGBufferLoad(screenPosition.xy);
-        float hitDepth = mul(float4(hitPosition, 1), gViewMatrix).z;
-        float gbufferDepth = gbuffer.Position.z;
-        if (hitDepth - gbufferDepth < 0.1) {
-            payload.color = float4(1, 0, 0, 0);
-            return;
-        }
-    }
-    // can't get color from screen space, get it from textures
-    float4 color = SampleHitPointColor(attr);
-
-   // float4 color = float4(uv, 0.0, 0);
-    payload.color = float4(color.xyz, RayTCurrent());
+    payload.color = float4(0, 0, 0, 1);
 }
 
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
     // payload.color = float4(0, 0, 0, 1);
-    payload.color = gLightProbe.SampleLevel(gSam, WorldRayDirection(), 0);
+    payload.color = float4(1, 1, 1, 1);
 }
 
 #endif // RAYTRACING_HLSL

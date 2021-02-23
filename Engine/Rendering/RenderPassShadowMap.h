@@ -2,9 +2,7 @@
 #define __RENDER_PASS_SHADOWMAP__
 
 /*
-*	do hdr.
-*	input:
-*		lighting buffer
+*	do shadow map rendering.
 */
 auto AddShadowMapPass(FrameGraph& frameGraph, RenderContext* renderContext) 
 {

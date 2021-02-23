@@ -52,7 +52,7 @@ fxc /T vs_5_1 /E VS  /D dohdr=1  /Fo oit-quad.vs  oit/oit.hlsl
 fxc /T ps_5_1 /E AOITSPResolvePS /D dohdr=1   /Fo oit-resolve.ps  oit/oit.hlsl
 fxc /T ps_5_1 /E AOITSPClearPS /D dohdr=1   /Fo oit-clear.ps  oit/oit.hlsl
 
-fxc /T ps_5_1 /E PS  /Fo reflection.ps  post/reflection.hlsl
+fxc /T ps_5_1 /E PS  /Fo resolve.ps  post/resolve.hlsl
 
 dxc  -Zi -Fo rt-reflection.cso -T lib_6_3  -nologo raytracing\rt-reflection.hlsl
 dxc  -Zi -Fo rt-lighting.cso -T lib_6_3  -nologo raytracing\rt-lighting.hlsl

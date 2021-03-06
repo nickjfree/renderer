@@ -43,6 +43,8 @@ public:
 	virtual void SetVertexShader(int id) = 0;
 	// set pixel shader
 	virtual void SetPixelShader(int id) = 0;
+	// set compute shader
+	virtual void SetComputeShader(int id) = 0;
 	// set input layout
 	virtual void SetInputLayout(int id) = 0;
 	// draw single geometry
@@ -58,7 +60,7 @@ public:
 	// dispatch rays
 	virtual void DispatchRays(int shaderId, int width, int height) = 0;
 	// dispatch
-	virtual void DispatchCompute(int width, int height) = 0;
+	virtual void DispatchCompute(int x, int y, int z) = 0;
 	// clear render targets and depth
 	virtual void ClearRenderTargets(bool clearTargets, bool clearDepth) = 0;
 	// wait

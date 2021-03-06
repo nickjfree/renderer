@@ -65,13 +65,12 @@ typedef struct DispatchComputeCommand
 {
 	// material
 	Material* material;
-	// shader
-	Shader* shader;
 	// pass index to rendering
 	int passIndex;
-	// scale
-	int width;
-	int height;
+	// groups
+	int x;
+	int y;
+	int z;
 }DispatchComputeCommand;
 
 // set render targets
@@ -143,6 +142,8 @@ public:
 	void Draw(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex);
 	// draw instanced
 	void DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex);
+	// dispatch compute
+	void Dispatch(RenderingCommand* cmd, Material* material, int passIndex, int x, int y, int z);
 	// dispatch rays
 	void DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h);
 	// dispatch rays
@@ -166,6 +167,8 @@ private:
 	void draw(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// draw instanced
 	void drawInstanced(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// 
+	void dispatch(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// build as
 	void buildAccelerationStructure(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// dispatch rays

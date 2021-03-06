@@ -74,6 +74,10 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[6] = "Material\\Materials\\emissive.xml\\0";
 	Param.as<String*>() = &Preloadings[6];
 	Cache->AsyncLoadResource(Preloadings[6], Preloading, Param);
+	// load light culling shaders
+	Preloadings[7] = "Material\\Materials\\light_culling.xml\\0";
+	Param.as<String*>() = &Preloadings[7];
+	Cache->AsyncLoadResource(Preloadings[7], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

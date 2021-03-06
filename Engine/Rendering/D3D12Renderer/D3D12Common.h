@@ -233,6 +233,7 @@ namespace D3D12Renderer {
 		int GS;
 		int DS;
 		int HS;
+		int CS;
 		// id of render state
 		int Depth;
 		int Rasterizer;
@@ -371,6 +372,8 @@ namespace D3D12Renderer {
 		void SetVertexShader(int id);
 		// set pixel shader
 		void SetPixelShader(int id);
+		// set compute shader
+		void SetComputeShader(int id);
 		// set inputpayout
 		void SetInputLayout(int id);
 		// draw single geometry
@@ -382,7 +385,7 @@ namespace D3D12Renderer {
 		// dispatch rays
 		void DispatchRays(int shaderId, int width, int height);
 		// dispatch
-		void DispatchCompute(int width, int height);
+		void DispatchCompute(int x, int y, int z);
 		// clear render targets
 		void ClearRenderTargets(bool clearTargets, bool clearDepth);
 		// apply barriers

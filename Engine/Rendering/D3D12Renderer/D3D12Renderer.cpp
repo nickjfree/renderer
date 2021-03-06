@@ -198,6 +198,8 @@ void D3D12CommandContext::SetGraphicsMode()
 	cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
 	cmdList->SetComputeRootSignature(nullptr);
 	currentRootSignature = graphicsRootSignature;
+	// clear compute shader in pso
+	pipelineStateCache.CS = -1;
 	// bind heaps
 	if (descriptorHeap) {
 		bindDescriptorHeap(descriptorHeap);
@@ -217,6 +219,8 @@ void D3D12CommandContext::SetComputeMode()
 	computeRootSignature->SetStale();
 	cmdList->SetComputeRootSignature(computeRootSignature->Get());
 	currentRootSignature = computeRootSignature;
+	// cleae ps and vs in pso
+	pipelineStateCache.VS = pipelineStateCache.PS = -1;
 	// bind heaps
 	if (descriptorHeap) {
 		bindDescriptorHeap(descriptorHeap);
@@ -499,6 +503,14 @@ void D3D12CommandContext::SetPixelShader(int id)
 	}
 }
 
+void D3D12CommandContext::SetComputeShader(int id)
+{
+	if (pipelineStateCache.CS != id) {
+		pipelineStateCache.Dirty = true;
+		pipelineStateCache.CS = id;
+	}
+}
+
 void D3D12CommandContext::SetInputLayout(int id)
 {
 	if (pipelineStateCache.InputLayout != id) {
@@ -605,10 +617,12 @@ void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
 	rtScene->TraceRay(this, shaderId, width, height);
 }
 
-void D3D12CommandContext::DispatchCompute(int width, int height)
+void D3D12CommandContext::DispatchCompute(int x, int y, int z)
 {
 	// flush state
 	flushState();
+	// dispatch
+	cmdList->Dispatch(x, y, z);
 }
 
 void D3D12CommandContext::ClearRenderTargets(bool clearTargets, bool clearDepth)
@@ -1211,7 +1225,7 @@ UINT64 D3D12CommandQueue::ExecuteCommandList(ID3D12CommandList* cmdList)
 // PipelineStateCache
 /************************************************************************/
 
-D3D12PipelineStateCache::D3D12PipelineStateCache() : hash(-1), VS(-1), PS(-1), GS(-1), DS(-1), HS(-1), InputLayout(-1), NumRTV(0),
+D3D12PipelineStateCache::D3D12PipelineStateCache() : hash(-1), VS(-1), PS(-1), GS(-1), DS(-1), HS(-1), CS(-1), InputLayout(-1), NumRTV(0),
 Depth(-1), Rasterizer(-1), Blend(-1), Dirty(0), Top(R_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED) {
 	memset(RTVFormat, -1, sizeof(DXGI_FORMAT) * 8);
 	DSVFormat = DXGI_FORMAT_FORCE_UINT;
@@ -1229,6 +1243,7 @@ D3D12PipelineStateCache::operator int() const {
 		hash = (hash << 5) + GS;
 		hash = (hash << 5) + DS;
 		hash = (hash << 5) + HS;
+		hash = (hash << 5) + CS;
 		hash = (hash << 5) + InputLayout;
 		hash = (hash << 5) + Depth;
 		hash = (hash << 5) + Rasterizer;
@@ -1238,7 +1253,7 @@ D3D12PipelineStateCache::operator int() const {
 }
 
 bool D3D12PipelineStateCache::operator==(const D3D12PipelineStateCache& rh) {
-	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
+	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS && CS == rh.CS) {
 		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
 				return true;
@@ -1249,7 +1264,7 @@ bool D3D12PipelineStateCache::operator==(const D3D12PipelineStateCache& rh) {
 }
 
 bool D3D12PipelineStateCache::operator!=(const D3D12PipelineStateCache& rh) {
-	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS) {
+	if (VS == rh.VS && PS == rh.PS && GS == rh.GS && DS == rh.DS && HS == rh.HS && CS == rh.CS) {
 		if (NumRTV == rh.NumRTV && !memcmp(RTVFormat, rh.RTVFormat, sizeof(DXGI_FORMAT) * NumRTV) && DSVFormat == rh.DSVFormat && Top == rh.Top) {
 			if (Depth == rh.Depth && Rasterizer == rh.Rasterizer && Blend == rh.Blend) {
 				return false;
@@ -1286,42 +1301,55 @@ ID3D12PipelineState* D3D12PipelineStateCache::GetPipelineState(ID3D12Device* d3d
 ID3D12PipelineState* D3D12PipelineStateCache::CreatePipelineState(ID3D12Device* d3d12Device, ID3D12RootSignature* rootSignature, const D3D12PipelineStateCache& cache)
 {
 	// set a lot pso descriptions
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc = {};
-	Desc.pRootSignature = rootSignature;
-	// we only use ps and vs
-	if (cache.VS != -1) {
-		Desc.VS = D3D12Shader::Get(cache.VS)->ByteCode;
-	}
-	if (cache.PS != -1) {
-		Desc.PS = D3D12Shader::Get(cache.PS)->ByteCode;
-	}
-	if (cache.Blend != -1) {
-		Desc.BlendState = D3D12RenderState::Get(cache.Blend)->Blend;
-	}
-	Desc.SampleMask = 0xffffffff;
-	if (cache.Rasterizer != -1) {
-		Desc.RasterizerState = D3D12RenderState::Get(cache.Rasterizer)->Raster;
-	}
-	if (cache.Depth != -1) {
-		Desc.DepthStencilState = D3D12RenderState::Get(cache.Depth)->Depth;
-	}
-	if (cache.InputLayout != -1) {
-		Desc.InputLayout = D3D12InputLayout::Get(cache.InputLayout)->Layout;
-	}
-	Desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
-	Desc.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)cache.Top;   //  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	Desc.NumRenderTargets = cache.NumRTV;
-	memcpy(Desc.RTVFormats, cache.RTVFormat, cache.NumRTV * sizeof(DXGI_FORMAT));
-	Desc.DSVFormat = cache.DSVFormat;
-	Desc.SampleDesc.Count = 1;
-	Desc.SampleDesc.Quality = 0;
-	Desc.NodeMask = 0;
-	Desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-	// create it
-	ID3D12PipelineState* pso;
-	HRESULT result = d3d12Device->CreateGraphicsPipelineState(&Desc, IID_PPV_ARGS(&pso));
-	if (pso == nullptr) {
-		printf("CreatePso failed result:%d, rtvcount %d\n", result, Desc.NumRenderTargets);
+	ID3D12PipelineState* pso = nullptr;
+	if (cache.CS != -1) {
+		// compute pipeline state
+		D3D12_COMPUTE_PIPELINE_STATE_DESC desc = {};
+		desc.pRootSignature = rootSignature;
+		desc.CS = D3D12Shader::Get(cache.CS)->ByteCode;
+		desc.NodeMask = 0;
+		desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		HRESULT result = d3d12Device->CreateComputePipelineState(&desc, IID_PPV_ARGS(&pso));
+		if (pso == nullptr) {
+			printf("CreatePso(compute) failed result:%d \n", result);
+		}
+	} else {
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+		desc.pRootSignature = rootSignature;
+		// we only use ps and vs
+		if (cache.VS != -1) {
+			desc.VS = D3D12Shader::Get(cache.VS)->ByteCode;
+		}
+		if (cache.PS != -1) {
+			desc.PS = D3D12Shader::Get(cache.PS)->ByteCode;
+		}
+		if (cache.Blend != -1) {
+			desc.BlendState = D3D12RenderState::Get(cache.Blend)->Blend;
+		}
+		desc.SampleMask = 0xffffffff;
+		if (cache.Rasterizer != -1) {
+			desc.RasterizerState = D3D12RenderState::Get(cache.Rasterizer)->Raster;
+		}
+		if (cache.Depth != -1) {
+			desc.DepthStencilState = D3D12RenderState::Get(cache.Depth)->Depth;
+		}
+		if (cache.InputLayout != -1) {
+			desc.InputLayout = D3D12InputLayout::Get(cache.InputLayout)->Layout;
+		}
+		desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+		desc.PrimitiveTopologyType = (D3D12_PRIMITIVE_TOPOLOGY_TYPE)cache.Top;   //  D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+		desc.NumRenderTargets = cache.NumRTV;
+		memcpy(desc.RTVFormats, cache.RTVFormat, cache.NumRTV * sizeof(DXGI_FORMAT));
+		desc.DSVFormat = cache.DSVFormat;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.NodeMask = 0;
+		desc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+		// create it
+		HRESULT result = d3d12Device->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pso));
+		if (pso == nullptr) {
+			printf("CreatePso failed result:%d, rtvcount %d\n", result, desc.NumRenderTargets);
+		}
 	}
 	psoTable.Set(cache, pso);
 	return pso;

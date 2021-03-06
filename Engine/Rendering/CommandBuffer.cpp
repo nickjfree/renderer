@@ -88,6 +88,17 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 
 }
 
+void CommandBuffer::Dispatch(RenderingCommand* cmd, Material* material, int passIndex, int x, int y, int z)
+{
+	cmd->cmdType = RenderingCommand::CommandType::DISPATCH_COMPUTE;
+	cmd->dispatchCompute.material = material;
+	cmd->dispatchCompute.passIndex = passIndex;
+	cmd->dispatchCompute.x = x;
+	cmd->dispatchCompute.y = y;
+	cmd->dispatchCompute.z = z;
+}
+
+
 void CommandBuffer::DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h)
 {
 	cmd->cmdType = RenderingCommand::CommandType::DISPATCH_RAYS;
@@ -181,6 +192,19 @@ void CommandBuffer::buildAccelerationStructure(RenderingCommand* cmd, RenderComm
 	}
 }
 
+void CommandBuffer::dispatch(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	cmdContext->SetComputeMode();
+	auto material = cmd->dispatchCompute.material;
+	auto shader = material->GetShader();
+	if (shader) {
+		// apply shader
+		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		// dispatch rays
+		cmdContext->DispatchCompute(cmd->dispatchCompute.x, cmd->dispatchCompute.y, cmd->dispatchCompute.z);
+	}
+}
+
 void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cmdContext)
 {
 	cmdContext->SetRaytracingMode();
@@ -220,6 +244,9 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 		case RenderingCommand::CommandType::BUILD_AS:
 			buildAccelerationStructure(&cmd, cmdContext);
 			hasAs = true;
+			break;
+		case RenderingCommand::CommandType::DISPATCH_COMPUTE:
+			dispatch(&cmd, cmdContext);
 			break;
 		case RenderingCommand::CommandType::DISPATCH_RAYS:
 			dispatchRays(&cmd, cmdContext);

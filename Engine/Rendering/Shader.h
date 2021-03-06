@@ -108,10 +108,8 @@ typedef struct RWTextureUnit {
 */
 typedef struct Pass {
 	int VS;
-	int GS;
-	int HS;
-	int DS;
 	int PS;
+	int CS;
 	int DepthStencil;
 	int Rasterizer;
 	int Blend;
@@ -290,6 +288,8 @@ template <class ...T> void Shader::Apply(RenderCommandContext* cmdContext, int s
 				cmdContext->SetVertexShader(pass->VS);
 			if (pass->PS != -1)
 				cmdContext->SetPixelShader(pass->PS);
+			if (pass->CS != -1)
+				cmdContext->SetComputeShader(pass->CS);
 			// render stats
 			cmdContext->SetDepthStencilState(pass->DepthStencil);
 			cmdContext->SetRasterizer(pass->Rasterizer);

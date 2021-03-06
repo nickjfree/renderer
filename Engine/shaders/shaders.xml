@@ -266,6 +266,14 @@
     </technique>
   </shader>
 
+  <shader name="LightCulling">
+    <technique name="culling">
+      <pass name="culling" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\light_culling.cs"></vs>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="Resolve">
     <technique name="resolve">
       <pass name="reflection" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">

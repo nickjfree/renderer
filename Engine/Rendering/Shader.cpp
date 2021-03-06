@@ -138,7 +138,7 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 			xml_node<>* pass = tech->first_node();
 			while (pass) {
 				Pass* RenderPass = new Pass();
-				RenderPass->VS = RenderPass->PS = RenderPass->HS = RenderPass->GS = RenderPass->DS = -1;
+				RenderPass->VS = RenderPass->PS = RenderPass->CS = -1;
 				RenderPass->Blend = RenderPass->DepthStencil = RenderPass->Rasterizer = -1;
 				RenderPass->Name = pass->first_attribute("name")->value();
 				// renderstats
@@ -160,17 +160,11 @@ int Shader::OnSerialize(Deserializer& deserializer) {
 					if (!strcmp(shader->name(), "vs")) {
 						RenderPass->VS = renderinterface->CreateVertexShader(Binary, Size, 0);
 					}
-					else if (!strcmp(shader->name(), "gs")) {
-						RenderPass->GS = renderinterface->CreatePixelShader(Binary, Size, 0);
-					}
-					else if (!strcmp(shader->name(), "hs")) {
-						RenderPass->HS = renderinterface->CreateHullShader(Binary, Size, 0);
-					}
-					else if (!strcmp(shader->name(), "ds")) {
-						RenderPass->DS = renderinterface->CreateDomainShader(Binary, Size, 0);
-					}
 					else if (!strcmp(shader->name(), "ps")) {
 						RenderPass->PS = renderinterface->CreatePixelShader(Binary, Size, 0);
+					}
+					else if (!strcmp(shader->name(), "cs")) {
+						RenderPass->CS = renderinterface->CreateComputeShader(Binary, Size, 0);
 					}
 					// reflect shader constant and textures
 					ReflectShader(RenderPass, Binary, Size, Tech.InstanceElements);
@@ -463,12 +457,6 @@ int Shader::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& MaterialP
 			// shaders
 			if (pass->VS != -1)
 				Compiled += Compiler->SetVertexShader(pass->VS);
-			if (pass->GS != -1)
-				Compiled += Compiler->RenderGeometry(pass->GS);
-			if (pass->HS != -1)
-				Compiled += Compiler->SetHullShader(pass->HS);
-			if (pass->DS != -1)
-				Compiled += Compiler->SetDomainShader(pass->DS);
 			if (pass->PS != -1)
 				Compiled += Compiler->SetPixelShader(pass->PS);
 			// render stats

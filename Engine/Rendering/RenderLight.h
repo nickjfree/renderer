@@ -108,6 +108,8 @@ public:
 	RenderingCamera* GetLightCamera();
 	// get lightdata
 	LightData GetLightData();
+	// get light info
+	Vector3 GetDesc();
 };
 
 #endif

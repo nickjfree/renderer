@@ -96,6 +96,13 @@ __declspec(align(16)) struct Vector3 {
 		w = 1;
 	}
 
+	Vector3(float x_, float y_, float z_, float w_) {
+		x = x_;
+		y = y_;
+		z = z_;
+		w = w_;
+	}
+
 	Vector3 operator + (Vector3& rh) {
 		XMVECTOR result = vector + rh.vector;
 		return *(Vector3*)&result;

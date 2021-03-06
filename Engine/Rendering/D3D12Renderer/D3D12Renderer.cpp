@@ -262,7 +262,7 @@ void D3D12CommandContext::AddRaytracingInstance(R_RAYTRACING_INSTANCE* instance)
 	D3D12_GPU_VIRTUAL_ADDRESS indexAddr = rtGeometry->geometry->indexBuffer->GetResource()->GetGPUVirtualAddress();
 	// add shader recrod for each ray types
 	for (auto ray = 0; ray < instance->NumShaders; ray++) {
-		// R_SHADER_RESOURCE_BINDINGS
+		// R_SHADER_RESOURCE_BINDINGS, 
 		R_RAYTRACING_SHADER_BINDINGS& bindings = instance->ShaderBindings[ray];
 		// get a shader record
 		auto record = rtScene->AllocShaderRecord(instance->MaterialId);

@@ -192,3 +192,8 @@ LightData RenderLight::GetLightData()
 {
 	return LightData{};
 }
+
+Vector3 RenderLight::GetDesc()
+{
+	return Vector3(Position.x, Position.y, Position.z, Radius);
+}

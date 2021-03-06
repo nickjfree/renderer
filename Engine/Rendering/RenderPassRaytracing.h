@@ -296,11 +296,21 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		RenderResource depth;
 		RenderResource motion;
 		// culling result
-		RenderResource lightIndex;
+		RenderResource culledLights;
 		// rt-lighting
 		RenderResource rtLighting;
 		// TODO: reused render targets
 	}PassData;
+
+	typedef struct LightInfos
+	{
+		int numLights;
+		int lightsPerCell;
+		int cellScale;
+		int pad;
+		Vector<Vector3> lights;
+		Vector<LightData> lightData;
+	}LightInfos;
 
 	auto renderInterface = renderContext->GetRenderInterface();
 
@@ -335,14 +345,14 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 
 
 			// light index buffer
-			passData.lightIndex = builder.Create("light-index",
+			passData.culledLights = builder.Create("light-index",
 				[=]() mutable {
 					R_BUFFER_DESC desc = {};
 					desc.Size = 1024;
 					desc.CPUAccessFlags = (R_CPU_ACCESS)0;
 					desc.CPUData = nullptr;
 					desc.Deformable = false;
-					desc.StructureByteStride = 8;
+					desc.StructureByteStride = 64;
 					desc.Usage = DEFAULT;
 					desc.DebugName = L"light-index";
 					return renderInterface->CreateBuffer(&desc);
@@ -380,11 +390,31 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
 					cmdBuffer->SetGlobalParameter("gMotionVector", motion);
 				}
-				// do lighting culling in compute shader
+				// do light culling in compute shader
 				{
+					// lights in scene
+					static Vector<Node*> lights;
+					lights.Reset();
+					// light position radius array
+					static LightInfos lightInfos{};
+					lightInfos.lights.Reset();
+					lightInfos.lightData.Reset();
+					spatial->Query(lights, Node::LIGHT);
+					for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
+						auto light = (RenderLight*)*iter;
+						lightInfos.lightData.PushBack(light->GetLightData());
+						lightInfos.lights.PushBack(light->GetDesc());
+					}
+					lightInfos.cellScale = 16;
+					lightInfos.lightsPerCell = 15;
+					lightInfos.numLights = lightInfos.lights.Size();
 					auto cmd = cmdBuffer->AllocCommand();
 					// use lighting fot test
-					cmd->cmdParameters["BufferOut"].as<int>() = passData.lightIndex.GetActualResource();
+					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lights.GetData();
+					cmd->cmdParameters["cellScale"].as<void*>() = &lightInfos.cellScale;
+					cmd->cmdParameters["lightsPerCell"].as<void*>() = &lightInfos.lightsPerCell;
+					cmd->cmdParameters["numLights"].as<void*>() = &lightInfos.numLights;
+					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
 					cmdBuffer->Dispatch(cmd, cullingMaterial, 0, 16, 16, 1);
 				}
 				// disptach rays

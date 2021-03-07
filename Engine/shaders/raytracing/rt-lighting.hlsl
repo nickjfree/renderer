@@ -23,6 +23,18 @@ RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
 // Texture2D PrevRenderTarget : register(t1, space0);
 
+struct LightIndics
+{
+    uint numLights;
+    uint lightIndics[15];
+};
+
+#define MAX_LIGHT_COUNT_PER_CELL  16
+
+StructuredBuffer<LightIndics> CulledLights : register(t1, space0);
+
+
+
 
 struct RayPayload
 {
@@ -88,7 +100,8 @@ void Raygen()
     // deferred lighting
     float3 lighting_color = 3 * float3(1, 1, 1) * deferred_lighting(gbuffer, L).xyz;
     // test shadow
-    RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, 0);
+    uint addr = linearIndex % 4096;
+    RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, CulledLights[addr].numLights);
     // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
 }
 

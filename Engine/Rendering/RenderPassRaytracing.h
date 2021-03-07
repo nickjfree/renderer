@@ -307,10 +307,16 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		int numLights;
 		int lightsPerCell;
 		int cellScale;
-		int pad;
+		int cellCount;
 		Vector<Vector3> lights;
 		Vector<LightData> lightData;
 	}LightInfos;
+
+	constexpr int max_lights_per_cell = 16;
+	constexpr int cell_scale = 10;
+	constexpr int cell_count = 16;
+	constexpr int buffer_size_per_cell = max_lights_per_cell * sizeof(unsigned int);
+	constexpr int light_index_buffer_size = buffer_size_per_cell * cell_count * cell_count * cell_count;
 
 	auto renderInterface = renderContext->GetRenderInterface();
 
@@ -348,11 +354,11 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 			passData.culledLights = builder.Create("light-index",
 				[=]() mutable {
 					R_BUFFER_DESC desc = {};
-					desc.Size = 1024;
+					desc.Size = light_index_buffer_size;
 					desc.CPUAccessFlags = (R_CPU_ACCESS)0;
 					desc.CPUData = nullptr;
 					desc.Deformable = false;
-					desc.StructureByteStride = 64;
+					desc.StructureByteStride = buffer_size_per_cell;
 					desc.Usage = DEFAULT;
 					desc.DebugName = L"light-index";
 					return renderInterface->CreateBuffer(&desc);
@@ -405,22 +411,25 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 						lightInfos.lightData.PushBack(light->GetLightData());
 						lightInfos.lights.PushBack(light->GetDesc());
 					}
-					lightInfos.cellScale = 16;
-					lightInfos.lightsPerCell = 15;
+					lightInfos.cellScale = cell_scale;
+					lightInfos.cellCount = cell_count;
+					lightInfos.lightsPerCell = max_lights_per_cell;
 					lightInfos.numLights = lightInfos.lights.Size();
 					auto cmd = cmdBuffer->AllocCommand();
 					// use lighting fot test
 					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lights.GetData();
 					cmd->cmdParameters["cellScale"].as<void*>() = &lightInfos.cellScale;
+					cmd->cmdParameters["cellCount"].as<void*>() = &lightInfos.cellCount;
 					cmd->cmdParameters["lightsPerCell"].as<void*>() = &lightInfos.lightsPerCell;
 					cmd->cmdParameters["numLights"].as<void*>() = &lightInfos.numLights;
 					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
-					cmdBuffer->Dispatch(cmd, cullingMaterial, 0, 16, 16, 1);
+					cmdBuffer->Dispatch(cmd, cullingMaterial, 0, cell_count, cell_count, cell_count);
 				}
 				// disptach rays
 				{
 					auto cmd = cmdBuffer->AllocCommand();
 					cmd->cmdParameters["RenderTarget"].as<int>() = passData.rtLighting.GetActualResource();
+					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
 					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
 				}

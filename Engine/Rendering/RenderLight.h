@@ -60,11 +60,15 @@ private:
 	int LightType;
 	// showmap id
 	int ShadowMap = -1;
+
+public:
 	enum {
 		POINT,
 		DIRECTION,
 		SPOT,
 		ENV,
+		CAPSULE,
+		RECT,
 	};
 
 public:

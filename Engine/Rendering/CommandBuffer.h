@@ -134,6 +134,8 @@ class CommandBuffer
 {
 	DECLARE_RECYCLE(CommandBuffer)
 public:
+	// Alloc
+	static CommandBuffer* Alloc();
 	// alloc a new command
 	RenderingCommand* AllocCommand();
 	// draw
@@ -179,9 +181,9 @@ private:
 	// num
 	int currentIndex = 0;
 	// instance 
-	unsigned char instanceBuffer[max_instance_buffer_size];
+	unsigned char instanceBuffer[max_instance_buffer_size] = {};
 	// size
-	size_t usedInstanceBuffer;
+	size_t usedInstanceBuffer = 0;
 	// global parameters
 	Dict globalParameters;
 	// renderContext

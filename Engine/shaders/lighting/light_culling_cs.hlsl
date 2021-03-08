@@ -43,11 +43,18 @@ void ComputeAABB(out float3 Min, out float3 Max, uint3 groupId)
 	Max = Max > 0.0 ? pow(2.0, Max + 1.0) : 0.0;
 
 	// Extend range of last cell
-	Max = (center == 0 || center == cellCount - 1) ? 1.0e7 : Max;
+	Max = (groupId == 0 || groupId == cellCount - 1) ? 1.0e7 : Max;
 
 	// return to sector
-	Min *= signValue * cellScale;
-	Max *= signValue * cellScale;
+	Min *= signValue * 1;//cellScale;
+	Max *= signValue * 1;//cellScale;
+}
+
+
+float SquaredDistanceAABBToPoint(float3 center, float3 extents, float3 position)
+{
+	float3 d = max(abs(position - center) - extents, 0);
+	return dot(d, d);
 }
 
 
@@ -77,12 +84,15 @@ void CSMain( uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	// cull the lights
 	for(uint i = threadId.x; i < numLights; i += THREAD_COUNT_PER_GROUP) {
 		// just let all the lights pass the culling test for now
-		float4 lightDesc = lights[i];
-		// assmue pass
-		uint currentIndex;
-		InterlockedAdd(lightCount, 1, currentIndex);
-		if (currentIndex < MAX_LIGHT_COUNT_PER_CELL - 1) {
-			CulledLights[bufferOffset].lightIndics[currentIndex] = i;
+		float4 lightDesc = lights[i];  
+		// position: xyz radius: w
+		if (SquaredDistanceAABBToPoint(cellCenter, extents, lightDesc.xyz) < lightDesc.w * lightDesc.w) {
+			// light sphere intersect with the AABB
+			uint currentIndex;
+			InterlockedAdd(lightCount, 1, currentIndex);
+			if (currentIndex < MAX_LIGHT_COUNT_PER_CELL - 1) {
+				CulledLights[bufferOffset].lightIndics[currentIndex] = i;
+			}
 		}
 	}
 

@@ -113,8 +113,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		
 
 		// get commandbuffer
-		auto cmdBuffer = CommandBuffer::Create();
-		cmdBuffer->Reset();
+		auto cmdBuffer = CommandBuffer::Alloc();
 		// execute the gbuffer pass
 		gbuffer->Execute(cmdBuffer, cam, spatial);
 
@@ -126,8 +125,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		UINT64 computeFence = 0;
 		{
 			// build the raytracing structure
-			auto cmdBuffer = CommandBuffer::Create();
-			cmdBuffer->Reset();
+			auto cmdBuffer = CommandBuffer::Alloc();
 			as->Execute(cmdBuffer, cam, spatial);
 			auto computeCommandContext = renderInterface->BeginContext(true);
 			computeCommandContext->Wait(graphicsFence, false);
@@ -137,8 +135,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		}
 		{
 			// new command buffer
-			auto cmdBuffer = CommandBuffer::Create();
-			cmdBuffer->Reset();
+			auto cmdBuffer = CommandBuffer::Alloc();
 			// execute the shadow pass
 			shadow->Execute(cmdBuffer, cam, spatial);
 			auto renderCommandContext = renderInterface->BeginContext(false);
@@ -148,8 +145,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		}
 		{
 			// new command buffer
-			auto cmdBuffer = CommandBuffer::Create();
-			cmdBuffer->Reset();
+			auto cmdBuffer = CommandBuffer::Alloc();
 			// execute the lighting pass
 			lighting->Execute(cmdBuffer, cam, spatial);
 			// emissive

@@ -3,6 +3,14 @@
 USING_RECYCLE(RenderingCommand)
 USING_RECYCLE(CommandBuffer)
 
+
+CommandBuffer* CommandBuffer::Alloc()
+{
+	auto commandBuffer = CommandBuffer::Create();
+	commandBuffer->Reset();
+	return commandBuffer;
+}
+
 void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
 {
 	// globalParameters.Clear();

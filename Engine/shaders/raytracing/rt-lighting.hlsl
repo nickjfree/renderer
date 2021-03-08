@@ -30,10 +30,10 @@ struct LightIndics
 };
 
 #define MAX_LIGHT_COUNT_PER_CELL  16
+#define CELL_SCALE  1
+#define CELL_COUNT  16
 
 StructuredBuffer<LightIndics> CulledLights : register(t1, space0);
-
-
 
 
 struct RayPayload
@@ -41,6 +41,28 @@ struct RayPayload
     float4 color;
 
 };
+
+
+uint GetLightBufferIndex(float3 position, float3 viewPoint) 
+{
+    position -= viewPoint;
+    position /= CELL_SCALE;
+    // sign
+    float3 region = sign(position);
+    position = abs(position);
+    position = max(position, 2);
+    position = min(log2(position) - 1, CELL_COUNT/2 - 1);
+    // get the center
+    position = floor(position) + 0.5;
+    position = position * region;
+    // id
+    float3 center = floor(position + CELL_COUNT/2);
+    // get index
+    uint address = (center.x + CELL_COUNT * (center.y + (center.z * CELL_COUNT)));
+
+    return  address;
+}
+
 
 
 void TraceShadowRay(float3 origin, float3 look, float3 normal, float roughness, uint seed, inout RayPayload payload) 
@@ -75,15 +97,22 @@ void Raygen()
         RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
         return;
     }
-  
+
+    // get world position
+    float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
+    // get lights affecting this area
+    uint addr = GetLightBufferIndex(origin, gViewPoint.xyz);
+    if (CulledLights[addr].numLights == 0) {
+        // no lights. return black
+        RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
+        return;
+    }
+
     // get view-space normal
     float3 normal = gbuffer.Normal.xyz; 
     // get view-space look
     float3 look = -gbuffer.View.xyz;
-
-    float roughness = gbuffer.Roughness;
-  // world position to sun 
-    float3 origin = mul(float4(viewPos, 1), gInvertViewMaxtrix).xyz;
+    // transform to world space
     float3 world_normal = mul(float4(normal, 0), gInvertViewMaxtrix).xyz;
     float3 world_look =  mul(float4(look, 0), gInvertViewMaxtrix).xyz;
     // random seed
@@ -92,17 +121,50 @@ void Raygen()
     float4 color = float4(0,0,0,0);
     RayPayload payload;
     payload.color = color;
-
+    // tracy shadow rays
+    // TODO: ignore closest hit shaders and do lighting in raygen shader
+    float roughness = gbuffer.Roughness;
     TraceShadowRay(origin, world_look, world_normal, roughness, seed, payload);
-    // sun light
+    // test sun light
     float3 L = float3(1, 1, 1);
     L = mul(float4(normalize(L),0), gViewMatrix).xyz;
     // deferred lighting
     float3 lighting_color = 3 * float3(1, 1, 1) * deferred_lighting(gbuffer, L).xyz;
-    // test shadow
-    uint addr = linearIndex % 4096;
-    RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, CulledLights[addr].numLights);
-    // RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 0);
+    RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, 0);
+
+// #ifdef DEBUG_CULLED_LIGHT
+
+//     float mark = CulledLights[addr].numLights;
+//     float x = addr % 4;
+//     float y = (addr/16/16) % 4;
+//     float4 debug = float4(0, 0, 0, 0);
+//     if (x == 0) {
+//         debug += float4(1, 0, 0, 0);
+//     }
+//     if (x == 1) {
+//         debug += float4(0, 1, 0, 0);
+//     }
+//     if (x == 2) {
+//         debug += float4(0, 0, 1, 0);
+//     }
+//     if (x == 3) {
+//         debug += float4(1, 1, 0, 0);
+//     }
+//     if (y == 0) {
+//         debug += float4(0, 0, 1, 0);
+//     }
+//     if (y == 1) {
+//         debug += float4(0, 1, 0, 0);
+//     }
+//     if (y == 2) {
+//         debug += float4(1, 0, 0, 0);
+//     }
+//     if (y == 3) {
+//         debug += float4(0, 1, 1, 0);
+//     }
+//     RenderTarget[DispatchRaysIndex().xy] = debug * mark * 0.5;
+// #endif
+
 }
 
 

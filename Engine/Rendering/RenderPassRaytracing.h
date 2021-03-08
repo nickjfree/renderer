@@ -408,8 +408,10 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					spatial->Query(lights, Node::LIGHT);
 					for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
 						auto light = (RenderLight*)*iter;
-						lightInfos.lightData.PushBack(light->GetLightData());
-						lightInfos.lights.PushBack(light->GetDesc());
+						if (light->GetLightType() == RenderLight::POINT) {
+							lightInfos.lightData.PushBack(light->GetLightData());
+							lightInfos.lights.PushBack(light->GetDesc());
+						}
 					}
 					lightInfos.cellScale = cell_scale;
 					lightInfos.cellCount = cell_count;

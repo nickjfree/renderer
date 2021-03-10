@@ -33,8 +33,19 @@ struct LightIndics
 #define CELL_SCALE  1
 #define CELL_COUNT  16
 
-StructuredBuffer<LightIndics> CulledLights : register(t1, space0);
 
+cbuffer ArraylightInfos: register(b0, space0)
+{
+    uint numLights;
+    uint lightsPerCell;
+    uint cellScale;
+    uint cellCount;
+    float4 lights[256];
+    float4x4 padxxx;
+}
+
+
+StructuredBuffer<LightIndics> CulledLights : register(t1, space0);
 
 struct RayPayload
 {
@@ -65,11 +76,11 @@ uint GetLightBufferIndex(float3 position, float3 viewPoint)
 
 
 
-void TraceShadowRay(float3 origin, float3 look, float3 normal, float roughness, uint seed, inout RayPayload payload) 
+void TraceShadowRay(float3 origin, float3 look, float3 normal, float3 target, float roughness, uint seed, inout RayPayload payload) 
 {
     // float2 randsample = float2(Rand(seed), Rand(seed));
     float4 sample = normalize(float4(1, 1, 1, 0));
-    float3 rayDir = sample.xyz;
+    float3 rayDir = target;
     // get ray
     RayDesc ray;
     ray.Origin = origin;
@@ -124,7 +135,9 @@ void Raygen()
     // tracy shadow rays
     // TODO: ignore closest hit shaders and do lighting in raygen shader
     float roughness = gbuffer.Roughness;
-    TraceShadowRay(origin, world_look, world_normal, roughness, seed, payload);
+    //float3 target = (lights[0].xyz - origin) * numLights;
+    float3 target = lights[0].xyz - origin;
+    TraceShadowRay(origin, world_look, world_normal, target, roughness, seed, payload);
     // test sun light
     float3 L = float3(1, 1, 1);
     L = mul(float4(normalize(L),0), gViewMatrix).xyz;

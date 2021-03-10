@@ -397,12 +397,12 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->SetGlobalParameter("gMotionVector", motion);
 				}
 				// do light culling in compute shader
+				// light position radius array
+				static LightInfos lightInfos{};
 				{
 					// lights in scene
 					static Vector<Node*> lights;
 					lights.Reset();
-					// light position radius array
-					static LightInfos lightInfos{};
 					lightInfos.lights.Reset();
 					lightInfos.lightData.Reset();
 					spatial->Query(lights, Node::LIGHT);
@@ -433,6 +433,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmd->cmdParameters["RenderTarget"].as<int>() = passData.rtLighting.GetActualResource();
 					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
 					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
+					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lights.GetData();
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 			}

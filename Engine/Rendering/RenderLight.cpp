@@ -190,7 +190,13 @@ int RenderLight::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCa
 // get lightdata
 LightData RenderLight::GetLightData() 
 {
-	return LightData{};
+	auto ret = LightData{};
+	ret.position = Position;
+	ret.radius = Radius;
+	ret.color = Color;
+	ret.intensity = Intensity;
+	ret.type = LightType;
+	return ret;
 }
 
 Vector3 RenderLight::GetDesc()

@@ -33,15 +33,10 @@ struct LightIndics
 #define CELL_SCALE  1
 #define CELL_COUNT  16
 
-
 cbuffer ArraylightInfos: register(b0, space0)
 {
-    uint numLights;
-    uint lightsPerCell;
-    uint cellScale;
-    uint cellCount;
-    float4 lights[256];
-    float4x4 padxxx;
+    LightData lights[256];
+//    float4x4 padxxx;
 }
 
 
@@ -119,6 +114,14 @@ void Raygen()
         return;
     }
 
+    // deferred lighting
+    float falloff = 1.0f;
+    float3 lighting_color = get_lighting(lights[0], gbuffer, falloff);
+    if (falloff <= 0.001f) {
+         RenderTarget[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
+         return;
+    }
+    
     // get view-space normal
     float3 normal = gbuffer.Normal.xyz; 
     // get view-space look
@@ -136,13 +139,12 @@ void Raygen()
     // TODO: ignore closest hit shaders and do lighting in raygen shader
     float roughness = gbuffer.Roughness;
     //float3 target = (lights[0].xyz - origin) * numLights;
-    float3 target = lights[0].xyz - origin;
+    float3 target = lights[0].position.xyz - origin;
     TraceShadowRay(origin, world_look, world_normal, target, roughness, seed, payload);
     // test sun light
     float3 L = float3(1, 1, 1);
     L = mul(float4(normalize(L),0), gViewMatrix).xyz;
-    // deferred lighting
-    float3 lighting_color = 3 * float3(1, 1, 1) * deferred_lighting(gbuffer, L).xyz;
+
     RenderTarget[DispatchRaysIndex().xy] = payload.color * float4(lighting_color, 0);
 
 // #ifdef DEBUG_CULLED_LIGHT

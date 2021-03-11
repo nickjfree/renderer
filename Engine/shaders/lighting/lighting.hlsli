@@ -31,6 +31,35 @@ TextureCube  gLightProbeIrradiance : register(t20);
      constant values
 */
 
+/*
+    light data
+*/
+struct LightData
+{
+    // light color
+    float4 color;
+    // light direction
+    float4 direction;
+    // light position
+    float4 position;
+    // radius
+    float radius;
+    // intensity
+    float intensity;
+    // spotlight inner angle
+    float innerAngle; 
+    // spotlight outer angle
+    float outerAngle;
+    // rectlight width
+    float rectLightWidth;
+    // rectlight height
+    float rectLightHeight;
+    // light type
+    uint type;
+    // pad
+    uint padLightData;
+};
+
 
 /*
     pbr helper functions
@@ -165,6 +194,41 @@ float4 deferred_lighting(GBuffer gbuffer, float3 lightDriection)
     return BRDF(normal, V, L, gbuffer.Specular, F90, 
         gbuffer.Roughness, gbuffer.Diffuse.xyz, gbuffer.Metallic);
 }
+
+/*
+    get falloff
+*/
+float getfalloff(LightData lightData, float3 position) 
+{
+
+    float3 d = lightData.position.xyz - position.xyz;
+    float falloff = 1.0f;
+    // point light
+    if(lightData.type == 0) {
+        falloff = saturate(1 - dot(d, d) / dot(lightData.radius, lightData.radius));
+    } else {
+        falloff = 1.0f;
+    }
+    return falloff;
+}
+
+/*
+    lighting
+*/
+float3 get_lighting(LightData lightData, GBuffer gbuffer, inout float falloff)
+{
+    // get light direction
+    float4 lightPosView = mul(lightData.position, gViewMatrix);
+    float4 positionView = float4(gbuffer.Position, 1);
+    float4 positionWorld = mul(positionView, gInvertViewMaxtrix);
+    float3 L =  lightPosView.xyz - positionView.xyz;
+    float4 brdf = deferred_lighting(gbuffer, L);
+    // apply falloff and color and intaesity
+    falloff = getfalloff(lightData, positionWorld.xyz);
+    float4 color = lightData.intensity * lightData.color * falloff;
+    return color.xyz;
+}
+
 
 /*
     pixel in shadow or not?

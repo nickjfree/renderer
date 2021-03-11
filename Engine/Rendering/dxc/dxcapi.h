@@ -105,7 +105,7 @@ typedef struct DxcShaderHash {
 #define DXC_PART_PRIVATE_DATA             DXC_FOURCC('P', 'R', 'I', 'V')
 #define DXC_PART_ROOT_SIGNATURE           DXC_FOURCC('R', 'T', 'S', '0')
 #define DXC_PART_DXIL                     DXC_FOURCC('D', 'X', 'I', 'L')
-#define DXC_PART_REFLECTION_DATA          DXC_FOURCC('R', 'D', 'A', 'T')
+#define DXC_PART_REFLECTION_DATA          DXC_FOURCC('S', 'T', 'A', 'T')
 #define DXC_PART_SHADER_HASH              DXC_FOURCC('H', 'A', 'S', 'H')
 #define DXC_PART_INPUT_SIGNATURE          DXC_FOURCC('I', 'S', 'G', '1')
 #define DXC_PART_OUTPUT_SIGNATURE         DXC_FOURCC('O', 'S', 'G', '1')
@@ -461,6 +461,7 @@ typedef enum DXC_OUT_KIND {
   DXC_OUT_TEXT = 7,           // IDxcBlobUtf8 or IDxcBlobUtf16 - other text, such as -ast-dump or -Odump
   DXC_OUT_REFLECTION = 8,     // IDxcBlob - RDAT part with reflection data
   DXC_OUT_ROOT_SIGNATURE = 9, // IDxcBlob - Serialized root signature output
+  DXC_OUT_EXTRA_OUTPUTS  = 10,// IDxcExtraResults - Extra outputs
 
   DXC_OUT_FORCE_DWORD = 0xFFFFFFFF
 } DXC_OUT_KIND;
@@ -477,6 +478,22 @@ IDxcResult : public IDxcOperationResult {
   virtual DXC_OUT_KIND PrimaryOutput() = 0;
 
   DECLARE_CROSS_PLATFORM_UUIDOF(IDxcResult)
+};
+
+// Special names for extra output that should get written to specific streams
+#define DXC_EXTRA_OUTPUT_NAME_STDOUT L"*stdout*"
+#define DXC_EXTRA_OUTPUT_NAME_STDERR L"*stderr*"
+
+struct __declspec(uuid("319b37a2-a5c2-494a-a5de-4801b2faf989"))
+IDxcExtraOutputs : public IUnknown {
+
+  virtual UINT32 STDMETHODCALLTYPE GetOutputCount() = 0;
+  virtual HRESULT STDMETHODCALLTYPE GetOutput(_In_ UINT32 uIndex,
+    _In_ REFIID iid, _COM_Outptr_opt_result_maybenull_ void **ppvObject,
+    _COM_Outptr_opt_result_maybenull_ IDxcBlobUtf16 **ppOutputType,
+    _COM_Outptr_opt_result_maybenull_ IDxcBlobUtf16 **ppOutputName) = 0;
+
+  DECLARE_CROSS_PLATFORM_UUIDOF(IDxcExtraOutputs)
 };
 
 struct __declspec(uuid("228B4687-5A6A-4730-900C-9702B2203F54"))

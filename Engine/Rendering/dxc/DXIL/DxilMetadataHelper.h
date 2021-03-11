@@ -12,6 +12,7 @@
 #pragma once
 
 #include "dxc/DXIL/DxilConstants.h"
+#include "llvm/ADT/ArrayRef.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,6 +55,7 @@ class RootSignatureHandle;
 struct DxilFunctionProps;
 class DxilSubobjects;
 class DxilSubobject;
+struct DxilCounters;
 
 // Additional debug information for SROA'ed array variables,
 // where adjacent elements in DXIL might not have been adjacent
@@ -87,6 +89,10 @@ public:
   // Intermediate codegen/optimizer options, not valid in final DXIL module.
   static const char kDxilIntermediateOptionsMDName[];
   static const unsigned kDxilIntermediateOptionsFlags = 0;  // Unique element ID.
+
+  // DxilCounters
+  static const char kDxilCountersMDName[];
+  // !{!"<counter>", i32 <count>, !"<counter>", i32 <count>, ...}
 
   // Entry points.
   static const char kDxilEntryPointsMDName[];
@@ -229,6 +235,9 @@ public:
   // Variable debug layout metadata.
   static const char kDxilVariableDebugLayoutMDName[];
 
+  // Indication of temporary storage metadata.
+  static const char kDxilTempAllocaMDName[];
+
   // Validator version.
   static const char kDxilValidatorVersionMDName[];
   // Validator version uses the same constants for fields as kDxilVersion*
@@ -311,6 +320,7 @@ public:
   public:
     unsigned m_ValMajor, m_ValMinor;        // Reported validation version in DXIL
     unsigned m_MinValMajor, m_MinValMinor;  // Minimum validation version dictated by shader model
+    bool m_bExtraMetadata;
   };
 
 public:
@@ -423,6 +433,13 @@ public:
   llvm::Metadata *EmitSubobject(const DxilSubobject &obj);
   void LoadSubobject(const llvm::MDNode &MDO, DxilSubobjects &Subobjects);
 
+  // Extra metadata present
+  bool HasExtraMetadata() { return m_bExtraMetadata; }
+
+  // Instruction Counters
+  void EmitDxilCounters(const DxilCounters &counters);
+  void LoadDxilCounters(DxilCounters &counters) const;
+
   // Shader specific.
 private:
   llvm::MDTuple *EmitDxilGSState(DXIL::InputPrimitive Primitive, unsigned MaxVertexCount, 
@@ -465,9 +482,14 @@ private:
 
   llvm::MDTuple *EmitDxilASState(const unsigned *NumThreads, unsigned payloadSizeInBytes);
   void LoadDxilASState(const llvm::MDOperand &MDO, unsigned *NumThreads, unsigned &payloadSizeInBytes);
+
+  void AddCounterIfNonZero(uint32_t value, llvm::StringRef name, std::vector<llvm::Metadata*> &MDVals);
+  void LoadCounterMD(const llvm::MDOperand &MDName, const llvm::MDOperand &MDValue, DxilCounters &counters) const;
 public:
   // Utility functions.
   static bool IsKnownNamedMetaData(const llvm::NamedMDNode &Node);
+  static bool IsKnownMetadataID(llvm::LLVMContext &Ctx, unsigned ID);
+  static void GetKnownMetadataIDs(llvm::LLVMContext &Ctx, llvm::SmallVectorImpl<unsigned> *pIDs);
   static void combineDxilMetadata(llvm::Instruction *K, const llvm::Instruction *J);
   static llvm::ConstantAsMetadata *Int32ToConstMD(int32_t v, llvm::LLVMContext &Ctx);
   llvm::ConstantAsMetadata *Int32ToConstMD(int32_t v);
@@ -500,6 +522,7 @@ public:
     unsigned &StartOffsetInBits, std::vector<DxilDIArrayDim> &ArrayDims);
   static void SetVariableDebugLayout(llvm::DbgDeclareInst *inst,
     unsigned StartOffsetInBits, const std::vector<DxilDIArrayDim> &ArrayDims);
+  static void CopyMetadata(llvm::Instruction &I, llvm::Instruction &SrcInst, llvm::ArrayRef<unsigned>WL = llvm::ArrayRef<unsigned>());
 
 private:
   llvm::LLVMContext &m_Ctx;
@@ -508,6 +531,10 @@ private:
   std::unique_ptr<ExtraPropertyHelper> m_ExtraPropertyHelper;
   unsigned m_ValMajor, m_ValMinor;        // Reported validation version in DXIL
   unsigned m_MinValMajor, m_MinValMinor;  // Minimum validation version dictated by shader model
+
+  // Non-fatal if extra metadata is found, but will fail validation.
+  // This is how metadata can be exteneded.
+  bool m_bExtraMetadata;
 };
 
 

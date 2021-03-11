@@ -403,6 +403,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					// lights in scene
 					static Vector<Node*> lights;
 					lights.Reset();
+					lightInfos.lights.Resize(256, 0);
+					lightInfos.lightData.Resize(256, 0);
 					lightInfos.lights.Reset();
 					lightInfos.lightData.Reset();
 					spatial->Query(lights, Node::LIGHT);
@@ -433,7 +435,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmd->cmdParameters["RenderTarget"].as<int>() = passData.rtLighting.GetActualResource();
 					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
 					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
-					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lights.GetData();
+					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lightData.GetData();
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 			}

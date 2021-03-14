@@ -203,9 +203,13 @@ float getfalloff(LightData lightData, float3 position)
 
     float3 d = lightData.position.xyz - position.xyz;
     float falloff = 1.0f;
-    // point light
+
     if(lightData.type == 0) {
+        // point light
         falloff = saturate(1 - dot(d, d) / dot(lightData.radius, lightData.radius));
+    } else if (lightData.type == 1) {
+        // direction light
+        falloff = 1.0f;
     } else {
         falloff = 1.0f;
     }
@@ -221,11 +225,17 @@ float3 get_lighting(LightData lightData, GBuffer gbuffer, inout float falloff)
     float4 lightPosView = mul(lightData.position, gViewMatrix);
     float4 positionView = float4(gbuffer.Position, 1);
     float4 positionWorld = mul(positionView, gInvertViewMaxtrix);
-    float3 L =  lightPosView.xyz - positionView.xyz;
+    float3 L = float3(0, 0, 0);
+    if (lightData.type == 0) {
+        L =  lightPosView.xyz - positionView.xyz;
+    } else if (lightData.type == 1) {
+        L = -mul(float4(lightData.direction.xyz, 0), gViewMatrix).xyz;
+    }
     float4 brdf = deferred_lighting(gbuffer, L);
     // apply falloff and color and intaesity
     falloff = getfalloff(lightData, positionWorld.xyz);
-    float4 color = lightData.intensity * lightData.color * falloff;
+    float NoL = saturate(dot(gbuffer.Normal.xyz, L));
+    float4 color = lightData.intensity * lightData.color * brdf * falloff * NoL;
     return color.xyz;
 }
 

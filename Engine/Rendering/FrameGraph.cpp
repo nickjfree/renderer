@@ -120,7 +120,6 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		// sync point: flush the gbuffer command
 		auto renderCommandContext = renderInterface->BeginContext(false);
 		cmdBuffer->Flush(renderCommandContext);
-		cmdBuffer->Recycle();
 		auto graphicsFence = renderInterface->EndContext(renderCommandContext, false);
 		UINT64 computeFence = 0;
 		{
@@ -130,7 +129,6 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			auto computeCommandContext = renderInterface->BeginContext(true);
 			computeCommandContext->Wait(graphicsFence, false);
 			cmdBuffer->Flush(computeCommandContext);
-			cmdBuffer->Recycle();
 			computeFence = renderInterface->EndContext(computeCommandContext, false);
 		}
 		{
@@ -140,7 +138,6 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			shadow->Execute(cmdBuffer, cam, spatial);
 			auto renderCommandContext = renderInterface->BeginContext(false);
 			cmdBuffer->Flush(renderCommandContext);
-			cmdBuffer->Recycle();
 			renderInterface->EndContext(renderCommandContext, false);
 		}
 		{
@@ -164,7 +161,6 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			auto renderCommandContext = renderInterface->BeginContext(false);
 			renderCommandContext->Wait(computeFence, true);
 			cmdBuffer->Flush(renderCommandContext);
-			cmdBuffer->Recycle();
 			// present
 			renderInterface->EndContext(renderCommandContext, true);
 		}

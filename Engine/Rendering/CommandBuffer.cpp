@@ -266,6 +266,8 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 	if (hasAs) {
 		cmdContext->BuildAccelerationStructure();
 	}
+	// recycle cmdbuffer
+	Recycle();
 }
 
 // alloc a new command

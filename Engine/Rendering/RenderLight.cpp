@@ -131,36 +131,33 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 	Scale.Scale(Vector3(Radius, Radius, Radius));
 	Transform = Scale * Transform;
 	// draw sphere geometry for point light
+	//{
+	//	if (LightType == POINT) {
+	//		auto cmd = cmdBuffer->AllocCommand();
+	//		auto& cmdParameters = cmd->cmdParameters;
+	//		// perlight position
+	//		Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
+	//		Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
+	//		// light parameters
+	//		cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
+	//		cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
+	//		cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	//		cmdParameters["gLightColor"].as<Vector3>() = Color;
+	//		cmdParameters["gShadowMap"].as<int>() = ShadowMap;
+	//		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
+	//		auto mesh = model->MeshResource[lod];
+	//		cmdBuffer->Draw(cmd, mesh, GetMaterial(), 0);
+	//	}
+	//}
 	{
-		if (LightType == POINT) {
-			auto cmd = cmdBuffer->AllocCommand();
-			auto& cmdParameters = cmd->cmdParameters;
-			// perlight position
-			Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
-			Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
-			// light parameters
-			cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
-			cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
-			cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
-			cmdParameters["gLightColor"].as<Vector3>() = Color;
-			cmdParameters["gShadowMap"].as<int>() = ShadowMap;
-			Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
-			auto mesh = model->MeshResource[lod];
-			cmdBuffer->Draw(cmd, mesh, GetMaterial(), 0);
-		}
-	}
-	{
-		// draw full screen quad
-		auto cmd = cmdBuffer->AllocCommand();
-		auto& cmdParameters = cmd->cmdParameters;
 		switch (LightType) {
 		case POINT:
 			stage = 1;
-			//return Compiled;
+			return 0;
 			break;
 		case DIRECTION:
 			stage = 2;
-			//return Compiled;
+			return 0;
 			break;
 		case ENV:
 			stage = 3;
@@ -169,6 +166,9 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 		default:
 			stage = 1;
 		}
+		// draw full screen quad
+		auto cmd = cmdBuffer->AllocCommand();
+		auto& cmdParameters = cmd->cmdParameters;
 		// light parameters
 		cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
 		cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
@@ -192,6 +192,7 @@ LightData RenderLight::GetLightData()
 {
 	auto ret = LightData{};
 	ret.position = Position;
+	ret.direction = Direction;
 	ret.radius = Radius;
 	ret.color = Color;
 	ret.intensity = Intensity;
@@ -201,5 +202,10 @@ LightData RenderLight::GetLightData()
 
 Vector3 RenderLight::GetDesc()
 {
-	return Vector3(Position.x, Position.y, Position.z, Radius);
+	if (LightType == DIRECTION) {
+		return Vector3(Position.x, Position.y, Position.z, -1.0f);
+	} else {
+		return Vector3(Position.x, Position.y, Position.z, Radius);
+	}
+	
 }

@@ -84,9 +84,9 @@ void CSMain( uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	// cull the lights
 	for(uint i = threadId.x; i < numLights; i += THREAD_COUNT_PER_GROUP) {
 		// just let all the lights pass the culling test for now
-		float4 lightDesc = lights[i];  
+		float4 lightDesc = lights[i];
 		// position: xyz radius: w
-		if (SquaredDistanceAABBToPoint(cellCenter, extents, lightDesc.xyz) < lightDesc.w * lightDesc.w) {
+		if (lightDesc.w < 0 || SquaredDistanceAABBToPoint(cellCenter, extents, lightDesc.xyz) < lightDesc.w * lightDesc.w) {
 			// light sphere intersect with the AABB
 			uint currentIndex;
 			InterlockedAdd(lightCount, 1, currentIndex);

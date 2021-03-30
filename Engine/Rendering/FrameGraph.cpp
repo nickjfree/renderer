@@ -132,13 +132,13 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			computeFence = renderInterface->EndContext(computeCommandContext, false);
 		}
 		{
-			// new command buffer
-			auto cmdBuffer = CommandBuffer::Alloc();
-			// execute the shadow pass
-			shadow->Execute(cmdBuffer, cam, spatial);
-			auto renderCommandContext = renderInterface->BeginContext(false);
-			cmdBuffer->Flush(renderCommandContext);
-			renderInterface->EndContext(renderCommandContext, false);
+			//// new command buffer
+			//auto cmdBuffer = CommandBuffer::Alloc();
+			//// execute the shadow pass
+			//shadow->Execute(cmdBuffer, cam, spatial);
+			//auto renderCommandContext = renderInterface->BeginContext(false);
+			//cmdBuffer->Flush(renderCommandContext);
+			//renderInterface->EndContext(renderCommandContext, false);
 		}
 		{
 			// new command buffer

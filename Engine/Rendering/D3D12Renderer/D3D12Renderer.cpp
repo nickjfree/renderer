@@ -214,7 +214,8 @@ void D3D12CommandContext::SetComputeMode()
 		return;
 	}
 	if (cmdType == D3D12_COMMAND_LIST_TYPE_DIRECT) {
-		cmdList->SetGraphicsRootSignature(nullptr);
+		// cmdList->SetGraphicsRootSignature(nullptr);
+		cmdList->SetGraphicsRootSignature(graphicsRootSignature->Get());
 	}
 	computeRootSignature->SetStale();
 	cmdList->SetComputeRootSignature(computeRootSignature->Get());

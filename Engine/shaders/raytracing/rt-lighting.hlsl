@@ -21,7 +21,6 @@
 
 RaytracingAccelerationStructure Scene : register(t0, space0);
 RWTexture2D<float4> RenderTarget : register(u0, space0);
-// Texture2D PrevRenderTarget : register(t1, space0);
 
 struct LightIndics
 {

@@ -94,7 +94,8 @@ void TraceShadowRay(float3 origin, float3 direction, inout RayPayload payload)
     // TMin should be kept small to prevent missing geometry at close contact areas.
     ray.TMin = 0.005;
     ray.TMax = 10000.0;
-    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 1, 1, 1, ray, payload);
+    const uint RayFlags = RAY_FLAG_FORCE_OPAQUE | RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH | RAY_FLAG_SKIP_CLOSEST_HIT_SHADER;
+    TraceRay(Scene, RayFlags, ~0, 1, 1, 1, ray, payload);
 }
 
 
@@ -132,6 +133,7 @@ void Raygen()
         return;
     } else {
         float4 accumulated = float4(0, 0, 0, 0);
+        // can smaple one light
         for(uint i = 0; i < CulledLights[addr].numLights; ++i) {
             // deferred lighting
             float falloff = 1.0f;

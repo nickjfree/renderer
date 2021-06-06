@@ -69,12 +69,17 @@ uint GetLightBufferIndex(float3 position, float3 viewPoint)
 }
 
 
-float3 GetShadowRaySample(LightData light, float3 position)
+float3 GetShadowRaySample(LightData light, float3 position, uint seed)
 {
     float3 ray = float3(0, 0, 0);
     if (light.type == 0) {
-        // point light
-        ray = light.position.xyz - position;
+        // point light 
+        // test code set a radius to test a sphere light
+        float3 p = UniformSampleSphere(Rand(seed), Rand(seed));
+        ray = light.position.xyz + p * 1 - position;
+        // end test code
+
+        // ray = light.position.xyz - position;
     } else if (light.type == 1) {
         // directional light
         ray = -light.direction.xyz;
@@ -133,6 +138,8 @@ void Raygen()
         return;
     } else {
         float4 accumulated = float4(0, 0, 0, 0);
+        // random seed
+        uint seed = RandInit(linearIndex, gFrameNumber);
         // can smaple one light
         for(uint i = 0; i < CulledLights[addr].numLights; ++i) {
             // deferred lighting
@@ -146,15 +153,12 @@ void Raygen()
             // get shadow
             // random seed
              // uint seed = RandInit(linearIndex, gFrameNumber);
-
-            float4 color = float4(0,0,0,0);
             RayPayload payload;
-            payload.color = color;
+            payload.color = float4(0,0,0,0);;
             // tracy shadow rays
-            // TODO: ignore closest hit shaders and do lighting in raygen shader
             float roughness = gbuffer.Roughness;
-            // get ray direction
-            float3 ray = GetShadowRaySample(light, origin);
+            // get shadow ray direction
+            float3 ray = GetShadowRaySample(light, origin, seed);
             TraceShadowRay(origin, ray, payload);
 
             accumulated += payload.color * float4(lighting_color, 0);

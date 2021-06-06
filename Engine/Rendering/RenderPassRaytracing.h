@@ -220,7 +220,7 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 			passData.specular = builder.Read(&gbufferPassData.specular);
 			passData.ao = builder.Read(&aoPassData.ao);
 			passData.reflection = builder.Read(&rtPassData.color0);
-			passData.rtLighting = builder.Read(&rtLightingPassData.rtLighting);
+			passData.rtLighting = builder.Read(&rtLightingPassData.color0);
 
 			// create the output buffers
 			R_TEXTURE2D_DESC desc = {};
@@ -278,7 +278,6 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 					cmd->cmdParameters["gAO"].as<int>() = passData.ao.GetActualResource();
 					cmdBuffer->Quad(cmd, material, 0); 
 				}
-
 			}
 		});
 	return resolvePass;
@@ -299,6 +298,14 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		RenderResource culledLights;
 		// rt-lighting
 		RenderResource rtLighting;
+
+		// svgf-color-0 svgf-color-1
+		RenderResource color0;
+		RenderResource color1;
+		// svgf-moments-0 svgf-moments-1
+		RenderResource moment0;
+		RenderResource moment1;
+
 		// TODO: reused render targets
 	}PassData;
 
@@ -363,6 +370,43 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					desc.DebugName = L"light-index";
 					return renderInterface->CreateBuffer(&desc);
 				});
+
+			R_TEXTURE2D_DESC desc = {};
+			desc.Width = renderContext->FrameWidth;
+			desc.Height = renderContext->FrameHeight;
+
+			desc.ArraySize = 1;
+			desc.CPUAccess = (R_CPU_ACCESS)0;
+			desc.BindFlag = (R_BIND_FLAG)(R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE | BIND_RENDER_TARGET);
+			desc.MipLevels = 1;
+			desc.Usage = DEFAULT;
+			desc.Format = FORMAT_R16G16B16A16_FLOAT;
+			desc.SampleDesc.Count = 1;
+			
+			// color0
+			passData.color0 = builder.Create("svgf-color0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// color1
+			passData.color1 = builder.Create("svgf-color1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-color1";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment0
+			passData.moment0 = builder.Create("svgf-moment-0",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-0";
+					return renderInterface->CreateTexture2D(&desc);
+				});
+			// moment1
+			passData.moment1 = builder.Create("svgf-moment-1",
+				[=]() mutable {
+					desc.DebugName = L"svgf-moment-1";
+					return renderInterface->CreateTexture2D(&desc);
+				});
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// setup
@@ -410,7 +454,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					spatial->Query(lights, Node::LIGHT);
 					for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
 						auto light = (RenderLight*)*iter;
-						if (light->GetLightType() == RenderLight::POINT || light->GetLightType() == RenderLight::DIRECTION) {
+						if (light->GetLightType() == RenderLight::POINT /*|| light->GetLightType() == RenderLight::DIRECTION*/) {
 							lightInfos.lightData.PushBack(light->GetLightData());
 							lightInfos.lights.PushBack(light->GetDesc());
 						}
@@ -437,6 +481,48 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
 					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lightData.GetData();
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
+				}
+				// flip color & moment buffer
+				passData.color0.Flip(&passData.color1);
+				passData.moment0.Flip(&passData.moment1);
+				// accumulation 
+				{
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = {
+						passData.color0.GetActualResource(),
+						passData.moment0.GetActualResource(),
+					};
+					cmdBuffer->RenderTargets(cmd, targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gPrevColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gPrevMoment"].as<int>() = passData.moment1.GetActualResource();
+					cmd->cmdParameters["gCurrentColor"].as<int>() = passData.rtLighting.GetActualResource();
+					cmdBuffer->Quad(cmd, rtMaterial, 0);
+				}
+				// filter variance
+				{
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color1.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color0.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, rtMaterial, 2);
+				}
+				{
+					// filter
+					// set render targets
+					auto cmd = cmdBuffer->AllocCommand();
+					int targets[] = { passData.color0.GetActualResource() };
+					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					// draw quad
+					cmd = cmdBuffer->AllocCommand();
+					cmd->cmdParameters["gColor"].as<int>() = passData.color1.GetActualResource();
+					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmdBuffer->Quad(cmd, rtMaterial, 1);
 				}
 			}
 		});

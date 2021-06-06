@@ -35,6 +35,19 @@ float2 UniformSampleDisk( float2 E )
 }
 
 
+// Returns a random direction on the unit sphere
+float3 UniformSampleSphere(float u1, float u2)
+{
+    float z = u1 * 2.0f - 1.0f;
+    float phi = 2 * PI * u2;
+    float x = cos(phi);
+    float y = sin(phi);
+
+    return normalize(float3(x, y, z));
+}
+
+
+
 float4 ImportanceSampleVisibleGGX( float2 DiskE, float a2, float3 V )
 {
     // TODO float2 alpha for anisotropic

@@ -63,5 +63,7 @@ fxc /T ps_5_1 /E PS_Filter /Fo wavelet_filter.ps  raytracing/denoising.hlsl
 
 fxc /T ps_5_1 /E PS_FilterVariant /Fo variance_filter.ps  raytracing/denoising.hlsl
 
+fxc /T ps_5_1 /E PS /Fo copy.ps  fsr/fsr.hlsl
+
 :: compute shaders
 fxc /T cs_5_1 /E CSMain /Fo light_culling.cs lighting/light_culling_cs.hlsl

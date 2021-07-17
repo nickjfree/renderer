@@ -155,8 +155,7 @@ namespace D3D12Renderer {
 			auto id = freeList.PopBack();
 			ret = &resources[id];
 			ret->resourceId = id;
-		}
-		else {
+		} else {
 			// alloc a new one
 			ret = &resources[currentIndex];
 			ret->resourceId = currentIndex++;

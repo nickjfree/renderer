@@ -59,15 +59,15 @@ private:
 	// render context
 	RenderContext* RenderContext_;
 	// Rendercontrol
-	RenderControl* Control;
+	RenderControl* Control = nullptr;
 	// render queue
-	RenderQueue* RenderQueue_;
+	RenderQueue* RenderQueue_ = nullptr;
 	// render processer
-	RenderProcesser* RenderProcesser_;
+	RenderProcesser* RenderProcesser_ = nullptr;
 	// test rendertarget
-	int DepthBuffer;
+	int DepthBuffer = -1;
 	// test Coler buffer
-	int ColorBuffer;
+	int ColorBuffer = -1;
 	// Preloadings
 	String Preloadings[16];
 private:

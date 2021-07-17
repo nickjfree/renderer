@@ -981,7 +981,7 @@ void D3D12BackBuffer::Create(ID3D12Device* d3d12Device, IDXGIFactory4* pFactory,
 		auto& textureResource = backBuffers[n];
 		textureResource.rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		textureResource.state = D3D12_RESOURCE_STATE_PRESENT;
-		// create views
+		// create rtv
 		D3D12_RENDER_TARGET_VIEW_DESC vdesc = {};
 		vdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		vdesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -1002,6 +1002,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetRtv()
 {
 	auto& textureResource = backBuffers[frameIndex];
 	return textureResource.GetRtv();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetUav()
+{
+	auto& textureResource = backBuffers[frameIndex];
+	return textureResource.GetUav();
 }
 
 ID3D12Resource* D3D12BackBuffer::GetResource()

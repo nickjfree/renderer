@@ -205,6 +205,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\RenderInterface.h" />
     <ClInclude Include="Rendering\RenderLight.h" />
     <ClInclude Include="Rendering\RenderObject.h" />
+    <ClInclude Include="Rendering\RenderPassFSR.h" />
     <ClInclude Include="Rendering\RenderPassHDR.h" />
     <ClInclude Include="Rendering\RenderPassRaster.h" />
     <ClInclude Include="Rendering\RenderPassRaytracing.h" />

@@ -24,7 +24,7 @@ void RenderingSystem::InitRendering() {
 }
 
 void RenderingSystem::InitLowLevel() {
-	Interface->Initialize(RenderContext_->FrameWidth, RenderContext_->FrameHeight);
+	Interface->Initialize(RenderContext_->FrameWidth * 2, RenderContext_->FrameHeight * 2);
 	BasicCullingImp* Basic = new BasicCullingImp();
 	spatial = Basic;
 }
@@ -78,6 +78,10 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[7] = "Material\\Materials\\light_culling.xml\\0";
 	Param.as<String*>() = &Preloadings[7];
 	Cache->AsyncLoadResource(Preloadings[7], Preloading, Param);
+	// load fsr shaders
+	Preloadings[8] = "Material\\Materials\\fsr.xml\\0";
+	Param.as<String*>() = &Preloadings[8];
+	Cache->AsyncLoadResource(Preloadings[8], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

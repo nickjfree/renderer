@@ -32,6 +32,8 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 		RenderResource bloom2;
 		// star
 		RenderResource star;
+		// hdr
+		RenderResource hdr;
 		// sample offsets
 		float scaleOffset[max_hdr_lum_buffer][16];
 		float brightOffset[16];
@@ -141,6 +143,27 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						desc.Width = width / 8;
 						desc.Height = height / 8;
 						desc.DebugName = L"hdr-star";
+						desc.Format = FORMAT_R16G16B16A16_FLOAT;
+						return renderInterface->CreateTexture2D(&desc);
+					});
+			}
+			// create hdr texture
+			{
+				int width = renderContext->FrameWidth;
+				int height = renderContext->FrameHeight;
+				R_TEXTURE2D_DESC desc = {};
+				desc.ArraySize = 1;
+				desc.CPUAccess = (R_CPU_ACCESS)0;
+				desc.BindFlag = (R_BIND_FLAG)(BIND_RENDER_TARGET | BIND_SHADER_RESOURCE);
+				desc.MipLevels = 1;
+				desc.Usage = DEFAULT;
+				desc.SampleDesc.Count = 1;
+				desc.Width = width;
+				desc.Height = height;
+
+				passData.hdr = builder.Create("hdr",
+					[=]() mutable {
+						desc.DebugName = L"hdr";
 						desc.Format = FORMAT_R16G16B16A16_FLOAT;
 						return renderInterface->CreateTexture2D(&desc);
 					});
@@ -312,7 +335,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 				{
 					// set backbuffer as render target
 					auto cmd = cmdBuffer->AllocCommand();
-					auto target = 0;
+					auto target = passData.hdr.GetActualResource();
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// quad
 					cmd = cmdBuffer->AllocCommand();

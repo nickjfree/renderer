@@ -13,6 +13,7 @@
 #include "RenderPassHDR.h"
 #include "RenderPassSSAO.h"
 #include "RenderPassRaytracing.h"
+#include "RenderPassFSR.h"
 
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -159,6 +160,7 @@ void RenderControl::initFrameGraph()
 	auto rtLighting = AddRaytracedLightingPass(frameGraph, Context, gbuffer->Data());
 	auto resolved = AddResolvePass(frameGraph, Context, gbuffer->Data(), lighting->Data(), ssao->Data(), relection->Data(), rtLighting->Data());
 	auto hdr = AddHDRPass(frameGraph, Context, resolved->Data());
+	auto fsr = AddFSRPass(frameGraph, Context, hdr->Data());
 	// build as
 	auto as = AddBuildASPass(frameGraph, Context);
 }

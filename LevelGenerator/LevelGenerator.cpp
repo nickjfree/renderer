@@ -194,7 +194,7 @@ int TestGen(char * File) {
     light.MaterialIndex = 0;
     light.ModelIndex = 2;
     light.Color = Vector3(0, 1, 0);
-    light.Intensity = 10;
+    light.Intensity = 3;
     light.Radius = 50;
     light.Type = 0;
     strcpy_s(light.Info.TypeName, "Light");

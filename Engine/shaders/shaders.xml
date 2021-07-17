@@ -269,7 +269,7 @@
   <shader name="LightCulling">
     <technique name="culling">
       <pass name="culling" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <cs url="Shaders\shaders\light_culling.cs"></vs>
+        <cs url="Shaders\shaders\light_culling.cs"></cs>
       </pass>
     </technique>
   </shader>
@@ -339,6 +339,21 @@
       <pass name="bloom" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\hdr_tone.ps"></ps>
+      </pass>
+    </technique>
+  </shader>
+
+  <shader name="FSR">
+    <technique name="fsr">
+<!--       <pass name="easu" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\fsr_easu.cs"></cs>
+      </pass>
+      <pass name="rcas" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\fsr_rcas.cs"></cs>
+      </pass> -->
+      <pass name="copy" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\quad.vs"></vs>
+        <ps url="Shaders\shaders\copy.ps"></ps>
       </pass>
     </technique>
   </shader>

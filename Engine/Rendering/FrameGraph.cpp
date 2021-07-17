@@ -109,7 +109,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto rtLighting = renderPasses[6];
 		auto resolve = renderPasses[7];
 		auto hdr = renderPasses[8];
-		auto as = renderPasses[9];
+		auto fsr = renderPasses[9];
+		auto as = renderPasses[10];
 		
 
 		// get commandbuffer
@@ -157,6 +158,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			resolve->Execute(cmdBuffer, cam, spatial);
 			// do hdr
 			hdr->Execute(cmdBuffer, cam, spatial);
+			// do fsr
+			fsr->Execute(cmdBuffer, cam, spatial);
 			// flush the command buffer
 			auto renderCommandContext = renderInterface->BeginContext(false);
 			renderCommandContext->Wait(computeFence, true);

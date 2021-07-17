@@ -1004,12 +1004,6 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetRtv()
 	return textureResource.GetRtv();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE D3D12BackBuffer::GetUav()
-{
-	auto& textureResource = backBuffers[frameIndex];
-	return textureResource.GetUav();
-}
-
 ID3D12Resource* D3D12BackBuffer::GetResource()
 {
 	auto& textureResource = backBuffers[frameIndex];

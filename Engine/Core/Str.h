@@ -79,10 +79,6 @@ template <unsigned int N>
 __forceinline constexpr String::String(const char(&buff)[N]) : Hash(buff), Length(N), Str(0), ShortStr()
 {
 	static_assert(N <= 64, "const string to too long");
-	// auto index = Length;
-	//while (index--) {
-	//	ShortStr[index] = buff[index];
-	//}
 	Str = buff;
 }
 

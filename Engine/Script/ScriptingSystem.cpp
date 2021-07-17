@@ -1,7 +1,6 @@
 #include "ScriptingSystem.h"
 #include "ConsoleTask.h"
 #include "Tasks\WorkQueue.h"
-#include "Core\StringTable.h"
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
 #include "Animation\Animator.h"
@@ -87,11 +86,11 @@ int ScriptingSystem::Initialize() {
 
 int ScriptingSystem::HandleEvent(Event* Evt) {
 	if (Evt->EventId == EV_LEVEL_LOAD) {
-		Level* level = Evt->EventParam[hash_string::Level].as<Level*>();
+		Level* level = Evt->EventParam["Level"].as<Level*>();
 		OnLevelLoaded(level);
 	}
 	if (Evt->EventId == EV_LEVEL_UNLOAD) {
-		Level* level = Evt->EventParam[hash_string::Level].as<Level*>();
+		Level* level = Evt->EventParam["Level"].as<Level*>();
 		OnLevelUnloaded(level);
 	}
 	return 0;

@@ -40,7 +40,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, renderContext->FrameWidth * 2, renderContext->FrameHeight * 2);
 					// quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gInput"].as<int>() = passData.hdr.GetActualResource();
+					cmd->cmdParameters["gInput"]= passData.hdr.GetActualResource();
 					// cmdBuffer->Dispatch(cmd, fsrMaterial, 0, 64, 64, 64);
 					cmdBuffer->Quad(cmd, fsrMaterial, 0);
 				}

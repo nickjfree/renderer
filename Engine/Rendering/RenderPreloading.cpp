@@ -15,7 +15,7 @@ RenderPreloading::~RenderPreloading()
 int RenderPreloading::OnSubResource(int Message, Resource* Sub, Variant& Param) {
 	String name = *Param.as<String*>();
 	Variant resource;
-	resource.as<Resource*>() = Sub;
+	resource= Sub;
 	rendercontext->SetResource(name, resource);
 	return 0;
 }

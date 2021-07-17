@@ -50,7 +50,7 @@ AnimationCache* BlendingNode::GetAnimationCache() {
 }
 
 void BlendingNode::SetParameter(const String& Name, float Value) {
-	Parameters[Name].as<float>() = Value;
+	Parameters[Name] = Value;
 }
 
 

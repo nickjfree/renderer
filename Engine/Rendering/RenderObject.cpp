@@ -1,6 +1,5 @@
 #include "RenderObject.h"
 #include "RenderQueue.h"
-#include "Core\StringTable.h"
 #include "ShaderLibrary.h"
 
 USING_ALLOCATER(RenderObject);
@@ -60,33 +59,33 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	// prepare perObject constants
 	Matrix4x4& Transform = GetWorldMatrix();
 	// per-object position
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetPrevViewProjection(), &StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>());
 	// instance data
-	StageParameter[hash_string::InstanceWV].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewMatrix].as<Matrix4x4>();
-	StageParameter[hash_string::InstanceWVP].as<Matrix4x4>() = StageParameter[hash_string::gWorldViewProjection].as<Matrix4x4>();
+	StageParameter["InstanceWV"]= StageParameter["gWorldViewMatrix"].as<Matrix4x4>();
+	StageParameter["InstanceWVP"] = StageParameter["gWorldViewProjection"].as<Matrix4x4>();
 	// constexpr String PWVP("InstancePWVP");
-	StageParameter["InstancePWVP"].as<Matrix4x4>() = StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
+	StageParameter["InstancePWVP"]= StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
 	// object id
-	StageParameter["gObjectId"].as<int>() = get_object_id() + 1;
-	StageParameter["InstanceObjectId"].as<int>() = StageParameter["gObjectId"].as<int>();
+	StageParameter["gObjectId"]= get_object_id() + 1;
+	StageParameter["InstanceObjectId"]= StageParameter["gObjectId"].as<int>();
 	// get geometry
 	int Geometry = GetRenderMesh(Stage, Lod);
 	// if there is a skinning matrix or is a terrain.
 	if (palette.Size || Type & CLIPMAP) {
-		StageParameter["gSkinMatrix"].as<ShaderParameterArray>() = palette;
+		StageParameter["gSkinMatrix"]= palette;
 		// deformabled buffer
 		if (Stage == 0 && DeformableBuffer != -1) {
-			StageParameter["gDeformableBuffer"].as<unsigned int>() = DeformableBuffer;
+			StageParameter["gDeformableBuffer"]= DeformableBuffer;
 		} else if (Stage == 0 && Geometry != -1) {
 			RaytracingGeometry = Context->GetRenderInterface()->CreateRaytracingGeometry(Geometry, true, &DeformableBuffer);
 		}
 	}
 	// if there are  blend shapes
 	if (BlendShape_) {
-		StageParameter["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
-		StageParameter["gWeightsArray"].as<ShaderParameterArray>() = blendshape_;
+		StageParameter["gBlendShapes"]= BlendShape_->GetId();
+		StageParameter["gWeightsArray"]= blendshape_;
 	}
 
 	int Compiled = 0;
@@ -135,25 +134,25 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &cmdParameters["gPrevWorldViewProjection"].as<Matrix4x4>());
 	// instance data
-	cmdParameters["InstanceWV"].as<Matrix4x4>() = cmdParameters["gWorldViewMatrix"].as<Matrix4x4>();
-	cmdParameters["InstanceWVP"].as<Matrix4x4>() = cmdParameters["gWorldViewProjection"].as<Matrix4x4>();
+	cmdParameters["InstanceWV"] = cmdParameters["gWorldViewMatrix"];
+	cmdParameters["InstanceWVP"] = cmdParameters["gWorldViewProjection"];
 	// constexpr String PWVP("InstancePWVP");
-	cmdParameters["InstancePWVP"].as<Matrix4x4>() = cmdParameters["gPrevWorldViewProjection"].as<Matrix4x4>();
+	cmdParameters["InstancePWVP"] = cmdParameters["gPrevWorldViewProjection"];
 	// object id
-	cmdParameters["gObjectId"].as<int>() = get_object_id() + 1;
-	cmdParameters["InstanceObjectId"].as<int>() = get_object_id() + 1;
+	cmdParameters["gObjectId"] = get_object_id() + 1;
+	cmdParameters["InstanceObjectId"] = get_object_id() + 1;
 	auto mesh = model->MeshResource[lod];
 	if (palette.Size || Type & CLIPMAP) {
-		cmdParameters["gSkinMatrix"].as<ShaderParameterArray>() = palette;
+		cmdParameters["gSkinMatrix"] = palette;
 		if (stage == 0) {
 			DeformableBuffer = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
-			cmdParameters["gDeformableBuffer"].as<int>() = DeformableBuffer;
+			cmdParameters["gDeformableBuffer"] = DeformableBuffer;
 		}
 	}
 	// if there are  blend shapes
 	if (BlendShape_) {
-		cmdParameters["gBlendShapes"].as<unsigned int>() = BlendShape_->GetId();
-		cmdParameters["gWeightsArray"].as<ShaderParameterArray>() = blendshape_;
+		cmdParameters["gBlendShapes"] = BlendShape_->GetId();
+		cmdParameters["gWeightsArray"] = blendshape_;
 	} 
 	// add to commandbuffer
 	if (material->GetShader()->IsInstance(stage)) {

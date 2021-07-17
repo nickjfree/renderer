@@ -12,7 +12,7 @@ Light::~Light() {
 	Scene* scene = Owner->GetScene();
 	Event* Evt = Event::Create();
 	Evt->EventId = EV_NODE_REMOVE;
-	Evt->EventParam["RenderObject"].as<RenderObject*>() = renderLight;
+	Evt->EventParam["RenderObject"] = renderLight;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// delete the node
@@ -55,7 +55,7 @@ int Light::OnAttach(GameObject* GameObj) {
 	// Notify partition
 	Event* Evt = Event::Create();
 	Evt->EventId = EV_NODE_ADD;
-	Evt->EventParam["RenderObject"].as<RenderLight*>() = renderLight;
+	Evt->EventParam["RenderObject"] = renderLight;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position

@@ -55,10 +55,10 @@ int RaytracingStage::Accumulation(BatchCompiler* Compiler)
 	*/
 	auto compiled = 0;
 
-	Parameter["gPrevColor"].as<int>() = AccColor[(NumFrames + 1) % 2];
-	// Parameter["gPrevColor"].as<int>() = AccColor[1];
-	Parameter["gPrevMoment"].as<int>() = AccMoments[(NumFrames + 1) % 2];
-	Parameter["gCurrentColor"].as<int>() = rtTarget;
+	Parameter["gPrevColor"]= AccColor[(NumFrames + 1) % 2];
+	// Parameter["gPrevColor"]= AccColor[1];
+	Parameter["gPrevMoment"]= AccMoments[(NumFrames + 1) % 2];
+	Parameter["gCurrentColor"]= rtTarget;
 	compiled += DenosingShader->Compile(Compiler, 0, 0, Parameter, Parameter, Context);
 
 	int Targets[2] = { AccColor[NumFrames % 2],  AccMoments[NumFrames % 2] };
@@ -68,7 +68,7 @@ int RaytracingStage::Accumulation(BatchCompiler* Compiler)
 	compiled += Compiler->Quad();
 	// set result color as gRaytracingBuffer
 	/*Variant variant;
-	variant.as<int>() = Targets[0];
+	variant= Targets[0];
 	Context->SetResource("gRaytracingBuffer", variant);*/
 	return compiled;
 }
@@ -82,8 +82,8 @@ int RaytracingStage::CalcVariance(BatchCompiler* Compiler)
 		Texture2D gMoment : register(t1);
 	*/
 	auto compiled = 0;
-	Parameter["gColor"].as<int>() = AccColor[NumFrames % 2];
-	Parameter["gMoment"].as<int>() = AccMoments[NumFrames % 2];
+	Parameter["gColor"]= AccColor[NumFrames % 2];
+	Parameter["gMoment"]= AccMoments[NumFrames % 2];
 
 	int target = AccColor[(NumFrames + 1) % 2];
 	// filter
@@ -98,9 +98,9 @@ int RaytracingStage::CalcVariance(BatchCompiler* Compiler)
 int RaytracingStage::Filter(BatchCompiler* Compiler) {
 
 	auto compiled = 0;
-	Parameter["gColor"].as<int>() = AccColor[(NumFrames + 1) % 2];
-	// Parameter["gColor"].as<int>() = AccColor[0];
-	Parameter["gMoment"].as<int>() = AccMoments[NumFrames % 2];
+	Parameter["gColor"]= AccColor[(NumFrames + 1) % 2];
+	// Parameter["gColor"]= AccColor[0];
+	Parameter["gMoment"]= AccMoments[NumFrames % 2];
 
 	int target = AccColor[NumFrames % 2];
 	// int target = AccColor[1];
@@ -112,7 +112,7 @@ int RaytracingStage::Filter(BatchCompiler* Compiler) {
 
 	// set result
 	Variant variant;
-	variant.as<int>() = target;
+	variant= target;
 	Context->SetResource("gRaytracingBuffer", variant);
 
 	return compiled;
@@ -169,7 +169,7 @@ int RaytracingStage::BuildLightingData(RenderingCamera* Camera, Spatial* spatial
 		lightingData.PushBack(light->GetLightData());
 	}
 	ShaderParameterArray shaderParameterLights { lightingData.GetData(), lightingData.Size() * sizeof(LightData) };
-	Parameter["gLightArray"].as<ShaderParameterArray>() = shaderParameterLights;
+	Parameter["gLightArray"]= shaderParameterLights;
 	return 0;
 }
 
@@ -188,22 +188,22 @@ int RaytracingStage::Raytracing(RenderingCamera* Camera, Spatial* spatial, Batch
 		// compiler->BuildRaytracingScene();
 		// compiled += compiler->SetDepthBuffer(-1);
 
-		// Parameter["RenderTarget"].as<int>() = Context->GetRenderTarget("gPostBuffer"); // rtTarget
-		Parameter["RenderTarget"].as<int>() = rtTarget;
-		//Parameter["PrevRenderTarget"].as<int>() = rtTarget[(NumFrames + 1) % 2];
+		// Parameter["RenderTarget"]= Context->GetRenderTarget("gPostBuffer"); // rtTarget
+		Parameter["RenderTarget"]= rtTarget;
+		//Parameter["PrevRenderTarget"]= rtTarget[(NumFrames + 1) % 2];
 		// Context->SetResource("rtTarget", Parameter["RenderTarget"]);
 
 		Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameter["gInvertViewMaxtrix"].as<Matrix4x4>());
 		Matrix4x4::Tranpose(Camera->GetViewProjection(), &Parameter["gViewProjectionMatrix"].as<Matrix4x4>());
 		Matrix4x4::Tranpose(Camera->GetViewMatrix(), &Parameter["gViewMatrix"].as<Matrix4x4>());
-		Parameter["gViewPoint"].as<Vector3>() = Camera->GetViewPoint();
-		Parameter["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
-		Parameter["gFrameNumber"].as<int>() = NumFrames;
+		Parameter["gViewPoint"]= Camera->GetViewPoint();
+		Parameter["gScreenSize"]= Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
+		Parameter["gFrameNumber"]= NumFrames;
 
 		compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		compiled += compiler->TraceRay();
 		// test run
-		//Parameter["RenderTarget"].as<int>() = rtTestTarget;
+		//Parameter["RenderTarget"]= rtTestTarget;
 		//compiled += rtShader->Compile(compiler, 0, 0, material->GetParameter(), Parameter, Context);
 		//compiled += compiler->TraceRay();
 	}

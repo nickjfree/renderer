@@ -31,7 +31,7 @@ int BlendShape::OnSerialize(Deserializer& deserializer)
 		String name = node->first_attribute("name")->value();
 		String URL = node->first_attribute("url")->value();
 		// add to dependency
-		Dependencies[URL].as<int>() = index++;
+		Dependencies[URL] = index++;
 		DepCount++;
 		node = node->next_sibling();
 	}

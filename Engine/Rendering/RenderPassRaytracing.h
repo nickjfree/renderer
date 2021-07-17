@@ -123,10 +123,10 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 				// set up 
 				{
 					Variant compact0, specular, depth, motion;
-					compact0.as<int>() = passData.compact0.GetActualResource();
-					specular.as<int>() = passData.specular.GetActualResource();
-					depth.as<int>() = passData.depth.GetActualResource();
-					motion.as<int>() = passData.motion.GetActualResource();
+					compact0= passData.compact0.GetActualResource();
+					specular= passData.specular.GetActualResource();
+					depth= passData.depth.GetActualResource();
+					motion= passData.motion.GetActualResource();
 					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
 					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
@@ -135,9 +135,9 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 				// disptach rays
 				{
 					auto cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["RenderTarget"].as<int>() = passData.reflectionRaw.GetActualResource();
-					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
-					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
+					cmd->cmdParameters["RenderTarget"]= passData.reflectionRaw.GetActualResource();
+					cmd->cmdParameters["gFrameNumber"]= frameNumber;
+					cmd->cmdParameters["gPostBuffer"]= passData.lighting.GetActualResource();
 					cmdBuffer->DispatchRays(cmd, 0, material, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 				// flip color & moment buffer
@@ -153,9 +153,9 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 					cmdBuffer->RenderTargets(cmd, targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPrevColor"].as<int>() = passData.color1.GetActualResource();
-					cmd->cmdParameters["gPrevMoment"].as<int>() = passData.moment1.GetActualResource();
-					cmd->cmdParameters["gCurrentColor"].as<int>() = passData.reflectionRaw.GetActualResource();
+					cmd->cmdParameters["gPrevColor"]= passData.color1.GetActualResource();
+					cmd->cmdParameters["gPrevMoment"]= passData.moment1.GetActualResource();
+					cmd->cmdParameters["gCurrentColor"]= passData.reflectionRaw.GetActualResource();
 					cmdBuffer->Quad(cmd, material, 0);
 				}
 				// filter variance
@@ -166,8 +166,8 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gColor"].as<int>() = passData.color0.GetActualResource();
-					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmd->cmdParameters["gColor"]= passData.color0.GetActualResource();
+					cmd->cmdParameters["gMoment"]= passData.moment0.GetActualResource();
 					cmdBuffer->Quad(cmd, material, 2);
 				}
 				{
@@ -178,8 +178,8 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gColor"].as<int>() = passData.color1.GetActualResource();
-					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmd->cmdParameters["gColor"]= passData.color1.GetActualResource();
+					cmd->cmdParameters["gMoment"]= passData.moment0.GetActualResource();
 					cmdBuffer->Quad(cmd, material, 1);
 				}
 
@@ -258,9 +258,9 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 				// set up 
 				{
 					Variant compact0, specular, depth;
-					compact0.as<int>() = passData.compact0.GetActualResource();
-					specular.as<int>() = passData.specular.GetActualResource();
-					depth.as<int>() = passData.depth.GetActualResource();
+					compact0= passData.compact0.GetActualResource();
+					specular= passData.specular.GetActualResource();
+					depth= passData.depth.GetActualResource();
 					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth); 
 					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
@@ -272,10 +272,10 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gRaytracedReflection"].as<int>() = passData.reflection.GetActualResource();
-					cmd->cmdParameters["gRaytracedLighting"].as<int>() = passData.rtLighting.GetActualResource();
-					cmd->cmdParameters["gPostBuffer"].as<int>() = passData.lighting.GetActualResource();
-					cmd->cmdParameters["gAO"].as<int>() = passData.ao.GetActualResource();
+					cmd->cmdParameters["gRaytracedReflection"]= passData.reflection.GetActualResource();
+					cmd->cmdParameters["gRaytracedLighting"]= passData.rtLighting.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"]= passData.lighting.GetActualResource();
+					cmd->cmdParameters["gAO"]= passData.ao.GetActualResource();
 					cmdBuffer->Quad(cmd, material, 0); 
 				}
 			}
@@ -431,10 +431,10 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 				// set up 
 				{
 					Variant compact0, specular, depth, motion;
-					compact0.as<int>() = passData.compact0.GetActualResource();
-					specular.as<int>() = passData.specular.GetActualResource();
-					depth.as<int>() = passData.depth.GetActualResource();
-					motion.as<int>() = passData.motion.GetActualResource();
+					compact0= passData.compact0.GetActualResource();
+					specular= passData.specular.GetActualResource();
+					depth= passData.depth.GetActualResource();
+					motion= passData.motion.GetActualResource();
 					cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 					cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
 					cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
@@ -465,21 +465,21 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					lightInfos.numLights = lightInfos.lights.Size();
 					auto cmd = cmdBuffer->AllocCommand();
 					// use lighting fot test
-					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lights.GetData();
-					cmd->cmdParameters["cellScale"].as<void*>() = &lightInfos.cellScale;
-					cmd->cmdParameters["cellCount"].as<void*>() = &lightInfos.cellCount;
-					cmd->cmdParameters["lightsPerCell"].as<void*>() = &lightInfos.lightsPerCell;
-					cmd->cmdParameters["numLights"].as<void*>() = &lightInfos.numLights;
-					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
+					cmd->cmdParameters["lights"]= lightInfos.lights.GetData();
+					cmd->cmdParameters["cellScale"]= &lightInfos.cellScale;
+					cmd->cmdParameters["cellCount"]= &lightInfos.cellCount;
+					cmd->cmdParameters["lightsPerCell"]= &lightInfos.lightsPerCell;
+					cmd->cmdParameters["numLights"]= &lightInfos.numLights;
+					cmd->cmdParameters["CulledLights"]= passData.culledLights.GetActualResource();
 					cmdBuffer->Dispatch(cmd, cullingMaterial, 0, cell_count, cell_count, cell_count);
 				}
 				// disptach rays
 				{
 					auto cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["RenderTarget"].as<int>() = passData.rtLighting.GetActualResource();
-					cmd->cmdParameters["CulledLights"].as<int>() = passData.culledLights.GetActualResource();
-					cmd->cmdParameters["gFrameNumber"].as<int>() = frameNumber;
-					cmd->cmdParameters["lights"].as<void*>() = lightInfos.lightData.GetData();
+					cmd->cmdParameters["RenderTarget"]= passData.rtLighting.GetActualResource();
+					cmd->cmdParameters["CulledLights"]= passData.culledLights.GetActualResource();
+					cmd->cmdParameters["gFrameNumber"]= frameNumber;
+					cmd->cmdParameters["lights"]= lightInfos.lightData.GetData();
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 				// flip color & moment buffer
@@ -495,9 +495,9 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->RenderTargets(cmd, targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPrevColor"].as<int>() = passData.color1.GetActualResource();
-					cmd->cmdParameters["gPrevMoment"].as<int>() = passData.moment1.GetActualResource();
-					cmd->cmdParameters["gCurrentColor"].as<int>() = passData.rtLighting.GetActualResource();
+					cmd->cmdParameters["gPrevColor"]= passData.color1.GetActualResource();
+					cmd->cmdParameters["gPrevMoment"]= passData.moment1.GetActualResource();
+					cmd->cmdParameters["gCurrentColor"]= passData.rtLighting.GetActualResource();
 					cmdBuffer->Quad(cmd, rtMaterial, 0);
 				}
 				// filter variance
@@ -508,8 +508,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gColor"].as<int>() = passData.color0.GetActualResource();
-					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmd->cmdParameters["gColor"]= passData.color0.GetActualResource();
+					cmd->cmdParameters["gMoment"]= passData.moment0.GetActualResource();
 					cmdBuffer->Quad(cmd, rtMaterial, 2);
 				}
 				{
@@ -520,8 +520,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->RenderTargets(cmd, targets, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gColor"].as<int>() = passData.color1.GetActualResource();
-					cmd->cmdParameters["gMoment"].as<int>() = passData.moment0.GetActualResource();
+					cmd->cmdParameters["gColor"]= passData.color1.GetActualResource();
+					cmd->cmdParameters["gMoment"]= passData.moment0.GetActualResource();
 					cmdBuffer->Quad(cmd, rtMaterial, 1);
 				}
 			}

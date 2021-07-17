@@ -1,6 +1,5 @@
 #include "RenderLight.h"
 #include "RenderQueue.h"
-#include "Core\StringTable.h"
 
 
 USING_ALLOCATER(RenderLight);
@@ -33,23 +32,23 @@ void RenderLight::SetLightType(int Type) {
 
 void RenderLight::SetRadius(float r) {
 	Radius = r;
-	//Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	//Parameter[hash_string::gRadiusIntensity]= Vector3(Radius, Intensity, 0);
 	CullingObj.UniformScale(r);
 }
 // set color
 void RenderLight::SetColor(Vector3& Color_) {
 	Color = Color_;
-	//Parameter[hash_string::gLightColor].as<Vector3>() = Color;
+	//Parameter[hash_string::gLightColor]= Color;
 }
 // set intensity
 void RenderLight::SetIntensity(float Intensity_) {
 	Intensity = Intensity_;
-	//Parameter[hash_string::gRadiusIntensity].as<Vector3>() = Vector3(Radius, Intensity, 0);
+	//Parameter[hash_string::gRadiusIntensity]= Vector3(Radius, Intensity, 0);
 }
 // set direction
 void RenderLight::SetDirection(Vector3& Direction_) {
 	Direction = Direction_;
-	//Parameter[hash_string::gLightDirection].as<Vector3>() = Direction;
+	//Parameter[hash_string::gLightDirection]= Direction;
 }
 // set shdowcast disable/enable
 void RenderLight::SetShadowCast(int Flag) {
@@ -57,7 +56,7 @@ void RenderLight::SetShadowCast(int Flag) {
 }
 
 void RenderLight::SetShadowMap(int id) {
-	// Parameter[hash_string::gShadowMap].as<int>() = id;
+	// Parameter[hash_string::gShadowMap]= id;
 	ShadowMap = id;
 }
 
@@ -78,12 +77,12 @@ int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Stag
 	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
 	// light parameters
-	StageParameter["gLightPosition"].as<Vector3>() = Position * Camera->GetViewMatrix();
-	StageParameter["gLightDirection"].as<Vector3>() = Direction.RotateBy(Camera->GetViewMatrix());
-	StageParameter["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
-	StageParameter["gLightColor"].as<Vector3>() = Color;
-	StageParameter["gShadowMap"].as<int>() = ShadowMap;
-	// StageParameter["gDiffuseMap0"].as<int>() = Context->GetResource("gRtReflection")->as<int>();
+	StageParameter["gLightPosition"]= Position * Camera->GetViewMatrix();
+	StageParameter["gLightDirection"]= Direction.RotateBy(Camera->GetViewMatrix());
+	StageParameter["gRadiusIntensity"]= Vector3(Radius, Intensity, 0);
+	StageParameter["gLightColor"]= Color;
+	StageParameter["gShadowMap"]= ShadowMap;
+	// StageParameter["gDiffuseMap0"]= Context->GetResource("gRtReflection")->as<int>();
 	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &StageParameter["gLightViewProjection"].as<Matrix4x4>());
 	// process material
 	int Compiled = 0;
@@ -139,11 +138,11 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 	//		Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
 	//		Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
 	//		// light parameters
-	//		cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
-	//		cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
-	//		cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
-	//		cmdParameters["gLightColor"].as<Vector3>() = Color;
-	//		cmdParameters["gShadowMap"].as<int>() = ShadowMap;
+	//		cmdParameters["gLightPosition"]= Position * camera->GetViewMatrix();
+	//		cmdParameters["gLightDirection"]= Direction.RotateBy(camera->GetViewMatrix());
+	//		cmdParameters["gRadiusIntensity"]= Vector3(Radius, Intensity, 0);
+	//		cmdParameters["gLightColor"]= Color;
+	//		cmdParameters["gShadowMap"]= ShadowMap;
 	//		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
 	//		auto mesh = model->MeshResource[lod];
 	//		cmdBuffer->Draw(cmd, mesh, GetMaterial(), 0);
@@ -170,11 +169,11 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 		auto cmd = cmdBuffer->AllocCommand();
 		auto& cmdParameters = cmd->cmdParameters;
 		// light parameters
-		cmdParameters["gLightPosition"].as<Vector3>() = Position * camera->GetViewMatrix();
-		cmdParameters["gLightDirection"].as<Vector3>() = Direction.RotateBy(camera->GetViewMatrix());
-		cmdParameters["gRadiusIntensity"].as<Vector3>() = Vector3(Radius, Intensity, 0);
-		cmdParameters["gLightColor"].as<Vector3>() = Color;
-		cmdParameters["gShadowMap"].as<int>() = ShadowMap;
+		cmdParameters["gLightPosition"]= Position * camera->GetViewMatrix();
+		cmdParameters["gLightDirection"]= Direction.RotateBy(camera->GetViewMatrix());
+		cmdParameters["gRadiusIntensity"]= Vector3(Radius, Intensity, 0);
+		cmdParameters["gLightColor"]= Color;
+		cmdParameters["gShadowMap"]= ShadowMap;
 		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
 		cmdBuffer->Draw(cmd, nullptr, GetMaterial(), stage);
 	}

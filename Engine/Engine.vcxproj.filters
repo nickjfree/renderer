@@ -344,9 +344,6 @@
     <ClInclude Include="Tasks\Semaphore.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Core\StringTable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Script\Script.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -670,19 +667,10 @@
     <ClCompile Include="Rendering\RenderingPath.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\PrepassStage.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Rendering\RenderLight.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Rendering\PostpassStage.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Rendering\RenderPreloading.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Rendering\ShadowMapStage.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Levelloader.cpp">
@@ -842,9 +830,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Tasks\Semaphore.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\StringTable.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Script\Script.cpp">

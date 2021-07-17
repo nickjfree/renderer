@@ -2,7 +2,6 @@
 #include "Scene\GameObject.h"
 #include "Scene\Scene.h"
 #include "H3DMesh.h"
-#include "Core\StringTable.h"
 
 
 USING_ALLOCATER(MeshRenderer);
@@ -27,7 +26,7 @@ int MeshRenderer::OnAttach(GameObject* GameObj) {
 	// Notify partition
 	Event* Evt = Event::Create();
 	Evt->EventId = EV_NODE_ADD;
-	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
+	Evt->EventParam["RenderObject"] = renderObject;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// set init position
@@ -41,7 +40,7 @@ int MeshRenderer::OnDestroy(GameObject* GameObj) {
 	Scene* scene = Owner->GetScene();
 	Event* Evt = Event::Create();
 	Evt->EventId = EV_NODE_REMOVE;
-	Evt->EventParam[hash_string::RenderObject].as<RenderObject*>() = renderObject;
+	Evt->EventParam["RenderObject"] = renderObject;
 	SendEvent(scene, Evt);
 	Evt->Recycle();
 	// call base destroy

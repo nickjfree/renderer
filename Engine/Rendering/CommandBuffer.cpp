@@ -18,8 +18,8 @@ void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* re
 	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(cam->GetViewMatrix(), &globalParameters["gViewMatrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(cam->GetViewProjection(), &globalParameters["gViewProjectionMatrix"].as<Matrix4x4>());
-	globalParameters["gViewPoint"].as<Vector3>() = cam->GetViewPoint();
-	globalParameters["gScreenSize"].as<Vector2>() = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
+	globalParameters["gViewPoint"] = cam->GetViewPoint();
+	globalParameters["gScreenSize"] = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
 	// set renderContext
 	this->renderContext = renderContext;
 }

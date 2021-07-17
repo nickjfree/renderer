@@ -47,40 +47,40 @@ void RenderingSystem::PreloadingResource() {
 	// loading ssao
 	Preloadings[0] = "Material\\Materials\\ssao.xml\\0";
 	Variant Param;
-	Param.as<String*>() = &Preloadings[0];
+	Param= &Preloadings[0];
 	RenderPreloading* Preloading = new RenderPreloading(context);
 	Cache->AsyncLoadResource(Preloadings[0], Preloading, Param);
 	// loading hdr shaders
 	Preloadings[1] = "Material\\Materials\\hdr.xml\\0";
-	Param.as<String*>() = &Preloadings[1];
+	Param= &Preloadings[1];
 	Cache->AsyncLoadResource(Preloadings[1], Preloading, Param);
 	// loading oit shaders
 	Preloadings[2] = "Shader\\shaders\\OIT\\0";
-	Param.as<String*>() = &Preloadings[2];
+	Param= &Preloadings[2];
 	Cache->AsyncLoadResource(Preloadings[2], Preloading, Param);
 	// load raytracing shaders materials
 	Preloadings[3] = "Material\\Materials\\raytracing.xml\\0";
-	Param.as<String*>() = &Preloadings[3];
+	Param= &Preloadings[3];
 	Cache->AsyncLoadResource(Preloadings[3], Preloading, Param);
 	// load  denoising shaders
 	Preloadings[4] = "Shader\\shaders\\Denoising\\0";
-	Param.as<String*>() = &Preloadings[4];
+	Param= &Preloadings[4];
 	Cache->AsyncLoadResource(Preloadings[4], Preloading, Param);
 	// load resolve shaders
 	Preloadings[5] = "Material\\Materials\\resolve.xml\\0";
-	Param.as<String*>() = &Preloadings[5];
+	Param= &Preloadings[5];
 	Cache->AsyncLoadResource(Preloadings[5], Preloading, Param);
 	// load emissive shaders
 	Preloadings[6] = "Material\\Materials\\emissive.xml\\0";
-	Param.as<String*>() = &Preloadings[6];
+	Param= &Preloadings[6];
 	Cache->AsyncLoadResource(Preloadings[6], Preloading, Param);
 	// load light culling shaders
 	Preloadings[7] = "Material\\Materials\\light_culling.xml\\0";
-	Param.as<String*>() = &Preloadings[7];
+	Param= &Preloadings[7];
 	Cache->AsyncLoadResource(Preloadings[7], Preloading, Param);
 	// load fsr shaders
 	Preloadings[8] = "Material\\Materials\\fsr.xml\\0";
-	Param.as<String*>() = &Preloadings[8];
+	Param= &Preloadings[8];
 	Cache->AsyncLoadResource(Preloadings[8], Preloading, Param);
 }
 

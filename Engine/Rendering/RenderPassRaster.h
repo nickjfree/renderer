@@ -274,7 +274,7 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			cmdBuffer->RenderTargets(cmd, targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
 			// set prev compact buffer
 			Variant prevCompactBuffer;
-			prevCompactBuffer.as<int>() = compact1;
+			prevCompactBuffer= compact1;
 			cmdBuffer->SetGlobalParameter("gPrevCompactBuffer", prevCompactBuffer);
 			// render objects
 			static Vector<Node*> objects;
@@ -344,10 +344,10 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 			cmdBuffer->RenderTargets(cmd, targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 			// set gbuffer as input
 			Variant diffuse, compact0, specular, depth;
-			diffuse.as<int>() = passData.diffuse.GetActualResource();
-			compact0.as<int>() = passData.compact0.GetActualResource();
-			specular.as<int>() = passData.specular.GetActualResource();
-			depth.as<int>() = passData.depth.GetActualResource();
+			diffuse= passData.diffuse.GetActualResource();
+			compact0= passData.compact0.GetActualResource();
+			specular= passData.specular.GetActualResource();
+			depth= passData.depth.GetActualResource();
 			cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
 			cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 			cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
@@ -407,10 +407,10 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 				};
 				// set gbuffer as input
 				Variant diffuse, compact0, specular, depth;
-				diffuse.as<int>() = passData.diffuse.GetActualResource();
-				compact0.as<int>() = passData.compact0.GetActualResource();
-				specular.as<int>() = passData.specular.GetActualResource();
-				depth.as<int>() = passData.depth.GetActualResource();
+				diffuse= passData.diffuse.GetActualResource();
+				compact0= passData.compact0.GetActualResource();
+				specular= passData.specular.GetActualResource();
+				depth= passData.depth.GetActualResource();
 				cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
 				cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 				cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);

@@ -110,7 +110,7 @@ int RenderContext::RegisterRenderTarget(const String& Target, int Id) {
 	if (Iter == RenderTarget.End()) {
 		RenderTarget[Target] = Id;
 		Variant Var;
-		Var.as<int>() = Id;
+		Var= Id;
 		SetResource(Target, Var);
 	}
 	else {

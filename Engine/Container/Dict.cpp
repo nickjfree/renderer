@@ -30,13 +30,13 @@ template <class T>  int Dict::Set(const String& key, T& value) {
 		Index = HashIndex_.Next(Index);
 	}
 	if (Index != -1) {
-		Items[Index].Value.as<T> = value;
+		Items[Index].Value = value;
 		return Index;
 	}
 	// new key
 	KeyValue Item = KeyValue();
 	Item.key = key;
-	Item.Value.as<T> = value;
+	Item.Value = value;
 	Index = Items.PushBack(Item);
 	HashIndex_.Add(StringHash, Index);
 	return Index;

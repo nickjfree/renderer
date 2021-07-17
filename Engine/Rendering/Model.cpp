@@ -14,7 +14,7 @@ int Model::SetMesh(Mesh* mesh, int Lod) {
 	// test for event
 	/*Event * Ev = Event::Create();
 	Ev->EventId = 200;
-	Ev->EventParam["mesh"].as<Mesh*>() = mesh;
+	Ev->EventParam["mesh"] = mesh;
 	BroadCast(Ev);
 	Ev->Recycle();*/
 	return 0;

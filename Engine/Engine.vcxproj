@@ -128,7 +128,6 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Core\ObjectTypeId.h" />
     <ClInclude Include="Core\Shortcuts.h" />
     <ClInclude Include="Core\Str.h" />
-    <ClInclude Include="Core\StringTable.h" />
     <ClInclude Include="Core\System.h" />
     <ClInclude Include="Core\Variant.h" />
     <ClInclude Include="Header.h" />
@@ -277,7 +276,6 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Core\ObjectContainer.cpp" />
     <ClCompile Include="Core\ObjectTypeId.cpp" />
     <ClCompile Include="Core\Str.cpp" />
-    <ClCompile Include="Core\StringTable.cpp" />
     <ClCompile Include="Core\System.cpp" />
     <ClCompile Include="Input\InputHandler.cpp" />
     <ClCompile Include="Input\InputSystem.cpp" />
@@ -314,8 +312,6 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\D3D12Render\ShaderBindingTable.cpp" />
     <ClCompile Include="Rendering\FrameGraph.cpp" />
     <ClCompile Include="Rendering\Light.cpp" />
-    <ClCompile Include="Rendering\PostpassStage.cpp" />
-    <ClCompile Include="Rendering\PrepassStage.cpp" />
     <ClCompile Include="Rendering\QuadTreeImp.cpp" />
     <ClCompile Include="Rendering\RaytracingStage.cpp" />
     <ClCompile Include="Rendering\RenderControl.cpp" />
@@ -340,7 +336,6 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClCompile Include="Rendering\RenderView.cpp" />
     <ClCompile Include="Rendering\Shader.cpp" />
     <ClCompile Include="Rendering\ShaderLibrary.cpp" />
-    <ClCompile Include="Rendering\ShadowMapStage.cpp" />
     <ClCompile Include="Rendering\Spatial.cpp" />
     <ClCompile Include="Rendering\Terrain.cpp" />
     <ClCompile Include="Rendering\TerrainNode.cpp" />

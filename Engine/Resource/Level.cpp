@@ -12,10 +12,7 @@
 #include "Script\LuaStack.h"
 #include "Script\Proxy.h"
 #include "Script\Export.h"
-
 #include "Input\InputSystem.h"
-#include "Core\StringTable.h"
-
 #include "Script\Script.h"
 #include "Physics\PhysicsObject.h"
 #include "Physics/CharacterController.h"
@@ -164,33 +161,33 @@ int Level::OnCreateComplete(Variant& Parameter) {
 	BlendShape* empty_blendshape = 0;
 	// submit resource creation task
 	for (int i = 0; i < NumMeshes; i++) {
-		Param.as<int>() = i;
+		Param= i;
 		Meshs.PushBack(empty_mesh);    // init mesh vertor to zero
 		Cache->AsyncLoadResource(MeshEntries[i].Url, this, Param);
 	}
 	for (int i = 0; i < NumMaterials; i++) {
-		Param.as<int>() = i;
+		Param= i;
 		Materials.PushBack(empty_material); // init material vector to zero
 		Cache->AsyncLoadResource(MaterialEntries[i].Url, this, Param);
 	}
 	for (int i = 0; i < NumSkeletons; i++) {
-		Param.as<int>() = i;
+		Param= i;
 		Skeletons.PushBack(empty_skeleton); // init skeleton vector to zero
 		Cache->AsyncLoadResource(SkeletonEntries[i].Url, this, Param);
 	}
 	for (int i = 0; i < NumAnimations; i++) {
-		Param.as<int>() = i;
+		Param= i;
 		Animations.PushBack(empty_animation); // init animation vector to zero
 		Cache->AsyncLoadResource(AnimationEntries[i].Url, this, Param);
 	}
 	for (int i = 0; i < NumBlendShapes; i++) {
-		Param.as<int>() = i;
+		Param= i;
 		BlendShapes.PushBack(empty_blendshape); // init blendshape vector to zero
 		Cache->AsyncLoadResource(BlendShapeEntries[i].Url, this, Param);
 	}
 	//// for test submiting loading task
 	//// load blendshape
-	//Param.as<int>() = 0;
+	//Param= 0;
 	//BlendShapes.PushBack(empty_blendshape);
 	//Cache->AsyncLoadResource("BlendShape\\blendshapes\\arkit.xml", this, Param);
 	return 0;
@@ -246,7 +243,7 @@ int Level::InitScript() {
 	// send event to scripting subsystem
 	Event* event = Event::Create();
 	event->EventId = EV_LEVEL_LOAD;
-	event->EventParam[hash_string::Level].as<Level*>() = this;
+	event->EventParam["Level"] = this;
 	context->BroadCast(event);
 	event->Recycle();
 	// add camera script
@@ -419,7 +416,7 @@ void Level::Destroy() {
 		// send event to scripting subsystem
 	Event* event = Event::Create();
 	event->EventId = EV_LEVEL_UNLOAD;
-	event->EventParam[hash_string::Level].as<Level*>() = this;
+	event->EventParam["Level"] = this;
 	context->BroadCast(event);
 	event->Recycle();
 }

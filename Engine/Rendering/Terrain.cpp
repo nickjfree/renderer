@@ -87,7 +87,7 @@ int Terrain::OnAttach(GameObject* GameObj)
 	for (auto iter = rootNodes.Begin(); iter != rootNodes.End(); iter++) {
 		Event* Evt = Event::Create();
 		Evt->EventId = EV_NODE_ADD;
-		Evt->EventParam["RenderObject"].as<Node*>() = *iter;
+		Evt->EventParam["RenderObject"]= *iter;
 		SendEvent(scene, Evt);
 		Evt->Recycle();
 	}
@@ -104,7 +104,7 @@ int Terrain::OnDestroy(GameObject* GameObj)
 		// send event to remove it
 		Event* Evt = Event::Create();
 		Evt->EventId = EV_NODE_REMOVE;
-		Evt->EventParam["RenderObject"].as<Node*>() = *iter;
+		Evt->EventParam["RenderObject"]= *iter;
 		SendEvent(scene, Evt);
 		Evt->Recycle();
 	}

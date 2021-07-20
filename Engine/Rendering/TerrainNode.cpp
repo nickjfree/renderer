@@ -67,9 +67,9 @@ int TerrainNode::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool insid
 
 int TerrainNode::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context)
 {
-	StageParameter["InstancePosition"]= Position;
-	StageParameter["InstanceScale"]= (float)scale_;
-	StageParameter["InstanceLevel"]= (float)level_;
+	StageParameter["InstancePosition"] = Position;
+	StageParameter["InstanceScale"] = (float)scale_;
+	StageParameter["InstanceLevel"] = (float)level_;
 
 	// do virtual texture rendering
 	Stage = 3;

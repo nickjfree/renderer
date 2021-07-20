@@ -345,12 +345,16 @@
 
   <shader name="FSR">
     <technique name="fsr">
-<!--       <pass name="easu" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+      <pass name="easu" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <cs url="Shaders\shaders\fsr_easu.cs"></cs>
       </pass>
+    </technique>
+    <technique name="fsr">
       <pass name="rcas" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <cs url="Shaders\shaders\fsr_rcas.cs"></cs>
-      </pass> -->
+      </pass>
+    </technique>
+    <technique name="copy">
       <pass name="copy" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <vs url="Shaders\shaders\quad.vs"></vs>
         <ps url="Shaders\shaders\copy.ps"></ps>

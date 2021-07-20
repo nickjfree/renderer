@@ -300,6 +300,7 @@ typedef struct R_TEXTURE2D_DESC {
 	unsigned int MipLevels;
 	unsigned int ArraySize;
 	R_FORMAT Format;
+	R_FORMAT RtvFormat;
 	R_RESOURCE_USAGE Usage;
 	//Sample
 	R_SAMPLE_DESC SampleDesc;

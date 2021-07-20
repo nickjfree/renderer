@@ -63,29 +63,29 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Transform * Camera->GetPrevViewProjection(), &StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>());
 	// instance data
-	StageParameter["InstanceWV"]= StageParameter["gWorldViewMatrix"].as<Matrix4x4>();
+	StageParameter["InstanceWV"] = StageParameter["gWorldViewMatrix"].as<Matrix4x4>();
 	StageParameter["InstanceWVP"] = StageParameter["gWorldViewProjection"].as<Matrix4x4>();
 	// constexpr String PWVP("InstancePWVP");
-	StageParameter["InstancePWVP"]= StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
+	StageParameter["InstancePWVP"] = StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
 	// object id
-	StageParameter["gObjectId"]= get_object_id() + 1;
-	StageParameter["InstanceObjectId"]= StageParameter["gObjectId"].as<int>();
+	StageParameter["gObjectId"] = get_object_id() + 1;
+	StageParameter["InstanceObjectId"] = StageParameter["gObjectId"].as<int>();
 	// get geometry
 	int Geometry = GetRenderMesh(Stage, Lod);
 	// if there is a skinning matrix or is a terrain.
 	if (palette.Size || Type & CLIPMAP) {
-		StageParameter["gSkinMatrix"]= palette;
+		StageParameter["gSkinMatrix"] = palette;
 		// deformabled buffer
 		if (Stage == 0 && DeformableBuffer != -1) {
-			StageParameter["gDeformableBuffer"]= DeformableBuffer;
+			StageParameter["gDeformableBuffer"] = DeformableBuffer;
 		} else if (Stage == 0 && Geometry != -1) {
 			RaytracingGeometry = Context->GetRenderInterface()->CreateRaytracingGeometry(Geometry, true, &DeformableBuffer);
 		}
 	}
 	// if there are  blend shapes
 	if (BlendShape_) {
-		StageParameter["gBlendShapes"]= BlendShape_->GetId();
-		StageParameter["gWeightsArray"]= blendshape_;
+		StageParameter["gBlendShapes"] = BlendShape_->GetId();
+		StageParameter["gWeightsArray"] = blendshape_;
 	}
 
 	int Compiled = 0;

@@ -4,12 +4,18 @@
 #include "../common/basic_registers.h"
 #include "../common/post.h"
 
+#define A_GPU 1
+#define A_HLSL 1
+#include "../fsr/ffx_a.h"
+#include "../fsr/ffx_fsr1.h"
+
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
 static const float MiddleGray = 0.18f;
 static const float BRIGHT_PASS_THRESHOLD = 10.0f;
 
 
+Texture2D gBlueNoise : register(t2);
 
 /*
     pixel shader get averaged log Lum value
@@ -96,16 +102,17 @@ PS_Output_Simple PS_ToneMapping(PS_Input_Simple input)
     float4 vBloom = 0.0f;
     vLum = gDiffuseMap0.Sample(gSam,float2(0.5f, 0.5f)).x;
     vLum = exp(vLum);
-    vSample = gPostBuffer.Sample(gSam,input.TexCoord).xyz;
-    vBloom =  gDiffuseMap1.Sample(gSam,input.TexCoord);
+    vSample = gPostBuffer.Sample(gSam, input.TexCoord).xyz;
+    vBloom =  gDiffuseMap1.Sample(gSam, input.TexCoord);
     vSample.xyz *= MiddleGray /(vLum + 0.001f);
     vSample.xyz /= (1.0f + vSample);
 
     // bloom effect
     vSample += vBloom.xyz * 0.3f;
+
+    // linear to gamma 2.0
+    // FsrTepdC10F(vSample, saturate(gBlueNoise.Load(int3(int(input.TexCoord.x * gScreenSize.x - 0.3) % 128, int(input.TexCoord.y * gScreenSize.y - 0.3) % 128 + gFrameNumber * 128, 0)).w));
     output.Color = float4(vSample, 0);
-    // output.Color = gPostBuffer.Sample(gSam,input.TexCoord);
-    //output.Color = input.TexCoord.x;
     return output;
 }
 
@@ -116,8 +123,8 @@ PS_Output_Simple PS_ToneMapping(PS_Input_Simple input)
 PS_Output_Simple PS_BrightPass(PS_Input_Simple input)
 {
     PS_Output_Simple output = (PS_Output_Simple)0;
-    float4 vSample = gPostBuffer.Sample(gSam,input.TexCoord);
-    float  fAdaptedLum = gDiffuseMap0.Sample(gSam,float2(0.5f,0.5f)).x;
+    float4 vSample = gPostBuffer.Sample(gSam, input.TexCoord);
+    float  fAdaptedLum = gDiffuseMap0.Sample(gSam, float2(0.5f,0.5f)).x;
     fAdaptedLum = exp(fAdaptedLum);
     // Determine what the pixel's value will be after tone-mapping occurs
     vSample.rgb *= MiddleGray /(fAdaptedLum + 0.001f);
@@ -146,7 +153,7 @@ PS_Output_Simple PS_GaussBloom5x5(PS_Input_Simple input)
     float4 vSample = 0.0f;
     for(int iSample = 0; iSample < 3; iSample++)
     {
-        vSample += gSampleWeights[iSample].x * gPostBuffer.Sample(gSamBilinear,input.TexCoord + gSampleOffsets[iSample].xy);
+        vSample += gSampleWeights[iSample].x * gPostBuffer.Sample(gSamBilinear, input.TexCoord + gSampleOffsets[iSample].xy);
     }
     output.Color = vSample;
     return output;

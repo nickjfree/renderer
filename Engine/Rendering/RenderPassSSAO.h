@@ -59,7 +59,7 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 				cmdBuffer->RenderTargets(cmd, &target, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 				// draw quoad
 				cmd = cmdBuffer->AllocCommand();
-				// cmd->cmdParameters["gPostBuffer"]= passData.lighting.GetActualResource();
+				// cmd->cmdParameters["gPostBuffer"] = passData.lighting.GetActualResource();
 				cmdBuffer->Quad(cmd, ssaoMaterial, 0);
 			}
 		});

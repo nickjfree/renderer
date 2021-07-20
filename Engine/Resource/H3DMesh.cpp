@@ -60,7 +60,7 @@ int H3DMesh::OnLoadComplete(void *Data) {
 int H3DMesh::OnCreateComplete(void * Data) {
 	Event * event = Event::Create();
 	event->EventId = 999;
-	event->EventParam["Mesh"]= this;
+	event->EventParam["Mesh"] = this;
 	context->SendEvent(Listener, event);
 	event->Recycle();
 	return 0;

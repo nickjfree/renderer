@@ -41,6 +41,8 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 		float bloomWeight[16];
 		// current time
 		unsigned int time;
+		// frame number
+		int frameNumber = 0;
 
 	}PassData;
 
@@ -164,7 +166,8 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 				passData.hdr = builder.Create("hdr",
 					[=]() mutable {
 						desc.DebugName = L"hdr";
-						desc.Format = FORMAT_R16G16B16A16_FLOAT;
+						desc.Format = FORMAT_R8G8B8A8_UNORM;
+						desc.RtvFormat = FORMAT_R8G8B8A8_UNORM_SRGB;
 						return renderInterface->CreateTexture2D(&desc);
 					});
 			}
@@ -225,10 +228,15 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 
 			Variant* Value = renderContext->GetResource("Material\\Materials\\hdr.xml\\0");
 			Material* hdrMaterial = nullptr;
+
+			// add frame number
+			++passData.frameNumber;
+
 			if (Value) {
 				hdrMaterial = Value->as<Material*>();
 			}
 			if (hdrMaterial) {
+				cmdBuffer->SetupFrameParameters(cam, renderContext);
 				// scale by 4
 				{
 					auto cmd = cmdBuffer->AllocCommand();
@@ -237,7 +245,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmdBuffer->RenderTargets(cmd, &scaled, 1, -1, false, false, 1024, 1024);
 					// draw quoad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"]= passData.resolved.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
 					cmdBuffer->Quad(cmd, hdrMaterial, 0);
 				}
 				// get avg lum
@@ -253,7 +261,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
 						// set the previous lumbuffer as gPostBuffer
 						cmd = cmdBuffer->AllocCommand();
-						cmd->cmdParameters["gPostBuffer"]= passData.scaleArray[i-1].GetActualResource();
+						cmd->cmdParameters["gPostBuffer"] = passData.scaleArray[i-1].GetActualResource();
 						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.scaleOffset[i], sizeof(passData.scaleOffset[0]));
 						cmdBuffer->Quad(cmd, hdrMaterial, 1);
 					}
@@ -267,9 +275,9 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, 1, 1);
 					// set parameters
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"]= passData.scaleArray[scale_array_size-1].GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"]= passData.adaptLum1.GetActualResource();
-					cmd->cmdParameters["gTimeElapse"]= GetCurrentTime() - passData.time;
+					cmd->cmdParameters["gPostBuffer"] = passData.scaleArray[scale_array_size-1].GetActualResource();
+					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum1.GetActualResource();
+					cmd->cmdParameters["gTimeElapse"] = GetCurrentTime() - passData.time;
 					passData.time = GetCurrentTime();
 					memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.scaleOffset[scale_array_size], sizeof(passData.scaleOffset[0]));
 					cmdBuffer->Quad(cmd, hdrMaterial, 2);
@@ -284,8 +292,8 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
 					// set parameters
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"]= passData.resolved.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"]= passData.adaptLum0.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
+					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum0.GetActualResource();
 					cmdBuffer->Quad(cmd, hdrMaterial, 3);
 				}
 				// bloom
@@ -301,7 +309,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						// quad
 						cmd = cmdBuffer->AllocCommand();
 						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.brightOffset, sizeof(passData.brightOffset));
-						cmd->cmdParameters["gPostBuffer"]= passData.brightBuffer.GetActualResource();
+						cmd->cmdParameters["gPostBuffer"] = passData.brightBuffer.GetActualResource();
 						cmdBuffer->Quad(cmd, hdrMaterial, 1);
 					}
 					// bloom0 --> bloom1  horizion
@@ -314,7 +322,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						cmd = cmdBuffer->AllocCommand();
 						memcpy_s(&cmd->cmdParameters["gSampleWeights"], sizeof(Variant), passData.bloomWeight, sizeof(passData.bloomWeight));
 						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.bloomOffset[0], sizeof(passData.bloomOffset[0]));
-						cmd->cmdParameters["gPostBuffer"]= passData.bloom0.GetActualResource();
+						cmd->cmdParameters["gPostBuffer"] = passData.bloom0.GetActualResource();
 						cmdBuffer->Quad(cmd, hdrMaterial, 4);
 					}
 					//  bloom0 --> bloom1  vertical
@@ -327,7 +335,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						cmd = cmdBuffer->AllocCommand();
 						memcpy_s(&cmd->cmdParameters["gSampleWeights"], sizeof(Variant), passData.bloomWeight, sizeof(passData.bloomWeight));
 						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.bloomOffset[1], sizeof(passData.bloomOffset[0]));
-						cmd->cmdParameters["gPostBuffer"]= passData.bloom1.GetActualResource();
+						cmd->cmdParameters["gPostBuffer"] = passData.bloom1.GetActualResource();
 						cmdBuffer->Quad(cmd, hdrMaterial, 4);
 					}
 				}
@@ -339,9 +347,10 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// quad
 					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"]= passData.resolved.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"]= passData.adaptLum0.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap1"]= passData.bloom2.GetActualResource();
+					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
+					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum0.GetActualResource();
+					cmd->cmdParameters["gDiffuseMap1"] = passData.bloom2.GetActualResource();
+					cmd->cmdParameters["gFrameNumber"] = passData.frameNumber;
 					cmdBuffer->Quad(cmd, hdrMaterial, 5);
 				}
 			} else {

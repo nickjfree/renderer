@@ -59,7 +59,7 @@ float SquaredDistanceAABBToPoint(float3 center, float3 extents, float3 position)
 
 
 [numthreads(THREAD_COUNT_PER_GROUP, 1, 1)]
-void CSMain( uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
+void CS_Main( uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 {
 
 	// init cache data

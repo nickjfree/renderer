@@ -247,7 +247,11 @@ void TextureResource::CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* r
 	// rtv
 	if (textureDesc.BindFlag & BIND_RENDER_TARGET) {
 		D3D12_RENDER_TARGET_VIEW_DESC rtDesc = {};
-		rtDesc.Format = (DXGI_FORMAT)textureDesc.Format;
+		if (textureDesc.RtvFormat != FORMAT_UNKNOWN) {
+			rtDesc.Format = (DXGI_FORMAT)textureDesc.RtvFormat;
+		} else {
+			rtDesc.Format = (DXGI_FORMAT)textureDesc.Format;
+		}
 		rtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		rtDesc.Texture2D.MipSlice = 0;
 		auto constexpr rtvIndex = (int)D3D12DescriptorHeap::DESCRIPTOR_HANDLE_TYPES::RTV;

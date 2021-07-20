@@ -35,8 +35,8 @@ int RenderView::Compile(RenderContext* Context) {
 	Parameters.Clear();
 	Matrix4x4::Tranpose(Camera->GetInvertView(), &Parameters["gInvertViewMaxtrix"].as<Matrix4x4>());
 	Matrix4x4::Tranpose(Camera->GetProjection(), &Parameters["gProjectionMatrix"].as<Matrix4x4>());
-	Parameters["gViewPoint"]= Camera->GetViewPoint();
-	Parameters["gScreenSize"]= Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
+	Parameters["gViewPoint"] = Camera->GetViewPoint();
+	Parameters["gScreenSize"] = Vector2(static_cast<float>(Context->FrameWidth), static_cast<float>(Context->FrameHeight));
 	return 0;
 }
 

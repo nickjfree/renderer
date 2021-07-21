@@ -65,7 +65,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 			passData.intermediary = builder.Create("intermediary",
 				[=]() mutable {
 					desc.DebugName = L"intermediary";
-					desc.Format = FORMAT_R10G10B10A2_UNORM;
+					desc.Format = FORMAT_R8G8B8A8_UNORM;
 					return renderInterface->CreateTexture2D(&desc);
 				});
 			// output texture
@@ -88,7 +88,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 				{
 					FSRConstants  consts{};
 					FsrEasuCon(reinterpret_cast<AU1*>(&consts.Const0), reinterpret_cast<AU1*>(&consts.Const1), reinterpret_cast<AU1*>(&consts.Const2), reinterpret_cast<AU1*>(&consts.Const3), static_cast<AF1>(renderWidth), static_cast<AF1>(renderHeight), static_cast<AF1>(renderWidth), static_cast<AF1>(renderHeight), (AF1)displayWidth, (AF1)displayHeight);
-					consts.Sample.x = 1;
+					consts.Sample.x = 0;
 					auto cmd = cmdBuffer->AllocCommand();
 					cmd->cmdParameters["InputTexture"] = passData.hdr.GetActualResource();
 					cmd->cmdParameters["OutputTexture"] = passData.intermediary.GetActualResource();
@@ -104,7 +104,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 					float rcasAttenuation = 0;
 					FSRConstants consts = {};
 					FsrRcasCon(reinterpret_cast<AU1*>(&consts.Const0), 0);
-					consts.Sample.x = 1;
+					consts.Sample.x = 0;
 					auto cmd = cmdBuffer->AllocCommand();
 					cmd->cmdParameters["InputTexture"] = passData.intermediary.GetActualResource();
 					cmd->cmdParameters["OutputTexture"] = passData.output.GetActualResource();
@@ -115,16 +115,12 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 					cmd->cmdParameters["Sample"] = consts.Sample;
 					cmdBuffer->Dispatch(cmd, fsrMaterial, 1, dispatchX, dispatchY, 1);
 				}
-				// test pass
+				// copy pass
 				{
 					// set backbuffer as render target
 					auto cmd = cmdBuffer->AllocCommand();
 					auto target = 0;
-					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, displayWidth, displayHeight);
-					// quad
-					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["InputTexture"] = passData.output.GetActualResource();
-					cmdBuffer->Quad(cmd, fsrMaterial, 2);
+					cmdBuffer->CopyResource(cmd, target, passData.output.GetActualResource());
 				}
 			} else {
 				return;

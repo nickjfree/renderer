@@ -12,6 +12,14 @@
 #include "Rendering/ShaderLibrary.h"
 #include "RenderingCamera.h"
 
+// copy command
+typedef struct CopyResourceCommand
+{
+	// destination
+	int dest;
+	// source
+	int src;
+}CopyResourceCommand;
 
 // draw command
 typedef struct DrawCommand
@@ -108,6 +116,7 @@ public:
 		DISPATCH_RAYS,
 		BUILD_AS,
 		RENDER_TARGET,
+		COPY_RESOURCE,
 	};
 	CommandType cmdType = CommandType::DRAW;
 	
@@ -119,6 +128,7 @@ public:
 		DispatchComputeCommand dispatchCompute;
 		BuildAccelerationStructureCommand buildAS;
 		RenderTargetCommand renderTargets;
+		CopyResourceCommand copyResource;
 	};
 };
 
@@ -138,6 +148,8 @@ public:
 	static CommandBuffer* Alloc();
 	// alloc a new command
 	RenderingCommand* AllocCommand();
+	// copy
+	void CopyResource(RenderingCommand* cmd, int dest, int src);
 	// draw
 	void Quad(RenderingCommand* cmd, Material* material, int passIndex);
 	// draw
@@ -175,6 +187,8 @@ private:
 	void buildAccelerationStructure(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// dispatch rays
 	void dispatchRays(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// copy
+	void copyResource(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 private:
 	// commands
 	RenderingCommand renderingCommands[max_command_buffer_size];

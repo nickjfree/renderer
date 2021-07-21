@@ -61,6 +61,8 @@ public:
 	virtual void DispatchRays(int shaderId, int width, int height) = 0;
 	// dispatch
 	virtual void DispatchCompute(int x, int y, int z) = 0;
+	// copy
+	virtual void CopyResource(int dest, int src) = 0;
 	// clear render targets and depth
 	virtual void ClearRenderTargets(bool clearTargets, bool clearDepth) = 0;
 	// wait

@@ -142,6 +142,10 @@ namespace D3D12Renderer {
 		void Upload(ID3D12Device* d3d12Device, D3D12CommandContext* cmdContext, UploadHeap* uploadHeap, std::vector<D3D12_SUBRESOURCE_DATA>& subresources);
 		// create descriptors in cpu heap
 		void CreateViews(ID3D12Device* d3d12Device, ResourceDescribe* resourceDesc, D3D12DescriptorHeap** descHeaps);
+		// get rtv format
+		DXGI_FORMAT GetRtvFormat() { return rtvFormat; }
+		// get dsv format
+		DXGI_FORMAT GetDsvFormat() { return dsvFormat; }
 	private:
 		// isCube
 		bool isCube = false;

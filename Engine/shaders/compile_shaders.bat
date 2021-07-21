@@ -68,6 +68,10 @@ fxc /T ps_5_1 /E PS /Fo copy.ps  /D SAMPLE_SLOW_FALLBACK=0 fsr/fsr.hlsl
 :: compute shaders
 fxc /T cs_5_1 /E CS_Main /Fo light_culling.cs lighting/light_culling_cs.hlsl
 
+:: dxc  -Zi -Fo fsr_easu.cs -E CS_Main -T cs_6_3  -nologo -D SAMPLE_SLOW_FALLBACK=0 -D SAMPLE_EASU=1 -D SAMPLE_RCAS=0   fsr/fsr.hlsl
+
+:: dxc  -Zi -Fo fsr_rcas.cs -E CS_Main -T cs_6_3  -nologo -D SAMPLE_SLOW_FALLBACK=0 -D SAMPLE_EASU=0 -D SAMPLE_RCAS=1   fsr/fsr.hlsl
+
 fxc /T cs_5_1 /E CS_Main /Fo fsr_easu.cs /D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=1 /D SAMPLE_RCAS=0 fsr/fsr.hlsl
 
 fxc /T cs_5_1 /E CS_Main /Fo fsr_rcas.cs /D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=0 /D SAMPLE_RCAS=1 fsr/fsr.hlsl

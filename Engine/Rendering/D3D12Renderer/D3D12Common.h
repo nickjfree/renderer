@@ -386,6 +386,8 @@ namespace D3D12Renderer {
 		void DispatchRays(int shaderId, int width, int height);
 		// dispatch
 		void DispatchCompute(int x, int y, int z);
+		// copy
+		void CopyResource(int dest, int src);
 		// clear render targets
 		void ClearRenderTargets(bool clearTargets, bool clearDepth);
 		// apply barriers

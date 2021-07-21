@@ -414,7 +414,7 @@ void D3D12CommandContext::SetRenderTargets(int* targets, int numTargets, int dep
 			handle = texture->GetRtv();
 			// barrier
 			texture->SetResourceState(this, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			rtvFormat = texture->GetResource()->GetDesc().Format;
+			rtvFormat = texture->GetRtvFormat();
 		}
 		// set pso rtv formats
 		if (pipelineStateCache.RTVFormat[i] != rtvFormat) {
@@ -624,6 +624,42 @@ void D3D12CommandContext::DispatchCompute(int x, int y, int z)
 	flushState();
 	// dispatch
 	cmdList->Dispatch(x, y, z);
+}
+
+
+void D3D12CommandContext::CopyResource(int dest, int src)
+{
+	ID3D12Resource* destResource = nullptr;
+	ID3D12Resource* srcResource = nullptr;
+	if (dest != -1) {
+		if (dest == 0) {
+			// backbuffer
+			auto backbuffer = D3D12RenderInterface::Get()->GetBackBuffer();
+			backbuffer->SetResourceState(this, D3D12_RESOURCE_STATE_COPY_DEST);
+			destResource = backbuffer->GetResource();
+		} else {
+			auto resource = D3D12RenderInterface::Get()->GetResource(dest);
+			destResource = resource->GetResource();
+			resource->SetResourceState(this, D3D12_RESOURCE_STATE_COPY_DEST);
+		}
+	}
+	if (src != -1) {
+		if (src == 0) {
+			// backbuffer
+			auto backbuffer = D3D12RenderInterface::Get()->GetBackBuffer();
+			backbuffer->SetResourceState(this, D3D12_RESOURCE_STATE_COPY_SOURCE);
+			srcResource = backbuffer->GetResource();
+		}
+		else {
+			auto resource = D3D12RenderInterface::Get()->GetResource(src);
+			srcResource = resource->GetResource();
+			resource->SetResourceState(this, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		}
+	}
+	// flush state
+	flushState();
+	// copy
+	cmdList->CopyResource(destResource, srcResource);
 }
 
 void D3D12CommandContext::ClearRenderTargets(bool clearTargets, bool clearDepth)

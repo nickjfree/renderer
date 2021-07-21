@@ -45,6 +45,13 @@ bool CommandBuffer::appendInstanceBuffer(size_t size)
 	return true;
 }
 
+void CommandBuffer::CopyResource(RenderingCommand* cmd, int dest, int src)
+{
+	cmd->cmdType = RenderingCommand::CommandType::COPY_RESOURCE;
+	cmd->copyResource.dest = dest;
+	cmd->copyResource.src = src;
+}
+
 void CommandBuffer::Quad(RenderingCommand* cmd, Material* material, int passIndex)
 {
 	Draw(cmd, nullptr, material, passIndex);
@@ -226,6 +233,11 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 	}
 }
 
+void CommandBuffer::copyResource(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	cmdContext->CopyResource(cmd->copyResource.dest, cmd->copyResource.src);
+}
+
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
@@ -258,6 +270,9 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 			break;
 		case RenderingCommand::CommandType::DISPATCH_RAYS:
 			dispatchRays(&cmd, cmdContext);
+			break;
+		case RenderingCommand::CommandType::COPY_RESOURCE:
+			copyResource(&cmd, cmdContext);
 			break;
 		default:
 			break;

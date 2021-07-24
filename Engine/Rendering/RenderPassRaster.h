@@ -344,10 +344,10 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 			cmdBuffer->RenderTargets(cmd, targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 			// set gbuffer as input
 			Variant diffuse, compact0, specular, depth;
-			diffuse= passData.diffuse.GetActualResource();
-			compact0= passData.compact0.GetActualResource();
-			specular= passData.specular.GetActualResource();
-			depth= passData.depth.GetActualResource();
+			diffuse = passData.diffuse.GetActualResource();
+			compact0 = passData.compact0.GetActualResource();
+			specular = passData.specular.GetActualResource();
+			depth = passData.depth.GetActualResource();
 			cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
 			cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
 			cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);

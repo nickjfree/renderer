@@ -6,7 +6,7 @@
 */
 
 
-cbuffer PerObject: register(b4)
+cbuffer PerObject: register(b0)
 {
     // object
     float4x4 gWorldViewProjection;

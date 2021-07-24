@@ -41,8 +41,8 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 
 	int renderWidth = renderContext->FrameWidth;
 	int renderHeight = renderContext->FrameHeight;
-	int displayWidth = renderContext->FrameWidth * 2;
-	int displayHeight = renderContext->FrameHeight * 2;
+	int displayWidth = renderContext->FrameWidth * 1.5f;
+	int displayHeight = renderContext->FrameHeight * 1.5f;
 
 	int dispatchX = (displayWidth + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;
 	int dispatchY = (displayHeight + (threadGroupWorkRegionDim - 1)) / threadGroupWorkRegionDim;

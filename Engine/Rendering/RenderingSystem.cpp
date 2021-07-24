@@ -24,7 +24,7 @@ void RenderingSystem::InitRendering() {
 }
 
 void RenderingSystem::InitLowLevel() {
-	Interface->Initialize(RenderContext_->FrameWidth * 2, RenderContext_->FrameHeight * 2);
+	Interface->Initialize(RenderContext_->FrameWidth * 1.5, RenderContext_->FrameHeight * 1.5);
 	BasicCullingImp* Basic = new BasicCullingImp();
 	spatial = Basic;
 }

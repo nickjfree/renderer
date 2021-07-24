@@ -22,6 +22,6 @@ PS_Output_Simple PS(PS_Input_Simple input)
     // get diffuse
     float4 diffuse = gbuffer.Diffuse.xyzw;
     // fake lighting    
-    output.Color = float4(0, 1, 0, 0) * 10.0f * (1 - diffuse.a);
+    output.Color = float4(1, 0, 0, 0) * 10.0f * (1 - diffuse.a);
     return output;
 }

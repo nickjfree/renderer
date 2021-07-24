@@ -1,50 +1,52 @@
 #ifndef __COMMON_VS__
 #define __COMMON_VS__
 
-#include "common.h"
 
 
-#ifdef SKINNING
-    include "../common/animation.hlsli"
-#endif
+#include "common.hlsli"
+
 
 /*
-    vertex shader
+	uniform vertex shader
 */
-PS_Input VSMain(VS_Input vs_input) 
+PS_Input VSMain(VS_Input vsInput, uint vertexId : SV_VertexId) 
 {
-    PS_Input output;
+	PS_Input output = (PS_Input)0;;
 
-    // TODO:
-    // vs_input = transform_shape(vs_input, VertexId);
-#ifdef BLENDSHAPE
-    // blendshape
+	// TODO:
+	// vs_input = transform_shape(vs_input, VertexId);
+#if defined(VS_BLENDSHAPE) || defined(VS_SKINNING) 
+	// blendshape and skinning tranform
+	vsInput = transform_animation(vsInput, vertexId);
 #endif
 
-#ifdef SKINNING
-    // skinning 
-#endif    
-
-#ifdef defined(BLENDSHAPE) || defined(SKINNING) || defined(CLIPMAP)
-    // save deformed vertex to an uav
+#ifdef VS_CLIPMAP
+	// terrain clipmap rendering
 #endif
 
-    // do rateraztions
-#ifdef INSTANCING
-    // instancing
-    output = transform_to_view(vs_input.PosL, vs_input.Normal, 
-        vs_input.TexCoord, vs_input.Tangent, 
-        vs_input.InstanceWVP, vs_input.InstanceWV, vs_input.InstancePWVP,
-        vs_input.InstanceObjectId);
+	// do rateraztions
+#ifdef VS_INSTANCING
+	// instancing
+	output = transform_to_view(vsInput.PosL, vsInput.Normal, 
+		vsInput.TexCoord, vsInput.Tangent, 
+		vsInput.InstanceWVP, vsInput.InstanceWV, vsInput.InstancePWVP,
+		vsInput.InstanceObjectId);
+
+#elif RENDER_SCREEN
+
+	// caculate screen space
+	output.PosH.xy = 2 * vsInput.PosL.xy - 1;
+	output.PosH.zw = 1;
+	output.TexCoord = vsInput.TexCoord;
 #else
-    // none instancing
-    output = transform_to_view(vs_input.PosL, vs_input.Normal, 
-        vs_input.TexCoord, vs_input.Tangent, 
-        gWorldViewProjection, gWorldViewMatrix, gPrevWorldViewProjection,
-        gObjectId);
+	// gbuffer
+	output = transform_to_view(vsInput.PosL, vsInput.Normal, 
+		vsInput.TexCoord, vsInput.Tangent, 
+		gWorldViewProjection, gWorldViewMatrix, gPrevWorldViewProjection,
+		gObjectId);
 #endif
 
-    return output;
+	return output;
 }
 
 #endif

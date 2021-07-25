@@ -5,6 +5,9 @@
      image based lighting textures
 */
 
+#include "lighting.hlsli"
+
+
 // image itself
 TextureCube  gLightProbe           : register(t17);
 // the look up texture
@@ -43,5 +46,53 @@ float3 SpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
 
     return PrefilteredColor * envBRDF;
 }
+
+// IBL lighting. lighting of the env map
+float4 ShadePixelIBL(GBufferContext gbuffer)
+{
+
+    LightContext light = getLightContextFromConstant(gbuffer);
+    // get normal and position
+    float3 N = gbuffer.ViewSpaceNormal;
+    float3 V = gbuffer.ViewSpaceLookVector;
+    float3 position = gbuffer.ViewSpacePosition;
+
+    // ignore background pixels
+    if (length(position) < 0.001) {
+        // draw the env map
+        float4 color = gLightProbe.Sample(gSam, -gbuffer.WorldSpaceLookVector) * light.Intensity * 2;
+        return color;
+    }
+    
+    float NoV = saturate(dot(N, V));
+
+    // get params
+    float metallic = gbuffer.Metallic;
+    float roughness = gbuffer.Roughness;
+    float4 albedo = gbuffer.Diffuse;
+
+    // irrandiance off current pixel
+    float3 irradiance = gLightProbeIrradiance.Sample(gSam, gbuffer.WorldSpaceNormal).rgb;
+
+    // IBL Specular
+    float3 SpecularColor = gbuffer.Specular;
+    float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
+    float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
+
+    // ignore specular. replaced with raytracing
+    specular = specular * 0.0f;
+
+    // IBL Diffuse
+    float3 diffuse = irradiance * albedo.xyz;
+    float3 kD = 1 - kS;
+    kD = lerp(kD, 0, metallic);
+
+    float4 color;
+    color.rgb = (kD * diffuse + specular) * light.Intensity;
+    color.a = 1;
+
+    return color;
+}
+
 
 #endif

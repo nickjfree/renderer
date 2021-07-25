@@ -20,6 +20,8 @@ Texture2D gPrevCompactBuffer: register(t13);    // 8 bytes  xy: encoded normal  
 // gbuffer
 struct GBufferContext
 {
+	// screen space
+	float2 uv;
 	// viewspace
 	float3 ViewSpacePosition;
 	float3 ViewSpaceNormal;
@@ -77,9 +79,11 @@ float3 decodeNormal(float2 G) {
 }
 
 // get gbuffer data
-GBufferContext GetGBufferContext(float uv) 
+GBufferContext GetGBufferContext(float2 uv) 
 {
 	GBufferContext gbuffer;
+	// uv
+	gbuffer.uv = uv;
 	// linear depth  the z value
 	float depth = gDepthBuffer.SampleLevel(gSamPoint, uv, 0).x;
 	// view position
@@ -110,6 +114,8 @@ GBufferContext GetGBufferContext(float uv)
 	gbuffer.ReprojecttionValid = motion.w;
 	gbuffer.MotionVector = motion.xy;
 	gbuffer.FwidthZ = motion.z;
+
+	return gbuffer;
 }
 
 

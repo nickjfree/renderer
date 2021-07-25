@@ -9,12 +9,12 @@
 #endif
 
 #if defined(VS_BLENDSHAPE) || defined(VS_SKINNING)
-	#include "../common/animation.hlsli"
+	#include "animation.hlsli"
 #endif
 
 #ifdef VS_CLIPMAP
 	// terrain clipmap rendering
-	#include "../common/terrain.hlsli"
+	#include "terrain.hlsli"
 #endif
 
 /*

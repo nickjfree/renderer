@@ -30,7 +30,6 @@ fxc /T vs_5_1 /E VSMain  /Fo ../shaders/quad.vs ^
 	/D RENDER_SCREEN=1^
 	rasterization/common_vs.hlsl
 
-
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/gbuffer.ps ^
 	/D RENDER_GBUFFER=1^
 	rasterization/common_ps.hlsl
@@ -39,3 +38,23 @@ fxc /T ps_5_1 /E PSMain  /Fo ../shaders/terrain-gbuffer.ps ^
 	/D RENDER_GBUFFER=1^
 	/D VS_CLIPMAP=1^
 	rasterization/common_ps.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/ibl.ps ^
+	/D IBL=1^
+	rasterization/ss_ps.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/emissive.ps ^
+	/D EMISSIVE=1^
+	rasterization/ss_ps.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/ssao.ps ^
+	/D SSAO=1^
+	rasterization/ss_ps.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/resolve.ps ^
+	/D RESOLVE=1^
+	rasterization/ss_ps.hlsl
+
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
+	/D IBL=1^
+	compute/light_culling_cs.hlsl

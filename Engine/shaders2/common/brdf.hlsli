@@ -5,6 +5,8 @@
 /*
     pbr helper functions
 */
+#define PI 3.14159265
+
 
 float3 F_Schlick(in float3 f0, in float f90, in float HdotV)
 {

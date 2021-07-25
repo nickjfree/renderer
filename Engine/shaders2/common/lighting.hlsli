@@ -9,38 +9,37 @@
 #define F90 1.0f
 
 /*
-    light data in constant buffer (raytracing or tiled lighting)
+    light data in constant buffer (raytracing or tiled lighting, world space)
 */
 struct LightData
 {
     // light color
-    float4 color;
+    float4 Color;
     // light direction
-    float4 direction;
+    float4 Direction;
     // light position
-    float4 position;
+    float4 Position;
     // lighting effect radius
-    float radius;
+    float Radius;
     // intensity
-    float intensity;
+    float Intensity;
     // spotlight inner angle
-    float capsuleDistanceOrInnerAngle; 
+    float CapsuleDistanceOrInnerAngle; 
     // spotlight outer angle
-    float capsuleRadiusOrOuterAngle;
+    float CapsuleRadiusOrOuterAngle;
     // rectlight width
-    float rectLightWidth;
+    float RectLightWidth;
     // rectlight height
-    float rectLightHeight;
+    float RectLightHeight;
     // light type
-    uint type;
+    uint Type;
     // pad
-    uint padLightData;
+    uint Pad;
 };
 
 /*
-    light constant buffer. deferred shading pass
+    light constant buffer. one light
 */
-
 cbuffer PerLight: register(b0)
 {
     // shadow map constant
@@ -55,83 +54,125 @@ cbuffer PerLight: register(b0)
 
 
 /*
+	light constant buffer multi lights
+*/
+cbuffer ArraylightInfos: register(b0, space0)
+{
+    LightData gLights[256];
+}
+
+
+
+/*
     light context. (view space)
 */
 struct LightContext
 {
 	// light type
-    uint type;
+    uint Type;
     // light color
-    float4 color;
+    float3 Color;
     // light direction
-    float4 direction;
+    float3 Direction;
     // light position
-    float4 position;
+    float3 Position;
     // lighting effect radius
-    float radius;
+    float Radius;
     // intensity
-    float intensity;
+    float Intensity;
     // spotlight inner angle
-    float capsuleDistanceOrInnerAngle; 
+    float CapsuleDistanceOrInnerAngle; 
     // spotlight outer angle
-    float capsuleRadiusOrOuterAngle;
+    float CapsuleRadiusOrOuterAngle;
     // rectlight width
-    float rectLightWidth;
+    float RectLightWidth;
     // rectlight height
-    float rectLightHeight;
+    float RectLightHeight;
 };
 
 /*
 	get light context from constants
 */
-LightContext getLightContextFromConstant()
+LightContext getLightContextFromConstant(GBufferContext gbuffer)
 {
+	LightContext lightContext = (LightContext)0;
 
+	// default to point light
+	lightContext.Type = 0;
+	lightContext.Color = gLightColor.xyz;
+	// default to point light
+	lightContext.Direction = normalize(gLightPosition.xyz - gbuffer.ViewSpacePosition.xyz);
+
+	lightContext.Radius = gRadiusIntensity.x;
+	lightContext.Intensity = gRadiusIntensity.y;
+	lightContext.Position = gLightPosition.xyz;
+
+	return lightContext;
 }
 
 /*
 	get light context from light index 
 */
-LightContext getLightContext(uint lightIndex)
+LightContext getLightContext(GBufferContext gbuffer, uint lightIndex)
 {
+	LightContext lightContext = (LightContext)0;
 
+	// lightData is in world space
+	LightData lightData = gLights[lightIndex];
+
+	// get infos
+	lightContext.Type = lightData.Type;
+	lightContext.Color = lightData.Color.xyz;
+	lightContext.Radius = lightData.Radius;
+	lightContext.Intensity = lightData.Intensity;
+	lightContext.CapsuleDistanceOrInnerAngle = lightData.CapsuleDistanceOrInnerAngle;
+    lightContext.CapsuleRadiusOrOuterAngle = lightData.CapsuleRadiusOrOuterAngle;
+    lightContext.RectLightWidth = lightData.RectLightWidth;
+    lightContext.RectLightHeight = lightData.RectLightHeight;
+
+    // transform position and direction to view space
+ 	lightContext.Position = mul(lightData.Position, gViewMatrix).xyz;
+    if (lightData.Type == 1) {
+    	// directional light
+    	lightContext.Direction = mul(lightData.Direction, gViewMatrix).xyz;
+    } else if (lightData.Type == 0) {
+    	// sphere/point/capsule, direction to light center
+    	lightContext.Direction = normalize(mul(lightData.Direction, gViewMatrix).xyz - gbuffer.ViewSpacePosition);
+    	// TODO: get direction to closest point
+    }
+	return lightContext;
 }
 
 /*
-    get deferred lighing color from gbuffer
+    get deferred lighing color
 */
-float4 DeferredBrdf(GBufferContext gbuffer, float3 viewSpaceLightDirection)
+float4 deferredBrdf(GBufferContext gbuffer, LightContext lightContext)
 {
     // get vectors
-    float3 normal = gbuffer.Normal.xyz;
-    float3 position = gbuffer.Position;
+    float3 normal = gbuffer.ViewSpaceNormal;
+    float3 position = gbuffer.ViewSpacePosition;
     // get L, V, vectors
     // float3 L = gLightPosition.xyz - position.xyz;
-    float3 L = normalize(viewSpaceLightDirection);
-    float3 V = normalize(gbuffer.View);
+    float3 L = normalize(lightContext.Direction);
+    float3 V = normalize(gbuffer.ViewSpaceLookVector);
     // calculate brdf   
     return BRDF(normal, V, L, gbuffer.Specular, F90, 
         gbuffer.Roughness, gbuffer.Diffuse.xyz, gbuffer.Metallic);
 }
 
-
-/*
-	light data
-*/
-
 /*
     get falloff
 */
-float getFallOff(LightData lightData, float3 position) 
+float getFallOff(GBufferContext gbuffer, LightContext lightContext) 
 {
 
-    float3 d = lightData.position.xyz - position.xyz;
+    float3 d = lightContext.Position - gbuffer.ViewSpacePosition;
     float falloff = 1.0f;
 
-    if(lightData.type == 0) {
+    if(lightContext.Type == 0) {
         // point light
-        falloff = saturate(1 - dot(d, d) / dot(lightData.radius, lightData.radius));
-    } else if (lightData.type == 1) {
+        falloff = saturate(1 - dot(d, d) / dot(lightContext.Radius, lightContext.Radius));
+    } else if (lightContext.Type == 1) {
         // direction light
         falloff = 1.0f;
     } else {
@@ -141,25 +182,16 @@ float getFallOff(LightData lightData, float3 position)
 }
 
 /*
-    lighting
+    lighting with no shadows
 */
-float3 GetLighting(LightData lightData, GBuffer gbuffer, inout float falloff)
+float3 GetLighting(GBufferContext gbuffer, LightContext lightContext, inout float falloff)
 {
-    // get light direction
-    float4 lightPosView = mul(lightData.position, gViewMatrix);
-    float4 positionView = float4(gbuffer.Position, 1);
-    float4 positionWorld = mul(positionView, gInvertViewMaxtrix);
-    float3 L = float3(0, 0, 0);
-    if (lightData.type == 0) {
-        L =  lightPosView.xyz - positionView.xyz;
-    } else if (lightData.type == 1) {
-        L = -mul(float4(lightData.direction.xyz, 0), gViewMatrix).xyz;
-    }
-    float4 brdf = deferred_lighting(gbuffer, L);
+    float4 brdf = deferredBrdf(gbuffer, lightContext);
     // apply falloff and color and intaesity
-    falloff = getfalloff(lightData, positionWorld.xyz);
-    float NoL = saturate(dot(gbuffer.Normal.xyz, L));
-    float4 color = lightData.intensity * lightData.color * brdf * falloff * NoL;
+    falloff = getFallOff(gbuffer, lightContext);
+    float NoL = saturate(dot(gbuffer.ViewSpaceNormal, lightContext.Direction));
+    float3 color = lightContext.Color * brdf.xyz;
+    color = color * lightContext.Intensity * falloff * NoL;
     return color.xyz;
 }
 

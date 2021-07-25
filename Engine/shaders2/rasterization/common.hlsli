@@ -14,6 +14,7 @@
 
 #ifdef VS_CLIPMAP
 	// terrain clipmap rendering
+	#include "../common/terrain.hlsli"
 #endif
 
 /*

@@ -21,6 +21,11 @@ fxc /T vs_5_1 /E VSMain  /Fo ../shaders/skin-gbuffer.vs ^
 	/D VS_SKINNING=1^
 	rasterization/common_vs.hlsl
 
+fxc /T vs_5_1 /E VSMain  /Fo ../shaders/terrain-gbuffer.vs ^
+	/D RENDER_GBUFFER=1^
+	/D VS_CLIPMAP=1^
+	rasterization/common_vs.hlsl
+
 fxc /T vs_5_1 /E VSMain  /Fo ../shaders/quad.vs ^
 	/D RENDER_SCREEN=1^
 	rasterization/common_vs.hlsl
@@ -28,4 +33,9 @@ fxc /T vs_5_1 /E VSMain  /Fo ../shaders/quad.vs ^
 
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/gbuffer.ps ^
 	/D RENDER_GBUFFER=1^
+	rasterization/common_ps.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/terrain-gbuffer.ps ^
+	/D RENDER_GBUFFER=1^
+	/D VS_CLIPMAP=1^
 	rasterization/common_ps.hlsl

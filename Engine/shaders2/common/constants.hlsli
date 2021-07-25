@@ -25,18 +25,6 @@ cbuffer PerObject: register(b0)
     float2 pad_1;
 }
 
-cbuffer PerLight: register(b1)
-{
-    // shadow map constant
-    float4x4  gLightViewProjection;
-    float4x4  gLightProjection;
-    // lighting
-    float4 gLightPosition;
-    float4 gLightColor;
-    float4 gRadiusIntensity;
-    float4 gLightDirection;
-}
-
 
 cbuffer PerFrame: register(b2) 
 {

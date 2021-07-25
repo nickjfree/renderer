@@ -16,10 +16,16 @@ PS_Output PSMain(PS_Input psInput)
 {   
 	PS_Output output = (PS_Output)0;
 
+#ifdef VS_CLIPMAP
+	float4 normal = float4(0.5, 0.5, 1, 0);
+	float4 diffuse = float4(gTerrainVirtualTexture.Sample(gSamPoint, psInput.TexCoord).xyz, 1);
+	float4 specular = float4(0, 0.3, 0, 0);
+#else
 	// sample textures
 	float4 diffuse = gDiffuseMap0.Sample(gSam, psInput.TexCoord);
 	float4 normal = gNormalMap0.Sample(gSam, psInput.TexCoord);
 	float4 specular = gSpecularMap0.Sample(gSam, psInput.TexCoord);
+#endif
 	// normalize normal vector
 	normal = normal * 2.0 - 1;
 	normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);

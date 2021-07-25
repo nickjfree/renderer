@@ -116,6 +116,7 @@ GBufferContext GetGBufferContext(float uv)
 // check reprojection valid or not
 float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, float currentLinearZ)
 {
+	float valid = 1.0;
 	float4 compactData = gPrevCompactBuffer.Sample(gSam, prevScreen);
 	if ((saturate(prevScreen.x) == prevScreen.x) && (saturate(prevScreen.y) == prevScreen.y)) {
 		// check for object id
@@ -130,7 +131,7 @@ float reprojectionValid(float2 prevScreen, int objectId, float3 currentNormal, f
 	} else {
 		return 0.0;   
 	}
-	return 0.0;
+	return valid;
 }
 
 #endif

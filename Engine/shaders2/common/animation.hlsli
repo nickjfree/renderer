@@ -3,7 +3,7 @@
 
 
 /*
-	blendshapes
+	blendshape vertex
 */
 struct Vertex
 {

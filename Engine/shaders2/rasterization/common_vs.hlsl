@@ -22,6 +22,7 @@ PS_Input VSMain(VS_Input vsInput, uint vertexId : SV_VertexId)
 
 #ifdef VS_CLIPMAP
 	// terrain clipmap rendering
+	vsInput = transform_terrain(vsInput, vertexId);
 #endif
 
 	// do rateraztions

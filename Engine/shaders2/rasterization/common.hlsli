@@ -132,6 +132,14 @@ struct PS_Output
 	float4 Motion: SV_Target4;
 };
 
+#elif SVGF_ACC
+
+struct PS_Output
+{
+	float4 Color   : SV_Target0;
+    float4 Moment  : SV_Target1;
+};
+
 #else
 
 struct PS_Output

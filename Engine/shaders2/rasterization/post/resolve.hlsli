@@ -12,7 +12,7 @@ Texture2D gAO : register(t1);
 Texture2D gRaytracedLighting : register(t2); 
 
 // post processing buffer
-Texture2D gPostBuffer : register(t14); 
+Texture2D gPostBuffer : register(t3); 
 
 /*
     reflection resolve pixel shader

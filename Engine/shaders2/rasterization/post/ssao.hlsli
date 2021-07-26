@@ -16,9 +16,8 @@ static const float g_intensity = 2;
 
 
 Texture2D gDiffuseMap0 : register(t0); 
-
 // post processing buffer
-Texture2D gPostBuffer : register(t14); 
+Texture2D gPostBuffer : register(t1); 
 
 
 // sample random noise texture

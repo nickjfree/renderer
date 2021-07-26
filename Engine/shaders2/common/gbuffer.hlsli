@@ -22,6 +22,7 @@ struct GBufferContext
 {
 	// screen space
 	float2 uv;
+	float2 PrevUV;
 	// viewspace
 	float3 ViewSpacePosition;
 	float3 ViewSpaceNormal;
@@ -37,7 +38,7 @@ struct GBufferContext
 	float Roughness;
 	float Metallic;
 	float ObjectId;
-	// misc
+	// taa
 	float ReprojecttionValid;
 	float2 MotionVector;
 	float FwidthZ;
@@ -114,7 +115,8 @@ GBufferContext GetGBufferContext(float2 uv)
 	gbuffer.ReprojecttionValid = motion.w;
 	gbuffer.MotionVector = motion.xy;
 	gbuffer.FwidthZ = motion.z;
-
+	// prevUv
+	gbuffer.PrevUV = uv + motion.xy;
 	return gbuffer;
 }
 

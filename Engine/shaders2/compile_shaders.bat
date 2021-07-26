@@ -58,3 +58,31 @@ fxc /T ps_5_1 /E PSMain  /Fo ../shaders/resolve.ps ^
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
 	/D IBL=1^
 	compute/light_culling_cs.hlsl
+
+
+fxc /T cs_5_1 /E CS_Main /Fo ../shaders/fsr_easu.cs^
+	/D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=1 /D SAMPLE_RCAS=0^
+	rasterization/fsr/fsr.hlsl
+
+fxc /T cs_5_1 /E CS_Main /Fo ../shaders/fsr_rcas.cs^
+	/D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=0 /D SAMPLE_RCAS=1^
+	rasterization/fsr/fsr.hlsl
+
+
+
+:: hdr
+fxc /T ps_5_1 /E PS_Log /Fo ../shaders/hdr_scale.ps  rasterization/post/hdr.hlsl
+fxc /T ps_5_1 /E PS_Avg /Fo ../shaders/hdr_avg.ps  rasterization/post/hdr.hlsl
+fxc /T ps_5_1 /E PS_Adapt /Fo ../shaders/hdr_adapt.ps  rasterization/post/hdr.hlsl
+fxc /T ps_5_1 /E PS_BrightPass /Fo ../shaders/hdr_bright.ps  rasterization/post/hdr.hlsl
+fxc /T ps_5_1 /E PS_GaussBloom5x5 /Fo ../shaders/hdr_bloom.ps  rasterization/post/hdr.hlsl
+fxc /T ps_5_1 /E PS_ToneMapping /Fo ../shaders/hdr_tone.ps  rasterization/post/hdr.hlsl
+
+:: svgf
+fxc /T ps_5_1 /E PS_TemporalAccumulation  /Fo ../shaders/temporal_accumulation.ps^
+	/D SVGF_ACC=1^
+	rasterization/denoising/svgf.hlsl
+
+fxc /T ps_5_1 /E PS_Filter /Fo ../shaders/wavelet_filter.ps rasterization/denoising/svgf.hlsl
+
+fxc /T ps_5_1 /E PS_FilterVariant /Fo ../shaders/variance_filter.ps  rasterization/denoising/svgf.hlsl

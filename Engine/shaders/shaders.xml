@@ -354,12 +354,6 @@
         <cs url="Shaders\shaders\fsr_rcas.cs"></cs>
       </pass>
     </technique>
-    <technique name="copy">
-      <pass name="copy" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\quad.vs"></vs>
-        <ps url="Shaders\shaders\copy.ps"></ps>
-      </pass>
-    </technique>
   </shader>
   
 </shaders>

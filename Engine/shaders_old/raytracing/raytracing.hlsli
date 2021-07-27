@@ -2,63 +2,35 @@
 #define __RAYTRACING__
 
 
-#include "../common/constants.hlsli"
+#include "../common/deferred.h"
+#include "../lighting/lighting.hlsli"
 
-
-// the scene
-RaytracingAccelerationStructure Scene : register(t0, space0);
-
-
-// hitgroup mesh buffer
 ByteAddressBuffer Vertices : register(t0, space1);
 ByteAddressBuffer Indices : register(t1, space1);
 
-// hitgroup materials
 Texture2D gDiffuseMap0 : register(t2, space1);
 Texture2D gNormalMap0 : register(t3, space1);
 Texture2D gSpecularMap0 : register(t4, space1);
 
-// attributes
 typedef BuiltInTriangleIntersectionAttributes SimpleAttributes;
 
-// info about the mesh
+// info about the instance
 cbuffer InstanceInfo: register(b0, space1)
 {
-    // size of the mesh vertex
+    // size of the vertex
     uint gVertexStride;
 }
 
 
-// hitpoint
-struct HitPointContext
+struct MaterialData 
 {
-    // world space
-    float3 WorldSpacePosition;
-    float3 WorldSpaceNormal;
-    float3 WorldSpaceLookVector;
-    // view space
-    float3 ViewSpacePosition;
-    float3 ViewSpaceNormal;
-    float3 ViewSpaceLookVector;
-    // screen space
-    float2 ScreenUV;
-    bool InScreen;
-    // colors
-    float4 Diffuse;
-    float  Roughness;
-    float  Specular;
-    float  Metallic;
-    // transparent
-    bool IsTransparent;
+    float3 position;
+    float3 normal;
+    float  roughness;
+    float  specular;
+    float  metallic;
 };
 
-
-// ray context
-struct RayContext
-{
-    // random seed
-    uint Seed;
-};
 
 // load vertex position
 float3 LoadVertexPositionFloat3(ByteAddressBuffer SourceBuffer, uint Index, uint StrideInBytes)
@@ -111,10 +83,11 @@ uint3 LoadIndices16Bit(ByteAddressBuffer SourceBuffer, uint OffsetInBytes)
 }
 
 
-// infos about the hit point
-HitPointContext GetHitPointContext(SimpleAttributes attr)
+
+float4 SampleHitPointColor(SimpleAttributes attr)
 {
-    // get barycentrics
+
+    // can't get color from screen space, get it from textures
     float3 barycentrics = float3(1 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
     // PrimitiveIndex
     uint index0 = PrimitiveIndex() * 3;
@@ -122,33 +95,20 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
     // get the triangle indices
     uint3 indices = LoadIndices16Bit(Indices, index0 * 2);
     // get the triangle uvs
+
     float2 uv0 = LoadVertexUVFloat2(Vertices, indices[0], gVertexStride);
     float2 uv1 = LoadVertexUVFloat2(Vertices, indices[1], gVertexStride);
     float2 uv2 = LoadVertexUVFloat2(Vertices, indices[2], gVertexStride);
+
     float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
-    // only use diffuse for now
-    HitPointContext hitPoint = (HitPointContext)0;
-    hitPoint.Diffuse = gDiffuseMap0.SampleLevel(gSam, uv, 0);
 
-#ifdef TRANSPARENT
-    // handle transparent textures
-    hitPoint.IsTransparent = hitPoint.Diffuse.w < 0.001;
-#endif
+    float4 color = gDiffuseMap0.SampleLevel(gSam, uv, 0);
 
-    float3 hitPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
-
-    hitPoint.WorldSpacePosition = hitPosition;
-    hitPoint.ViewSpacePosition = mul(float4(hitPosition, 1), gViewMatrix).xyz;
-
-    // get screen space uv
-    float4 screenPosition = mul(float4(hitPosition, 1), gViewProjectionMatrix);
-    screenPosition.x = screenPosition.x / screenPosition.w * 0.5 + 0.5;
-    screenPosition.y = -screenPosition.y / screenPosition.w * 0.5 + 0.5;
-    hitPoint.ScreenUV = screenPosition.xy;
-    // is hitpoint in screen?
-    hitPoint.InScreen = saturate(screenPosition.x) == screenPosition.x && saturate(screenPosition.y) == screenPosition.y;
-
-    return hitPoint;
+    return color;
 }
+
+
+
+
 
 #endif

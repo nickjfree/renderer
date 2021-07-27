@@ -480,7 +480,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmd->cmdParameters["RenderTarget"] = passData.rtLighting.GetActualResource();
 					cmd->cmdParameters["CulledLights"] = passData.culledLights.GetActualResource();
 					cmd->cmdParameters["gFrameNumber"] = frameNumber;
-					cmd->cmdParameters["lights"] = lightInfos.lightData.GetData();
+					cmd->cmdParameters["gLights"] = lightInfos.lightData.GetData();
 					cmdBuffer->DispatchRays(cmd, 1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight);
 				}
 				// flip color & moment buffer

@@ -82,40 +82,48 @@ template <class ...T> void ShaderLibrary::Apply(RenderCommandContext* cmdContext
 	int texture_units = TextureUnits.Size();
 	for (int i = 0; i < texture_units; i++) {
 		TextureUnit* unit = &TextureUnits[i];
-		Variant* Value = GetParameter(unit->Name, Context, parameterList...);
-		if (Value) {
-			int id = Value->as<int>();
-			cmdContext->SetSRV(unit->Slot, id);
+		if (unit->Space == 0) {
+			Variant* Value = GetParameter(unit->Name, Context, parameterList...);
+			if (Value) {
+				int id = Value->as<int>();
+				cmdContext->SetSRV(unit->Slot, id);
+			}
 		}
 	}
 	// buffers (SRV)
 	int buffer_units = BufferUnits.Size();
 	for (int i = 0; i < buffer_units; i++) {
 		BufferUnit* unit = &BufferUnits[i];
-		Variant* Value = GetParameter(unit->Name, Context, parameterList...);
-		if (Value) {
-			int id = Value->as<int>();
-			cmdContext->SetSRV(unit->Slot, id);
+		if (unit->Space == 0) {
+			Variant* Value = GetParameter(unit->Name, Context, parameterList...);
+			if (Value) {
+				int id = Value->as<int>();
+				cmdContext->SetSRV(unit->Slot, id);
+			}
 		}
 	}
 	// rwbuffers (UAV)
 	int rwbuffer_units = RWBufferUnits.Size();
 	for (int i = 0; i < rwbuffer_units; i++) {
 		RWBufferUnit* unit = &RWBufferUnits[i];
-		Variant* Value = GetParameter(unit->Name, Context, parameterList...);
-		if (Value) {
-			int id = Value->as<int>();
-			cmdContext->SetUAV(unit->Slot, id);
+		if (unit->Space == 0) {
+			Variant* Value = GetParameter(unit->Name, Context, parameterList...);
+			if (Value) {
+				int id = Value->as<int>();
+				cmdContext->SetUAV(unit->Slot, id);
+			}
 		}
 	}
 	// rwtextures (UAV)
 	int rwtexture_units = RWTextureUnits.Size();
 	for (int i = 0; i < rwtexture_units; i++) {
 		RWTextureUnit* unit = &RWTextureUnits[i];
-		Variant* Value = GetParameter(unit->Name, Context, parameterList...);
-		if (Value) {
-			int id = Value->as<int>();
-			cmdContext->SetUAV(unit->Slot, id);
+		if (unit->Space == 0) {
+			Variant* Value = GetParameter(unit->Name, Context, parameterList...);
+			if (Value) {
+				int id = Value->as<int>();
+				cmdContext->SetUAV(unit->Slot, id);
+			}
 		}
 	}
 	// tlas (SRV)
@@ -132,8 +140,7 @@ template <class ...T> void ShaderLibrary::Apply(RenderCommandContext* cmdContext
 		if (Value) {
 			if (!parameter->IsArray) {
 				cmdContext->UpdateConstantBuffer(parameter->Slot, parameter->Offset, Value, parameter->Size);
-			}
-			else {
+			} else {
 				ShaderParameterArray& Array = Value->as<ShaderParameterArray>();
 				cmdContext->UpdateConstantBuffer(parameter->Slot, parameter->Offset, Array.Data, parameter->Size);
 			}

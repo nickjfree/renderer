@@ -2,9 +2,9 @@
 #define __LIGHT_CULLING__
 
 #include "../common/constants.hlsli"
+#include "../common/lighting.hlsli"
 
-
-cbuffer ArraylightInfos: register(b0)
+cbuffer ArrayLightCullingInfos: register(b0)
 {
 	uint numLights;
 	uint lightsPerCell;
@@ -13,16 +13,7 @@ cbuffer ArraylightInfos: register(b0)
     float4 lights[256];
 }
 
-
-struct LightIndics
-{
-    uint numLights;
-    uint lightIndics[15];
-};
-
-
-#define MAX_LIGHT_COUNT_PER_CELL  16
-#define THREAD_COUNT_PER_GROUP    32
+#define THREAD_COUNT_PER_GROUP  32
 
 RWStructuredBuffer<LightIndics> CulledLights : register(u0);
 

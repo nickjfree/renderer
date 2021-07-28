@@ -83,7 +83,8 @@ void ClosestHit(inout RayPayload payload, in SimpleAttributes attr)
             payload.Color = gPostBuffer.SampleLevel(gSam, hitPoint.ScreenUV, 0);
         }
     } else {
-        payload.Color = float4(hitPoint.Diffuse.xyz, 0);
+        HitPointMaterial material = GetHitPointMaterial(hitPoint);
+        payload.Color = float4(material.Diffuse.xyz, 0);
     }
 }
 

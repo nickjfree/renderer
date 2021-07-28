@@ -43,7 +43,13 @@ struct HitPointContext
     // screen space
     float2 ScreenUV;
     bool InScreen;
-    // colors
+    // texture uv
+    float2 UV;
+};
+
+
+struct HitPointMaterial{
+      // colors
     float4 Diffuse;
     float  Roughness;
     float  Specular;
@@ -126,14 +132,9 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
     float2 uv1 = LoadVertexUVFloat2(Vertices, indices[1], gVertexStride);
     float2 uv2 = LoadVertexUVFloat2(Vertices, indices[2], gVertexStride);
     float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
-    // only use diffuse for now
+    
     HitPointContext hitPoint = (HitPointContext)0;
-    hitPoint.Diffuse = gDiffuseMap0.SampleLevel(gSam, uv, 0);
-
-#ifdef TRANSPARENT
-    // handle transparent textures
-    hitPoint.IsTransparent = hitPoint.Diffuse.w < 0.001;
-#endif
+    hitPoint.UV = uv;
 
     float3 hitPosition = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
 
@@ -149,6 +150,20 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
     hitPoint.InScreen = saturate(screenPosition.x) == screenPosition.x && saturate(screenPosition.y) == screenPosition.y;
 
     return hitPoint;
+}
+
+
+// get hit point material
+HitPointMaterial GetHitPointMaterial(HitPointContext hitPoint)
+{
+    HitPointMaterial material = (HitPointMaterial)0;
+    material.Diffuse = gDiffuseMap0.SampleLevel(gSam, hitPoint.UV, 0);
+
+#ifdef TRANSPARENT
+    // handle transparent textures
+    material.IsTransparent =  material.Diffuse.w < 0.001;
+#endif
+    return material;
 }
 
 #endif

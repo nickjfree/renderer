@@ -9,7 +9,6 @@ static const float FoV = tan(0.15 * 3.141592654);
     basic constant buffer definition
 */
 
-
 cbuffer PerObject: register(b0)
 {
     // object

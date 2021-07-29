@@ -81,11 +81,12 @@ void ClosestHit(inout RayPayload payload, in SimpleAttributes attr)
         if (hitPoint.ViewSpacePosition.z - gbuffer.ViewSpacePosition.z < 0.1) {
             // close to point in screen. get color from screen
             payload.Color = gPostBuffer.SampleLevel(gSam, hitPoint.ScreenUV, 0);
+            return;
         }
-    } else {
-        HitPointMaterial material = GetHitPointMaterial(hitPoint);
-        payload.Color = float4(material.Diffuse.xyz, 0);
     }
+    // failed to get color from screen space
+    HitPointMaterial material = GetHitPointMaterial(hitPoint);
+    payload.Color = float4(material.Diffuse.xyz, 0);
 }
 
 [shader("miss")]

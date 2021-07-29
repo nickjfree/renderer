@@ -86,7 +86,7 @@ fxc /T ps_5_1 /E PS_Filter /Fo ../shaders/wavelet_filter.ps rasterization/denois
 fxc /T ps_5_1 /E PS_FilterVariant /Fo ../shaders/variance_filter.ps  rasterization/denoising/svgf.hlsl
 
 :: raytracing
-dxc  -Zi -Fo ../shaders/rt-reflection.cso -T lib_6_3  -nologo raytracing/reflection_rt.hlsl
+dxc  -Zi -Fo ../shaders/rt-reflection.cso -T lib_6_3   -nologo raytracing/reflection_rt.hlsl
 
 dxc  -Zi -Fo ../shaders/rt-lighting.cso -T lib_6_3  -nologo raytracing/lighting_rt.hlsl
 

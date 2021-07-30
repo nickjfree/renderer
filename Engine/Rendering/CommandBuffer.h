@@ -12,6 +12,22 @@
 #include "Rendering/ShaderLibrary.h"
 #include "RenderingCamera.h"
 
+//   shader parameter binding
+typedef struct ShaderParameterBinding {
+	enum class BindingType {
+		SRV,
+		UAV,
+		CONSTANT,
+	};
+	BindingType BindingType;
+	int Slot;
+	unsigned int Size;
+	union {
+		void* Data;
+		int ResourceId;
+	};
+}ShaderParameterBinding;
+
 // copy command
 typedef struct CopyResourceCommand
 {
@@ -102,10 +118,15 @@ typedef struct RenderTargetCommand
 /*
 *	gpu rendering command
 */
+
+constexpr int cmd_max_shader_bindings = 16;
+
 class RenderingCommand
 {
 	DECLARE_RECYCLE(RenderingCommand);
-
+public:
+	// add shaderparemeter bindings
+	void AddShaderParametes(const ShaderParameterBinding& binding);
 public:
 	// cmdType
 	enum class CommandType
@@ -122,6 +143,11 @@ public:
 	
 	// constants and other parameters
 	Dict cmdParameters;
+	// TEST: shaderparemeter bindings
+	ShaderParameterBinding shaderBindings[cmd_max_shader_bindings];
+	// current binding index
+	int shaderBindingIndex = 0;
+
 	union {
 		DrawCommand draw = {};
 		DispatchRaysCommand dispatchRays;

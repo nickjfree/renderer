@@ -10,7 +10,7 @@
 #include "Container\Dict.h"
 #include "RenderingCamera.h"
 #include "RenderContext.h"
-
+#include "ShaderParameters.h"
 
 class RenderObject : public Node
 {
@@ -26,6 +26,10 @@ protected:
 	ShaderParameterArray blendshape_ = {};
 	// blendshape
 	BlendShape* BlendShape_ = nullptr;
+	// shader constants
+	ShaderConstant<PerObject> perObjectConstant;
+	ShaderConstant<SkinningMatrices>* skinningMatrices;
+
 public:
 	RenderObject();
 	virtual ~RenderObject();

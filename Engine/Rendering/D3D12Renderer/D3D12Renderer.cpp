@@ -362,11 +362,13 @@ void D3D12CommandContext::AddBarrier(D3D12_RESOURCE_BARRIER& barrier)
 void D3D12CommandContext::SetConstantBuffer(int slot, unsigned int size)
 {
 	// alloc transient constant buffer
-	D3D12_GPU_VIRTUAL_ADDRESS gpuAddr{};
-	auto cpuData = allocTransientConstantBuffer(size, &gpuAddr);
-	constantCache.Upload(slot, cpuData, size);
-	// set cbv to current rootsignature
-	currentRootSignature->SetConstantBuffer(slot, gpuAddr, size);
+	if (constantCache.IsDirty(slot)) {
+		D3D12_GPU_VIRTUAL_ADDRESS gpuAddr{};
+		auto cpuData = allocTransientConstantBuffer(size, &gpuAddr);
+		constantCache.Upload(slot, cpuData, size);
+		// set cbv to current rootsignature
+		currentRootSignature->SetConstantBuffer(slot, gpuAddr, size);
+	}
 }
 
 void D3D12CommandContext::SetSRV(int slot, int resourceId)

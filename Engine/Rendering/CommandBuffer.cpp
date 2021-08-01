@@ -11,17 +11,18 @@ CommandBuffer* CommandBuffer::Alloc()
 	return commandBuffer;
 }
 
-void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
+
+ShaderConstant<PerFrameData> CommandBuffer::GetFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
 {
-	// globalParameters.Clear();
-	Matrix4x4::Tranpose(cam->GetInvertView(), &globalParameters["gInvertViewMaxtrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetViewMatrix(), &globalParameters["gViewMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetViewProjection(), &globalParameters["gViewProjectionMatrix"].as<Matrix4x4>());
-	globalParameters["gViewPoint"] = cam->GetViewPoint();
-	globalParameters["gScreenSize"] = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
-	// set renderContext
-	this->renderContext = renderContext;
+	ShaderConstant<PerFrameData> perFrameConstant{};
+	// per-frame constant 
+	Matrix4x4::Tranpose(cam->GetInvertView(), &perFrameConstant.gInvertViewMaxtrix);
+	Matrix4x4::Tranpose(cam->GetViewMatrix(), &perFrameConstant.gViewMatrix);
+	Matrix4x4::Tranpose(cam->GetViewProjection(), &perFrameConstant.gViewProjectionMatrix);
+	perFrameConstant.gViewPoint = cam->GetViewPoint();
+	perFrameConstant.gScreenSize.x = static_cast<float>(renderContext->FrameWidth);
+	perFrameConstant.gScreenSize.y = static_cast<float>(renderContext->FrameHeight);
+	return perFrameConstant;
 }
 
 void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
@@ -29,10 +30,16 @@ void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
 	globalParameters[name] = data;
 }
 
+void CommandBuffer::SetFrameShaderInput(ShaderInput* input)
+{
+	shaderInputs.Add(input);
+}
+
 void CommandBuffer::Reset() {
 	currentIndex = 0;
 	usedInstanceBuffer = 0; 
 	globalParameters.Clear();
+	shaderInputs.Reset();
 }
 
 bool CommandBuffer::appendInstanceBuffer(size_t size)
@@ -44,6 +51,15 @@ bool CommandBuffer::appendInstanceBuffer(size_t size)
 	usedInstanceBuffer += size;
 	return true;
 }
+
+RenderingCommand* CommandBuffer::PassSetup(bool isCumpute)
+{
+	auto cmd = AllocCommand();
+	cmd->cmdType = RenderingCommand::CommandType::PASS_SETUP;
+	cmd->isComputePassSetup = isCumpute;
+	return cmd;
+}
+
 
 void CommandBuffer::CopyResource(RenderingCommand* cmd, int dest, int src)
 {
@@ -165,17 +181,7 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
 	// TEST: constant buffer bindings
-	for (auto i = 0; i < cmd->shaderBindingIndex; ++i) {
-		auto& binding = cmd->shaderBindings[i];
-		switch (binding.BindingType) {
-		case ShaderParameterBinding::BindingType::CONSTANT:
-			cmdContext->UpdateConstantBuffer(binding.Slot, 0, binding.Data, binding.Size);
-			cmdContext->SetConstantBuffer(binding.Slot, binding.Size);
-			break;
-		default:
-			break;
-		}
-	}
+	cmd->shaderInputs.Apply(cmdContext);
 	// draw
 	if (cmd->draw.mesh == 0) {
 		// no mesh set. draw full screen quad
@@ -194,6 +200,7 @@ void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* c
 		auto shader = cmd->draw.material->GetShader();
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
+	cmd->shaderInputs.Apply(cmdContext);
 	// draw
 	if (cmd->draw.mesh == 0) {
 		// no mesh set. draw full screen quad with instancing. id 0 is the full screen quad
@@ -227,6 +234,8 @@ void CommandBuffer::dispatch(RenderingCommand* cmd, RenderCommandContext* cmdCon
 	if (shader) {
 		// apply shader
 		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		// apply shader inputs
+		cmd->shaderInputs.Apply(cmdContext);
 		// dispatch rays
 		cmdContext->DispatchCompute(cmd->dispatchCompute.x, cmd->dispatchCompute.y, cmd->dispatchCompute.z);
 	}
@@ -240,6 +249,8 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 	if (rtShader) {
 		// apply shader
 		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		// apply shader inputs
+		cmd->shaderInputs.Apply(cmdContext);
 		// dispatch rays
 		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.width, cmd->dispatchRays.height);
 	}
@@ -250,6 +261,16 @@ void CommandBuffer::copyResource(RenderingCommand* cmd, RenderCommandContext* cm
 	cmdContext->CopyResource(cmd->copyResource.dest, cmd->copyResource.src);
 }
 
+void CommandBuffer::passSetup(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	if (cmd->isComputePassSetup) {
+		cmdContext->SetComputeMode();
+	} else {
+		cmdContext->SetGraphicsMode();
+	}
+	cmd->shaderInputs.Apply(cmdContext);
+}
+
 void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 {
 	// TODO: submit to rendercontext
@@ -257,12 +278,6 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 	bool hasAs = false;
 	while(i < currentIndex) {
 		auto& cmd = renderingCommands[i++];
-		/*if (cmd.cmdType != RenderingCommand::CommandType::RENDER_TARGET) {
-			printf("cmd type %d, mesh %s, material %s\n", cmd.cmdType, cmd.draw.mesh->GetUrl().ToStr(), cmd.draw.material->GetUrl().ToStr());
-		} else if (cmd.cmdType == RenderingCommand::CommandType::RENDER_TARGET) {
-			printf("cmd type set targets, num %d\n", cmd.renderTargets.numTargets);
-		}*/
-		// 
 		switch (cmd.cmdType) {
 		case RenderingCommand::CommandType::RENDER_TARGET:
 			setRenderTargets(&cmd, cmdContext);
@@ -286,6 +301,9 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 		case RenderingCommand::CommandType::COPY_RESOURCE:
 			copyResource(&cmd, cmdContext);
 			break;
+		case RenderingCommand::CommandType::PASS_SETUP:
+			passSetup(&cmd, cmdContext);
+			break;
 		default:
 			break;
 		}
@@ -302,15 +320,28 @@ RenderingCommand* CommandBuffer::AllocCommand()
 {
 	auto cmd = &renderingCommands[currentIndex++];
 	cmd->cmdParameters.Clear();
-	cmd->shaderBindingIndex = 0;
+	cmd->shaderInputs.Reset();
 	return cmd;
 }
 
-void RenderingCommand::AddShaderParametes(const ShaderParameterBinding& binding)
+void RenderingCommand::AddShaderInput(ShaderInput* input)
 {
-	if (shaderBindingIndex >= cmd_max_shader_bindings ) {
+	shaderInputs.Add(input);
+}
+
+void ShaderInputList::Apply(RenderCommandContext* cmdContext)
+{
+	for (auto i = 0; i < numShaderInputs; ++i) {
+		auto input = shaderInputs[i];
+		input->Apply(cmdContext);
+	}
+}
+
+void ShaderInputList::Add(ShaderInput* input)
+{
+	if (numShaderInputs >= cmd_max_shader_inputs) {
 		printf("too many shader bindings\n");
 		return;
 	}
-	shaderBindings[shaderBindingIndex++] = binding;
+	shaderInputs[numShaderInputs++] = input;
 }

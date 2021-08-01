@@ -11,22 +11,34 @@
 #include "Rendering/Shader.h"
 #include "Rendering/ShaderLibrary.h"
 #include "RenderingCamera.h"
+#include "Rendering/ShaderParameters.h"
 
-//   shader parameter binding
-typedef struct ShaderParameterBinding {
-	enum class BindingType {
-		SRV,
-		UAV,
-		CONSTANT,
-	};
-	BindingType BindingType;
-	int Slot;
-	unsigned int Size;
-	union {
-		void* Data;
-		int ResourceId;
-	};
-}ShaderParameterBinding;
+
+
+// shader input
+class ShaderInput
+{
+public:
+	virtual void Apply(RenderCommandContext* cmdContext) = 0;
+};
+
+// shader inputs
+constexpr int cmd_max_shader_inputs = 16;
+
+class ShaderInputList
+{
+
+public:
+	void Apply(RenderCommandContext* cmdContext);
+
+	void Reset() { numShaderInputs = 0; };
+
+	void Add(ShaderInput* input);
+private:
+	ShaderInput* shaderInputs[cmd_max_shader_inputs];
+	int numShaderInputs = 0;
+};
+
 
 // copy command
 typedef struct CopyResourceCommand
@@ -118,19 +130,17 @@ typedef struct RenderTargetCommand
 /*
 *	gpu rendering command
 */
-
-constexpr int cmd_max_shader_bindings = 16;
-
 class RenderingCommand
 {
 	DECLARE_RECYCLE(RenderingCommand);
 public:
 	// add shaderparemeter bindings
-	void AddShaderParametes(const ShaderParameterBinding& binding);
+	void AddShaderInput(ShaderInput* input);
 public:
 	// cmdType
 	enum class CommandType
 	{
+		PASS_SETUP,
 		DRAW,
 		DRAW_INSTANCED,
 		DISPATCH_COMPUTE,
@@ -143,10 +153,8 @@ public:
 	
 	// constants and other parameters
 	Dict cmdParameters;
-	// TEST: shaderparemeter bindings
-	ShaderParameterBinding shaderBindings[cmd_max_shader_bindings];
-	// current binding index
-	int shaderBindingIndex = 0;
+	// TEST: shader inputs
+	ShaderInputList shaderInputs;
 
 	union {
 		DrawCommand draw = {};
@@ -155,6 +163,7 @@ public:
 		BuildAccelerationStructureCommand buildAS;
 		RenderTargetCommand renderTargets;
 		CopyResourceCommand copyResource;
+		bool isComputePassSetup;
 	};
 };
 
@@ -174,6 +183,9 @@ public:
 	static CommandBuffer* Alloc();
 	// alloc a new command
 	RenderingCommand* AllocCommand();
+
+	// frame setup
+	RenderingCommand* PassSetup(bool isCumpute = false);
 	// copy
 	void CopyResource(RenderingCommand* cmd, int dest, int src);
 	// draw
@@ -195,9 +207,11 @@ public:
 	// reset
 	void Reset();
 	// set frame parameter
-	void SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
+	ShaderConstant<PerFrameData> GetFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
 	// get global parameter
 	void SetGlobalParameter(const String& name, Variant& data);
+	// set frame constant/srv/uav
+	void SetFrameShaderInput(ShaderInput* input);
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);
@@ -215,6 +229,8 @@ private:
 	void dispatchRays(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// copy
 	void copyResource(RenderingCommand* cmd, RenderCommandContext* cmdContext);
+	// pass setup
+	void passSetup(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 private:
 	// commands
 	RenderingCommand renderingCommands[max_command_buffer_size];
@@ -226,6 +242,8 @@ private:
 	size_t usedInstanceBuffer = 0;
 	// global parameters
 	Dict globalParameters;
+	// frame level shader inputs
+	ShaderInputList shaderInputs;
 	// renderContext
 	RenderContext* renderContext = nullptr;
 };

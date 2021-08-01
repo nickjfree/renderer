@@ -186,8 +186,10 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 		RenderResource depth;
 		RenderResource specular;
 		RenderResource motion;
-
+		// depth buffer
 		RenderResource zBuffer;
+		// per-frame constant
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -255,8 +257,9 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// cmdBuffer global pramerers setup
-			cmdBuffer->SetupFrameParameters(cam, renderContext);
-
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// setup pass
+			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 			// flip compact buffer
 			passData.compact0.Flip(&passData.compact1);
 			// set gbuffer as render target
@@ -303,6 +306,9 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		RenderResource lighting;
 
 		RenderResource zBuffer;
+
+		// per-frame constant
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -335,7 +341,9 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// set lighting as render target
-			cmdBuffer->SetupFrameParameters(cam, renderContext);
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// setup pass
+			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 			int targets[] = {
 				passData.lighting.GetActualResource(),
 			};
@@ -379,6 +387,9 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		RenderResource lighting;
 
 		RenderResource zBuffer;
+
+		// per-frame constant
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -401,7 +412,9 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 			}
 			if (emissiveMaterial) {
 				// set lighting as render target
-				cmdBuffer->SetupFrameParameters(cam, renderContext);
+				passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
+
 				int targets[] = {
 					passData.lighting.GetActualResource(),
 				};

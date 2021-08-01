@@ -34,23 +34,20 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 		RenderResource star;
 		// hdr
 		RenderResource hdr;
+		// per-frame constant
+		ShaderConstant<PerFrameData> perFrameConstant;
 		// sample offsets
 		float scaleOffset[max_hdr_lum_buffer][16];
 		float brightOffset[16];
 		float bloomOffset[2][16];
 		float bloomWeight[16];
-		// current time
-		unsigned int time;
-		// frame number
-		int frameNumber = 0;
-
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
 	auto hdrPass = frameGraph.AddRenderPass<PassData>("hdr",
 		[&](GraphBuilder& builder, PassData& passData) {
 			// init time
-			passData.time = GetCurrentTime();
+			passData.perFrameConstant.gAbsoluteTime = GetCurrentTime();
 			// read lighting input
 			passData.resolved = builder.Read(&resolvedPassData.resolved);
 			// create the scale array
@@ -229,14 +226,20 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 			Variant* Value = renderContext->GetResource("Material\\Materials\\hdr.xml\\0");
 			Material* hdrMaterial = nullptr;
 
-			// add frame number
-			++passData.frameNumber;
-
+			// setup pass
+			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 			if (Value) {
 				hdrMaterial = Value->as<Material*>();
 			}
 			if (hdrMaterial) {
-				cmdBuffer->SetupFrameParameters(cam, renderContext);
+				// setup
+				passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+				passData.perFrameConstant.gTimeElapse = GetCurrentTime() - passData.perFrameConstant.gAbsoluteTime;
+				passData.perFrameConstant.gAbsoluteTime = GetCurrentTime();
+				// add frame number
+				++passData.perFrameConstant.gFrameNumber;
+				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
+
 				// scale by 4
 				{
 					auto cmd = cmdBuffer->AllocCommand();
@@ -277,8 +280,6 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmd = cmdBuffer->AllocCommand();
 					cmd->cmdParameters["gPostBuffer"] = passData.scaleArray[scale_array_size-1].GetActualResource();
 					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum1.GetActualResource();
-					cmd->cmdParameters["gTimeElapse"] = GetCurrentTime() - passData.time;
-					passData.time = GetCurrentTime();
 					memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.scaleOffset[scale_array_size], sizeof(passData.scaleOffset[0]));
 					cmdBuffer->Quad(cmd, hdrMaterial, 2);
 				}
@@ -350,7 +351,6 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
 					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum0.GetActualResource();
 					cmd->cmdParameters["gDiffuseMap1"] = passData.bloom2.GetActualResource();
-					cmd->cmdParameters["gFrameNumber"] = passData.frameNumber;
 					cmdBuffer->Quad(cmd, hdrMaterial, 5);
 				}
 			} else {

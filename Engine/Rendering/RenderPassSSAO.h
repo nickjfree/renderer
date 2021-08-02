@@ -16,6 +16,8 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 		RenderResource depth;
 		// ssao
 		RenderResource ao;
+
+		PerFrameData perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -53,6 +55,10 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 				ssaoMaterial = Value->as<Material*>();
 			}
 			if (ssaoMaterial) {
+				// setup
+				UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
+				// setup pass
+				cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
 				auto cmd = cmdBuffer->AllocCommand();
 				auto target = passData.ao.GetActualResource();
 				// scale lighting buffer by 1/4

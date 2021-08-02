@@ -1,6 +1,7 @@
 #ifndef __COMMAND_BUFFER__
 #define __COMMAND_BUFFER__
 
+#include <functional>
 #include "Container/Dict.h"
 #include "Container/Vector.h"
 #include "Container/RecyclePool.h"
@@ -14,31 +15,21 @@
 #include "Rendering/ShaderParameters.h"
 
 
-
-// shader input
-class ShaderInput
-{
-public:
-	virtual void Apply(RenderCommandContext* cmdContext) = 0;
-};
+typedef std::function<void(RenderCommandContext*)> ShaderInput;
 
 // shader inputs
 constexpr int cmd_max_shader_inputs = 16;
 
 class ShaderInputList
 {
-
 public:
 	void Apply(RenderCommandContext* cmdContext);
-
 	void Reset() { numShaderInputs = 0; };
-
-	void Add(ShaderInput* input);
+	void Add(const ShaderInput& data);
 private:
-	ShaderInput* shaderInputs[cmd_max_shader_inputs];
+	ShaderInput shaderInputs[cmd_max_shader_inputs];
 	int numShaderInputs = 0;
 };
-
 
 // copy command
 typedef struct CopyResourceCommand
@@ -135,7 +126,7 @@ class RenderingCommand
 	DECLARE_RECYCLE(RenderingCommand);
 public:
 	// add shaderparemeter bindings
-	void AddShaderInput(ShaderInput* input);
+	void AddShaderInput(const ShaderInput& input);
 public:
 	// cmdType
 	enum class CommandType
@@ -153,6 +144,8 @@ public:
 	
 	// constants and other parameters
 	Dict cmdParameters;
+	// shader paremeters
+	ShaderParameters shaderParameters;
 	// TEST: shader inputs
 	ShaderInputList shaderInputs;
 
@@ -206,12 +199,8 @@ public:
 	void Flush(RenderCommandContext* cmdContext);
 	// reset
 	void Reset();
-	// set frame parameter
-	ShaderConstant<PerFrameData> GetFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
 	// get global parameter
 	void SetGlobalParameter(const String& name, Variant& data);
-	// set frame constant/srv/uav
-	void SetFrameShaderInput(ShaderInput* input);
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);

@@ -153,7 +153,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			// do rt-relection
 			reflection->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection
-			//rtLighting->Execute(cmdBuffer, cam, spatial);
+			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do resolve
 			resolve->Execute(cmdBuffer, cam, spatial);
 			// do hdr

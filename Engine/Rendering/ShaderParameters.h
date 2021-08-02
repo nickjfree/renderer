@@ -5,55 +5,66 @@
 
 
 class RenderCommandContext;
+class RenderingCommand;
+class CommandBuffer;
 
+class ShaderParameters;
 
 template <class T>
-class ShaderConstant;
+class ShaderConstant {
 
+	friend CommandBuffer;
 
-template <class T>
-class ShaderConstant<T*>: public ShaderInput {
+public:
+	ShaderParameters& Set(T* data) {
+
+		auto handler = [=] (RenderCommandContext* cmdContext) {
+			cmdContext->UpdateConstantBuffer(T::Slot(), 0, data, sizeof(T));
+			cmdContext->SetConstantBuffer(T::Slot(), sizeof(T));
+		};
+		cmd->AddShaderInput(handler);
+		return cmd->shaderParameters;
+	};
 private:
-	T* data = nullptr;
+	// rendering command
+	RenderingCommand* cmd;
+};
+
+
+class ShaderParameters {
+
 public:
-
-	// assign
-	ShaderConstant<T*>& operator = (T* rh) {
-		data = rh;
-		return *this;
-	};
-
-	// pointer
-	T* operator -> () {
-		return data;
-	};
-
-	bool operator != (std::nullptr_t empty) {
-		return data != nullptr;
-	};
-		
-	bool operator == (ShaderConstant<T*>& rh) {
-		return data == rh.data;
-	};
-
-	// apply
-	virtual void Apply(RenderCommandContext* cmdContext) {
-		cmdContext->UpdateConstantBuffer(T::Slot(), 0, data, sizeof(T));
-		cmdContext->SetConstantBuffer(T::Slot(), sizeof(T));
+	// shader paremeters
+	union {
+		// perframe constants
+		ShaderConstant<PerFrameData> PerFrameConstant;
+		// perobject constants
+		ShaderConstant<PerObject> PerObjectConstant;
+		// skinning matrics
+		ShaderConstant<SkinningMatrices> SkinningMatrices;
 	};
 };
 
 
-template <class T>
-class ShaderConstant: public T, public ShaderInput 
+
+void inline UpdatePerframeConstant(RenderingCamera* cam, RenderContext* renderContext, PerFrameData& perFrameConstant)
 {
-public:
-	// apply
-	virtual void Apply(RenderCommandContext* cmdContext) {
-		cmdContext->UpdateConstantBuffer(T::Slot(), 0, (T*)this, sizeof(T));
-		cmdContext->SetConstantBuffer(T::Slot(), sizeof(T));
-	};
-};
+	// per-frame constant 
+	Matrix4x4::Tranpose(cam->GetInvertView(), &perFrameConstant.gInvertViewMaxtrix);
+	Matrix4x4::Tranpose(cam->GetViewMatrix(), &perFrameConstant.gViewMatrix);
+	Matrix4x4::Tranpose(cam->GetViewProjection(), &perFrameConstant.gViewProjectionMatrix);
+	perFrameConstant.gViewPoint = cam->GetViewPoint();
+	perFrameConstant.gScreenSize.x = static_cast<float>(renderContext->FrameWidth);
+	perFrameConstant.gScreenSize.y = static_cast<float>(renderContext->FrameHeight);
+	// update framenum and time
+	if (perFrameConstant.gAbsoluteTime) {
+		perFrameConstant.gTimeElapse = GetTickCount() - perFrameConstant.gAbsoluteTime;
+	} else {
+		perFrameConstant.gTimeElapse = 0;
+	}
+	perFrameConstant.gAbsoluteTime = GetTickCount();
+	++perFrameConstant.gFrameNumber;
+}
 
 
 #endif

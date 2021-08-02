@@ -189,7 +189,7 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 		// depth buffer
 		RenderResource zBuffer;
 		// per-frame constant
-		ShaderConstant<PerFrameData> perFrameConstant;
+		PerFrameData perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -256,10 +256,10 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 				});
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// cmdBuffer global pramerers setup
-			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// setup
+			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
 			// setup pass
-			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
+			cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
 			// flip compact buffer
 			passData.compact0.Flip(&passData.compact1);
 			// set gbuffer as render target
@@ -308,7 +308,7 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		RenderResource zBuffer;
 
 		// per-frame constant
-		ShaderConstant<PerFrameData> perFrameConstant;
+		PerFrameData perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -340,10 +340,11 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 				});
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// set lighting as render target
-			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// setup
+			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
 			// setup pass
-			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
+			cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+			// set lighting as render target
 			int targets[] = {
 				passData.lighting.GetActualResource(),
 			};
@@ -389,7 +390,7 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		RenderResource zBuffer;
 
 		// per-frame constant
-		ShaderConstant<PerFrameData> perFrameConstant;
+		PerFrameData perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -411,9 +412,11 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 				emissiveMaterial = Value->as<Material*>();
 			}
 			if (emissiveMaterial) {
-				// set lighting as render target
-				passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
-				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
+				// set lighting as render target				
+				// setup
+				UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
+				// setup pass
+				cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
 
 				int targets[] = {
 					passData.lighting.GetActualResource(),

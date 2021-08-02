@@ -35,7 +35,7 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 		// hdr
 		RenderResource hdr;
 		// per-frame constant
-		ShaderConstant<PerFrameData> perFrameConstant;
+		PerFrameData perFrameConstant;
 		// sample offsets
 		float scaleOffset[max_hdr_lum_buffer][16];
 		float brightOffset[16];
@@ -226,20 +226,14 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 			Variant* Value = renderContext->GetResource("Material\\Materials\\hdr.xml\\0");
 			Material* hdrMaterial = nullptr;
 
-			// setup pass
-			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 			if (Value) {
 				hdrMaterial = Value->as<Material*>();
 			}
 			if (hdrMaterial) {
 				// setup
-				passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
-				passData.perFrameConstant.gTimeElapse = GetCurrentTime() - passData.perFrameConstant.gAbsoluteTime;
-				passData.perFrameConstant.gAbsoluteTime = GetCurrentTime();
-				// add frame number
-				++passData.perFrameConstant.gFrameNumber;
-				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
-
+				UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
+				// setup pass
+				cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
 				// scale by 4
 				{
 					auto cmd = cmdBuffer->AllocCommand();

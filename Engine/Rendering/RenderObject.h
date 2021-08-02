@@ -27,9 +27,8 @@ protected:
 	// blendshape
 	BlendShape* BlendShape_ = nullptr;
 	// shader constants
-	PerObject perObjectData;
-	ShaderConstant<PerObject> perObjectConstant;
-	ShaderConstant<SkinningMatrices*> skinningMatrices;
+	PerObject perObjectConstant;
+	SkinningMatrices* skinningMatrices;
 
 public:
 	RenderObject();

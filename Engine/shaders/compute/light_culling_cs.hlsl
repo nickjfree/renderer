@@ -1,7 +1,7 @@
 #ifndef __LIGHT_CULLING__
 #define __LIGHT_CULLING__
 
-#include "../common/constants.h"
+#include "../common/shader_inputs.h"
 #include "../common/lighting.hlsli"
 
 

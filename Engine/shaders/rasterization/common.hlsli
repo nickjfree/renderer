@@ -2,7 +2,7 @@
 #define __RASTERIZATION_COMMON__
 
 
-#include "../common/constants.h"
+#include "../common/shader_inputs.h"
 
 #ifdef RENDER_GBUFFER
 	#include "../common/gbuffer.hlsli"

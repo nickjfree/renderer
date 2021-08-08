@@ -1,6 +1,6 @@
 
 
-#include "../../common/constants.h"
+#include "../../common/shader_inputs.h"
 
 
 #define A_GPU 1

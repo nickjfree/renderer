@@ -2,7 +2,7 @@
 #define __RAYTRACING__
 
 
-#include "../common/constants.h"
+#include "../common/shader_inputs.h"
 
 
 // the scene

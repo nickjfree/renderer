@@ -1,7 +1,7 @@
 #ifndef __ANIMATION__
 #define __ANIMATION__
 
-#include "../common/constants.h"
+#include "../common/shader_inputs.h"
 
 /*
 	blendshape vertex

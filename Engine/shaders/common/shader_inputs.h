@@ -10,7 +10,7 @@ static const float FoV = tan(0.15 * 3.141592654);
     basic constant buffer definition
 */
 
-cbuffer PerObject: register(b0)
+CBUFFER(PerObject, 0)
 {
     // object
     float4x4 gWorldViewProjection;
@@ -26,7 +26,7 @@ cbuffer PerObject: register(b0)
 }
 
 
-cbuffer PerFrame: register(b2) 
+CBUFFER(PerFrame, 1) 
 {
     // per frame
     float4x4 gViewProjectionMatrix;
@@ -52,7 +52,7 @@ cbuffer PerFrame: register(b2)
 /*
      blendshape parameters
 */
-cbuffer ArrayBSParamaters: register(b3)
+CBUFFER(ArrayBSParamaters, 2)
 {
     // weight array, the first elements contains shape description, followed with weights 
     float4 gWeightsArray[128]; 
@@ -68,7 +68,7 @@ cbuffer ArrayBSParamaters: register(b3)
 }
 
 // animation use 128 constants buffer, bone transform, update for each object draw
-cbuffer ArrayKeyframe: register(b4)
+CBUFFER(ArrayKeyframe, 3)
 {
     float4x4  gSkinMatrix[128];
 }
@@ -110,7 +110,7 @@ struct LightData
 /*
     light constant buffer. one light
 */
-cbuffer PerLight: register(b0)
+CBUFFER(PerLight, 0)
 {
     // shadow map constant
     float4x4  gLightViewProjection;
@@ -125,7 +125,7 @@ cbuffer PerLight: register(b0)
 /*
     light constant buffer multi lights
 */
-cbuffer ArraylightInfos: register(b0, space0)
+CBUFFER(ArraylightInfos, 0)
 {
     LightData gLights[256];
 }
@@ -134,7 +134,7 @@ cbuffer ArraylightInfos: register(b0, space0)
 /*
 *    light culling infos
 */
-cbuffer ArrayLightCullingInfos: register(b0)
+CBUFFER(ArrayLightCullingInfos, 0)
 {
     uint numLights;
     uint lightsPerCell;
@@ -146,7 +146,7 @@ cbuffer ArrayLightCullingInfos: register(b0)
 
 
 // fsr
-cbuffer cb : register(b0)
+CBUFFER(FSRConstant, 0)
 {
     uint4 Const0;
     uint4 Const1;
@@ -157,8 +157,9 @@ cbuffer cb : register(b0)
 
 
 // samplers
-SamplerState gSam : register(s0);
-SamplerState gSamBilinear :register(s1);
-SamplerState gSamPoint :register(s2);
+SAMPLERSTATE(gSam, 0);
+SAMPLERSTATE(gSamBilinear, 1);
+SAMPLERSTATE(gSamPoint, 2);
+
 
 #endif

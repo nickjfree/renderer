@@ -39,7 +39,7 @@ bool CommandBuffer::appendInstanceBuffer(size_t size)
 {
 	if (usedInstanceBuffer + size + max_instance_size > max_instance_buffer_size) {
 		return false;
-	} 
+	}
 	// append buffer
 	usedInstanceBuffer += size;
 	return true;

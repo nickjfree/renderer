@@ -15,7 +15,7 @@ auto AddShadowMapPass(FrameGraph& frameGraph, RenderContext* renderContext)
 		RenderResource shadowMaps[8];
 
 		// per-frame constant
-		PerFrameData perFrameConstant;
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -42,10 +42,7 @@ auto AddShadowMapPass(FrameGraph& frameGraph, RenderContext* renderContext)
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// render shadows for each lights
-			// setup
-			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
-			// setup pass
-			cmdBuffer->PassSetup(true)->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
 			static Vector<Node*> lights;
 			lights.Reset();
 			spatial->Query(cam->GetFrustum(), lights, Node::LIGHT);

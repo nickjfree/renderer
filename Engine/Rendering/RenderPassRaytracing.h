@@ -51,7 +51,7 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 		RenderResource moment1;
 
 		// per-frame constant
-		PerFrameData perFrameConstant;
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -111,9 +111,11 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// setup
-			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// add frame number
+			++passData.perFrameConstant.gFrameNumber;
 			// setup pass
-			cmdBuffer->PassSetup(true)->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+			cmdBuffer->PassSetup(true)->AddShaderInput(&passData.perFrameConstant);
 			// trace reflection ray
 			Variant* value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
 			Material* material = nullptr;
@@ -146,7 +148,7 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 				passData.color0.Flip(&passData.color1);
 				passData.moment0.Flip(&passData.moment1);
 				// denoising pass setup
-				cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 				// accumulation 
 				{
 					auto cmd = cmdBuffer->AllocCommand();
@@ -213,7 +215,7 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 		RenderResource resolved;
 
 		// per-frame constant
-		PerFrameData perFrameConstant;
+		ShaderConstant<PerFrameData> perFrameConstant;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -251,9 +253,8 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// setup
-			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
-			// setup pass
-			cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 			// get shader
 			Variant* value = renderContext->GetResource("Material\\Materials\\resolve.xml\\0");
 			Material* material = nullptr;
@@ -313,7 +314,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		RenderResource moment1;
 
 		// per-frame constant
-		PerFrameData perFrameConstant;
+		ShaderConstant<PerFrameData> perFrameConstant;
 		// TODO: reused render targets
 	}PassData;
 
@@ -418,9 +419,11 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			// setup
-			UpdatePerframeConstant(cam, renderContext, passData.perFrameConstant);
+			passData.perFrameConstant = cmdBuffer->GetFrameParameters(cam, renderContext);
+			// add frame number
+			++passData.perFrameConstant.gFrameNumber;
 			// setup pass
-			cmdBuffer->PassSetup(true)->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+			cmdBuffer->PassSetup(true)->AddShaderInput(&passData.perFrameConstant);
 			//get raytracing shaders
 			Variant* value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
 			Material* rtMaterial = nullptr;
@@ -494,7 +497,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 				passData.moment0.Flip(&passData.moment1);
 
 				// denoising pass setup
-				cmdBuffer->PassSetup()->shaderParameters.PerFrameConstant.Set(&passData.perFrameConstant);
+				cmdBuffer->PassSetup()->AddShaderInput(&passData.perFrameConstant);
 				// accumulation 
 				{
 					auto cmd = cmdBuffer->AllocCommand();

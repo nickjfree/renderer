@@ -165,9 +165,9 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	if (iter != materialParameters.End()) {
 		perObjectConstant.gSpecular = (*iter).Value.as<float>();
 	}
-	cmd->shaderParameters.PerObjectConstant.Set(&perObjectConstant);
+	cmd->AddShaderInput(&perObjectConstant);
 	if (skinningMatrices != nullptr) {
-		cmd->shaderParameters.SkinningMatrices.Set(skinningMatrices);
+		cmd->AddShaderInput(&skinningMatrices);
 	}
 	// add to commandbuffer
 	if (material->GetShader()->IsInstance(stage)) {

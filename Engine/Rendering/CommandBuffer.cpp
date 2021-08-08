@@ -11,9 +11,28 @@ CommandBuffer* CommandBuffer::Alloc()
 	return commandBuffer;
 }
 
+
+ShaderConstant<PerFrameData> CommandBuffer::GetFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
+{
+	ShaderConstant<PerFrameData> perFrameConstant{};
+	// per-frame constant 
+	Matrix4x4::Tranpose(cam->GetInvertView(), &perFrameConstant.gInvertViewMaxtrix);
+	Matrix4x4::Tranpose(cam->GetViewMatrix(), &perFrameConstant.gViewMatrix);
+	Matrix4x4::Tranpose(cam->GetViewProjection(), &perFrameConstant.gViewProjectionMatrix);
+	perFrameConstant.gViewPoint = cam->GetViewPoint();
+	perFrameConstant.gScreenSize.x = static_cast<float>(renderContext->FrameWidth);
+	perFrameConstant.gScreenSize.y = static_cast<float>(renderContext->FrameHeight);
+	return perFrameConstant;
+}
+
 void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
 {
 	globalParameters[name] = data;
+}
+
+void CommandBuffer::SetFrameShaderInput(ShaderInput* input)
+{
+	shaderInputs.Add(input);
 }
 
 void CommandBuffer::Reset() {
@@ -302,12 +321,10 @@ RenderingCommand* CommandBuffer::AllocCommand()
 	auto cmd = &renderingCommands[currentIndex++];
 	cmd->cmdParameters.Clear();
 	cmd->shaderInputs.Reset();
-	// set shaderparameters' parent
-	cmd->shaderParameters.PerFrameConstant.cmd = cmd;
 	return cmd;
 }
 
-void RenderingCommand::AddShaderInput(const ShaderInput& input)
+void RenderingCommand::AddShaderInput(ShaderInput* input)
 {
 	shaderInputs.Add(input);
 }
@@ -315,18 +332,16 @@ void RenderingCommand::AddShaderInput(const ShaderInput& input)
 void ShaderInputList::Apply(RenderCommandContext* cmdContext)
 {
 	for (auto i = 0; i < numShaderInputs; ++i) {
-		auto& input = shaderInputs[i];
-		// call functor
-		input(cmdContext);
+		auto input = shaderInputs[i];
+		input->Apply(cmdContext);
 	}
 }
 
-void ShaderInputList::Add(const ShaderInput& input) {
+void ShaderInputList::Add(ShaderInput* input)
+{
 	if (numShaderInputs >= cmd_max_shader_inputs) {
 		printf("too many shader bindings\n");
 		return;
 	}
 	shaderInputs[numShaderInputs++] = input;
 }
-
-

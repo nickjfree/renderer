@@ -482,9 +482,6 @@
     <ClInclude Include="Rendering\RenderPassFSR.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Rendering\ShaderParameters.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

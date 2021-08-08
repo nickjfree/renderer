@@ -218,7 +218,6 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Rendering\RenderView.h" />
     <ClInclude Include="Rendering\Shader.h" />
     <ClInclude Include="Rendering\ShaderLibrary.h" />
-    <ClInclude Include="Rendering\ShaderParameters.h" />
     <ClInclude Include="Rendering\ShadowMapStage.h" />
     <ClInclude Include="Rendering\Spatial.h" />
     <ClInclude Include="Rendering\Terrain.h" />

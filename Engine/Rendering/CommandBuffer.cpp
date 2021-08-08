@@ -164,18 +164,6 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 		auto shader = cmd->draw.material->GetShader();
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
-	// TEST: constant buffer bindings
-	for (auto i = 0; i < cmd->shaderBindingIndex; ++i) {
-		auto& binding = cmd->shaderBindings[i];
-		switch (binding.BindingType) {
-		case ShaderParameterBinding::BindingType::CONSTANT:
-			cmdContext->UpdateConstantBuffer(binding.Slot, 0, binding.Data, binding.Size);
-			cmdContext->SetConstantBuffer(binding.Slot, binding.Size);
-			break;
-		default:
-			break;
-		}
-	}
 	// draw
 	if (cmd->draw.mesh == 0) {
 		// no mesh set. draw full screen quad
@@ -302,15 +290,5 @@ RenderingCommand* CommandBuffer::AllocCommand()
 {
 	auto cmd = &renderingCommands[currentIndex++];
 	cmd->cmdParameters.Clear();
-	cmd->shaderBindingIndex = 0;
 	return cmd;
-}
-
-void RenderingCommand::AddShaderParametes(const ShaderParameterBinding& binding)
-{
-	if (shaderBindingIndex >= cmd_max_shader_bindings ) {
-		printf("too many shader bindings\n");
-		return;
-	}
-	shaderBindings[shaderBindingIndex++] = binding;
 }

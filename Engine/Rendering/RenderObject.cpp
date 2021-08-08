@@ -154,18 +154,6 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 		cmdParameters["gBlendShapes"] = BlendShape_->GetId();
 		cmdParameters["gWeightsArray"] = blendshape_;
 	} 
-	// set object constant
-	perObjectConstant.gObjectId = get_object_id() + 1;
-	Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &perObjectConstant.gWorldViewProjection);
-	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &perObjectConstant.gWorldViewMatrix);
-	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &perObjectConstant.gPrevWorldViewProjection);
-	// update by materials
-	auto& materialParameters = GetMaterial()->GetParameter();
-	auto iter = materialParameters.Find("gSpecular");
-	if (iter != materialParameters.End()) {
-		perObjectConstant.gSpecular = (*iter).Value.as<float>();
-	}
-	perObjectConstant.Update(cmd);
 	// add to commandbuffer
 	if (material->GetShader()->IsInstance(stage)) {
 		cmdBuffer->DrawInstanced(cmd, mesh, GetMaterial(), stage);

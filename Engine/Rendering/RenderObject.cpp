@@ -159,16 +159,13 @@ int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, Rendering
 	Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &perObjectConstant.gWorldViewProjection);
 	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &perObjectConstant.gWorldViewMatrix);
 	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &perObjectConstant.gPrevWorldViewProjection);
-	// update by materials (TODO: this is test code)
+	// update by materials
 	auto& materialParameters = GetMaterial()->GetParameter();
 	auto iter = materialParameters.Find("gSpecular");
 	if (iter != materialParameters.End()) {
 		perObjectConstant.gSpecular = (*iter).Value.as<float>();
 	}
-	cmd->AddShaderInput(&perObjectConstant);
-	if (skinningMatrices != nullptr) {
-		cmd->AddShaderInput(&skinningMatrices);
-	}
+	perObjectConstant.Update(cmd);
 	// add to commandbuffer
 	if (material->GetShader()->IsInstance(stage)) {
 		cmdBuffer->DrawInstanced(cmd, mesh, GetMaterial(), stage);
@@ -191,8 +188,6 @@ int RenderObject::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingC
 void RenderObject::SetMatrixPalette(Matrix4x4* palette_, unsigned int NumMatrix_) {
 	palette.Data = palette_;
 	palette.Size = sizeof(Matrix4x4) * NumMatrix_;
-
-	skinningMatrices = (SkinningMatrices*)palette_;
 }
 
 void RenderObject::SetBlendShapeDesc(BSDesc* desc) {

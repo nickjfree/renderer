@@ -1,59 +1,43 @@
 #ifndef __SHADER_PARAMETERS__
 #define __SHADER_PARAMETERS__
 
+#include "Rendering/CommandBuffer.h"
 #include "shaders/ShaderData.h"
 
 
-class RenderCommandContext;
-
-
 template <class T>
-class ShaderConstant;
-
-
-template <class T>
-class ShaderConstant<T*>: public ShaderInput {
-private:
-	T* data = nullptr;
+class ShaderConstant : public T {
 public:
-
-	// assign
-	ShaderConstant<T*>& operator = (T* rh) {
-		data = rh;
-		return *this;
-	};
-
-	// pointer
-	T* operator -> () {
-		return data;
-	};
-
-	bool operator != (std::nullptr_t empty) {
-		return data != nullptr;
-	};
-		
-	bool operator == (ShaderConstant<T*>& rh) {
-		return data == rh.data;
-	};
-
-	// apply
-	virtual void Apply(RenderCommandContext* cmdContext) {
-		cmdContext->UpdateConstantBuffer(T::Slot(), 0, data, sizeof(T));
-		cmdContext->SetConstantBuffer(T::Slot(), sizeof(T));
-	};
+	// get get slot
+	const int Slot();
+	// get sizee
+	const unsigned int Size();
+	// set constant
+	void Update(RenderingCommand* cmd);
 };
 
-
 template <class T>
-class ShaderConstant: public T, public ShaderInput 
+const int ShaderConstant<T>::Slot()
 {
-public:
-	// apply
-	virtual void Apply(RenderCommandContext* cmdContext) {
-		cmdContext->UpdateConstantBuffer(T::Slot(), 0, (T*)this, sizeof(T));
-		cmdContext->SetConstantBuffer(T::Slot(), sizeof(T));
-	};
-};
+	return T::Slot();
+}
 
+template <class T>
+const unsigned int ShaderConstant<T>::Size()
+{
+	return sizeof(T);
+}
+
+template <class T>
+void ShaderConstant<T>::Update(RenderingCommand* cmd)
+{
+	ShaderParameterBinding binding{};
+	binding.BindingType = ShaderParameterBinding::BindingType::CONSTANT;
+	binding.Data = this;
+	binding.Slot = T::Slot();
+	binding.Size = sizeof(T);
+	cmd->AddShaderParametes(binding);
+	return;
+}
 
 #endif

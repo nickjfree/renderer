@@ -1,8 +1,6 @@
 #ifndef __SHADER_DATA__
 #define __SHADER_DATA__
 
-typedef unsigned int uint;
-
 typedef struct float2 
 {
 	float x, y;
@@ -18,44 +16,14 @@ typedef Vector3 float4;
 // matrix4x4
 typedef Matrix4x4 float4x4;
 
-// perframe data
-typedef struct PerFrameData
-{
-	// return slot
-	static inline int Slot() { return 2; }
-	// return space
-	static inline int Space() { return 0; }
-	// return name
-	const char* Name() { return "PerFrame"; }
-
-	// per frame
-	float4x4 gViewProjectionMatrix;
-	float4x4 gViewMatrix;
-	float4x4 gInvertViewMaxtrix;
-	float4   gViewPoint;
-
-	int  gTimeElapse;
-	uint gAbsoluteTime;
-	int  gFrameNumber;
-	int  pad;
-
-	// screen size
-	float4 gScreenSize;
-	float4x4 pad1;
-
-	// post pass 
-	float4   gSampleOffsets[4];
-	float4   gSampleWeights[4];
-} PerFrameData;
-
 // per object constant buffer
 typedef struct PerObject 
 {
 
 	// return slot
-	static inline int Slot() { return 0; }
+	static int Slot() { return 0; }
 	// return space
-	static inline int Space() { return 0; }
+	static int Space() { return 0; }
 	// return name
 	const char* Name() { return "PerObject"; }
 
@@ -73,12 +41,12 @@ typedef struct PerObject
 }PerObject;
 
 
-typedef struct SkinningMatrices
+typedef  struct SkinningMatrices
 {
 	// return slot
-	static inline int Slot() { return 4; }
+	static int Slot() { return 4; }
 	// return space
-	static inline int Space() { return 0; }
+	static int Space() { return 0; }
 	// return name
 	const char* Name() { return "ArrayKeyframe"; }
 

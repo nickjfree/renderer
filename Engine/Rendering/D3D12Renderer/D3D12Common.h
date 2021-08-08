@@ -301,8 +301,6 @@ namespace D3D12Renderer {
 		void Update(int slot, unsigned int offset, void* buffer, unsigned int size);
 		// flush to gpu
 		void Upload(int slot, void* cpuDst, unsigned int size);
-		// is dirty
-		bool IsDirty(int slot) { return dirty[slot]; };
 	public:
 		// max 8 constant buffers
 		Memory  constantBuffer[max_constant_buffer_num] = {};

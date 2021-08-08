@@ -2,7 +2,7 @@
 #define __RASTERIZATION_COMMON__
 
 
-#include "../common/constants.hlsli"
+#include "../common/constants.h"
 
 #ifdef RENDER_GBUFFER
 	#include "../common/gbuffer.hlsli"

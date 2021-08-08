@@ -1,6 +1,7 @@
 #ifndef __ANIMATION__
 #define __ANIMATION__
 
+#include "../common/constants.h"
 
 /*
 	blendshape vertex
@@ -25,32 +26,6 @@ StructuredBuffer<Vertex> gBlendShapes  : register(t1);
 
 // uav deformable buffer. transformed vertext stored in this buffer
 RWStructuredBuffer<Vertex> gDeformableBuffer  : register(u0);
-
-/*
-	 blendshape parameters
-*/
-cbuffer ArrayBSParamaters: register(b3)
-{
-	// weight array, the first elements contains shape description, followed with weights 
-	float4 gWeightsArray[128]; 
-	// gWeightsArray[0].x: shape count
-	// gWeightsArray[0].y: shape stride
-	// gWeightsArray[0].z: num weights
-	// gWeightsArray[0].w: padding
-	// gWeightsArray[1]: weights 0
-	// gWeightsArray[2]: weights 1
-	// gWeightsArray[3]: weights 2
-	// .... 
-	// gWeightsArray[n]: weights n-1
-}
-
-// animation use 128 constants buffer, bone transform, update for each object draw
-cbuffer ArrayKeyframe: register(b4)
-{
-	float4x4  gSkinMatrix[128];
-}
-
-// ArrayBSParamaters and ArrayKeyframe use deffirent constant buffers registers because these 2 may be used together
 
 
 /*

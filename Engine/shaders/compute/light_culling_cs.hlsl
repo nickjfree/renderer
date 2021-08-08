@@ -1,17 +1,9 @@
 #ifndef __LIGHT_CULLING__
 #define __LIGHT_CULLING__
 
-#include "../common/constants.hlsli"
+#include "../common/constants.h"
 #include "../common/lighting.hlsli"
 
-cbuffer ArrayLightCullingInfos: register(b0)
-{
-	uint numLights;
-	uint lightsPerCell;
-	uint cellScale;
-	uint cellCount;
-    float4 lights[256];
-}
 
 #define THREAD_COUNT_PER_GROUP  32
 

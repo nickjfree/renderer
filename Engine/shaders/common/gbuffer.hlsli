@@ -3,7 +3,7 @@
 #define  __GBUFFER__
 
 
-#include "constants.hlsli"
+#include "constants.h"
 
 /*
 *	gbuffer textures
@@ -15,7 +15,7 @@ Texture2D gSpecularBuffer: register(t11);       // 4 bytes  x: f0  y: roughness 
 Texture2D gMotionVector: register(t12);         // 8 bytes  xy: motion vector   z: fwidthZ w: reprojection valid
 Texture2D gPrevCompactBuffer: register(t13);    // 8 bytes  xy: encoded normal  z: linearZ(half)  w: objectId
 
-#include "constants.hlsli"
+#include "constants.h"
 
 // gbuffer
 struct GBufferContext

@@ -12,58 +12,6 @@
 #define LIGHT_TYPE_SPHERE       0
 #define LIGHT_TYPE_DIRECTIONAL  1
 
-/*
-	light data in constant buffer (raytracing or tiled lighting, world space)
-*/
-struct LightData
-{
-	// light color
-	float4 Color;
-	// light direction
-	float4 Direction;
-	// light position
-	float4 Position;
-	// lighting effect radius
-	float Radius;
-	// intensity
-	float Intensity;
-	// spotlight inner angle
-	float CapsuleDistanceOrInnerAngle; 
-	// spotlight outer angle
-	float CapsuleRadiusOrOuterAngle;
-	// rectlight width
-	float RectLightWidth;
-	// rectlight height
-	float RectLightHeight;
-	// light type
-	uint Type;
-	// pad
-	uint Pad;
-};
-
-/*
-	light constant buffer. one light
-*/
-cbuffer PerLight: register(b0)
-{
-	// shadow map constant
-	float4x4  gLightViewProjection;
-	float4x4  gLightProjection;
-	// lighting
-	float4 gLightPosition;
-	float4 gLightColor;
-	float4 gRadiusIntensity;
-	float4 gLightDirection;
-}
-
-/*
-	light constant buffer multi lights
-*/
-cbuffer ArraylightInfos: register(b0, space0)
-{
-	LightData gLights[256];
-}
-
 
 /*
 	light culling buffer element

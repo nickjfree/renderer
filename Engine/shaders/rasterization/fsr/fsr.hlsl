@@ -1,13 +1,7 @@
 
 
-cbuffer cb : register(b0)
-{
-	uint4 Const0;
-	uint4 Const1;
-	uint4 Const2;
-	uint4 Const3;
-	uint4 Sample;
-};
+#include "../../common/constants.h"
+
 
 #define A_GPU 1
 #define A_HLSL 1

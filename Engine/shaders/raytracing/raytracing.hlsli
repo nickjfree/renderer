@@ -2,7 +2,7 @@
 #define __RAYTRACING__
 
 
-#include "../common/constants.hlsli"
+#include "../common/constants.h"
 
 
 // the scene

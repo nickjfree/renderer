@@ -2,31 +2,41 @@
 #define __CONSTANTS__
 
 #include "shader_types.h"
+#include "shader_binding_map.h"
+
 
 // field of view
-static const float FoV = tan(0.15 * 3.141592654);
+static const float FoV = (float)tan(0.15 * 3.141592654);
 
 /*
     basic constant buffer definition
 */
-
-CBUFFER(PerObject, 0)
+CBUFFER(CBInstance, 0)
 {
     // object
     float4x4 gWorldViewProjection;
     float4x4 gWorldViewMatrix;
     // prev
-    float4x4 gPrevWorldViewProjection;    
-    // material
-    float gSpecular;
+    float4x4 gPrevWorldViewProjection;
+  
     // object id
     int   gObjectId;
     // pad
-    float2 pad_1;
-}
+    float3 pad_instance;
+};
 
 
-CBUFFER(PerFrame, 1) 
+CBUFFER(CBMaterial, 1)
+{
+    // material
+    float gSpecular;
+    // pad
+    float3 pad_material;
+};
+
+
+
+CBUFFER(CBFrame, 2)
 {
     // per frame
     float4x4 gViewProjectionMatrix;
@@ -46,16 +56,16 @@ CBUFFER(PerFrame, 1)
     // post pass 
     float4   gSampleOffsets[4];
     float4   gSampleWeights[4];
-}
+};
 
 
 /*
      blendshape parameters
 */
-CBUFFER(ArrayBSParamaters, 2)
+CBUFFER(ArrayBSParamaters, 3)
 {
     // weight array, the first elements contains shape description, followed with weights 
-    float4 gWeightsArray[128]; 
+    float4 gWeightsArray[128];
     // gWeightsArray[0].x: shape count
     // gWeightsArray[0].y: shape stride
     // gWeightsArray[0].z: num weights
@@ -65,13 +75,13 @@ CBUFFER(ArrayBSParamaters, 2)
     // gWeightsArray[3]: weights 2
     // .... 
     // gWeightsArray[n]: weights n-1
-}
+};
 
 // animation use 128 constants buffer, bone transform, update for each object draw
-CBUFFER(ArrayKeyframe, 3)
+CBUFFER(ArrayKeyframe, 4)
 {
     float4x4  gSkinMatrix[128];
-}
+};
 
 // ArrayBSParamaters and ArrayKeyframe use deffirent constant buffers registers because these 2 may be used together
 
@@ -110,7 +120,7 @@ struct LightData
 /*
     light constant buffer. one light
 */
-CBUFFER(PerLight, 0)
+CBUFFER(CBLight, 0)
 {
     // shadow map constant
     float4x4  gLightViewProjection;
@@ -120,7 +130,7 @@ CBUFFER(PerLight, 0)
     float4 gLightColor;
     float4 gRadiusIntensity;
     float4 gLightDirection;
-}
+};
 
 /*
     light constant buffer multi lights
@@ -128,7 +138,7 @@ CBUFFER(PerLight, 0)
 CBUFFER(ArraylightInfos, 0)
 {
     LightData gLights[256];
-}
+};
 
 
 /*
@@ -141,12 +151,11 @@ CBUFFER(ArrayLightCullingInfos, 0)
     uint cellScale;
     uint cellCount;
     float4 lights[256];
-}
-
+};
 
 
 // fsr
-CBUFFER(FSRConstant, 0)
+CBUFFER(CBFSRConst, 0)
 {
     uint4 Const0;
     uint4 Const1;
@@ -154,7 +163,6 @@ CBUFFER(FSRConstant, 0)
     uint4 Const3;
     uint4 Sample;
 };
-
 
 // samplers
 SAMPLERSTATE(gSam, 0);

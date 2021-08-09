@@ -11,6 +11,7 @@
 #include "Rendering/Shader.h"
 #include "Rendering/ShaderLibrary.h"
 #include "RenderingCamera.h"
+#include <functional>
 
 // copy command
 typedef struct CopyResourceCommand
@@ -99,17 +100,91 @@ typedef struct RenderTargetCommand
 	int height;
 }RenderTargetCommand;
 
+
+/*
+*	shader bindings
+*/
+
+typedef struct ShaderBinding
+{
+	enum class Type {
+		CONSTANT,
+		SRV,
+		UAV,
+		COUNT,
+	};
+
+	int slot;
+	Type type;
+	union {
+		int resoutceId;
+		union {
+			void* data;
+			unsigned int size;
+		};
+	};
+
+	void Apply(RenderCommandContext * cmdContext) {
+		switch (type) {
+		case ShaderBinding::Type::CONSTANT:
+			cmdContext->UpdateConstantBuffer(slot, 0, data, size);
+			cmdContext->SetConstantBuffer(slot, size);
+			break;
+		case ShaderBinding::Type::SRV:
+			cmdContext->SetSRV(slot, resoutceId);
+			break;
+		case ShaderBinding::Type::UAV:
+			cmdContext->SetUAV(slot, resoutceId);
+			break;
+		default:
+			break;
+		}
+	};
+}ShaderBinding;
+
+
+
+
 /*
 *	gpu rendering command
 */
+constexpr  int cmd_max_shader_bindings = 16;
+
 class RenderingCommand
 {
 	DECLARE_RECYCLE(RenderingCommand);
+public:
+	// set constant
+	RenderingCommand& SetShaderConstant(int slot, void* data, unsigned int size) {
+		auto& binding = shaderBindings[numShaderBindings++];
+		binding.type = ShaderBinding::Type::CONSTANT;
+		binding.data = data;
+		binding.size = size;
+		binding.slot = slot;
+		return *this;
+	}
+
+	// set srv
+	RenderingCommand& SetShaderResource(int slot, int id) {
+		auto& binding = shaderBindings[numShaderBindings++];
+		binding.type = ShaderBinding::Type::SRV;
+		binding.resoutceId = id;
+		return *this;
+	}
+
+	// set uav
+	RenderingCommand& SetRWShaderResource(int slot, int id) {
+		auto& binding = shaderBindings[numShaderBindings++];
+		binding.type = ShaderBinding::Type::UAV;
+		binding.resoutceId = id;
+		return *this;
+	}
 
 public:
 	// cmdType
 	enum class CommandType
 	{
+		SETUP,
 		DRAW,
 		DRAW_INSTANCED,
 		DISPATCH_COMPUTE,
@@ -122,6 +197,10 @@ public:
 	
 	// constants and other parameters
 	Dict cmdParameters;
+	// shader bindings
+	ShaderBinding shaderBindings[cmd_max_shader_bindings];
+	int numShaderBindings = 0;
+
 	union {
 		DrawCommand draw = {};
 		DispatchRaysCommand dispatchRays;

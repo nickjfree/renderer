@@ -26,6 +26,7 @@ protected:
 	ShaderParameterArray blendshape_ = {};
 	// blendshape
 	BlendShape* BlendShape_ = nullptr;
+
 public:
 	RenderObject();
 	virtual ~RenderObject();

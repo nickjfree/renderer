@@ -162,6 +162,9 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 	if (cmd->draw.material) {
 		auto material = cmd->draw.material;
 		auto shader = cmd->draw.material->GetShader();
+		// apply material textures
+		material->Apply(cmdContext);
+		// apply shader bindings
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
 	// draw
@@ -180,6 +183,9 @@ void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* c
 	if (cmd->draw.material) {
 		auto material = cmd->draw.material;
 		auto shader = cmd->draw.material->GetShader();
+		// apply material textures
+		material->Apply(cmdContext);
+		// apply shader bindings
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
 	// draw
@@ -213,7 +219,9 @@ void CommandBuffer::dispatch(RenderingCommand* cmd, RenderCommandContext* cmdCon
 	auto material = cmd->dispatchCompute.material;
 	auto shader = material->GetShader();
 	if (shader) {
-		// apply shader
+		// apply material textures
+		material->Apply(cmdContext);
+		// apply shader bindings
 		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 		// dispatch rays
 		cmdContext->DispatchCompute(cmd->dispatchCompute.x, cmd->dispatchCompute.y, cmd->dispatchCompute.z);
@@ -226,10 +234,12 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 	auto material = cmd->dispatchRays.material;
 	auto rtShader = material->GetShaderLibrary(cmd->dispatchRays.rayId);
 	if (rtShader) {
-		// apply shader
+		// apply material textures
+		material->Apply(cmdContext);
+		// apply shader bindings
 		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 		// dispatch rays
-		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.width, cmd->dispatchRays.height);
+		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.rayId, cmd->dispatchRays.width, cmd->dispatchRays.height);
 	}
 }
 
@@ -290,5 +300,6 @@ RenderingCommand* CommandBuffer::AllocCommand()
 {
 	auto cmd = &renderingCommands[currentIndex++];
 	cmd->cmdParameters.Clear();
+	cmd->numShaderBindings = 0;
 	return cmd;
 }

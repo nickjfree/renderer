@@ -67,25 +67,25 @@ int TerrainNode::Query(Frustum& Fr, Vector<Node*>& Result, int Types, bool insid
 
 int TerrainNode::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context)
 {
-	StageParameter["InstancePosition"] = Position;
-	StageParameter["InstanceScale"] = (float)scale_;
-	StageParameter["InstanceLevel"] = (float)level_;
+	//StageParameter["InstancePosition"] = Position;
+	//StageParameter["InstanceScale"] = (float)scale_;
+	//StageParameter["InstanceLevel"] = (float)level_;
 
-	// do virtual texture rendering
-	Stage = 3;
-	if (material) {
-		auto compiled = material->Compile(Compiler, Stage, Lod);
-		// process shader
-		auto shader = material->GetShader();
-		compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
-		if (shader->IsInstance(Stage)) {
-			unsigned char instanceBuffer[64 * 4];
-			auto instanceSize = shader->MakeInstance(Stage, StageParameter, instanceBuffer);
-			// quad
-			compiled += Compiler->Instance(0, instanceBuffer, instanceSize);
-		}
-		return compiled;
-	}
+	//// do virtual texture rendering
+	//Stage = 3;
+	//if (material) {
+	//	auto compiled = material->Compile(Compiler, Stage, Lod);
+	//	// process shader
+	//	auto shader = material->GetShader();
+	//	compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
+	//	if (shader->IsInstance(Stage)) {
+	//		unsigned char instanceBuffer[64 * 4];
+	//		auto instanceSize = shader->MakeInstance(Stage, StageParameter, instanceBuffer);
+	//		// quad
+	//		compiled += Compiler->Instance(0, instanceBuffer, instanceSize);
+	//	}
+	//	return compiled;
+	//}
 	return 0;
 }
 

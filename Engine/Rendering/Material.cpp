@@ -35,11 +35,11 @@ int Material::OnSerialize(Deserializer& deserializer) {
 				xml_attribute<>* attr = texture->first_attribute("url");
 				char* url = attr->value();
 				attr = texture->first_attribute("unit");
-				char* Unit = attr->value();
+				char* unit = attr->value();
 				texture = texture->next_sibling();
-				Dependencies[String(url)] = Unit;
+				Dependencies[String(url)] = unit;
 				DepCount++;
-				printf("texture: %s  %s\n", Unit, url);
+				printf("texture: %s  %s\n", unit, url);
 			}
 		}
 		// read shader resource
@@ -103,6 +103,13 @@ int Material::OnSubResource(int Message, Resource* Sub, Variant& Param) {
 		char* texunit = Param.as<char*>();
 		//printf("finish texture %s\n", texunit);
 		Parameters[String(texunit)] = resource->GetId();
+		// add to texture bindings
+		auto texture = Material::TextureUnit{};
+		texture.resourceId = resource->GetId();
+		texture.slot = GetShaderBindingSlot(texunit);
+		if (texture.slot != -1) {
+			Textures.PushBack(texture);
+		}
 		DepCount--;
 	}
 	if (resource->ResourceType == R_SHADER) {
@@ -119,10 +126,13 @@ int Material::OnSubResource(int Message, Resource* Sub, Variant& Param) {
 	return 0;
 }
 
-int Material::Compile(BatchCompiler* Compiler, int Stage, int Lod) {
-	return 0;
+void Material::Apply(RenderCommandContext* cmdContext)
+{
+	for (auto iter = Textures.Begin(); iter != Textures.End(); iter++) {
+		auto& texture = *iter;
+		cmdContext->SetSRV(texture.slot, texture.resourceId);
+	}
 }
-
 
 int Material::OnDestroy(Variant& Data) {
 	// unload all textures 
@@ -144,10 +154,19 @@ int Material::GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE*
 	for (auto iter = ShaderLibs.Begin(); iter != ShaderLibs.End(); iter++, shaderIndex++) {
 		auto rtShader = *iter;
 		int bindingsPerShader = 0;
-		// set shader bindings
-		rtShader->GetLocalResourceBindings(Parameters, Parameters, context, instance->ShaderBindings[shaderIndex].Bindings, &instance->ShaderBindings[shaderIndex].NumBindings);
 		// set shaderId
 		instance->ShaderBindings[shaderIndex].ShaderId = rtShader->GetId();
+		// set materials
+		instance->ShaderBindings[shaderIndex].NumBindings = 0;
+		auto index = 0;
+		for (auto iter = Textures.Begin(); iter != Textures.End(); iter++) {
+			auto& texture = *iter;
+			auto& rtbinding = instance->ShaderBindings[shaderIndex].Bindings[index++];
+			rtbinding.BindingType = R_SRV_TEXTURE;
+			rtbinding.Slot = MATERIAL_RT_SLOT(texture.slot);
+			rtbinding.ResourceId = texture.resourceId;
+		}
+		instance->ShaderBindings[shaderIndex].NumBindings = index - 1;
 		// inc numShaders
 		++instance->NumShaders;
 	}

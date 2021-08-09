@@ -789,19 +789,19 @@ void RaytracingScene::Build(D3D12CommandContext* cmdContext)
 	cmdList->ResourceBarrier(2, UAVBarriers);
 }
 
-void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height)
+void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, int rayId, unsigned int width, unsigned int height)
 {
 	auto rtCmdList = cmdContext->GetRtCmdList();
 	// flush sbt
 	rayDesc.Width = width;
 	rayDesc.Height = height;
 	rayDesc.Depth = 1;
-	sbt.SetRay(shaderIndex);
+	sbt.SetRay(shaderIndex, rayId);
 	if (sbt.IsDirty()) {
 		sbt.Stage(cmdContext, &rayDesc);
 	}
 	// set raygen start address offset
-	rayDesc.RayGenerationShaderRecord.StartAddress += shaderIndex * sizeof(ShaderRecord);
+	rayDesc.RayGenerationShaderRecord.StartAddress += rayId * sizeof(ShaderRecord);
 	// refresh the rtpso
 	stateObject.Refresh(rtxDevice);
 	rtCmdList->SetPipelineState1(stateObject.Get());
@@ -1089,9 +1089,9 @@ void ShaderBindingTable::Create(ID3D12Device* d3d12Device)
 	sbtCpu->Map(0, nullptr, &sbtPtr);
 }
 
-void ShaderBindingTable::SetRay(int rayIndex)
+void ShaderBindingTable::SetRay(int shaderId, int rayIndex)
 {
-	auto shader = RaytracingShader::Get(rayIndex);
+	auto shader = RaytracingShader::Get(shaderId);
 	if (memcmp(&rayGen[rayIndex].identifier, &shader->raygen, sizeof(shader->raygen))) {
 		rayGen[rayIndex].identifier = shader->raygen;
 		dirty = true;

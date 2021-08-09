@@ -43,75 +43,7 @@ int RenderObject::GetRenderMesh(int Stage, int Lod) const {
 }
 
 int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context) {
-
-	if (Stage == R_STAGE_PREPASSS) {
-		Stage = 0;
-	}
-	else if (Stage == R_STAGE_SHADING) {
-		Stage = 1;
-	}
-	else if (Stage == R_STAGE_SHADOW) {
-		Stage = 2;
-	}
-	else if (Stage == R_STAGE_OIT) {
-		Stage = 3;
-	}
-	// prepare perObject constants
-	Matrix4x4& Transform = GetWorldMatrix();
-	// per-object position
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * Camera->GetPrevViewProjection(), &StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>());
-	// instance data
-	StageParameter["InstanceWV"] = StageParameter["gWorldViewMatrix"].as<Matrix4x4>();
-	StageParameter["InstanceWVP"] = StageParameter["gWorldViewProjection"].as<Matrix4x4>();
-	// constexpr String PWVP("InstancePWVP");
-	StageParameter["InstancePWVP"] = StageParameter["gPrevWorldViewProjection"].as<Matrix4x4>();
-	// object id
-	StageParameter["gObjectId"] = get_object_id() + 1;
-	StageParameter["InstanceObjectId"] = StageParameter["gObjectId"].as<int>();
-	// get geometry
-	int Geometry = GetRenderMesh(Stage, Lod);
-	// if there is a skinning matrix or is a terrain.
-	if (palette.Size || Type & CLIPMAP) {
-		StageParameter["gSkinMatrix"] = palette;
-		// deformabled buffer
-		if (Stage == 0 && DeformableBuffer != -1) {
-			StageParameter["gDeformableBuffer"] = DeformableBuffer;
-		} else if (Stage == 0 && Geometry != -1) {
-			RaytracingGeometry = Context->GetRenderInterface()->CreateRaytracingGeometry(Geometry, true, &DeformableBuffer);
-		}
-	}
-	// if there are  blend shapes
-	if (BlendShape_) {
-		StageParameter["gBlendShapes"] = BlendShape_->GetId();
-		StageParameter["gWeightsArray"] = blendshape_;
-	}
-
-	int Compiled = 0;
-	int Instance = 0;
-	int InstanceSize = 0;
-	Shader* shader = 0;
-	// prepare material 
-	if (material) {
-		Compiled += material->Compile(Compiler, Stage, Lod);
-		// process shader
-		shader = material->GetShader();
-		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
-		Instance = shader->IsInstance(Stage);
-	}
-	// prepare batch
-	if (Geometry != -1) {
-		if (Instance) {
-			unsigned char InstanceBuffer[64 * 4];
-			InstanceSize = shader->MakeInstance(Stage, StageParameter, InstanceBuffer);
-			Compiled += Compiler->Instance(Geometry, InstanceBuffer, InstanceSize);
-		}
-		else {
-			Compiled += Compiler->RenderGeometry(Geometry);
-		}
-	}
-	return Compiled;
+	return 0;
 }
 
 int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)

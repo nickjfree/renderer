@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<material>
-  <textures>
-    <texture unit="gDiffuseMap0" name="zealot_diffuse" url="Texture\textures\lumia_red.dds\0">zealot_diifuse</texture>
-    <!--<texture unit="gNormalMap0" name="zealot_diffuse" url="Texture\textures\random.dds\0">zealot_normal</texture>-->
-  </textures> 
-  
-  <shader name="Basic" url="Shader\shaders\Basic\0"></shader>
-</material>

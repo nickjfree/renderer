@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-  	<texture unit="gBlueNoise" name="usbdrive_diffuse" url="Texture\textures\temporal_blue_noise.dds\0">usbdrive_diffuse</texture>
   </textures>
 
   <shader name="Basic" url="Shader\shaders\HDR\0"></shader>

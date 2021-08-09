@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<material>
-  <textures>
-    <texture unit="gDiffuseMap0" name="usbdrive_diffuse" url="Texture\textures\qianzhihe.dds\0">usbdrive_diffuse</texture>
-    <texture unit="gNormalMap0" name="usbdrive_normal" url="Texture\textures\flat2.dds\0">usbdrive_normal</texture>
-  </textures> 
-  
-  <shader name="Basic" url="Shader\shaders\Instance\0"></shader>
-</material>

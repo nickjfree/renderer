@@ -609,13 +609,13 @@ void D3D12CommandContext::Quad()
 	cmdList->DrawIndexedInstanced(geometry->numIndices, 1, 0, 0, 0);
 }
 
-void D3D12CommandContext::DispatchRays(int shaderId, int width, int height)
+void D3D12CommandContext::DispatchRays(int shaderId, int rayId, int width, int height)
 {
 	// flush state
 	flushState();
 	// trace ray
 	auto rtScene = D3D12RenderInterface::Get()->GetRaytracingScene();
-	rtScene->TraceRay(this, shaderId, width, height);
+	rtScene->TraceRay(this, shaderId, rayId, width, height);
 }
 
 void D3D12CommandContext::DispatchCompute(int x, int y, int z)

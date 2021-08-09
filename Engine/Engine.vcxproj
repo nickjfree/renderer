@@ -245,6 +245,7 @@ Glu32.lib %(AdditionalOptions)</AdditionalOptions>
     <ClInclude Include="Script\Proxy.h" />
     <ClInclude Include="Script\Script.h" />
     <ClInclude Include="Script\ScriptingSystem.h" />
+    <ClInclude Include="shaders\common\shader_inputs.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Tasks\Mutex.h" />

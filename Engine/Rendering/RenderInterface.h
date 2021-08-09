@@ -4,7 +4,7 @@
 
 #include "RenderDesc.h"
 #include "windows.h"
-
+#include "shaders/common/shader_inputs.h"
 
 /*
 	renderer command context
@@ -58,7 +58,7 @@ public:
 	// build as
 	virtual void BuildAccelerationStructure() = 0;
 	// dispatch rays
-	virtual void DispatchRays(int shaderId, int width, int height) = 0;
+	virtual void DispatchRays(int shaderId, int rayId, int width, int height) = 0;
 	// dispatch
 	virtual void DispatchCompute(int x, int y, int z) = 0;
 	// copy

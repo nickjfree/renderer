@@ -354,7 +354,7 @@ namespace D3D12Renderer {
 		// create
 		void Create(ID3D12Device* d3d12Device);
 		// Set ray
-		void SetRay(int rayIndex);
+		void SetRay(int shaderId, int rayIndex);
 		// stage
 		void Stage(D3D12CommandContext* cmdContext, D3D12_DISPATCH_RAYS_DESC* rayDesc);
 		// isDirty
@@ -398,7 +398,7 @@ namespace D3D12Renderer {
 		// build
 		void Build(D3D12CommandContext* cmdContext);
 		// trace ray
-		void TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, unsigned int width, unsigned int height);
+		void TraceRay(D3D12CommandContext* cmdContext, int shaderIndex, int rayId, unsigned int width, unsigned int height);
 		// get desc heap
 		D3D12DescriptorHeap* GetDescriptorHeap();
 		// get lcoal rs

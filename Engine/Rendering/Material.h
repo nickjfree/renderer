@@ -1,13 +1,13 @@
 #ifndef __MATERIAL_H__
 #define __MATERIAL_H__
 
-#include "Resource\Resource.h"
+#include "Resource/Resource.h"
 #include "Texture.h"
 #include "Shader.h"
 #include "ShaderLibrary.h"
-#include "Container\Dict.h"
+#include "Container/Dict.h"
 #include "Container/Vector.h"
-#include "Resource\XMLParser.h"
+#include "Resource/XMLParser.h"
 
 
 #define MULTI_TEXTUES 8
@@ -21,12 +21,21 @@ class Material : public Resource
 	LOADEROBJECT(FileLoader);
 	DECLARE_ALLOCATER(Material);
 private:
+
+	// texture unit
+	typedef struct TextureUnit {
+		int slot;
+		int resourceId;
+	}TextureUnit;
+
 	// textures, diffuse, normal, specular
 	//Texture * Textures[MULTI_TEXTUES];
 	// shaders
 	Shader* ShaderProgram;
 	// shader library
 	Vector<ShaderLibrary*> ShaderLibs;
+	// textures
+	Vector<TextureUnit> Textures;
 	// texture id cache
 	//int TexrureID[MULTI_TEXTUES];
 	// parameters. 
@@ -44,12 +53,13 @@ public:
 	// on raw data parse complete(worker thread)
 	virtual int OnLoadComplete(Variant& Data) {/* DeSerial.Release();*/ return 0; };
 	virtual int OnSubResource(int Message, Resource* Sub, Variant& Parameter);
-	virtual int Compile(BatchCompiler* Compiler, int Stage, int Lod);
 	Dict& GetParameter() { return Parameters; }
 	Shader* GetShader() { return ShaderProgram; }
 	ShaderLibrary* GetShaderLibrary(int index) { return ShaderLibs.Size()? ShaderLibs[index] : nullptr; }
 	// get resource bindings for raytracing shaders
 	int GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE * instance);
+	// apply to shader
+	void Apply(RenderCommandContext* cmdContext);
 	virtual int OnDestroy(Variant& Data);
 };
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-    <texture unit="gDiffuseMap0" name="ssao_random_texture" url="Texture\textures\random.dds\0">ssao_random</texture>
+    <texture unit="SSAO_NOISE" name="ssao_random_texture" url="Texture\textures\random.dds\0">ssao_random</texture>
   </textures>
 
   <shader name="Basic" url="Shader\shaders\SSAO\0"></shader>

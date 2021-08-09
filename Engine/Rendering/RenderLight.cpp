@@ -67,60 +67,7 @@ RenderingCamera* RenderLight::GetLightCamera() {
 }
 
 int RenderLight::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& StageParameter, RenderingCamera* Camera, RenderContext* Context) {
-	Stage = 0;
-	// process matrix
-	Matrix4x4 Transform = GetWorldMatrix();
-	Matrix4x4 Scale;
-	Scale.Scale(Vector3(Radius, Radius, Radius));
-	Transform = Scale * Transform;
-	// perlight position
-	Matrix4x4::Tranpose(Transform * Camera->GetViewProjection(), &StageParameter["gWorldViewProjection"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * Camera->GetViewMatrix(), &StageParameter["gWorldViewMatrix"].as<Matrix4x4>());
-	// light parameters
-	StageParameter["gLightPosition"] = Position * Camera->GetViewMatrix();
-	StageParameter["gLightDirection"] = Direction.RotateBy(Camera->GetViewMatrix());
-	StageParameter["gRadiusIntensity"] = Vector3(Radius, Intensity, 0);
-	StageParameter["gLightColor"] = Color;
-	StageParameter["gShadowMap"] = ShadowMap;
-	// StageParameter["gDiffuseMap0"] = Context->GetResource("gRtReflection")->as<int>();
-	Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &StageParameter["gLightViewProjection"].as<Matrix4x4>());
-	// process material
-	int Compiled = 0;
-	// stencil-pass
-	Shader* shader = 0;
-	if (material) {
-		Compiled += material->Compile(Compiler, Stage, Lod);
-		// process shader
-		shader = material->GetShader();
-		Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
-	}
-	int Geometry = GetRenderMesh(Stage, Lod);
-	if (Geometry != -1 && LightType == POINT) {
-		//Compiled += Compiler->SetTransform(Transform);
-		Compiled += Compiler->RenderGeometry(Geometry);
-	}
-	// lighting-pass
-	// get quad shader stage types
-	switch (LightType) {
-	case POINT:
-		Stage = 1;
-		//return Compiled;
-		break;
-	case DIRECTION:
-		Stage = 2;
-		//return Compiled;
-		break;
-	case ENV:
-		Stage = 3;
-		// return Compiled;
-		break;
-	default:
-		Stage = 1;
-	}
-	Compiled += shader->Compile(Compiler, Stage, Lod, material->GetParameter(), StageParameter, Context);
-	// full screen quad
-	Compiled += Compiler->Quad();
-	return Compiled;
+	return 0;
 }
 
 int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)
@@ -190,12 +137,12 @@ int RenderLight::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCa
 LightData RenderLight::GetLightData() 
 {
 	auto ret = LightData{};
-	ret.position = Position;
-	ret.direction = Direction;
-	ret.radius = Radius;
-	ret.color = Color;
-	ret.intensity = Intensity;
-	ret.type = LightType;
+	ret.Position = Position;
+	ret.Direction = Direction;
+	ret.Radius = Radius;
+	ret.Color = Color;
+	ret.Intensity = Intensity;
+	ret.Type = LightType;
 	return ret;
 }
 

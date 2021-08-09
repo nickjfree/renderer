@@ -5,31 +5,31 @@
 #include "RenderingCamera.h"
 
 
-typedef struct LightData
-{
-    // light color
-	Vector3 color;
-	// light direction
-	Vector3 direction;
-	// light position
-	Vector3 position;
-	// radius
-	float radius;
-	// intensity
-	float intensity;
-	// spotlight inner angle
-	float innerAngle; 
-	// spotlight outer angle
-	float outerAngle;
-	// rectlight width
-	float rectLightWidth;
-	// rectlight height
-	float rectLightHeight;
-	// light type
-	int type;
-	// pad
-	int pad;
-}LightData;
+//typedef struct LightData
+//{
+//    // light color
+//	Vector3 color;
+//	// light direction
+//	Vector3 direction;
+//	// light position
+//	Vector3 position;
+//	// radius
+//	float radius;
+//	// intensity
+//	float intensity;
+//	// spotlight inner angle
+//	float innerAngle; 
+//	// spotlight outer angle
+//	float outerAngle;
+//	// rectlight width
+//	float rectLightWidth;
+//	// rectlight height
+//	float rectLightHeight;
+//	// light type
+//	int type;
+//	// pad
+//	int pad;
+//}LightData;
 
 
 

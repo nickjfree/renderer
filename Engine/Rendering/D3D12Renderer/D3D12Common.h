@@ -383,7 +383,7 @@ namespace D3D12Renderer {
 		// draw full screen quad
 		void Quad();
 		// dispatch rays
-		void DispatchRays(int shaderId, int width, int height);
+		void DispatchRays(int shaderId, int rayId, int width, int height);
 		// dispatch
 		void DispatchCompute(int x, int y, int z);
 		// copy

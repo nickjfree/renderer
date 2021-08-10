@@ -112,17 +112,14 @@ int RenderLight::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingC
 		default:
 			stage = 1;
 		}
-		// draw full screen quad
-		auto cmd = cmdBuffer->AllocCommand();
-		auto& cmdParameters = cmd->cmdParameters;
 		// light parameters
-		cmdParameters["gLightPosition"] = Position * camera->GetViewMatrix();
-		cmdParameters["gLightDirection"] = Direction.RotateBy(camera->GetViewMatrix());
-		cmdParameters["gRadiusIntensity"] = Vector3(Radius, Intensity, 0);
-		cmdParameters["gLightColor"] = Color;
-		cmdParameters["gShadowMap"] = ShadowMap;
-		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cmdParameters["gLightViewProjection"].as<Matrix4x4>());
-		cmdBuffer->Draw(cmd, nullptr, GetMaterial(), stage);
+		cbLight.gLightPosition = Position * camera->GetViewMatrix();
+		cbLight.gLightDirection = Direction.RotateBy(camera->GetViewMatrix());
+		cbLight.gRadiusIntensity = Vector3(Radius, Intensity, 0);
+		cbLight.gLightColor = Color;
+		Matrix4x4::Tranpose(LightCamera->GetViewProjection(), &cbLight.gLightViewProjection);
+		// draw full screen quad
+		cmdBuffer->Draw(nullptr, GetMaterial(), stage).SetShaderConstant(CB_SLOT(CBLight),&cbLight, sizeof(CBLight));
 	}
 	return 0;
 }

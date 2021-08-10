@@ -39,18 +39,12 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 		float brightOffset[16];
 		float bloomOffset[2][16];
 		float bloomWeight[16];
-		// current time
-		unsigned int time;
-		// frame number
-		int frameNumber = 0;
 
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
 	auto hdrPass = frameGraph.AddRenderPass<PassData>("hdr",
 		[&](GraphBuilder& builder, PassData& passData) {
-			// init time
-			passData.time = GetCurrentTime();
 			// read lighting input
 			passData.resolved = builder.Read(&resolvedPassData.resolved);
 			// create the scale array
@@ -229,24 +223,19 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 			Variant* Value = renderContext->GetResource("Material\\Materials\\hdr.xml\\0");
 			Material* hdrMaterial = nullptr;
 
-			// add frame number
-			++passData.frameNumber;
-
 			if (Value) {
 				hdrMaterial = Value->as<Material*>();
 			}
 			if (hdrMaterial) {
-				cmdBuffer->SetupFrameParameters(cam, renderContext);
 				// scale by 4
 				{
-					auto cmd = cmdBuffer->AllocCommand();
 					auto scaled = passData.scaleArray[0].GetActualResource();
 					// scale lighting buffer by 1/4
-					cmdBuffer->RenderTargets(cmd, &scaled, 1, -1, false, false, 1024, 1024);
+					cmdBuffer->RenderTargets(&scaled, 1, -1, false, false, 1024, 1024);
 					// draw quoad
-					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
-					cmdBuffer->Quad(cmd, hdrMaterial, 0);
+					cmdBuffer->Quad(hdrMaterial, 0)
+						.SetShaderResource(SLOT_DHR_POST, passData.resolved.GetActualResource())
+						.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame));
 				}
 				// get avg lum
 				{
@@ -256,45 +245,36 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 						width /= 4;
 						height /= 4;
 						// set render target
-						auto cmd = cmdBuffer->AllocCommand();
 						auto target = passData.scaleArray[i].GetActualResource();
-						cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
+						cmdBuffer->RenderTargets(&target, 1, -1, false, false, width, height);
 						// set the previous lumbuffer as gPostBuffer
-						cmd = cmdBuffer->AllocCommand();
-						cmd->cmdParameters["gPostBuffer"] = passData.scaleArray[i-1].GetActualResource();
-						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.scaleOffset[i], sizeof(passData.scaleOffset[0]));
-						cmdBuffer->Quad(cmd, hdrMaterial, 1);
+						cmdBuffer->Quad(hdrMaterial, 1)
+							.SetShaderResource(SLOT_DHR_POST, passData.scaleArray[i - 1].GetActualResource())
+							.SetShaderConstant(CB_SLOT(CBSamplerOffsets), passData.scaleOffset[i], sizeof(passData.scaleOffset[0]));
 					}
 				}
 				// adapt lum
 				{
 					// flip adaptLum with prev frame
 					passData.adaptLum0.Flip(&passData.adaptLum1);
-					auto cmd = cmdBuffer->AllocCommand();
 					auto target = passData.adaptLum0.GetActualResource();
-					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, 1, 1);
-					// set parameters
-					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"] = passData.scaleArray[scale_array_size-1].GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum1.GetActualResource();
-					cmd->cmdParameters["gTimeElapse"] = GetCurrentTime() - passData.time;
-					passData.time = GetCurrentTime();
-					memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.scaleOffset[scale_array_size], sizeof(passData.scaleOffset[0]));
-					cmdBuffer->Quad(cmd, hdrMaterial, 2);
+					cmdBuffer->RenderTargets(&target, 1, -1, false, false, 1, 1);
+					// draw
+					cmdBuffer->Quad(hdrMaterial, 2)
+						.SetShaderResource(SLOT_DHR_POST, passData.scaleArray[scale_array_size - 1].GetActualResource())
+						.SetShaderResource(SLOT_DHR_INPUT1, passData.adaptLum1.GetActualResource());
 				}
 				// bright pass
 				{
 					int width = renderContext->FrameWidth / 2;   // Context->FrameWidth / 4.0f;
 					int height = renderContext->FrameHeight / 2;; // Context->FrameHeight / 4.0f;
 					// set targets
-					auto cmd = cmdBuffer->AllocCommand();
 					auto target = passData.brightBuffer.GetActualResource();
-					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
+					cmdBuffer->RenderTargets(&target, 1, -1, false, false, width, height);
 					// set parameters
-					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum0.GetActualResource();
-					cmdBuffer->Quad(cmd, hdrMaterial, 3);
+					cmdBuffer->Quad(hdrMaterial, 3)
+						.SetShaderResource(SLOT_DHR_POST, passData.resolved.GetActualResource())
+						.SetShaderResource(SLOT_DHR_INPUT1, passData.adaptLum0.GetActualResource());
 				}
 				// bloom
 				{
@@ -303,55 +283,46 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					// source --> bloom0  downsample
 					{
 						// set targets
-						auto cmd = cmdBuffer->AllocCommand();
 						auto target = passData.bloom0.GetActualResource();
-						cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
+						cmdBuffer->RenderTargets(&target, 1, -1, false, false, width, height);
 						// quad
-						cmd = cmdBuffer->AllocCommand();
-						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.brightOffset, sizeof(passData.brightOffset));
-						cmd->cmdParameters["gPostBuffer"] = passData.brightBuffer.GetActualResource();
-						cmdBuffer->Quad(cmd, hdrMaterial, 1);
+						cmdBuffer->Quad(hdrMaterial, 1)
+							.SetShaderResource(SLOT_DHR_POST, passData.brightBuffer.GetActualResource())
+							.SetShaderConstant(CB_SLOT(CBSamplerOffsets), passData.brightOffset, sizeof(passData.brightOffset));
 					}
 					// bloom0 --> bloom1  horizion
 					{
 						// set targets
-						auto cmd = cmdBuffer->AllocCommand();
 						auto target = passData.bloom1.GetActualResource();
-						cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
+						cmdBuffer->RenderTargets(&target, 1, -1, false, false, width, height);
 						// quad
-						cmd = cmdBuffer->AllocCommand();
-						memcpy_s(&cmd->cmdParameters["gSampleWeights"], sizeof(Variant), passData.bloomWeight, sizeof(passData.bloomWeight));
-						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.bloomOffset[0], sizeof(passData.bloomOffset[0]));
-						cmd->cmdParameters["gPostBuffer"] = passData.bloom0.GetActualResource();
-						cmdBuffer->Quad(cmd, hdrMaterial, 4);
+						cmdBuffer->Quad(hdrMaterial, 4)
+							.SetShaderResource(SLOT_DHR_POST, passData.bloom0.GetActualResource())
+							.SetShaderConstant(CB_SLOT(CBSamplerOffsets), &passData.brightOffset[0], sizeof(passData.bloomOffset[0]))
+							.SetShaderConstant(CB_SLOT(CBSamplerWeights), passData.bloomWeight, sizeof(passData.bloomWeight));
 					}
 					//  bloom0 --> bloom1  vertical
 					{
 						// set targets
-						auto cmd = cmdBuffer->AllocCommand();
 						auto target = passData.bloom2.GetActualResource();
-						cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, width, height);
+						cmdBuffer->RenderTargets(&target, 1, -1, false, false, width, height);
 						// quad
-						cmd = cmdBuffer->AllocCommand();
-						memcpy_s(&cmd->cmdParameters["gSampleWeights"], sizeof(Variant), passData.bloomWeight, sizeof(passData.bloomWeight));
-						memcpy_s(&cmd->cmdParameters["gSampleOffsets"], sizeof(Variant), passData.bloomOffset[1], sizeof(passData.bloomOffset[0]));
-						cmd->cmdParameters["gPostBuffer"] = passData.bloom1.GetActualResource();
-						cmdBuffer->Quad(cmd, hdrMaterial, 4);
+						cmdBuffer->Quad(hdrMaterial, 4)
+							.SetShaderResource(SLOT_DHR_POST, passData.bloom1.GetActualResource())
+							.SetShaderConstant(CB_SLOT(CBSamplerOffsets), &passData.brightOffset[1], sizeof(passData.bloomOffset[0]))
+							.SetShaderConstant(CB_SLOT(CBSamplerWeights), passData.bloomWeight, sizeof(passData.bloomWeight));
 					}
 				}
 				// tone mapping
 				{
 					// set backbuffer as render target
-					auto cmd = cmdBuffer->AllocCommand();
 					auto target = passData.hdr.GetActualResource();
-					cmdBuffer->RenderTargets(cmd, &target, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
+					cmdBuffer->RenderTargets(&target, 1, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// quad
-					cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["gPostBuffer"] = passData.resolved.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap0"] = passData.adaptLum0.GetActualResource();
-					cmd->cmdParameters["gDiffuseMap1"] = passData.bloom2.GetActualResource();
-					cmd->cmdParameters["gFrameNumber"] = passData.frameNumber;
-					cmdBuffer->Quad(cmd, hdrMaterial, 5);
+					cmdBuffer->Quad(hdrMaterial, 5)
+						.SetShaderResource(SLOT_DHR_POST, passData.resolved.GetActualResource())
+						.SetShaderResource(SLOT_DHR_INPUT1, passData.adaptLum0.GetActualResource())
+						.SetShaderResource(SLOT_DHR_INPUT2, passData.bloom2.GetActualResource());
 				}
 			} else {
 				return;

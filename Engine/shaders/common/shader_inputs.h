@@ -38,23 +38,33 @@ CBUFFER(CBMaterial, 1)
 
 CBUFFER(CBFrame, 2)
 {
-    // per frame
+
     float4x4 gViewProjectionMatrix;
     float4x4 gViewMatrix;
     float4x4 gInvertViewMaxtrix;
-    float4   gViewPoint;
 
+    float4   gViewPoint;
+    float4   gScreenSize;
+    // time 
     int  gTimeElapse;
     int  gAbsoluteTime;
     int  gFrameNumber;
     int  pad;
-
-    // screen size
-    float4 gScreenSize;
+   
     float4x4 pad1;
+};
 
-    // post pass 
+
+/*
+*   sample parameters (ugly)
+*/
+CBUFFER(CBSamplerOffsets, 0)
+{
     float4   gSampleOffsets[4];
+};
+
+CBUFFER(CBSamplerWeights, 1)
+{
     float4   gSampleWeights[4];
 };
 
@@ -62,7 +72,7 @@ CBUFFER(CBFrame, 2)
 /*
      blendshape parameters
 */
-CBUFFER(ArrayBSParamaters, 3)
+CBUFFER(CBBlendshape, 3)
 {
     // weight array, the first elements contains shape description, followed with weights 
     float4 gWeightsArray[128];
@@ -77,15 +87,13 @@ CBUFFER(ArrayBSParamaters, 3)
     // gWeightsArray[n]: weights n-1
 };
 
-// animation use 128 constants buffer, bone transform, update for each object draw
-CBUFFER(ArrayKeyframe, 4)
+/*
+*   bone matrics
+*/
+CBUFFER(CBSkinningMatrices, 4)
 {
     float4x4  gSkinMatrix[128];
 };
-
-// ArrayBSParamaters and ArrayKeyframe use deffirent constant buffers registers because these 2 may be used together
-
-
 
 
 /*
@@ -135,7 +143,7 @@ CBUFFER(CBLight, 0)
 /*
     light constant buffer multi lights
 */
-CBUFFER(ArraylightInfos, 0)
+CBUFFER(CBLights, 0)
 {
     LightData gLights[256];
 };
@@ -144,7 +152,7 @@ CBUFFER(ArraylightInfos, 0)
 /*
 *    light culling infos
 */
-CBUFFER(ArrayLightCullingInfos, 0)
+CBUFFER(CBLightsToCull, 0)
 {
     uint numLights;
     uint lightsPerCell;

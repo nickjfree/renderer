@@ -118,7 +118,7 @@ typedef struct ShaderBinding
 	Type type;
 	union {
 		int resoutceId;
-		union {
+		struct {
 			void* data;
 			unsigned int size;
 		};
@@ -168,6 +168,7 @@ public:
 	RenderingCommand& SetShaderResource(int slot, int id) {
 		auto& binding = shaderBindings[numShaderBindings++];
 		binding.type = ShaderBinding::Type::SRV;
+		binding.slot = slot;
 		binding.resoutceId = id;
 		return *this;
 	}
@@ -176,8 +177,15 @@ public:
 	RenderingCommand& SetRWShaderResource(int slot, int id) {
 		auto& binding = shaderBindings[numShaderBindings++];
 		binding.type = ShaderBinding::Type::UAV;
+		binding.slot = slot;
 		binding.resoutceId = id;
 		return *this;
+	}
+	// apply
+	void Apply(RenderCommandContext* cmdContext) {
+		for (auto i = 0; i < numShaderBindings; ++i) {
+			shaderBindings[i].Apply(cmdContext);
+		}
 	}
 
 public:
@@ -208,6 +216,8 @@ public:
 		BuildAccelerationStructureCommand buildAS;
 		RenderTargetCommand renderTargets;
 		CopyResourceCommand copyResource;
+		// the type of setup cmd
+		bool setupCompute;
 	};
 };
 
@@ -227,33 +237,35 @@ public:
 	static CommandBuffer* Alloc();
 	// alloc a new command
 	RenderingCommand* AllocCommand();
+	// setup
+	RenderingCommand& Setup(bool isCompute = false);
 	// copy
-	void CopyResource(RenderingCommand* cmd, int dest, int src);
+	RenderingCommand& CopyResource(int dest, int src);
 	// draw
-	void Quad(RenderingCommand* cmd, Material* material, int passIndex);
+	RenderingCommand& Quad(Material* material, int passIndex);
 	// draw
-	void Draw(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex);
+	RenderingCommand& Draw(Mesh* mesh, Material* material, int passIndex);
 	// draw instanced
-	void DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex);
+	RenderingCommand& DrawInstanced(Mesh* mesh, Material* material, int passIndex, void *instanceData, unsigned int stride);
 	// dispatch compute
-	void Dispatch(RenderingCommand* cmd, Material* material, int passIndex, int x, int y, int z);
+	RenderingCommand& Dispatch(Material* material, int passIndex, int x, int y, int z);
 	// dispatch rays
-	void DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h);
+	RenderingCommand& DispatchRays(int rayId, Material* material, int w, int h);
 	// dispatch rays
-	void BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag);
+	RenderingCommand& BuildAccelerationStructure(Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag);
 	// render targets
-	void RenderTargets(RenderingCommand* cmd, int* targets, int numTargets, int depth, bool clearTargets, bool clearDepth, int w, int h);
+	RenderingCommand& RenderTargets(int* targets, int numTargets, int depth, bool clearTargets, bool clearDepth, int w, int h);
 	// flush and record commandlist
 	void Flush(RenderCommandContext* cmdContext);
 	// reset
 	void Reset();
-	// set frame parameter
-	void SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext);
 	// get global parameter
 	void SetGlobalParameter(const String& name, Variant& data);
 private:
 	// alloc instance buffer
 	bool appendInstanceBuffer(size_t size);
+	// setup bindings
+	void setup(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// process rendertargets
 	void setRenderTargets(RenderingCommand* cmd, RenderCommandContext* cmdContext);
 	// draw

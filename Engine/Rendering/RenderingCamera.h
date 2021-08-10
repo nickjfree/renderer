@@ -51,11 +51,13 @@ protected:
 	// inversed v
 	Matrix4x4 InvertView;
 	Frustum frustum;
+	// frame config
+	CBFrame cbFrame;
 public:
 	RenderingCamera();
 	virtual ~RenderingCamera();
 	Frustum& GetFrustum();
-	void Update(int ms);
+	void Update(RenderContext* context);
 	Matrix4x4& GetViewMatrix() { return ViewMatrix; }
 	Matrix4x4& GetViewProjection() { return ViewProjection; }
 	Matrix4x4& GetProjection() { return Projection; }
@@ -71,6 +73,8 @@ public:
 	void SetProjection(Matrix4x4& Projection);
 
 	void UpdatePrevMatrix();
+	// frame constant buffer
+	CBFrame* GetCBFrame();
 
 };
 #endif

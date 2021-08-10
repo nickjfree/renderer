@@ -11,19 +11,6 @@ CommandBuffer* CommandBuffer::Alloc()
 	return commandBuffer;
 }
 
-void CommandBuffer::SetupFrameParameters(RenderingCamera* cam, RenderContext* renderContext)
-{
-	// globalParameters.Clear();
-	Matrix4x4::Tranpose(cam->GetInvertView(), &globalParameters["gInvertViewMaxtrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetProjection(), &globalParameters["gProjectionMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetViewMatrix(), &globalParameters["gViewMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(cam->GetViewProjection(), &globalParameters["gViewProjectionMatrix"].as<Matrix4x4>());
-	globalParameters["gViewPoint"] = cam->GetViewPoint();
-	globalParameters["gScreenSize"] = Vector2(static_cast<float>(renderContext->FrameWidth), static_cast<float>(renderContext->FrameHeight));
-	// set renderContext
-	this->renderContext = renderContext;
-}
-
 void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
 {
 	globalParameters[name] = data;
@@ -45,28 +32,41 @@ bool CommandBuffer::appendInstanceBuffer(size_t size)
 	return true;
 }
 
-void CommandBuffer::CopyResource(RenderingCommand* cmd, int dest, int src)
+RenderingCommand& CommandBuffer::Setup(bool isCompute)
 {
+	auto cmd = AllocCommand();
+	cmd->cmdType = RenderingCommand::CommandType::SETUP;
+	cmd->setupCompute = isCompute;
+	return *cmd;
+}
+
+RenderingCommand& CommandBuffer::CopyResource(int dest, int src)
+{
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::COPY_RESOURCE;
 	cmd->copyResource.dest = dest;
 	cmd->copyResource.src = src;
+	return *cmd;
 }
 
-void CommandBuffer::Quad(RenderingCommand* cmd, Material* material, int passIndex)
+RenderingCommand& CommandBuffer::Quad(Material* material, int passIndex)
 {
-	Draw(cmd, nullptr, material, passIndex);
+	return Draw(nullptr, material, passIndex);
 }
 
-void CommandBuffer::Draw(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex)
+RenderingCommand& CommandBuffer::Draw(Mesh* mesh, Material* material, int passIndex)
 {
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::DRAW;
 	cmd->draw.mesh = mesh;
 	cmd->draw.material = material;
 	cmd->draw.passIndex = passIndex;
+	return *cmd;
 }
 
-void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* material, int passIndex)
+RenderingCommand& CommandBuffer::DrawInstanced(Mesh* mesh, Material* material, int passIndex, void* instanceData, unsigned int instanceStride)
 {
+	auto cmd = AllocCommand();
 	// get prev cmd
 	RenderingCommand* prev = nullptr;
 	if (currentIndex > 0) {
@@ -76,12 +76,13 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 	auto shader = material->GetShader();
 	if (shader->IsInstance(passIndex)) {
 		auto currentInstanceBuffer = instanceBuffer + usedInstanceBuffer;
-		auto instanceStride = shader->MakeInstance(passIndex, cmd->cmdParameters, currentInstanceBuffer);
 		if (!appendInstanceBuffer(instanceStride)) {
 			// instancebuffer full
 			printf("instance buffer full, size %zu\n", usedInstanceBuffer);
-			return;
+			return *cmd;
 		}
+		// copy to instanceBuffer
+		memcpy(currentInstanceBuffer, instanceData, instanceStride);
 		if (prev && (int)prev->cmdType == (int)RenderingCommand::CommandType::DRAW_INSTANCED && prev->draw.mesh == mesh && prev->draw.material == material) {
 			// merge cmd to prev one
 			prev->draw.numInstances += 1;
@@ -100,31 +101,36 @@ void CommandBuffer::DrawInstanced(RenderingCommand* cmd, Mesh* mesh, Material* m
 		// error, 
 		printf("shader doesn't support instancing %s\n", shader->GetUrl().ToStr());
 	}
-
+	return *cmd;
 }
 
-void CommandBuffer::Dispatch(RenderingCommand* cmd, Material* material, int passIndex, int x, int y, int z)
+RenderingCommand& CommandBuffer::Dispatch(Material* material, int passIndex, int x, int y, int z)
 {
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::DISPATCH_COMPUTE;
 	cmd->dispatchCompute.material = material;
 	cmd->dispatchCompute.passIndex = passIndex;
 	cmd->dispatchCompute.x = x;
 	cmd->dispatchCompute.y = y;
 	cmd->dispatchCompute.z = z;
+	return *cmd;
 }
 
 
-void CommandBuffer::DispatchRays(RenderingCommand* cmd, int rayId, Material* material, int w, int h)
+RenderingCommand& CommandBuffer::DispatchRays(int rayId, Material* material, int w, int h)
 {
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::DISPATCH_RAYS;
 	cmd->dispatchRays.material = material;
 	cmd->dispatchRays.rayId = rayId;
 	cmd->dispatchRays.width = w;
 	cmd->dispatchRays.height = h;
+	return *cmd;
 }
 
-void CommandBuffer::BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag)
+RenderingCommand& CommandBuffer::BuildAccelerationStructure(Mesh* mesh, Material* material, Matrix4x4& transform, int transientGeometryId, int materialId, int flag)
 {
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::BUILD_AS;
 	cmd->buildAS.transientGeometryId = transientGeometryId;
 	cmd->buildAS.materialId = materialId;
@@ -132,10 +138,12 @@ void CommandBuffer::BuildAccelerationStructure(RenderingCommand* cmd, Mesh* mesh
 	cmd->buildAS.material = material;
 	cmd->buildAS.mesh = mesh;
 	cmd->buildAS.transform = transform;
+	return *cmd;
 }
 
-void CommandBuffer::RenderTargets(RenderingCommand* cmd, int* targets, int numTargets, int depth, bool clearTargets, bool clearDepth, int w, int h)
+RenderingCommand& CommandBuffer::RenderTargets(int* targets, int numTargets, int depth, bool clearTargets, bool clearDepth, int w, int h)
 {
+	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::RENDER_TARGET;
 	memcpy(cmd->renderTargets.targets, targets, sizeof(int) * numTargets);
 	cmd->renderTargets.numTargets = numTargets;
@@ -144,7 +152,21 @@ void CommandBuffer::RenderTargets(RenderingCommand* cmd, int* targets, int numTa
 	cmd->renderTargets.clearDepth = clearDepth;
 	cmd->renderTargets.width = w;
 	cmd->renderTargets.height = h;
+	return *cmd;
 }
+
+void CommandBuffer::setup(RenderingCommand* cmd, RenderCommandContext* cmdContext)
+{
+	// mode setup
+	if (cmd->setupCompute) {
+		cmdContext->SetComputeMode();
+	}
+	else {
+		cmdContext->SetGraphicsMode();
+	}
+	cmd->Apply(cmdContext);
+}
+
 
 void CommandBuffer::setRenderTargets(RenderingCommand* cmd, RenderCommandContext* cmdContext)
 {
@@ -164,6 +186,8 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 		auto shader = cmd->draw.material->GetShader();
 		// apply material textures
 		material->Apply(cmdContext);
+		// apply cmd bindings
+		cmd->Apply(cmdContext);
 		// apply shader bindings
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
@@ -185,6 +209,8 @@ void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* c
 		auto shader = cmd->draw.material->GetShader();
 		// apply material textures
 		material->Apply(cmdContext);
+		// apply cmd bindings
+		cmd->Apply(cmdContext);
 		// apply shader bindings
 		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 	}
@@ -221,6 +247,8 @@ void CommandBuffer::dispatch(RenderingCommand* cmd, RenderCommandContext* cmdCon
 	if (shader) {
 		// apply material textures
 		material->Apply(cmdContext);
+		// apply cmd bindings
+		cmd->Apply(cmdContext);
 		// apply shader bindings
 		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 		// dispatch rays
@@ -236,9 +264,12 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 	if (rtShader) {
 		// apply material textures
 		material->Apply(cmdContext);
+		// apply cmd bindings
+		cmd->Apply(cmdContext);
 		// apply shader bindings
 		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
 		// dispatch rays
+		cmdContext->SetRaytracingScene(SLOT_RT_SCENE);
 		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.rayId, cmd->dispatchRays.width, cmd->dispatchRays.height);
 	}
 }
@@ -262,6 +293,10 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 		}*/
 		// 
 		switch (cmd.cmdType) {
+		case RenderingCommand::CommandType::SETUP:
+			// setup bindings
+			setup(&cmd, cmdContext);
+			break;
 		case RenderingCommand::CommandType::RENDER_TARGET:
 			setRenderTargets(&cmd, cmdContext);
 			break;

@@ -60,7 +60,8 @@ private:
 	int LightType;
 	// showmap id
 	int ShadowMap = -1;
-
+	// cblight
+	CBLight cbLight;
 public:
 	enum {
 		POINT,

@@ -26,7 +26,12 @@ protected:
 	ShaderParameterArray blendshape_ = {};
 	// blendshape
 	BlendShape* BlendShape_ = nullptr;
-
+	// instance buffer
+	CBInstance cbInstance;
+	// sknning matrices
+	CBSkinningMatrices* cbSkinningMatrices = nullptr;
+	// blendshapes
+	CBBlendshape* cbBlendShapes = nullptr;
 public:
 	RenderObject();
 	virtual ~RenderObject();

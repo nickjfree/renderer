@@ -104,6 +104,7 @@ int RenderControl::Execute() {
 	while (numCamera--) {
 		RenderingCamera* cam = Cameras[numCamera];
 		// render the frame
+		cam->Update(Context);
 		frameGraph.Execute(cam, spatial, Context);
 		// update prev matrix. for motion vectors
 		cam->UpdatePrevMatrix();

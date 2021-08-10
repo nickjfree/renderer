@@ -48,58 +48,48 @@ int RenderObject::Compile(BatchCompiler* Compiler, int Stage, int Lod, Dict& Sta
 
 int RenderObject::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext)
 {
-	auto cmd = cmdBuffer->AllocCommand();
-	auto& cmdParameters = cmd->cmdParameters;
-	if (stage == R_STAGE_GBUFFER) {
-		stage = 0;
-	} else if (stage == R_STAGE_SHADOW) {
-		stage = 2;
-	} else if (stage == R_STAGE_OIT) {
-		stage = 3;
-	}
 	// interface
 	auto renderInterface = renderContext->GetRenderInterface();
-	// prepare perObject constants
+
+	// set cbInstance
 	Matrix4x4& Transform = GetWorldMatrix();
-	// per-object position
-	Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cmdParameters["gWorldViewProjection"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cmdParameters["gWorldViewMatrix"].as<Matrix4x4>());
-	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &cmdParameters["gPrevWorldViewProjection"].as<Matrix4x4>());
+	Matrix4x4::Tranpose(Transform * camera->GetViewProjection(), &cbInstance.gWorldViewProjection);
+	Matrix4x4::Tranpose(Transform * camera->GetViewMatrix(), &cbInstance.gWorldViewMatrix);
+	Matrix4x4::Tranpose(Transform * camera->GetPrevViewProjection(), &cbInstance.gPrevWorldViewProjection);
+	cbInstance.gObjectId = get_object_id() + 1;
 	// instance data
-	cmdParameters["InstanceWV"] = cmdParameters["gWorldViewMatrix"];
-	cmdParameters["InstanceWVP"] = cmdParameters["gWorldViewProjection"];
-	// constexpr String PWVP("InstancePWVP");
-	cmdParameters["InstancePWVP"] = cmdParameters["gPrevWorldViewProjection"];
-	// object id
-	cmdParameters["gObjectId"] = get_object_id() + 1;
-	cmdParameters["InstanceObjectId"] = get_object_id() + 1;
 	auto mesh = model->MeshResource[lod];
-	if (palette.Size || Type & CLIPMAP) {
-		cmdParameters["gSkinMatrix"] = palette;
-		if (stage == 0) {
-			DeformableBuffer = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
-			cmdParameters["gDeformableBuffer"] = DeformableBuffer;
-		}
-	}
-	// if there are  blend shapes
-	if (BlendShape_) {
-		cmdParameters["gBlendShapes"] = BlendShape_->GetId();
-		cmdParameters["gWeightsArray"] = blendshape_;
-	} 
 	// add to commandbuffer
-	if (material->GetShader()->IsInstance(stage)) {
-		cmdBuffer->DrawInstanced(cmd, mesh, GetMaterial(), stage);
-	} else {
-		cmdBuffer->Draw(cmd, mesh, GetMaterial(), stage);
+	if (material->GetShader()->IsInstance(0)) {
+		cmdBuffer->DrawInstanced(mesh, GetMaterial(), 0, &cbInstance, sizeof(CBInstance));
+	} 
+	else {
+		auto& cmd = cmdBuffer->Draw(mesh, GetMaterial(), 0);
+		cmd.SetShaderConstant(CB_SLOT(CBInstance), &cbInstance, sizeof(CBInstance));
+		// has skinning matrices
+		if (cbSkinningMatrices) {
+			DeformableBuffer = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
+			cmd.SetRWShaderResource(SLOT_ANIME_DEFORMED_MESH, DeformableBuffer);
+			cmd.SetShaderConstant(CB_SLOT(CBSkinningMatrices), cbSkinningMatrices, sizeof(CBSkinningMatrices));
+		}
+		// terrain mesh
+		if (Type & CLIPMAP) {
+			DeformableBuffer = renderInterface->CreateTransientGeometryBuffer(mesh->GetId());
+			cmd.SetRWShaderResource(SLOT_ANIME_DEFORMED_MESH, DeformableBuffer);
+		}
+		// if there are  blend shapes
+		if (cbBlendShapes) {
+			cmd.SetShaderResource(SLOT_ANIME_BLEND_SHAPES, BlendShape_->GetId());
+			cmd.SetShaderConstant(CB_SLOT(CBBlendshape), cbBlendShapes, sizeof(CBBlendshape));
+		}
 	}
 	return 0;
 }
 
 int RenderObject::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingCamera* camera, RenderContext* renderContext) 
 {
-	auto cmd = cmdBuffer->AllocCommand();
 	auto mesh = model->MeshResource[0];
-	cmdBuffer->BuildAccelerationStructure(cmd, mesh, GetMaterial(), GetWorldMatrix(), DeformableBuffer, 0, 0);
+	cmdBuffer->BuildAccelerationStructure(mesh, GetMaterial(), GetWorldMatrix(), DeformableBuffer, 0, 0);
 	// the deformableBuffer shoud be re-create each  frame
 	DeformableBuffer = -1;
 	return 0;
@@ -108,11 +98,15 @@ int RenderObject::UpdateRaytracingStructure(CommandBuffer* cmdBuffer, RenderingC
 void RenderObject::SetMatrixPalette(Matrix4x4* palette_, unsigned int NumMatrix_) {
 	palette.Data = palette_;
 	palette.Size = sizeof(Matrix4x4) * NumMatrix_;
+
+	cbSkinningMatrices = (CBSkinningMatrices*)palette_;
 }
 
 void RenderObject::SetBlendShapeDesc(BSDesc* desc) {
 	blendshape_.Data = desc;
 	blendshape_.Size = sizeof(BSWeight) * (int)desc->num_weiths + sizeof(float) * 4;
+
+	cbBlendShapes = (CBBlendshape*)desc;
 }
 
 void RenderObject::SetBlendShape(BlendShape* Shape) {

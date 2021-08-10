@@ -254,9 +254,6 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 				});
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// cmdBuffer global pramerers setup
-			cmdBuffer->SetupFrameParameters(cam, renderContext);
-
 			// flip compact buffer
 			passData.compact0.Flip(&passData.compact1);
 			// set gbuffer as render target
@@ -269,13 +266,12 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			};
 			auto compact1 = passData.compact1.GetActualResource();
 			auto zbuffer = passData.zBuffer.GetActualResource();
-			// record command
-			auto cmd = cmdBuffer->AllocCommand();
-			cmdBuffer->RenderTargets(cmd, targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
-			// set prev compact buffer
-			Variant prevCompactBuffer;
-			prevCompactBuffer= compact1;
-			cmdBuffer->SetGlobalParameter("gPrevCompactBuffer", prevCompactBuffer);
+			// set render targets
+			cmdBuffer->RenderTargets(targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
+			// set cbframe and prev compact buffer
+			cmdBuffer->Setup()
+				.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
+				.SetShaderResource(SLOT_GBUFFER_PREV_COMPACT, compact1);
 			// render objects
 			static Vector<Node*> objects;
 			objects.Reset();
@@ -303,6 +299,8 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 		RenderResource lighting;
 
 		RenderResource zBuffer;
+
+		Vector<Node*> lights;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -334,29 +332,24 @@ auto AddLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 				});
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// set lighting as render target
-			cmdBuffer->SetupFrameParameters(cam, renderContext);
 			int targets[] = {
 				passData.lighting.GetActualResource(),
 			};
+			// setup
+			cmdBuffer->Setup()
+				.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
+				.SetShaderResource(SLOT_GBUFFER_DIFFUSE, passData.diffuse.GetActualResource())
+				.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
+				.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
+				.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource());
+
 			auto zbuffer = passData.zBuffer.GetActualResource();
-			auto cmd = cmdBuffer->AllocCommand();
-			cmdBuffer->RenderTargets(cmd, targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
-			// set gbuffer as input
-			Variant diffuse, compact0, specular, depth;
-			diffuse = passData.diffuse.GetActualResource();
-			compact0 = passData.compact0.GetActualResource();
-			specular = passData.specular.GetActualResource();
-			depth = passData.depth.GetActualResource();
-			cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
-			cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
-			cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
-			cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
+			cmdBuffer->RenderTargets(targets, 1, zbuffer, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+
 			// render all the lights
-			static Vector<Node*> lights;
-			lights.Reset();
-			spatial->Query(cam->GetFrustum(), lights, Node::LIGHT);
-			for (auto iter = lights.Begin(); iter != lights.End(); iter++) {
+			passData.lights.Reset();
+			spatial->Query(cam->GetFrustum(), passData.lights, Node::LIGHT);
+			for (auto iter = passData.lights.Begin(); iter != passData.lights.End(); iter++) {
 				auto light = *iter;
 				light->Render(cmdBuffer, 0, 0, cam, renderContext);
 			}
@@ -400,26 +393,18 @@ auto AddEmissivePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gb
 				emissiveMaterial = Value->as<Material*>();
 			}
 			if (emissiveMaterial) {
-				// set lighting as render target
-				cmdBuffer->SetupFrameParameters(cam, renderContext);
 				int targets[] = {
 					passData.lighting.GetActualResource(),
-				};
-				// set gbuffer as input
-				Variant diffuse, compact0, specular, depth;
-				diffuse= passData.diffuse.GetActualResource();
-				compact0= passData.compact0.GetActualResource();
-				specular= passData.specular.GetActualResource();
-				depth= passData.depth.GetActualResource();
-				cmdBuffer->SetGlobalParameter("gDiffuseBuffer", diffuse);
-				cmdBuffer->SetGlobalParameter("gCompactBuffer", compact0);
-				cmdBuffer->SetGlobalParameter("gDepthBuffer", depth);
-				cmdBuffer->SetGlobalParameter("gSpecularBuffer", specular);
-				// emissive pass
-				auto cmd = cmdBuffer->AllocCommand();
-				cmdBuffer->RenderTargets(cmd, targets, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+				};			
+				// emissive pass setup
+				cmdBuffer->Setup()
+					.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
+					.SetShaderResource(SLOT_GBUFFER_DIFFUSE, passData.diffuse.GetActualResource())
+					.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
+					.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
+					.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource());
 				// draw quad
-				cmdBuffer->Quad(cmd, emissiveMaterial, 0);
+				cmdBuffer->Quad(emissiveMaterial, 0);
 			}
 
 		});

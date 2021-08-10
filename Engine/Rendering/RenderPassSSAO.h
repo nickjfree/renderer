@@ -53,14 +53,14 @@ auto AddSSAOPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lighti
 				ssaoMaterial = Value->as<Material*>();
 			}
 			if (ssaoMaterial) {
-				auto cmd = cmdBuffer->AllocCommand();
+				// set cbframe
 				auto target = passData.ao.GetActualResource();
-				// scale lighting buffer by 1/4
-				cmdBuffer->RenderTargets(cmd, &target, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+				cmdBuffer->RenderTargets(&target, 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 				// draw quoad
-				cmd = cmdBuffer->AllocCommand();
-				// cmd->cmdParameters["gPostBuffer"] = passData.lighting.GetActualResource();
-				cmdBuffer->Quad(cmd, ssaoMaterial, 0);
+				cmdBuffer->Quad(ssaoMaterial, 0)
+					.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
+					.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
+					.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource());
 			}
 		});
 	return ssaoPass;

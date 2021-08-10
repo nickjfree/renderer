@@ -64,18 +64,36 @@ void RenderingCamera::UpdatePrevMatrix() {
 	PrevViewMatrix = ViewMatrix; 
 }
 
+CBFrame* RenderingCamera::GetCBFrame()
+{
+	return &cbFrame;
+}
+
+
 Frustum& RenderingCamera::GetFrustum() {
 	frustum = Frustum::CreateFromProjection(Position, Orientation, Projection);
 	//frustum = Frustum::CreateFromProjection(Projection);
 	return frustum;
 }
 
-void RenderingCamera::Update(int ms) {
-	//TestMove(ms);
-	//ViewMatrix = Matrix4x4::LookAtLH(Look, Up, Right, Position);
-	//Matrix4x4::Inverse(ViewMatrix, &InvertView);
-	//ViewProjection = ViewMatrix * Projection;
+
+void RenderingCamera::Update(RenderContext* context) {
+	// set matrix
+	Matrix4x4::Tranpose(GetInvertView(), &cbFrame.gInvertViewMaxtrix);
+	Matrix4x4::Tranpose(GetViewMatrix(), &cbFrame.gViewMatrix);
+	Matrix4x4::Tranpose(GetViewProjection(), &cbFrame.gViewProjectionMatrix);
+	// view point
+	cbFrame.gViewPoint = GetViewPoint();
+	// screen size
+	cbFrame.gScreenSize.x = context->FrameWidth;
+	cbFrame.gScreenSize.y = context->FrameHeight;
+	// time
+	++cbFrame.gFrameNumber;
+	auto absTime = GetTickCount();
+	cbFrame.gTimeElapse = absTime - cbFrame.gAbsoluteTime;
+	cbFrame.gAbsoluteTime = absTime;
 }
+
 
 int RenderingCamera::Walk(int TimeDelt)
 {

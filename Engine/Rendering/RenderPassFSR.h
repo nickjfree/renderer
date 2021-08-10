@@ -35,6 +35,9 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 		RenderResource intermediary;
 		// output
 		RenderResource output;
+		// fsr consts
+		CBFSRConst const1;
+		CBFSRConst const2;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -86,41 +89,30 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 			if (fsrMaterial) {		
 				// easu
 				{
-					FSRConstants  consts{};
+					auto& consts = passData.const1;
 					FsrEasuCon(reinterpret_cast<AU1*>(&consts.Const0), reinterpret_cast<AU1*>(&consts.Const1), reinterpret_cast<AU1*>(&consts.Const2), reinterpret_cast<AU1*>(&consts.Const3), static_cast<AF1>(renderWidth), static_cast<AF1>(renderHeight), static_cast<AF1>(renderWidth), static_cast<AF1>(renderHeight), (AF1)displayWidth, (AF1)displayHeight);
 					consts.Sample.x = 0;
-					auto cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["InputTexture"] = passData.hdr.GetActualResource();
-					cmd->cmdParameters["OutputTexture"] = passData.intermediary.GetActualResource();
-					cmd->cmdParameters["Const0"] = consts.Const0;
-					cmd->cmdParameters["Const1"] = consts.Const1;
-					cmd->cmdParameters["Const2"] = consts.Const2;
-					cmd->cmdParameters["Const3"] = consts.Const3;
-					cmd->cmdParameters["Sample"] = consts.Sample;
-					cmdBuffer->Dispatch(cmd, fsrMaterial, 0, dispatchX, dispatchY, 1);
+					cmdBuffer->Dispatch(fsrMaterial, 0, dispatchX, dispatchY, 1)
+						.SetShaderConstant(CB_SLOT(CBFSRConst), &consts, sizeof(CBFSRConst))
+						.SetShaderResource(SLOT_FSR_INPUT, passData.hdr.GetActualResource())
+						.SetRWShaderResource(SLOT_FSR_OUTPUT, passData.intermediary.GetActualResource());
 				}
 				// rcas
 				{
 					float rcasAttenuation = 0;
-					FSRConstants consts = {};
+					auto& consts = passData.const2;
 					FsrRcasCon(reinterpret_cast<AU1*>(&consts.Const0), 0);
 					consts.Sample.x = 0;
-					auto cmd = cmdBuffer->AllocCommand();
-					cmd->cmdParameters["InputTexture"] = passData.intermediary.GetActualResource();
-					cmd->cmdParameters["OutputTexture"] = passData.output.GetActualResource();
-					cmd->cmdParameters["Const0"] = consts.Const0;
-					cmd->cmdParameters["Const1"] = consts.Const1;
-					cmd->cmdParameters["Const2"] = consts.Const2;
-					cmd->cmdParameters["Const3"] = consts.Const3;
-					cmd->cmdParameters["Sample"] = consts.Sample;
-					cmdBuffer->Dispatch(cmd, fsrMaterial, 1, dispatchX, dispatchY, 1);
+					cmdBuffer->Dispatch(fsrMaterial, 1, dispatchX, dispatchY, 1)
+						.SetShaderConstant(CB_SLOT(CBFSRConst), &consts, sizeof(CBFSRConst))
+						.SetShaderResource(SLOT_FSR_INPUT, passData.intermediary.GetActualResource())
+						.SetRWShaderResource(SLOT_FSR_OUTPUT, passData.output.GetActualResource());
 				}
 				// copy pass
 				{
-					// set backbuffer as render target
-					auto cmd = cmdBuffer->AllocCommand();
+					// copy fsr output to backbuffer
 					auto target = 0;
-					cmdBuffer->CopyResource(cmd, target, passData.output.GetActualResource());
+					cmdBuffer->CopyResource(target, passData.output.GetActualResource());
 				}
 			} else {
 				return;

@@ -38,8 +38,6 @@ auto AddShadowMapPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			}
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
-			// render shadows for each lights
-			cmdBuffer->SetupFrameParameters(cam, renderContext);
 			static Vector<Node*> lights;
 			lights.Reset();
 			spatial->Query(cam->GetFrustum(), lights, Node::LIGHT);
@@ -49,8 +47,7 @@ auto AddShadowMapPass(FrameGraph& frameGraph, RenderContext* renderContext)
 				auto shadowMap = passData.shadowMaps[index].GetActualResource();
 				light->SetShadowMap(shadowMap);
 				// set lights's depth buffer
-				auto cmd = cmdBuffer->AllocCommand();
-				cmdBuffer->RenderTargets(cmd, nullptr, 0, shadowMap, false, true, renderContext->FrameWidth, renderContext->FrameHeight);
+				cmdBuffer->RenderTargets(nullptr, 0, shadowMap, false, true, renderContext->FrameWidth, renderContext->FrameHeight);
 				auto lightCam = light->GetLightCamera();
 				// render in light's view
 				static Vector<Node*> occluders;

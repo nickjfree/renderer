@@ -17,13 +17,23 @@
 #define SLOT_MATERIAL_SPECULAR0  7
 #define SLOT_MATERIAL_SPECULAR   SLOT_MATERIAL_SPECULAR0
 
+/*
+*	animation
+*/
+#define SLOT_ANIME_DEFORMED_MESH       0
+#define SLOT_ANIME_BLEND_SHAPES        1
+
 
 /*
 *	terrain vt
 */
+#define SLOT_TERRAIN_DEFORMED_MESH      0
+
 #define SLOT_TERRAIN_VT_DIFFUSE  0
 #define SLOT_TERRAIN_VT_NORMAL   1
 #define SLOT_TERRAIN_VT_HEIGHT   2
+
+
 
 
 
@@ -114,7 +124,7 @@
 */
 #define SLOT_SVGF_PREV_COLOR      0
 #define SLOT_SVGF_PREV_MOMENT  	  1
-#define SLOT_SVGF_CURRENT_COLOR   2
+#define SLOT_SVGF_INPUT           2
 
 #define SLOT_SVGF_FILTER_COLOR    0
 #define SLOT_SVGF_FILTER_MOMENT   1

@@ -49,12 +49,12 @@ private:
 public:
 	Vector() : Data(0), ItemSize(0), Capacity(0), Resized(0) {};
 	virtual ~Vector() { Clear(); };
-	Vector(Vector&);
+	Vector(const Vector&);
 	int Size() { return ItemSize; };
 	int Resize(int NewSize, int Fill = 0);
 	T& operator [](int Index);
-	void operator = (Vector&);
-	int PushBack(T& Item);
+	void operator = (const Vector&);
+	int PushBack(const T& Item);
 	T& PopBack();
 	void Reset() {
 		// POD or not
@@ -65,12 +65,12 @@ public:
 		}
 	}
 	Iterator Begin() {
-		Iterator Iter;
+		Iterator Iter{};
 		Iter.ptr = &Data[0];
 		return Iter;
 	};
 	Iterator End() {
-		Iterator Iter;
+		Iterator Iter{};
 		Iter.ptr = &Data[ItemSize];
 		return Iter;
 	};
@@ -114,7 +114,7 @@ void Vector<T>::Clear() {
 }
 
 template <class T>
-int Vector<T>::PushBack(T& Item) {
+int Vector<T>::PushBack(const T& Item) {
 	if (ItemSize == Capacity) {
 		Append();
 	}
@@ -139,7 +139,7 @@ void Vector<T>::Append() {
 }
 
 template <class T>
-Vector<T>::Vector(Vector<T>& rh) {
+Vector<T>::Vector(const Vector<T>& rh) {
 	ItemSize = rh.ItemSize;
 	Capacity = rh.Capacity;
 	Resized = rh.Resized;
@@ -150,7 +150,7 @@ Vector<T>::Vector(Vector<T>& rh) {
 }
 
 template <class T>
-void Vector<T>::operator=(Vector<T>& rh) {
+void Vector<T>::operator=(const Vector<T>& rh) {
 	// clear old data
 	Clear();
 	ItemSize = rh.ItemSize;

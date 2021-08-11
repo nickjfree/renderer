@@ -186,6 +186,9 @@ public:
 		for (auto i = 0; i < numShaderBindings; ++i) {
 			shaderBindings[i].Apply(cmdContext);
 		}
+		if (setup) {
+			setup->Apply(cmdContext);
+		}
 	}
 
 public:
@@ -203,8 +206,8 @@ public:
 	};
 	CommandType cmdType = CommandType::DRAW;
 	
-	// constants and other parameters
-	Dict cmdParameters;
+	// setup
+	RenderingCommand* setup = nullptr;
 	// shader bindings
 	ShaderBinding shaderBindings[cmd_max_shader_bindings];
 	int numShaderBindings = 0;
@@ -239,6 +242,8 @@ public:
 	RenderingCommand* AllocCommand();
 	// setup
 	RenderingCommand& Setup(bool isCompute = false);
+	// restore
+	void Restore();
 	// copy
 	RenderingCommand& CopyResource(int dest, int src);
 	// draw
@@ -285,6 +290,8 @@ private:
 	RenderingCommand renderingCommands[max_command_buffer_size];
 	// num
 	int currentIndex = 0;
+	// setup cmd
+	RenderingCommand* setupCmd = nullptr;
 	// instance 
 	unsigned char instanceBuffer[max_instance_buffer_size] = {};
 	// size

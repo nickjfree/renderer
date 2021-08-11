@@ -145,10 +145,6 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 					cmdBuffer->Quad(material, 0)
 						// rebind gfx parameter
 						.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
-						.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_MOTION, passData.motion.GetActualResource())
 						// svgf
 						.SetShaderResource(SLOT_SVGF_PREV_COLOR, passData.color1.GetActualResource())
 						.SetShaderResource(SLOT_SVGF_PREV_MOMENT, passData.moment1.GetActualResource())
@@ -439,6 +435,16 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 						.SetShaderConstant(CB_SLOT(CBLightsToCull), &passData.lightsToCull, sizeof(CBLightsToCull))
 						.SetRWShaderResource(SLOT_LIGHT_CULLING_RESULT, passData.culledLights.GetActualResource());
 				}
+				{
+					// setup gbuffer for following cmd
+					cmdBuffer->Setup(true)
+						// gbuffer
+						.SetShaderResource(SLOT_GBUFFER_DIFFUSE, passData.diffuse.GetActualResource())
+						.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
+						.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource())
+						.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
+						.SetShaderResource(SLOT_GBUFFER_MOTION, passData.motion.GetActualResource());
+				}
 				// disptach rays
 				{
 					cmdBuffer->DispatchRays(1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight)
@@ -446,13 +452,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 						// culled light index
 						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
 						// result
-						.SetRWShaderResource(SLOT_RT_LIGHTING_TARGET, passData.rtLighting.GetActualResource())
-						// gbuffer
-						.SetShaderResource(SLOT_GBUFFER_DIFFUSE, passData.diffuse.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_MOTION, passData.motion.GetActualResource());
+						.SetRWShaderResource(SLOT_RT_LIGHTING_TARGET, passData.rtLighting.GetActualResource());
 				}
 				// flip color & moment buffer
 				passData.color0.Flip(&passData.color1);
@@ -466,12 +466,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					cmdBuffer->RenderTargets(targets, 2, -1, false, false, renderContext->FrameWidth, renderContext->FrameHeight);
 					// draw quad
 					cmdBuffer->Quad(rtMaterial, 0)
-						// rebind gfx parameter
+						// rebind cbframe
 						.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
-						.SetShaderResource(SLOT_GBUFFER_COMPACT, passData.compact0.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_SPECULAR, passData.specular.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_DEPTH, passData.depth.GetActualResource())
-						.SetShaderResource(SLOT_GBUFFER_MOTION, passData.motion.GetActualResource())
 						// svgf
 						.SetShaderResource(SLOT_SVGF_PREV_COLOR, passData.color1.GetActualResource())
 						.SetShaderResource(SLOT_SVGF_PREV_MOMENT, passData.moment1.GetActualResource())

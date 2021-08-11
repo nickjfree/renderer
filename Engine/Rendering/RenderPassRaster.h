@@ -269,9 +269,8 @@ auto AddGBufferPass(FrameGraph& frameGraph, RenderContext* renderContext)
 			// set render targets
 			cmdBuffer->RenderTargets(targets, 5, zbuffer, true, true, renderContext->FrameWidth, renderContext->FrameHeight);
 			// set cbframe and prev compact buffer
-			cmdBuffer->Setup()
-				.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
-				.SetShaderResource(SLOT_GBUFFER_PREV_COMPACT, compact1);
+			cmdBuffer->Setup().SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame));
+			cmdBuffer->Setup().SetShaderResource(SLOT_GBUFFER_PREV_COMPACT, compact1);
 			// render objects
 			static Vector<Node*> objects;
 			objects.Reset();

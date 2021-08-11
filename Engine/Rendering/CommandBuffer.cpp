@@ -19,6 +19,7 @@ void CommandBuffer::SetGlobalParameter(const String& name, Variant& data)
 void CommandBuffer::Reset() {
 	currentIndex = 0;
 	usedInstanceBuffer = 0; 
+	setupCmd = nullptr;
 	globalParameters.Clear();
 }
 
@@ -37,7 +38,16 @@ RenderingCommand& CommandBuffer::Setup(bool isCompute)
 	auto cmd = AllocCommand();
 	cmd->cmdType = RenderingCommand::CommandType::SETUP;
 	cmd->setupCompute = isCompute;
+	// setup cmd has no pre setup
+	cmd->setup = nullptr;
+	// record current setup cmd
+	setupCmd = cmd;
 	return *cmd;
+}
+
+void CommandBuffer::Restore()
+{
+	setupCmd = nullptr;
 }
 
 RenderingCommand& CommandBuffer::CopyResource(int dest, int src)
@@ -189,7 +199,7 @@ void CommandBuffer::draw(RenderingCommand* cmd, RenderCommandContext* cmdContext
 		// apply cmd bindings
 		cmd->Apply(cmdContext);
 		// apply shader bindings
-		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, material->GetParameter(), globalParameters);
 	}
 	// draw
 	if (cmd->draw.mesh == 0) {
@@ -212,7 +222,7 @@ void CommandBuffer::drawInstanced(RenderingCommand* cmd, RenderCommandContext* c
 		// apply cmd bindings
 		cmd->Apply(cmdContext);
 		// apply shader bindings
-		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		shader->Apply(cmdContext, cmd->draw.passIndex, renderContext,material->GetParameter(), globalParameters);
 	}
 	// draw
 	if (cmd->draw.mesh == 0) {
@@ -250,7 +260,7 @@ void CommandBuffer::dispatch(RenderingCommand* cmd, RenderCommandContext* cmdCon
 		// apply cmd bindings
 		cmd->Apply(cmdContext);
 		// apply shader bindings
-		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		shader->Apply(cmdContext, cmd->dispatchCompute.passIndex, renderContext, material->GetParameter(), globalParameters);
 		// dispatch rays
 		cmdContext->DispatchCompute(cmd->dispatchCompute.x, cmd->dispatchCompute.y, cmd->dispatchCompute.z);
 	}
@@ -267,7 +277,7 @@ void CommandBuffer::dispatchRays(RenderingCommand* cmd, RenderCommandContext* cm
 		// apply cmd bindings
 		cmd->Apply(cmdContext);
 		// apply shader bindings
-		rtShader->Apply(cmdContext, renderContext, cmd->cmdParameters, material->GetParameter(), globalParameters);
+		rtShader->Apply(cmdContext, renderContext, material->GetParameter(), globalParameters);
 		// dispatch rays
 		cmdContext->SetRaytracingScene(SLOT_RT_SCENE);
 		cmdContext->DispatchRays(rtShader->GetId(), cmd->dispatchRays.rayId, cmd->dispatchRays.width, cmd->dispatchRays.height);
@@ -334,7 +344,7 @@ void CommandBuffer::Flush(RenderCommandContext* cmdContext)
 RenderingCommand* CommandBuffer::AllocCommand()
 {
 	auto cmd = &renderingCommands[currentIndex++];
-	cmd->cmdParameters.Clear();
 	cmd->numShaderBindings = 0;
+	cmd->setup = this->setupCmd;
 	return cmd;
 }

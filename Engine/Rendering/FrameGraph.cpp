@@ -147,7 +147,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			// execute the lighting pass
 			lighting->Execute(cmdBuffer, cam, spatial);
 			// emissive
-			emissive->Execute(cmdBuffer, cam, spatial);
+			// emissive->Execute(cmdBuffer, cam, spatial);
 			// do ssao
 			ao->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection

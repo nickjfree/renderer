@@ -235,7 +235,8 @@ auto AddHDRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&resolved
 					// draw quoad
 					cmdBuffer->Quad(hdrMaterial, 0)
 						.SetShaderResource(SLOT_DHR_POST, passData.resolved.GetActualResource())
-						.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame));
+						.SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame))
+						.SetShaderConstant(CB_SLOT(CBSamplerOffsets), passData.scaleOffset[0], sizeof(passData.scaleOffset[0]));;
 				}
 				// get avg lum
 				{

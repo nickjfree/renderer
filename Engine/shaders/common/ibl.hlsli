@@ -60,7 +60,7 @@ float4 ShadePixelIBL(GBufferContext gbuffer)
     // ignore background pixels
     if (length(position) < 0.001) {
         // draw the env map
-        float4 color = gLightProbe.Sample(gSam, -gbuffer.WorldSpaceLookVector) * light.Intensity * 2;
+        float4 color = gLightProbe.Sample(gSam, -gbuffer.WorldSpaceLookVector) * light.Intensity;
         return color;
     }
     

@@ -107,9 +107,9 @@ int H3DMesh::OnLoadComplete(Variant& Data) {
 	Box = AABB(Center, Vector3(d, d, d));
 	// calc convex hull
 #ifndef _DEBUG
-	if (Count <= 10000) {
-		ComputeConvexHull();
-	}
+	//if (Count <= 10000) {
+	//	ComputeConvexHull();
+	//}
 #endif 
 	return 0;
 }

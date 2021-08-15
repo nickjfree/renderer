@@ -35,6 +35,8 @@ void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, ino
     float3 rayDir = sample.xyz;
     float invPDF = sample.w;
     FixSampleDirectionIfNeeded(normal, rayDir);
+
+    float NoL = dot(rayDir, normal);
     // get ray
     RayDesc ray;
     ray.Origin = origin;
@@ -44,6 +46,7 @@ void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, ino
     ray.TMin = 0.005;
     ray.TMax = 10000.0;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
+    payload.Color = payload.Color * NoL;
 }
 
 [shader("raygeneration")]

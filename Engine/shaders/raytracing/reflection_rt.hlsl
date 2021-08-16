@@ -36,7 +36,7 @@ void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, ino
     float invPDF = sample.w;
     FixSampleDirectionIfNeeded(normal, rayDir);
 
-    float NoL = dot(rayDir, normal);
+    float NoL = saturate(dot(rayDir, normal));
     // get ray
     RayDesc ray;
     ray.Origin = origin;

@@ -150,5 +150,4 @@ Vector3 RenderLight::GetDesc()
 	} else {
 		return Vector3(Position.x, Position.y, Position.z, Radius);
 	}
-	
 }

@@ -42,6 +42,7 @@ PS_Output PSMain(PS_Input psInput)
 	output.Diffuse = diffuse;
 	// x: specular  y: roughness  z: metallic
 	output.Specular = float4(gSpecular, specular.y, specular.z, 0);
+	// output.Specular = float4(gSpecular, 0.1, specular.z, 0);
 	// compact info: object id
 	output.Compact.w = psInput.ObjectId;
 

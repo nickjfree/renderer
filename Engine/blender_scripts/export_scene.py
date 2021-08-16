@@ -328,17 +328,19 @@ class Scene(object):
         #     int Type;
         #     float Intensity;
         #     float Radius;
+        #     int pad0, pad1, pad2,
         #     Vector3 Color;
         #     Vector3 Direction;
         # }LightEntry;
-        return struct.pack("=64s3L2f4f4f3L", b"Light", 0, 
+        print(color, direction)
+        return struct.pack("=64s3L2f3L4f4f", b"Light", 0, 
             material_index, 
             type, 
             intensity, 
-            radius, 
+            radius,
+            0, 0, 0,
             color.x, color.y, color.z, 0,
-            direction.x, direction.y, direction.z, 0,
-            0, 0, 0)
+            direction.x, direction.y, direction.z, 0)
 
     def pack_object_entry(self, obj):
         # char Name[128];
@@ -355,9 +357,9 @@ class Scene(object):
         #     0, 0, 0)
 
         header = struct.pack("=128s4f4f4f4L", obj.name.encode("utf-8"), 
-            obj.location.x, obj.location.y, obj.location.z, 1,
+            -obj.location.x, obj.location.z, -obj.location.y, 1,
             0, 0, 0, 1,
-            obj.scale.x, obj.scale.y, obj.scale.z, 0,
+            -obj.scale.x, obj.scale.z, -obj.scale.y, 0,
             1,
             0, 0, 0)
 
@@ -467,8 +469,8 @@ class Scene(object):
             if obj.type == "MESH":
                 number += 1
 
-        # add env light
-        number += 1
+        # add env light and direction light
+        number += 2
 
         file.write(self.pack_entity_header(number))
 
@@ -481,6 +483,12 @@ class Scene(object):
             self.pack_light_entry(None, None, 3, 1, 50, 
                 Vector((1, 1, 1)), 
                 Vector((1, 0, 0))
+            )
+        )
+        file.write(
+            self.pack_light_entry(None, None, 1, 20, 50, 
+                Vector((1, 1, 1)), 
+                Vector((1, -1, 0))
             )
         )
 

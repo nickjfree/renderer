@@ -102,6 +102,7 @@ void Raygen()
             TraceShadowRay(gbuffer, ray, lightIndex, payload);
             // apply shadow
             accumulated += payload.Color * float4(color, 0);
+            // accumulated += float4(color, 0) * 10;
         }
         RenderTarget[DispatchRaysIndex().xy] = accumulated;
     }

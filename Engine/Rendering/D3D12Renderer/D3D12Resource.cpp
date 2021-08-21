@@ -797,9 +797,7 @@ void RaytracingScene::TraceRay(D3D12CommandContext* cmdContext, int shaderIndex,
 	rayDesc.Height = height;
 	rayDesc.Depth = 1;
 	sbt.SetRay(shaderIndex, rayId);
-	if (sbt.IsDirty()) {
-		sbt.Stage(cmdContext, &rayDesc);
-	}
+	sbt.Stage(cmdContext, &rayDesc);
 	// set raygen start address offset
 	rayDesc.RayGenerationShaderRecord.StartAddress += rayId * sizeof(ShaderRecord);
 	// refresh the rtpso
@@ -1105,42 +1103,45 @@ void ShaderBindingTable::SetRay(int shaderId, int rayIndex)
 void ShaderBindingTable::Stage(D3D12CommandContext* cmdContext, D3D12_DISPATCH_RAYS_DESC* rayDesc)
 {
 	auto hitGroupSize = hitGroups.Size() * sizeof(ShaderRecord);
-	// get totle sbt size
-	auto size = hitGroupSize + hitgroup_table_offset;
-	// ensure the size
-	if (sbtSize < size) {
-		sbt->Unmap(0, nullptr);
-		sbt->Release();
-		// create sbt table
-		sbt = CreateCommittedResource(d3d12Device,
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
-			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-			nullptr);
-		sbt->SetName(L"sbt");
-		sbtSize = size;
-		// create sbt cpu buffer
-		sbtCpu = CreateCommittedResource(d3d12Device,
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr);
-		sbtCpu->SetName(L"sbt-cpu");
-		sbtCpu->Map(0, nullptr, &sbtPtr);
+	if (IsDirty()) {
+		// get totle sbt size
+		auto size = hitGroupSize + hitgroup_table_offset;
+		// ensure the size
+		if (sbtSize < size) {
+			sbt->Unmap(0, nullptr);
+			sbt->Release();
+			// create sbt table
+			sbt = CreateCommittedResource(d3d12Device,
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
+				D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+				nullptr);
+			sbt->SetName(L"sbt");
+			sbtSize = size;
+			// create sbt cpu buffer
+			sbtCpu = CreateCommittedResource(d3d12Device,
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(size, D3D12_RESOURCE_FLAG_NONE),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr);
+			sbtCpu->SetName(L"sbt-cpu");
+			sbtCpu->Map(0, nullptr, &sbtPtr);
+		}
+		auto cmdList = cmdContext->GetCmdList();
+		// copy raygen
+		memcpy((char*)sbtPtr + raygen_table_offset, rayGen, raygen_table_size);
+		// copy miss
+		memcpy((char*)sbtPtr + miss_table_offset, miss, miss_table_size);
+		// copy hitgroups
+		memcpy((char*)sbtPtr + hitgroup_table_offset, hitGroups.GetData(), hitGroupSize);
+		// copy to sbt shader visible buffer
+		cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
+		cmdList->CopyResource(sbt, sbtCpu);
+		cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
+
 	}
-	auto cmdList = cmdContext->GetCmdList();
-	// copy raygen
-	memcpy((char*)sbtPtr + raygen_table_offset, rayGen, raygen_table_size);
-	// copy miss
-	memcpy((char*)sbtPtr + miss_table_offset, miss, miss_table_size);
-	// copy hitgroups
-	memcpy((char*)sbtPtr + hitgroup_table_offset, hitGroups.GetData(), hitGroupSize);
-	// copy to sbt shader visible buffer
-	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST));
-	cmdList->CopyResource(sbt, sbtCpu);
-	cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sbt, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
 	// update table pointers
 	auto tableAddress = sbt->GetGPUVirtualAddress();
 

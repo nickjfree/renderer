@@ -32,8 +32,8 @@ auto AddBuildASPass(FrameGraph& frameGraph, RenderContext* renderContext)
 /*
 	ray tracing
 */
-template <class T, class U>
-auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData)
+template <class T, class U, class W>
+auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData, W& rtLightingPassData)
 {
 	typedef struct PassData {
 		RenderResource lighting;
@@ -41,6 +41,8 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 		RenderResource specular;
 		RenderResource depth;
 		RenderResource motion;
+		// culling result
+		RenderResource culledLights;
 		// reflection
 		RenderResource reflectionRaw;
 		// svgf-color-0 svgf-color-1
@@ -49,6 +51,9 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 		// svgf-moments-0 svgf-moments-1
 		RenderResource moment0;
 		RenderResource moment1;
+		// lights
+		CBLights*  lights;
+
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -61,7 +66,9 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 			passData.depth = builder.Read(&gbufferPassData.depth);
 			passData.specular = builder.Read(&gbufferPassData.specular);
 			passData.motion = builder.Read(&gbufferPassData.motion);
-
+			passData.culledLights = builder.Read(&rtLightingPassData.culledLights);
+			// lights
+			passData.lights = &rtLightingPassData.lights;
 			// create the output buffers
 			R_TEXTURE2D_DESC desc = {};
 			desc.Width = renderContext->FrameWidth;
@@ -128,7 +135,9 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 				// disptach rays
 				{
 					cmdBuffer->DispatchRays(0, material, renderContext->FrameWidth, renderContext->FrameHeight)
+						.SetShaderConstant(CB_SLOT(CBLights), passData.lights, sizeof(CBLights))
 						.SetRWShaderResource(SLOT_RT_REFLECTION_TARGET, passData.reflectionRaw.GetActualResource())
+						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
 						.SetShaderResource(SLOT_RT_REFLECTION_POST, passData.lighting.GetActualResource());
 				}
 				// flip color & moment buffer
@@ -297,7 +306,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		// lights and lights to cull
 		CBLights  lights;
 		CBLightsToCull lightsToCull;
-
+		
 		// TODO: reused render targets
 	}PassData;
 

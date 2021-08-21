@@ -2,7 +2,7 @@
 #define __RAYTRACING__
 
 
-#include "../common/shader_inputs.h"
+#include "../common/gbuffer.hlsli"
 
 
 // the scene
@@ -51,8 +51,8 @@ struct HitPointContext
 struct HitPointMaterial{
       // colors
     float4 Diffuse;
+    float3  Specular;
     float  Roughness;
-    float  Specular;
     float  Metallic;
     // transparent
     bool IsTransparent;
@@ -88,6 +88,15 @@ float2 LoadVertexUVFloat2(ByteAddressBuffer SourceBuffer, uint Index, uint Strid
     // offset 2 * float3
     return asfloat(SourceBuffer.Load2(OffsetInBytes + 24));
 }
+
+// load vertex tangent
+float3 LoadVertexTangentFloat3(ByteAddressBuffer SourceBuffer, uint Index, uint StrideInBytes)
+{
+    uint OffsetInBytes = Index * StrideInBytes;
+    // offset 1 * float3
+    return asfloat(SourceBuffer.Load3(OffsetInBytes + StrideInBytes - 12));
+}
+
 
 // load indices
 uint3 LoadIndices16Bit(ByteAddressBuffer SourceBuffer, uint OffsetInBytes)
@@ -132,6 +141,12 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
     float2 uv1 = LoadVertexUVFloat2(Vertices, indices[1], gVertexStride);
     float2 uv2 = LoadVertexUVFloat2(Vertices, indices[2], gVertexStride);
     float2 uv = uv0 * barycentrics.x + uv1 * barycentrics.y + uv2 * barycentrics.z;
+    // get normal
+    float3 n0 = LoadVertexNormalFloat3(Vertices, indices[0], gVertexStride);
+    float3 n1 = LoadVertexNormalFloat3(Vertices, indices[1], gVertexStride);
+    float3 n2 = LoadVertexNormalFloat3(Vertices, indices[2], gVertexStride);
+    float3 normal = normalize(n0 * barycentrics.x + n1 * barycentrics.y + n2 * barycentrics.z);
+
     
     HitPointContext hitPoint = (HitPointContext)0;
     hitPoint.UV = uv;
@@ -140,6 +155,12 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
 
     hitPoint.WorldSpacePosition = hitPosition;
     hitPoint.ViewSpacePosition = mul(float4(hitPosition, 1), gViewMatrix).xyz;
+
+    hitPoint.WorldSpaceNormal = mul(float4(normal, 0), ObjectToWorld4x3());
+    hitPoint.ViewSpaceNormal = mul(float4(hitPoint.WorldSpaceNormal, 0), gViewMatrix).xyz;
+
+    hitPoint.WorldSpaceLookVector = -WorldRayDirection();
+    hitPoint.ViewSpaceLookVector = mul(float4(hitPoint.WorldSpaceLookVector, 0), gViewMatrix).xyz;
 
     // get screen space uv
     float4 screenPosition = mul(float4(hitPosition, 1), gViewProjectionMatrix);
@@ -157,13 +178,43 @@ HitPointContext GetHitPointContext(SimpleAttributes attr)
 HitPointMaterial GetHitPointMaterial(HitPointContext hitPoint)
 {
     HitPointMaterial material = (HitPointMaterial)0;
-    material.Diffuse = gDiffuseMap0.SampleLevel(gSam, hitPoint.UV, 0);
+
+    float4 data = gSpecularMap0.SampleLevel(gSam, hitPoint.UV, 4);
+    material.Roughness = data.y;
+    material.Diffuse = gDiffuseMap0.SampleLevel(gSam, hitPoint.UV, 4);
+    material.Metallic = data.z;
+    // TODO: default specular
+    float3 f0 = float3(0.04, 0.04, 0.04);
+    material.Specular = lerp(f0, material.Diffuse.rgb, material.Metallic);
 
 #ifdef TRANSPARENT
     // handle transparent textures
     material.IsTransparent =  material.Diffuse.w < 0.001;
 #endif
     return material;
+}
+
+GBufferContext HitPointToGBufferContext(HitPointContext hitPoint)
+{
+    HitPointMaterial material = GetHitPointMaterial(hitPoint);
+    GBufferContext gbuffer = (GBufferContext)0;
+
+    gbuffer.uv = hitPoint.ScreenUV;
+    gbuffer.WorldSpacePosition = hitPoint.WorldSpacePosition;
+    gbuffer.ViewSpacePosition = hitPoint.ViewSpacePosition;
+
+    gbuffer.WorldSpaceNormal = hitPoint.WorldSpaceNormal;
+    gbuffer.ViewSpaceNormal = hitPoint.ViewSpaceNormal;
+
+    // look vector is ray direction
+    gbuffer.WorldSpaceLookVector = hitPoint.WorldSpaceLookVector;
+    gbuffer.ViewSpaceLookVector = hitPoint.ViewSpaceLookVector;
+
+    gbuffer.Diffuse = material.Diffuse;
+    gbuffer.Specular = material.Specular;
+    gbuffer.Roughness = material.Roughness;
+    gbuffer.Metallic = material.Metallic;
+    return gbuffer;
 }
 
 #endif

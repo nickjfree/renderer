@@ -1849,9 +1849,9 @@ int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, 
 	// pipeline config
 	{
 		auto pipelineConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
-		pipelineConfig->Config(1);
+		pipelineConfig->Config(2);
 	}
-	// pipeline config 
+	// pipeline config
 	// create collection
 	rtxDevice->CreateStateObject(raytracingCollection, IID_PPV_ARGS(&shader->collection));
 

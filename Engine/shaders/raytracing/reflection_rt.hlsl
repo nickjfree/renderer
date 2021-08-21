@@ -2,52 +2,15 @@
 #define __REFLECTION_RT__
 
 #include "raytracing.hlsli"
-#include "random.hlsli"
-#include "sampling.hlsli"
-
-
-#include "../common/gbuffer.hlsli"
+#include "shading.hlsli"
 
 
 // screen color
-Texture2D   gPostBuffer : register(t1, space0);
+Texture2D   gPostBuffer : register(t2, space0);
 // env map
-TextureCube gLightProbe : register(t2, space0);
+TextureCube gLightProbe : register(t3, space0);
 // output
 RWTexture2D<float4> RenderTarget : register(u0, space0);
-
-struct RayPayload
-{
-    // color or screen uv
-    float4 Color;
-};
-
-
-void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, inout RayPayload payload)
-{
-    float3 origin = gbuffer.WorldSpacePosition;
-    float3 look = -gbuffer.WorldSpaceLookVector;
-    float3 normal = gbuffer.WorldSpaceNormal;
-    float roughness = gbuffer.Roughness;
-
-    float2 randsample = float2(Rand(rayContext.Seed), Rand(rayContext.Seed));
-    float4 sample = GenerateReflectedRayDirection(look, normal, roughness, randsample);
-    float3 rayDir = sample.xyz;
-    float invPDF = sample.w;
-    FixSampleDirectionIfNeeded(normal, rayDir);
-
-    float NoL = saturate(dot(rayDir, normal));
-    // get ray
-    RayDesc ray;
-    ray.Origin = origin;
-    ray.Direction = normalize(rayDir);
-    // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
-    // TMin should be kept small to prevent missing geometry at close contact areas.
-    ray.TMin = 0.005;
-    ray.TMax = 10000.0;
-    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
-    payload.Color = payload.Color * NoL;
-}
 
 [shader("raygeneration")]
 void Raygen()
@@ -66,34 +29,42 @@ void Raygen()
     RayContext ray;
     ray.Seed = RandInit(linearIndex, gFrameNumber);
 
-    RayPayload payload;
-    payload.Color = float4(0, 0, 0, 0);
-    // trace reflection ray
-    TraceReflectionRay(gbuffer, ray, payload);
+    float4 reflection = ComputeReflectionLighting(gbuffer, ray);
+    // float4 reflection = float4(0,0,0,0);
     // output
-    RenderTarget[DispatchRaysIndex().xy] = payload.Color;
+    RenderTarget[DispatchRaysIndex().xy] = reflection;
 }
 
+
 [shader("closesthit")]
-void ClosestHit(inout RayPayload payload, in SimpleAttributes attr)
+void ClosestHit(inout ReflectionRayPayload payload, in SimpleAttributes attr)
 {
     HitPointContext hitPoint = GetHitPointContext(attr);
-    if (hitPoint.InScreen) {
-        // get gbuffer at hitpoint in screen
-        GBufferContext gbuffer = GetGBufferContext(hitPoint.ScreenUV);
-        if (hitPoint.ViewSpacePosition.z - gbuffer.ViewSpacePosition.z < 0.1) {
-            // close to point in screen. get color from screen
-            payload.Color = gPostBuffer.SampleLevel(gSam, hitPoint.ScreenUV, 0);
-            return;
-        }
-    }
+    // if (hitPoint.InScreen) {
+    //     // get gbuffer at hitpoint in screen
+    //     GBufferContext gbuffer = GetGBufferContext(hitPoint.ScreenUV);
+    //     if (hitPoint.ViewSpacePosition.z - gbuffer.ViewSpacePosition.z < 0.1) {
+    //         // close to point in screen. get color from screen
+    //         payload.Color = gPostBuffer.SampleLevel(gSam, hitPoint.ScreenUV, 0);
+    //         return;
+    //     }
+    // }
     // failed to get color from screen space
-    HitPointMaterial material = GetHitPointMaterial(hitPoint);
-    payload.Color = float4(material.Diffuse.xyz, 0);
+    // HitPointMaterial material = GetHitPointMaterial(hitPoint);
+    // payload.Color = float4(material.Diffuse.xyz, 0);
+    // compute hitPoint lighting
+    float2 uv = (float2)(DispatchRaysIndex().xy + 0.5)/DispatchRaysDimensions().xy;
+    uint linearIndex = DispatchRaysIndex().x + DispatchRaysIndex().y * DispatchRaysDimensions().x; 
+
+    RayContext ray;
+    ray.Seed = RandInit(linearIndex, gFrameNumber);
+
+    GBufferContext gbuffer = HitPointToGBufferContext(hitPoint);
+    payload.Color = ComputeDirectLighting(gbuffer, ray);
 }
 
 [shader("miss")]
-void Miss(inout RayPayload payload)
+void Miss(inout ReflectionRayPayload payload)
 {
     payload.Color = gLightProbe.SampleLevel(gSam, WorldRayDirection(), 0);
 }

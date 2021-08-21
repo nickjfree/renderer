@@ -105,8 +105,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto lighting = renderPasses[2];
 		auto emissive = renderPasses[3];
 		auto ao = renderPasses[4];
-		auto reflection = renderPasses[5];
-		auto rtLighting = renderPasses[6];
+		auto rtLighting = renderPasses[5];
+		auto reflection = renderPasses[6];
 		auto resolve = renderPasses[7];
 		auto hdr = renderPasses[8];
 		auto fsr = renderPasses[9];
@@ -150,10 +150,10 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			// emissive->Execute(cmdBuffer, cam, spatial);
 			// do ssao
 			ao->Execute(cmdBuffer, cam, spatial);
+			// do rt-lighting
+			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection
 			reflection->Execute(cmdBuffer, cam, spatial);
-			// do rt-relection
-			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do resolve
 			resolve->Execute(cmdBuffer, cam, spatial);
 			// do hdr

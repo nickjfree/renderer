@@ -106,17 +106,18 @@
 
 #define MATERIAL_RT_SLOT(slot)  (slot/3 + 2)
 
+#define SLOT_RT_LIGHTING_LIGHTS     1
+
 /*
 *	 raytraced reflection
 */
-#define SLOT_RT_REFLECTION_POST   	1
-#define SLOT_RT_REFLECTION_ENV    	2
+#define SLOT_RT_REFLECTION_POST   	2
+#define SLOT_RT_REFLECTION_ENV    	3
 #define SLOT_RT_REFLECTION_TARGET 	0
 
 /*
 *	 raytraced diffuse lighting
 */
-#define SLOT_RT_LIGHTING_LIGHTS     1
 #define SLOT_RT_LIGHTING_TARGET    	0
 
 /*

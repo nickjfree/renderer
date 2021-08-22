@@ -51,7 +51,7 @@ struct HitPointContext
 struct HitPointMaterial{
       // colors
     float4 Diffuse;
-    float3  Specular;
+    float3 Specular;
     float  Roughness;
     float  Metallic;
     // transparent

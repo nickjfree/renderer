@@ -13,14 +13,45 @@ StructuredBuffer<LightIndics> CulledLights : register(t1, space0);
 struct ShadowRayPayload
 {
     // color
-    float4 Color;
+    float4 Color;        // 4
 };
 
-struct ReflectionRayPayload
+struct ShadingRayPayload
 {
     // color
-    float4 Color;
-};
+    float3 Position;      
+    float3 Normal;
+    float3 LookVector;
+    float4 Diffuse;
+    float3 Specular;
+    float Roughness;
+    float Metallic;
+    float HitDistance;
+    bool Hit;
+};   // 80
+
+GBufferContext ShadingPayloadToGBufferContext(ShadingRayPayload payload)
+{
+
+    GBufferContext gbuffer = (GBufferContext)0;
+
+    gbuffer.WorldSpacePosition = payload.Position;
+    gbuffer.ViewSpacePosition = mul(float4(payload.Position, 1.0f), gViewMatrix).xyz;
+
+    gbuffer.WorldSpaceNormal = payload.Normal;
+    gbuffer.ViewSpaceNormal = mul(float4(payload.Normal, 0.0f), gViewMatrix).xyz;
+
+
+    // look vector is ray direction
+    gbuffer.WorldSpaceLookVector = payload.LookVector;
+    gbuffer.ViewSpaceLookVector = mul(float4(payload.LookVector, 0.0f), gViewMatrix).xyz;
+
+    gbuffer.Diffuse = payload.Diffuse;
+    gbuffer.Specular = payload.Specular;
+    gbuffer.Roughness = payload.Roughness;
+    gbuffer.Metallic = payload.Metallic;
+    return gbuffer;
+}
 
 // get random shadow ray direcion
 float3 GetShadowRaySample(LightData light, float3 position, inout uint seed)
@@ -56,7 +87,7 @@ void TraceShadowRay(GBufferContext gbuffer, inout RayContext rayContext, uint li
     TraceRay(Scene, RayFlags, ~0, 1, 1, 1, ray, payload);
 }
 
-void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, inout ReflectionRayPayload payload)
+void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, inout ShadingRayPayload payload, inout float NoL)
 {
     float3 origin = gbuffer.WorldSpacePosition;
     float3 look = -gbuffer.WorldSpaceLookVector;
@@ -69,7 +100,7 @@ void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, ino
     float invPDF = sample.w;
     FixSampleDirectionIfNeeded(normal, rayDir);	
 
-    float NoL = saturate(dot(rayDir, normal));
+    NoL = saturate(dot(rayDir, normal));
     // get ray
     RayDesc ray;
     ray.Origin = origin;
@@ -79,7 +110,6 @@ void TraceReflectionRay(GBufferContext gbuffer, inout RayContext rayContext, ino
     ray.TMin = 0.005;
     ray.TMax = 10000.0;
     TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
-    payload.Color = payload.Color * NoL;
 }
 
 float4 ComputeDirectLighting(GBufferContext gbuffer, RayContext ray)
@@ -98,7 +128,7 @@ float4 ComputeDirectLighting(GBufferContext gbuffer, RayContext ray)
 	        // do deferred lighting
 	        float falloff = 1.0f;
 	        float3 color = GetLighting(gbuffer, lightIndex, falloff);
-	        if (falloff <= 0.001f) {
+	        if (falloff <= 0.001f || dot(color, color) <= 0.001f ) {
 	            // ignore weak lights
 	            continue;
 	        }
@@ -117,10 +147,18 @@ float4 ComputeDirectLighting(GBufferContext gbuffer, RayContext ray)
 
 float4 ComputeReflectionLighting(GBufferContext gbuffer, RayContext ray)
 {
-	ReflectionRayPayload payload;
-	payload.Color = float4(0, 0, 0, 0);
-	TraceReflectionRay(gbuffer, ray, payload);
-	return payload.Color;
+	ShadingRayPayload payload = (ShadingRayPayload)0;
+    float NoL = 0.0f;
+	TraceReflectionRay(gbuffer, ray, payload, NoL);
+   // get lighting for the hit point
+    if (!payload.Hit) {
+        // not hit
+        return payload.Diffuse * NoL;
+    } else {
+        GBufferContext hit = ShadingPayloadToGBufferContext(payload);
+        return ComputeDirectLighting(hit, ray) * NoL;
+    }
+
 }
 
 #endif

@@ -37,36 +37,26 @@ void Raygen()
 
 
 [shader("closesthit")]
-void ClosestHit(inout ReflectionRayPayload payload, in SimpleAttributes attr)
+void ClosestHit(inout ShadingRayPayload payload, in SimpleAttributes attr)
 {
     HitPointContext hitPoint = GetHitPointContext(attr);
-    // if (hitPoint.InScreen) {
-    //     // get gbuffer at hitpoint in screen
-    //     GBufferContext gbuffer = GetGBufferContext(hitPoint.ScreenUV);
-    //     if (hitPoint.ViewSpacePosition.z - gbuffer.ViewSpacePosition.z < 0.1) {
-    //         // close to point in screen. get color from screen
-    //         payload.Color = gPostBuffer.SampleLevel(gSam, hitPoint.ScreenUV, 0);
-    //         return;
-    //     }
-    // }
-    // failed to get color from screen space
-    // HitPointMaterial material = GetHitPointMaterial(hitPoint);
-    // payload.Color = float4(material.Diffuse.xyz, 0);
-    // compute hitPoint lighting
-    float2 uv = (float2)(DispatchRaysIndex().xy + 0.5)/DispatchRaysDimensions().xy;
-    uint linearIndex = DispatchRaysIndex().x + DispatchRaysIndex().y * DispatchRaysDimensions().x; 
+    HitPointMaterial material = GetHitPointMaterial(hitPoint);
 
-    RayContext ray;
-    ray.Seed = RandInit(linearIndex, gFrameNumber);
-
-    GBufferContext gbuffer = HitPointToGBufferContext(hitPoint);
-    payload.Color = ComputeDirectLighting(gbuffer, ray);
+    payload.Position = hitPoint.WorldSpacePosition;
+    payload.Normal = hitPoint.WorldSpaceNormal;
+    payload.LookVector = hitPoint.WorldSpaceLookVector;
+    payload.Diffuse = material.Diffuse;
+    payload.Specular = material.Specular;
+    payload.Roughness = material.Roughness;
+    payload.Metallic = material.Metallic;
+    payload.Hit = true;
 }
 
 [shader("miss")]
-void Miss(inout ReflectionRayPayload payload)
+void Miss(inout ShadingRayPayload payload)
 {
-    payload.Color = gLightProbe.SampleLevel(gSam, WorldRayDirection(), 0);
+    payload.Hit = false;
+    payload.Diffuse = gLightProbe.SampleLevel(gSam, WorldRayDirection(), 0);
 }
 
 #endif // RAYTRACING_HLSL

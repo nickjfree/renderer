@@ -1844,17 +1844,17 @@ int D3D12Renderer::D3D12RenderInterface::CreateRayTracingShader(void* ByteCode, 
 	// shader config
 	{
 		auto shaderConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
-		shaderConfig->Config(sizeof(float) * 4, sizeof(float) * 2);
+		shaderConfig->Config(80, sizeof(float) * 2);
 	}
 	// pipeline config
 	{
 		auto pipelineConfig = raytracingCollection.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
-		pipelineConfig->Config(2);
+		pipelineConfig->Config(1);
 	}
 	// pipeline config
 	// create collection
 	rtxDevice->CreateStateObject(raytracingCollection, IID_PPV_ARGS(&shader->collection));
-
+	
 	ID3D12StateObjectProperties* properties;
 	shader->collection->QueryInterface(IID_PPV_ARGS(&properties));
 	shader->hitGroup = *(ShaderIdetifier*)properties->GetShaderIdentifier(HitGroup);

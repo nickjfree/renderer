@@ -19,6 +19,20 @@ typedef struct float3 {
 
 typedef Vector3 float4;
 
+
+typedef struct int2 {
+	int x, y;
+}int2;
+
+typedef struct int3 {
+	int x, y, z;
+}int3;
+
+typedef struct int4 {
+	int x, y, z, w;
+}int4;
+
+
 typedef unsigned int uint;
 
 typedef struct uint2 {

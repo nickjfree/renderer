@@ -485,6 +485,12 @@
     <ClInclude Include="shaders\common\shader_inputs.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\GIVolume.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering\Volume.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -932,6 +938,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Rendering\FrameGraph.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\GIVolume.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Rendering\Volume.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

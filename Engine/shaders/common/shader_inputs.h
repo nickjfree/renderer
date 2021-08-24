@@ -172,6 +172,24 @@ CBUFFER(CBFSRConst, 0)
     uint4 Sample;
 };
 
+// gi
+CBUFFER(CBGIVolume, 0)
+{
+    float3      origin;
+    int         numRaysPerProbe;
+    float3      probeGridSpacing;
+    float       probeMaxRayDistance;
+    int3        probeGridCounts;
+    int         probeNumIrradianceTexels;
+    int         probeNumDistanceTexels;
+    float       normalBias;
+    float       viewBias;
+    float       giPad;
+    float4x4    rayRotation;
+};
+
+
+
 // samplers
 SAMPLERSTATE(gSam, 0);
 SAMPLERSTATE(gSamBilinear, 1);

@@ -58,6 +58,7 @@ public:
 		TRANS = 32,
 		TERRAIN = 64,
 		CLIPMAP = 128,
+		GIVOLUME = 256,
 		POST
 	};
 

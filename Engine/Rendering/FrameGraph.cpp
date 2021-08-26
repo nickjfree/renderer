@@ -105,12 +105,13 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto lighting = renderPasses[2];
 		auto emissive = renderPasses[3];
 		auto ao = renderPasses[4];
-		auto rtLighting = renderPasses[5];
-		auto reflection = renderPasses[6];
-		auto resolve = renderPasses[7];
-		auto hdr = renderPasses[8];
-		auto fsr = renderPasses[9];
-		auto as = renderPasses[10];
+		auto lightculling = renderPasses[5];
+		auto rtLighting = renderPasses[6];
+		auto reflection = renderPasses[7];
+		auto resolve = renderPasses[8];
+		auto hdr = renderPasses[9];
+		auto fsr = renderPasses[10];
+		auto as = renderPasses[11];
 		
 
 		// get commandbuffer
@@ -133,15 +134,6 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			computeFence = renderInterface->EndContext(computeCommandContext, false);
 		}
 		{
-			//// new command buffer
-			//auto cmdBuffer = CommandBuffer::Alloc();
-			//// execute the shadow pass
-			//shadow->Execute(cmdBuffer, cam, spatial);
-			//auto renderCommandContext = renderInterface->BeginContext(false);
-			//cmdBuffer->Flush(renderCommandContext);
-			//renderInterface->EndContext(renderCommandContext, false);
-		}
-		{
 			// new command buffer
 			auto cmdBuffer = CommandBuffer::Alloc();
 			// execute the lighting pass
@@ -150,6 +142,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			// emissive->Execute(cmdBuffer, cam, spatial);
 			// do ssao
 			ao->Execute(cmdBuffer, cam, spatial);
+			// light culling
+			lightculling->Execute(cmdBuffer, cam, spatial);
 			// do rt-lighting
 			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection

@@ -71,6 +71,10 @@ void GameObject::NotifyTransform() {
 	if (component) {
 		component->OnTransform(this);
 	}
+	component = GetComponent("Volume");
+	if (component) {
+		component->OnTransform(this);
+	}
 }
 
 void GameObject::SetTranslation(Vector3& Translation_) {

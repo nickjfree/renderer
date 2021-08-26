@@ -7,6 +7,7 @@
 #include "Rendering\BasicPartition.h"
 #include "Rendering\Camera.h"
 #include "Rendering\Light.h"
+#include "Rendering/Volume.h"
 #include "Resource\ResourceCache.h"
 
 #include "Script\LuaStack.h"
@@ -92,6 +93,13 @@ int Level::CreateScene() {
 	// set translation
 	MainCamera->SetTranslation(Vector3(0, 20, -50));
 	GameObjects.PushBack(MainCamera);
+
+	// add volume
+	auto giObject = scene->CreateGameObject("GIVolume");
+	auto volume = giObject->CreateComponent("Volume");
+	giObject->AddComponent(volume);
+	giObject->SetTranslation(Vector3(0, 7, -6));
+	GameObjects.PushBack(giObject);
 	return 0;
 }
 

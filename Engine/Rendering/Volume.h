@@ -8,11 +8,17 @@
 
 class Volume: public Component
 {
+	OBJECT(Volume);
+	BASEOBJECT(Volume);
+	DECLARE_ALLOCATER(Volume);
 public:
 	// ctor
 	Volume(Context* context);
 	virtual ~Volume();
-
+	// on attach
+	int OnAttach(GameObject* GameObj);
+	// on transform
+	int OnTransform(GameObject* GameObj);
 public:
 	enum class VolumeType
 	{

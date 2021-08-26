@@ -155,10 +155,11 @@ void RenderControl::initFrameGraph()
 	auto lighting = AddLightingPass(frameGraph, Context, gbuffer->Data());
 	auto emissive = AddEmissivePass(frameGraph, Context, gbuffer->Data(), lighting->Data());
 	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
+	auto lightculling = AddLightCullingPass(frameGraph, Context);
 	// rt-lighting
-	auto rtLighting = AddRaytracedLightingPass(frameGraph, Context, gbuffer->Data());
+	auto rtLighting = AddRaytracedLightingPass(frameGraph, Context, gbuffer->Data(), lightculling->Data());
 	// rt-relection
-	auto relection = AddRaytracedReflectionPass(frameGraph, Context, lighting->Data(), gbuffer->Data(), rtLighting->Data());
+	auto relection = AddRaytracedReflectionPass(frameGraph, Context, gbuffer->Data(), lightculling->Data());
 	// resolve
 	auto resolved = AddResolvePass(frameGraph, Context, gbuffer->Data(), lighting->Data(), ssao->Data(), relection->Data(), rtLighting->Data());
 	auto hdr = AddHDRPass(frameGraph, Context, resolved->Data());

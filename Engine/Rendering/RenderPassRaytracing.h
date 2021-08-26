@@ -29,14 +29,96 @@ auto AddBuildASPass(FrameGraph& frameGraph, RenderContext* renderContext)
 	return buildAsPass;
 }
 
+
+/*
+	cull light
+*/
+auto AddLightCullingPass(FrameGraph& frameGraph, RenderContext* renderContext)
+{
+	typedef struct PassData {
+		// culling result
+		RenderResource culledLights;
+		Vector<Node*> lightObjects;
+		// lights and lights to cull
+		CBLights  lights;
+		CBLightsToCull lightsToCull;
+	}PassData;
+
+	constexpr int max_lights_per_cell = 16;
+	constexpr int cell_scale = 10;
+	constexpr int cell_count = 16;
+	constexpr int buffer_size_per_cell = max_lights_per_cell * sizeof(unsigned int);
+	constexpr int light_index_buffer_size = buffer_size_per_cell * cell_count * cell_count * cell_count;
+
+	auto renderInterface = renderContext->GetRenderInterface();
+
+	auto pass = frameGraph.AddRenderPass<PassData>("light-culling",
+		[&](GraphBuilder& builder, PassData& passData) {
+		
+			// light index buffer
+			passData.culledLights = builder.Create("light-index",
+				[=]() mutable {
+					R_BUFFER_DESC desc = {};
+					desc.Size = light_index_buffer_size;
+					desc.CPUAccessFlags = (R_CPU_ACCESS)0;
+					desc.CPUData = nullptr;
+					desc.Deformable = false;
+					desc.StructureByteStride = buffer_size_per_cell;
+					desc.Usage = DEFAULT;
+					desc.DebugName = L"light-index";
+					return renderInterface->CreateBuffer(&desc);
+				});
+		},
+		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
+
+			// get light culling shaders
+			auto value = renderContext->GetResource("Material\\Materials\\light_culling.xml\\0");
+			Material* cullingMaterial = nullptr;
+			if (value) {
+				cullingMaterial = value->as<Material*>();
+			}
+			if (cullingMaterial) {
+				// set up 
+				{
+					cmdBuffer->Setup(true).SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame));
+				}
+				// do light culling in compute shader
+				// light position radius array
+				{
+					// set cell infos
+					passData.lightsToCull.cellCount = cell_count;
+					passData.lightsToCull.cellScale = cell_scale;
+					passData.lightsToCull.lightsPerCell = max_lights_per_cell;
+
+					passData.lightObjects.Reset();
+					passData.lightsToCull.numLights = 0;
+					spatial->Query(passData.lightObjects, Node::LIGHT);
+					for (auto iter = passData.lightObjects.Begin(); iter != passData.lightObjects.End(); iter++) {
+						auto light = (RenderLight*)*iter;
+						if (light->GetLightType() == RenderLight::POINT || light->GetLightType() == RenderLight::DIRECTION) {
+							auto index = passData.lightsToCull.numLights;
+							passData.lightsToCull.lights[index] = light->GetDesc();
+							passData.lights.gLights[index] = light->GetLightData();
+							++passData.lightsToCull.numLights;
+						}
+					}
+					// cull the lights
+					cmdBuffer->Dispatch(cullingMaterial, 0, cell_count, cell_count, cell_count)
+						.SetShaderConstant(CB_SLOT(CBLightsToCull), &passData.lightsToCull, sizeof(CBLightsToCull))
+						.SetRWShaderResource(SLOT_LIGHT_CULLING_RESULT, passData.culledLights.GetActualResource());
+				}
+			}
+		});
+	return pass;
+}
+
 /*
 	ray tracing
 */
-template <class T, class U, class W>
-auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightingPassData, U& gbufferPassData, W& rtLightingPassData)
+template <class T, class U>
+auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData)
 {
 	typedef struct PassData {
-		RenderResource lighting;
 		RenderResource compact0;
 		RenderResource specular;
 		RenderResource depth;
@@ -61,14 +143,13 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 	auto raytracingPass = frameGraph.AddRenderPass<PassData>("raytraced-reflection",
 		[&](GraphBuilder& builder, PassData& passData) {
 			// input
-			passData.lighting = builder.Read(&lightingPassData.lighting);
 			passData.compact0 = builder.Read(&gbufferPassData.compact0);
 			passData.depth = builder.Read(&gbufferPassData.depth);
 			passData.specular = builder.Read(&gbufferPassData.specular);
 			passData.motion = builder.Read(&gbufferPassData.motion);
-			passData.culledLights = builder.Read(&rtLightingPassData.culledLights);
+			passData.culledLights = builder.Read(&lightCullingPassData.culledLights);
 			// lights
-			passData.lights = &rtLightingPassData.lights;
+			passData.lights = &lightCullingPassData.lights;
 			// create the output buffers
 			R_TEXTURE2D_DESC desc = {};
 			desc.Width = renderContext->FrameWidth;
@@ -137,8 +218,7 @@ auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderCon
 					cmdBuffer->DispatchRays(0, material, renderContext->FrameWidth, renderContext->FrameHeight)
 						.SetShaderConstant(CB_SLOT(CBLights), passData.lights, sizeof(CBLights))
 						.SetRWShaderResource(SLOT_RT_REFLECTION_TARGET, passData.reflectionRaw.GetActualResource())
-						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
-						.SetShaderResource(SLOT_RT_REFLECTION_POST, passData.lighting.GetActualResource());
+						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource());
 				}
 				// flip color & moment buffer
 				passData.color0.Flip(&passData.color1);
@@ -245,9 +325,6 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 			// get shader
 			Variant* value = renderContext->GetResource("Material\\Materials\\resolve.xml\\0");
 			Material* material = nullptr;
-			// add frame number
-			static int frameNumber = 0;
-			++frameNumber;
 			if (value) {
 				material = value->as<Material*>();
 			}
@@ -281,8 +358,8 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 /*
 	ray traced lighting (direct lighting)
 */
-template <class T>
-auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData)
+template <class T, class U>
+auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData)
 {
 	typedef struct PassData {
 		RenderResource diffuse;
@@ -302,10 +379,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		RenderResource moment0;
 		RenderResource moment1;
 
-		Vector<Node*> lightObjects;
-		// lights and lights to cull
-		CBLights  lights;
-		CBLightsToCull lightsToCull;
+		// lights
+		CBLights* lights;
 		
 		// TODO: reused render targets
 	}PassData;
@@ -327,6 +402,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 			passData.specular = builder.Read(&gbufferPassData.specular);
 			passData.motion = builder.Read(&gbufferPassData.motion);
 
+			passData.culledLights = builder.Read(&lightCullingPassData.culledLights);
+			passData.lights = &lightCullingPassData.lights;
 			// create the output buffers
 
 
@@ -346,21 +423,6 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 					desc.SampleDesc.Count = 1;
 					desc.DebugName = L"rt-lighting";
 					return renderInterface->CreateTexture2D(&desc);
-				});
-
-
-			// light index buffer
-			passData.culledLights = builder.Create("light-index",
-				[=]() mutable {
-					R_BUFFER_DESC desc = {};
-					desc.Size = light_index_buffer_size;
-					desc.CPUAccessFlags = (R_CPU_ACCESS)0;
-					desc.CPUData = nullptr;
-					desc.Deformable = false;
-					desc.StructureByteStride = buffer_size_per_cell;
-					desc.Usage = DEFAULT;
-					desc.DebugName = L"light-index";
-					return renderInterface->CreateBuffer(&desc);
 				});
 
 			R_TEXTURE2D_DESC desc = {};
@@ -408,41 +470,11 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 			if (value) {
 				rtMaterial = value->as<Material*>();
 			}
-			// get light culling shaders
-			value = renderContext->GetResource("Material\\Materials\\light_culling.xml\\0");
-			if (value) {
-				cullingMaterial = value->as<Material*>();
-			}
-			if (rtMaterial && cullingMaterial) {
+			if (rtMaterial) {
 				auto rtLighting = passData.rtLighting.GetActualResource();
 				// set up 
 				{
 					cmdBuffer->Setup(true).SetShaderConstant(CB_SLOT(CBFrame), cam->GetCBFrame(), sizeof(CBFrame));
-				}
-				// do light culling in compute shader
-				// light position radius array
-				{
-					// set cell infos
-					passData.lightsToCull.cellCount = cell_count;
-					passData.lightsToCull.cellScale = cell_scale;
-					passData.lightsToCull.lightsPerCell = max_lights_per_cell;
-
-					passData.lightObjects.Reset();
-					passData.lightsToCull.numLights = 0;
-					spatial->Query(passData.lightObjects, Node::LIGHT);
-					for (auto iter = passData.lightObjects.Begin(); iter != passData.lightObjects.End(); iter++) {
-						auto light = (RenderLight*)*iter;
-						if (light->GetLightType() == RenderLight::POINT || light->GetLightType() == RenderLight::DIRECTION) {
-							auto index = passData.lightsToCull.numLights;
-							passData.lightsToCull.lights[index] = light->GetDesc();
-							passData.lights.gLights[index] = light->GetLightData();
-							++passData.lightsToCull.numLights;
-						}
-					}
-					// use lighting fot test
-					cmdBuffer->Dispatch(cullingMaterial, 0, cell_count, cell_count, cell_count)
-						.SetShaderConstant(CB_SLOT(CBLightsToCull), &passData.lightsToCull, sizeof(CBLightsToCull))
-						.SetRWShaderResource(SLOT_LIGHT_CULLING_RESULT, passData.culledLights.GetActualResource());
 				}
 				{
 					// setup gbuffer for following cmd
@@ -457,7 +489,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 				// disptach rays
 				{
 					cmdBuffer->DispatchRays(1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight)
-						.SetShaderConstant(CB_SLOT(CBLights), &passData.lights, sizeof(CBLights))
+						.SetShaderConstant(CB_SLOT(CBLights), passData.lights, sizeof(CBLights))
 						// culled light index
 						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
 						// result
@@ -506,4 +538,5 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 		});
 	return raytracingPass;
 }
+
 #endif

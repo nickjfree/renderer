@@ -7,6 +7,7 @@
 #include "RenderPreloading.h"
 #include "Rendering\MeshRenderer.h"
 #include "Rendering\Light.h"
+#include "Rendering\Volume.h"
 #include "Terrain.h"
 
 
@@ -102,7 +103,7 @@ int RenderingSystem::Initialize() {
 	context->RegisterObject<MeshRenderer>();
 	context->RegisterObject<Terrain>();
 	context->RegisterObject<TerrainNode>();
-
+	context->RegisterObject<Volume>();
 	// for test
 	// auto render = new D3D12RenderInterface();
 	// render->Initialize(3840, 2160);

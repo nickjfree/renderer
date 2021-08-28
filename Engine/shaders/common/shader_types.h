@@ -51,11 +51,13 @@ typedef struct uint4 {
 
 #define CB_SLOT(name) __CBSLOT__##name##__
 #define CBUFFER(name, slot) constexpr int CB_SLOT(name) = slot; struct alignas(16) name
+#define CONSTANTBUFFER(name, type, slot) constexpr int CB_SLOT(name) = slot; typedef type name;
 #define SAMPLERSTATE(name, slot)
 
 #else   // hlsl side
 
 #define CBUFFER(name, slot) cbuffer name : register(b ## slot)
+#define CONSTANTBUFFER(name, type, slot) ConstantBuffer< type > name : register(b ## slot)
 #define SAMPLERSTATE(name, slot) SamplerState name : register(s ## slot)
 
 

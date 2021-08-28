@@ -173,7 +173,7 @@ CBUFFER(CBFSRConst, 0)
 };
 
 // gi
-CBUFFER(CBGIVolume, 0)
+struct GIVolumeType
 {
     float3      origin;
     int         numRaysPerProbe;
@@ -188,7 +188,7 @@ CBUFFER(CBGIVolume, 0)
     float4x4    rayRotation;
 };
 
-
+CONSTANTBUFFER(CBGIVolume, GIVolumeType, 0);
 
 // samplers
 SAMPLERSTATE(gSam, 0);

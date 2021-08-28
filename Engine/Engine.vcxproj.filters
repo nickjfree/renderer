@@ -491,6 +491,9 @@
     <ClInclude Include="Rendering\Volume.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\RenderPassGI.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

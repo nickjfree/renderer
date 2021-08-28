@@ -14,6 +14,7 @@
 #include "RenderPassSSAO.h"
 #include "RenderPassRaytracing.h"
 #include "RenderPassFSR.h"
+#include "RenderPassGI.h"
 
 
 RenderControl::RenderControl(RenderContext* Context_) :Context(Context_)
@@ -156,10 +157,12 @@ void RenderControl::initFrameGraph()
 	auto emissive = AddEmissivePass(frameGraph, Context, gbuffer->Data(), lighting->Data());
 	auto ssao = AddSSAOPass(frameGraph, Context, lighting->Data(), gbuffer->Data());
 	auto lightculling = AddLightCullingPass(frameGraph, Context);
+	// gi
+	auto gi = AddGIPass(frameGraph, Context, lightculling->Data());
 	// rt-lighting
-	auto rtLighting = AddRaytracedLightingPass(frameGraph, Context, gbuffer->Data(), lightculling->Data());
+	auto rtLighting = AddRaytracedLightingPass(frameGraph, Context, gbuffer->Data(), lightculling->Data(), gi->Data());
 	// rt-relection
-	auto relection = AddRaytracedReflectionPass(frameGraph, Context, gbuffer->Data(), lightculling->Data());
+	auto relection = AddRaytracedReflectionPass(frameGraph, Context, gbuffer->Data(), lightculling->Data(), gi->Data());
 	// resolve
 	auto resolved = AddResolvePass(frameGraph, Context, gbuffer->Data(), lighting->Data(), ssao->Data(), relection->Data(), rtLighting->Data());
 	auto hdr = AddHDRPass(frameGraph, Context, resolved->Data());

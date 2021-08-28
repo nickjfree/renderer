@@ -115,8 +115,8 @@ auto AddLightCullingPass(FrameGraph& frameGraph, RenderContext* renderContext)
 /*
 	ray tracing
 */
-template <class T, class U>
-auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData)
+template <class T, class U, class W>
+auto AddRaytracedReflectionPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData, W& giPassData)
 {
 	typedef struct PassData {
 		RenderResource compact0;
@@ -358,8 +358,8 @@ auto AddResolvePass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbu
 /*
 	ray traced lighting (direct lighting)
 */
-template <class T, class U>
-auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData)
+template <class T, class U, class W>
+auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderContext, T& gbufferPassData, U& lightCullingPassData, W& giPassData)
 {
 	typedef struct PassData {
 		RenderResource diffuse;

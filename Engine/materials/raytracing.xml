@@ -8,4 +8,5 @@
   <!-- <shader name="reflection" url="Shader\shaders\Reflection\0"></shader> -->
   <library name="rtReflection" url="ShaderLibrary\shaders\rt-reflection.cso"></library>
   <library name="rtLighting" url="ShaderLibrary\shaders\rt-lighting.cso"></library>
+  <library name="rtProbe" url="ShaderLibrary\shaders\rt-probe.cso"></library>
 </material>

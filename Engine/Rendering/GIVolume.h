@@ -39,13 +39,16 @@ public:
 	void SetScale(Vector3 scale);
 
 private:
+	// create resource
+	void CreateResources(RenderContext* renderContext);
+
+private:
 	// volume describe
 	CBGIVolume giVolume;
 	// num probe 
 	int numProbes = 0;
 	// probe textures
 	int irradianceBuffer = -1;
-	int distanceBuffer = -1;
 	int irradianceMap = -1;
 	int distanceMap = -1;
 	int stateMap = -1;

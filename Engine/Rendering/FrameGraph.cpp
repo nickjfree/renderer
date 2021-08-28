@@ -106,14 +106,14 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto emissive = renderPasses[3];
 		auto ao = renderPasses[4];
 		auto lightculling = renderPasses[5];
-		auto rtLighting = renderPasses[6];
-		auto reflection = renderPasses[7];
-		auto resolve = renderPasses[8];
-		auto hdr = renderPasses[9];
-		auto fsr = renderPasses[10];
-		auto as = renderPasses[11];
+		auto gi = renderPasses[6];
+		auto rtLighting = renderPasses[7];
+		auto reflection = renderPasses[8];
+		auto resolve = renderPasses[9];
+		auto hdr = renderPasses[10];
+		auto fsr = renderPasses[11];
+		auto as = renderPasses[12];
 		
-
 		// get commandbuffer
 		auto cmdBuffer = CommandBuffer::Alloc();
 		// execute the gbuffer pass
@@ -144,6 +144,8 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			ao->Execute(cmdBuffer, cam, spatial);
 			// light culling
 			lightculling->Execute(cmdBuffer, cam, spatial);
+			// gi
+			gi->Execute(cmdBuffer, cam, spatial);
 			// do rt-lighting
 			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection

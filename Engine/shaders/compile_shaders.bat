@@ -90,3 +90,4 @@ dxc  -Zi -Fo ../shaders/rt-reflection.cso -T lib_6_3   -nologo raytracing/reflec
 
 dxc  -Zi -Fo ../shaders/rt-lighting.cso -T lib_6_3  -nologo raytracing/lighting_rt.hlsl
 
+dxc  -Zi -Fo ../shaders/rt-probe.cso -T lib_6_3  -nologo raytracing/probe_tracing_rt.hlsl

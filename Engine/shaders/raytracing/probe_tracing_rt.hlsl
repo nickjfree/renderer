@@ -4,6 +4,8 @@
 #include "raytracing.hlsli"
 #include "shading.hlsli"
 #include "gi/probe.hlsli"
+#include "gi/operations.hlsli"
+
 
 
 // env map
@@ -15,19 +17,19 @@ RWTexture2D<float4> RenderTarget : register(u0, space0);
 [shader("raygeneration")]
 void Raygen()
 {
-    int probeIndex = DispatchRaysDimensions().y;
-    int rayIndex = DispatchRaysDimensions().x;
+    int probeIndex = DispatchRaysIndex().y;
+    int rayIndex = DispatchRaysIndex().x;
 
     uint linearIndex = DispatchRaysIndex().x + DispatchRaysIndex().y * DispatchRaysDimensions().x;   
+    uint seed = RandInit(linearIndex, gFrameNumber);
+    // get ray diraction and position
+    float3 direction = SphericalFibonacci(rayIndex, CBGIVolume.numRaysPerProbe);
+    float3 position = GetProbePosition(probeIndex);
+    // seed
     RayContext ray;
     ray.Seed = RandInit(linearIndex, gFrameNumber);
-    // get ray diraction and position
-    float3 direction;
-    float3 position;
-    // traceRay
-    // float4 reflection = float4(0,0,0,0);
-    // output
-    // RenderTarget[DispatchRaysIndex().xy] = reflection;
+    float4 result = ComputeGIProbeTracingRadiance(position, normalize(direction), ray);
+    RenderTarget[DispatchRaysIndex().xy] = result;
 }
 
 

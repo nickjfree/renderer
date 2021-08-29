@@ -71,6 +71,19 @@ float3 GetShadowRaySample(LightData light, float3 position, inout uint seed)
     return normalize(ray);
 }
 
+void TraceShadingRay(float3 origin, float3 direction, inout ShadingRayPayload payload)
+{
+    // get ray
+    RayDesc ray;
+    ray.Origin = origin;
+    ray.Direction = direction;
+    // Set TMin to a non-zero small value to avoid aliasing issues due to floating - point errors.
+    // TMin should be kept small to prevent missing geometry at close contact areas.
+    ray.TMin = 0.005;
+    ray.TMax = 10000.0;
+    TraceRay(Scene, RAY_FLAG_FORCE_OPAQUE, ~0, 0, 1, 0, ray, payload);
+}
+
 // trace shadow ray
 void TraceShadowRay(GBufferContext gbuffer, inout RayContext rayContext, uint lightIndex, inout ShadowRayPayload payload) 
 {
@@ -159,6 +172,20 @@ float4 ComputeReflectionLighting(GBufferContext gbuffer, RayContext ray)
         return ComputeDirectLighting(hit, ray) * NoL;
     }
 
+}
+
+
+float4 ComputeGIProbeTracingRadiance(float3 origin, float3 direction, RayContext ray)
+{
+    ShadingRayPayload payload = (ShadingRayPayload)0;
+    TraceShadingRay(origin, direction, payload);
+    if (!payload.Hit) {
+        // not hit
+        return payload.Diffuse;
+    } else {
+        GBufferContext hit = ShadingPayloadToGBufferContext(payload);
+        return float4(ComputeDirectLighting(hit, ray).xyz, payload.HitDistance);
+    }
 }
 
 #endif

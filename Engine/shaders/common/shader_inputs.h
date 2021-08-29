@@ -188,7 +188,7 @@ struct GIVolumeType
     float4x4    rayRotation;
 };
 
-CONSTANTBUFFER(CBGIVolume, GIVolumeType, 0);
+CONSTANTBUFFER(CBGIVolume, GIVolumeType, 1);
 
 // samplers
 SAMPLERSTATE(gSam, 0);

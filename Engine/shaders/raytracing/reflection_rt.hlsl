@@ -49,8 +49,11 @@ void ClosestHit(inout ShadingRayPayload payload, in SimpleAttributes attr)
     payload.Specular = material.Specular;
     payload.Roughness = material.Roughness;
     payload.Metallic = material.Metallic;
-    payload.HitDistance = RayTCurrent();
     payload.Hit = true;
+    payload.HitDistance = RayTCurrent();
+    if (dot(payload.Normal, WorldRayDirection()) >= 0) {
+        payload.HitDistance *= -0.2;
+    }
 }
 
 [shader("miss")]

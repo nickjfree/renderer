@@ -30,21 +30,33 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 	if (irradianceBuffer == -1) {
 		CreateResources(renderContext);
 	}
+	// get resources
 	auto value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
-	Material* material = nullptr;
+	Material* rtMaterial = nullptr;
+	Material* giMaterial = nullptr;
 	if (value) {
-		material = value->as<Material*>();
+		rtMaterial = value->as<Material*>();
+	}
+	value = renderContext->GetResource("Material\\Materials\\gi.xml\\0");
+	if (value) {
+		giMaterial = value->as<Material*>();
 	}
 	// random rotation
 	Matrix4x4 randRotation;
 	Matrix4x4::Tranpose(randRotation, &giVolume.rayRotation);
-	if (material) {
+	if (rtMaterial && giMaterial) {
 		// do probe tracing
 		{
-			cmdBuffer->DispatchRays(2, material, gi_volume_probe_num_rays, numProbes)
+			cmdBuffer->DispatchRays(2, rtMaterial, gi_volume_probe_num_rays, numProbes)
 				.SetShaderConstant(CB_SLOT(CBFrame), camera->GetCBFrame(), sizeof(CBFrame))
 				.SetShaderConstant(CB_SLOT(CBGIVolume), &giVolume, sizeof(CBGIVolume))
 				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer);
+		}
+		// blend irradiance and distance
+		{
+			/*cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);*/
 		}
 	}
 	return 0;
@@ -82,7 +94,25 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
 	desc.DebugName = L"gi-irradiance-buffer";
-
+	// irrandiance buffer
 	irradianceBuffer = renderInterface->CreateTexture2D(&desc);
-
+	// probes per plane
+	auto probesPerPlane = giVolume.probeGridCounts.x * giVolume.probeGridCounts.z;
+	auto numPlanes = giVolume.probeGridCounts.z;
+	auto irrandianceWidth = numPlanes * giVolume.probeGridCounts.x * (gi_volume_probe_irradiance_texels + 2);
+	auto irrandianceHeight = giVolume.probeGridCounts.z * (gi_volume_probe_irradiance_texels + 2);
+	auto distanceWidth = numPlanes * giVolume.probeGridCounts.x * (gi_volume_probe_distance_texels + 2);
+	auto distanceHeight = giVolume.probeGridCounts.z * (gi_volume_probe_distance_texels + 2);
+	// irrandiance map
+	desc.Width = irrandianceWidth;
+	desc.Height = irrandianceHeight;
+	desc.Format = FORMAT_R11G11B10_FLOAT;
+	desc.DebugName = L"gi-irradiance-map";
+	irradianceMap = renderInterface->CreateTexture2D(&desc);
+	// distance map
+	desc.Width = distanceWidth;
+	desc.Height = distanceHeight;
+	desc.Format = FORMAT_R16G16_FLOAT;
+	desc.DebugName = L"gi-distance-map";
+	distanceMap = renderInterface->CreateTexture2D(&desc);
 }

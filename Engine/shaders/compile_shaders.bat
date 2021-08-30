@@ -59,6 +59,9 @@ fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
 	/D IBL=1^
 	compute/light_culling_cs.hlsl
 
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_irrandiance.cs^
+	/D BLEND_IRRANDIANCE^
+	compute/probe_blending_cs.hlsl
 
 fxc /T cs_5_1 /E CS_Main /Fo ../shaders/fsr_easu.cs^
 	/D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=1 /D SAMPLE_RCAS=0^

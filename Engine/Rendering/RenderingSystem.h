@@ -55,9 +55,9 @@ private:
 	// Spatial
 	Spatial* spatial;
 	// renderinterface
-	RenderInterface* Interface;
+	RenderInterface* Interface = nullptr;
 	// render context
-	RenderContext* RenderContext_;
+	RenderContext* RenderContext_ = nullptr;
 	// Rendercontrol
 	RenderControl* Control = nullptr;
 	// render queue

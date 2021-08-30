@@ -1,9 +1,6 @@
 #ifndef __OPERATIONS__
 #define __OPERATIONS__
 
-
-#include "probe.hlsli"
-
 #define PI 3.14159265
 
 /*

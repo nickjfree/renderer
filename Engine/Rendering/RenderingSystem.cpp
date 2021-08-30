@@ -11,7 +11,7 @@
 #include "Terrain.h"
 
 
-RenderingSystem::RenderingSystem(Context* context) : System(context), frames(0)
+RenderingSystem::RenderingSystem(Context* context) : System(context), frames(0), Interface(), spatial(), RenderContext_()
 {
 }
 
@@ -83,6 +83,10 @@ void RenderingSystem::PreloadingResource() {
 	Preloadings[8] = "Material\\Materials\\fsr.xml\\0";
 	Param= &Preloadings[8];
 	Cache->AsyncLoadResource(Preloadings[8], Preloading, Param);
+	// load gi shaders
+	Preloadings[9] = "Material\\Materials\\gi.xml\\0";
+	Param = &Preloadings[9];
+	Cache->AsyncLoadResource(Preloadings[9], Preloading, Param);
 }
 
 int RenderingSystem::Initialize() {

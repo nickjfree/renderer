@@ -114,16 +114,14 @@
 */
 
 #define SLOT_RT_GI_IRRADIANCE_OUTPUT   0
-#define SLOT_RT_GI_DISTANCE_OUTPUT     1
-#define SLOT_RT_GI_BLEND_OUTPUT        0
-#define SLOT_RT_GI_STATE_OUTPUT        0
+#define SLOT_RT_GI_BLEND_OUTPUT        1
+#define SLOT_RT_GI_STATE_OUTPUT        1
 
 #define SLOT_RT_GI_BLEND_INPUT         0
 #define SLOT_RT_GI_STATE_MAP           2
 
-#define SLOT_RT_GI_IRRADIANCE_MAP      0
-#define SLOT_RT_GI_DISTANCE_MAP        1
-
+#define SLOT_RT_GI_IRRADIANCE_MAP      4
+#define SLOT_RT_GI_DISTANCE_MAP        5
 
 /*
 *	 raytraced reflection

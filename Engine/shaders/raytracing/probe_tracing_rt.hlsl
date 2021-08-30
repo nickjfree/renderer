@@ -3,8 +3,8 @@
 
 #include "raytracing.hlsli"
 #include "shading.hlsli"
-#include "gi/probe.hlsli"
-#include "gi/operations.hlsli"
+#include "../common/gi/probe.hlsli"
+#include "../common/gi/operations.hlsli"
 
 
 

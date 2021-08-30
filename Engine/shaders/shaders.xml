@@ -162,6 +162,24 @@
     </technique>
   </shader>
 
+  <shader name="GI">
+    <technique name="irrandiance">
+      <pass name="irrandiance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+      </pass>
+    </technique>
+    <technique name="distance">
+      <pass name="distance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+      </pass>
+    </technique>
+    <technique name="probe_state">
+      <pass name="probe_state" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+      </pass>
+    </technique>
+  </shader>
+
   <shader name="Resolve">
     <technique name="resolve">
       <pass name="reflection" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<material>
+  <textures>
+  </textures> 
+  
+  <shader name="gi" url="Shader\shaders\GI\0"></shader>
+</material>

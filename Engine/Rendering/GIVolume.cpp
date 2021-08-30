@@ -54,9 +54,9 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 		}
 		// blend irradiance and distance
 		{
-			/*cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
+			cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);*/
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);
 		}
 	}
 	return 0;
@@ -98,7 +98,7 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	irradianceBuffer = renderInterface->CreateTexture2D(&desc);
 	// probes per plane
 	auto probesPerPlane = giVolume.probeGridCounts.x * giVolume.probeGridCounts.z;
-	auto numPlanes = giVolume.probeGridCounts.z;
+	auto numPlanes = giVolume.probeGridCounts.y;
 	auto irrandianceWidth = numPlanes * giVolume.probeGridCounts.x * (gi_volume_probe_irradiance_texels + 2);
 	auto irrandianceHeight = giVolume.probeGridCounts.z * (gi_volume_probe_irradiance_texels + 2);
 	auto distanceWidth = numPlanes * giVolume.probeGridCounts.x * (gi_volume_probe_distance_texels + 2);

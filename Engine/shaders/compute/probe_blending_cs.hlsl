@@ -44,8 +44,8 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	float2 uv = NormalizedOctaCoord(threadId.xy);
 	float3 otcaDirection = OctaToDirection(uv);
-	uint2 probeBase = GetMapBaseCoord(probeIndex);
-	uint2 targetCoord = probeBase + uint2(1, 1) + threadId.xy;
+	int2 probeBase = GetMapBaseCoord(probeIndex);
+	int2 targetCoord = probeBase + int2(1, 1) + threadId.xy;
 
 	float4 result = float4(0, 0, 0, 0);
 
@@ -60,5 +60,6 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 		result += float4(irrandianceData[i] * weight, irrandianceData[i] * irrandianceData[i], 0, weight);
 #endif
 	}
+	result.xyz /= max(0.00001, result.a);
 	Output[targetCoord.xy] = result.xyz;
 }

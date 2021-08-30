@@ -54,6 +54,7 @@ private:
 	int stateMap = -1;
 	// lights
 	int culledLights = -1;
+	// light constant buffer
 	CBLights* cbLights = nullptr;
 };
 

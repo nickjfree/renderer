@@ -22,6 +22,7 @@ RWTexture2D<float4> IrrandianceBuffer : register(u0);
 
 // debug
 RWTexture2D<float4> Output2 : register(u2);
+RWTexture2D<float4> Output3 : register(u3);
 
 
 [numthreads(THREAD_COUNT, THREAD_COUNT, 1)]
@@ -32,7 +33,9 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	// copy irrandiance data to shared memory
 	uint numStep = THREAD_COUNT * THREAD_COUNT;
-	for (int i = 0; i < RAYS_PER_PROBE; i += numStep) {
+
+	uint linearId = threadId.y * THREAD_COUNT + threadId.x; 	
+	for (int i = linearId; i < RAYS_PER_PROBE; i += numStep) {
 
 #ifdef BLEND_IRRANDIANCE
 		irrandianceData[i] = IrrandianceBuffer[int2(i, probeIndex)].rgb;
@@ -66,9 +69,10 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	}
 #ifdef BLEND_IRRANDIANCE
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
-	float4 output = float4(lerp(result.xyz, result.xyz, 0.01), 1);
+	float4 output = float4(lerp(result.xyz, previous.xyz, 0.01), 1);
 #else
 #endif
 	Output[targetCoord.xy] = output;
-	Output2[targetCoord.xy] = output;
+	Output2[targetCoord.xy] = previous;
+	Output3[targetCoord.xy] = result;
 }

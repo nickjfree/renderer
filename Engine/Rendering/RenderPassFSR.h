@@ -13,8 +13,8 @@
 *       backbuffer
 * 
 */
-template <class T>
-auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassData)
+template <class T, class U>
+auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& hdrPassData, U& debug)
 {
 
 	constexpr int threadGroupWorkRegionDim = 16;
@@ -38,6 +38,8 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 		// fsr consts
 		CBFSRConst const1;
 		CBFSRConst const2;
+		// textures to show
+		int* debug;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -58,7 +60,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 			R_TEXTURE2D_DESC desc = {};
 			desc.ArraySize = 1;
 			desc.CPUAccess = (R_CPU_ACCESS)0;
-			desc.BindFlag = (R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE);
+			desc.BindFlag = (R_BIND_FLAG)(BIND_UNORDERED_ACCESS | BIND_SHADER_RESOURCE| BIND_RENDER_TARGET);
 			desc.MipLevels = 1;
 			desc.Usage = DEFAULT;
 			desc.SampleDesc.Count = 1;
@@ -78,6 +80,8 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 					desc.Format = FORMAT_R8G8B8A8_UNORM;
 					return renderInterface->CreateTexture2D(&desc);
 				});
+			// debug
+			passData.debug = &debug.irrandianceMap;
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 
@@ -107,6 +111,14 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T&hdrPassD
 						.SetShaderConstant(CB_SLOT(CBFSRConst), &consts, sizeof(CBFSRConst))
 						.SetShaderResource(SLOT_FSR_INPUT, passData.intermediary.GetActualResource())
 						.SetRWShaderResource(SLOT_FSR_OUTPUT, passData.output.GetActualResource());
+				}
+				// debug draw
+				{
+					if (*passData.debug != -1) {
+						int targets[] = { passData.output.GetActualResource() };
+						cmdBuffer->RenderTargets(targets, 1, -1, false, false, displayWidth, displayHeight);
+						cmdBuffer->Quad(fsrMaterial, 2).SetShaderResource(SLOT_RT_GI_DEBUG, *passData.debug);
+					}
 				}
 				// copy pass
 				{

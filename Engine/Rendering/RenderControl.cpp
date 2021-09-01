@@ -166,7 +166,7 @@ void RenderControl::initFrameGraph()
 	// resolve
 	auto resolved = AddResolvePass(frameGraph, Context, gbuffer->Data(), lighting->Data(), ssao->Data(), relection->Data(), rtLighting->Data());
 	auto hdr = AddHDRPass(frameGraph, Context, resolved->Data());
-	auto fsr = AddFSRPass(frameGraph, Context, hdr->Data());
+	auto fsr = AddFSRPass(frameGraph, Context, hdr->Data(), gi->Data());
 	// build as
 	auto as = AddBuildASPass(frameGraph, Context);
 }

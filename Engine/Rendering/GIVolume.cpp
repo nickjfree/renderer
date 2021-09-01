@@ -32,7 +32,8 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 		CreateResources(renderContext);
 		// clear buffer
 		int targets[] = { irradianceMap, distanceMap };
-		cmdBuffer->RenderTargets(targets, 2, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+		cmdBuffer->RenderTargets(&targets[0], 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+		cmdBuffer->RenderTargets(&targets[1], 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
 		return 0;
 	}
 	// get resources
@@ -50,6 +51,9 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 	Matrix4x4 randRotation;
 	Matrix4x4::Tranpose(randRotation, &giVolume.rayRotation);
 	if (rtMaterial && giMaterial) {
+
+		auto& position = GetPosition();
+		giVolume.origin = { position.x, position.y, position.z };
 		// do probe tracing
 		{
 			cmdBuffer->DispatchRays(2, rtMaterial, gi_volume_probe_num_rays, numProbes)
@@ -62,24 +66,18 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 			cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 1, distanceMap);
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 1, debug1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 2, debug2);
 		}
 		// draw debug textures
-		{
-			int targets[] = { debug };
-			cmdBuffer->RenderTargets(targets, 1, -1, true, false, 1000, 100);
-			cmdBuffer->Quad(giMaterial, 3)
-				.SetShaderResource(SLOT_RT_GI_DEBUG, irradianceMap);
-		}
+		//{
+		//	int targets[] = { debugOut };
+		//	cmdBuffer->RenderTargets(targets, 1, -1, true, false, 1000, 100);
+		//	cmdBuffer->Quad(giMaterial, 3)
+		//		.SetShaderResource(SLOT_RT_GI_DEBUG, irradianceMap);
+		//}
 	}
 	return 0;
-}
-
-void GIVolume::SetPosition(Vector3& Position_)
-{
-	Node::SetPosition(Position_);
-	// set origin
-	giVolume.origin = { Position_.x, Position_.y, Position_.z };
 }
 
 void GIVolume::SetScale(Vector3 scale)
@@ -123,7 +121,8 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	desc.DebugName = L"gi-irradiance-map";
 	irradianceMap = renderInterface->CreateTexture2D(&desc);
 	// debug
-	debug = renderInterface->CreateTexture2D(&desc);
+	debug1 = renderInterface->CreateTexture2D(&desc);
+	debug2 = renderInterface->CreateTexture2D(&desc);
 	// distance map
 	desc.Width = distanceWidth;
 	desc.Height = distanceHeight;

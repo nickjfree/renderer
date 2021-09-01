@@ -2,6 +2,7 @@
 #define __RENDER_PASS_GI__
 
 
+#include "GIVolume.h"
 /*
 	gi
 */
@@ -15,6 +16,8 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 		CBLights* lights;
 		// volumes
 		Vector<Node*> volumes;
+		// irrandiance map
+		int irrandianceMap;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -39,6 +42,7 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 			for (auto iter = passData.volumes.Begin(); iter != passData.volumes.End(); iter++) {
 				auto volume = *iter;
 				volume->Render(cmdBuffer, 0, 0, cam, renderContext);
+				passData.irrandianceMap = ((GIVolume*)volume)->GetIrrandianceMap();
 			}
 		});
 	return pass;

@@ -41,7 +41,7 @@ PS_Input VSMain(VS_Input vsInput, uint vertexId : SV_VertexId)
 	output.TexCoord = vsInput.TexCoord;
 #elif RENDER_DEBUG
 	// small quad
-	output.PosH.xy = 2 * vsInput.PosL.xy * 0.125 - 1;
+	output.PosH.xy = 2 * vsInput.PosL.xy * float2(0.5f, 0.075f) - 1;
 	output.PosH.zw = 1;
 	output.TexCoord = vsInput.TexCoord;
 #else

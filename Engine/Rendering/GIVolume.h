@@ -34,11 +34,10 @@ public:
 	GIVolume();
 	// queue render command
 	virtual int Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCamera* camera, RenderContext* renderContext);
-	// set position
-	void SetPosition(Vector3& Position_);
 	// set volume scale
 	void SetScale(Vector3 scale);
-
+	// get irrandiance map
+	int GetIrrandianceMap() { return debug2; }
 private:
 	// create resource
 	void CreateResources(RenderContext* renderContext);
@@ -54,7 +53,9 @@ private:
 	int distanceMap = -1;
 	int stateMap = -1;
 	// debug buffer
-	int debug = -1;
+	int debug1 = -1;
+	int debug2 = -1;
+	int debugOut = -1;
 	// lights
 	int culledLights = -1;
 	// light constant buffer

@@ -21,7 +21,7 @@
 *  vertex input layout 
 */
 
-#ifdef RENDER_SCREEN
+#if defined(RENDER_SCREEN) || defined(RENDER_DEBUG)
 // screen space rendering
 struct VS_Input
 {
@@ -77,8 +77,7 @@ struct VS_Input
 /* 
 *   pixel shader input
 */
-
-#ifdef RENDER_SCREEN
+#if defined(RENDER_SCREEN) || defined(RENDER_DEBUG)
 
 // screen space
 struct PS_Input

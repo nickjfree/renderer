@@ -178,12 +178,6 @@
         <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
       </pass>
     </technique>
-    <technique name="debug">
-      <pass name="debug" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <vs url="Shaders\shaders\quad.vs"></cs>
-        <ps url="Shaders\shaders\debug.ps"></cs>
-      </pass>
-    </technique>
   </shader>
 
   <shader name="Resolve">
@@ -264,6 +258,12 @@
     <technique name="fsr">
       <pass name="rcas" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
         <cs url="Shaders\shaders\fsr_rcas.cs"></cs>
+      </pass>
+    </technique>
+    <technique name="debug">
+      <pass name="debug" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <vs url="Shaders\shaders\debug.vs"></cs>
+        <ps url="Shaders\shaders\debug.ps"></cs>
       </pass>
     </technique>
   </shader>

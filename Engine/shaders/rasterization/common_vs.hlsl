@@ -39,6 +39,11 @@ PS_Input VSMain(VS_Input vsInput, uint vertexId : SV_VertexId)
 	output.PosH.xy = 2 * vsInput.PosL.xy - 1;
 	output.PosH.zw = 1;
 	output.TexCoord = vsInput.TexCoord;
+#elif RENDER_DEBUG
+	// small quad
+	output.PosH.xy = 2 * vsInput.PosL.xy * 0.125 - 1;
+	output.PosH.zw = 1;
+	output.TexCoord = vsInput.TexCoord;
 #else
 	// gbuffer
 	output = transform_to_view(vsInput.PosL, vsInput.Normal, 

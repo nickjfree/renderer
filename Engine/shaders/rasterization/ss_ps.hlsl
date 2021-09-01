@@ -27,6 +27,10 @@
 	#include "post/resolve.hlsli"
 #endif
 
+#ifdef RENDER_DEBUG
+	#include "post/debug.hlsli"
+#endif
+
 /*
 	uniform pixel shader
 */

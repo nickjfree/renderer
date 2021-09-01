@@ -184,7 +184,11 @@ struct GIVolumeType
     int         probeNumDistanceTexels;
     float       normalBias;
     float       viewBias;
-    float       giPad;
+    float       hysteresis;
+    float       distanceExponent;
+    float       brightnessThreshold;
+    float       irrandianceChangeThreshold;
+    float       irradianceEncodingGamma;
     float4x4    rayRotation;
 };
 

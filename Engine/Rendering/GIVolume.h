@@ -24,6 +24,7 @@ constexpr int gi_volume_probe_irradiance_texels = 8;
 constexpr int gi_volume_probe_distance_texels = 16;
 constexpr float gi_volume_normal_bias = 0.01f;
 constexpr float gi_volume_view_bias = 0.01f;
+constexpr float gi_volume_hysteresis = 0.97f;
 
 
 class GIVolume: public Node
@@ -52,6 +53,8 @@ private:
 	int irradianceMap = -1;
 	int distanceMap = -1;
 	int stateMap = -1;
+	// debug buffer
+	int debug = -1;
 	// lights
 	int culledLights = -1;
 	// light constant buffer

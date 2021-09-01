@@ -19,6 +19,7 @@ GIVolume::GIVolume()
 	giVolume.rayRotation = Matrix4x4();
 	giVolume.normalBias = gi_volume_normal_bias;
 	giVolume.viewBias = gi_volume_view_bias;
+	giVolume.hysteresis = gi_volume_hysteresis;
 	// set default scale
 	SetScale(Vector3(10, 10, 10));
 }
@@ -29,6 +30,10 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 	// ensure resource create
 	if (irradianceBuffer == -1) {
 		CreateResources(renderContext);
+		// clear buffer
+		int targets[] = { irradianceMap, distanceMap };
+		cmdBuffer->RenderTargets(targets, 2, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
+		return 0;
 	}
 	// get resources
 	auto value = renderContext->GetResource("Material\\Materials\\raytracing.xml\\0");
@@ -56,7 +61,15 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 		{
 			cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 1, distanceMap);
+		}
+		// draw debug textures
+		{
+			int targets[] = { debug };
+			cmdBuffer->RenderTargets(targets, 1, -1, true, false, 1000, 100);
+			cmdBuffer->Quad(giMaterial, 3)
+				.SetShaderResource(SLOT_RT_GI_DEBUG, irradianceMap);
 		}
 	}
 	return 0;
@@ -106,13 +119,16 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	// irrandiance map
 	desc.Width = irrandianceWidth;
 	desc.Height = irrandianceHeight;
-	desc.Format = FORMAT_R11G11B10_FLOAT;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.DebugName = L"gi-irradiance-map";
 	irradianceMap = renderInterface->CreateTexture2D(&desc);
+	// debug
+	debug = renderInterface->CreateTexture2D(&desc);
 	// distance map
 	desc.Width = distanceWidth;
 	desc.Height = distanceHeight;
-	desc.Format = FORMAT_R16G16_FLOAT;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.DebugName = L"gi-distance-map";
 	distanceMap = renderInterface->CreateTexture2D(&desc);
+
 }

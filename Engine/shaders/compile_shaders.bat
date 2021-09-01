@@ -30,6 +30,14 @@ fxc /T vs_5_1 /E VSMain  /Fo ../shaders/quad.vs ^
 	/D RENDER_SCREEN=1^
 	rasterization/common_vs.hlsl
 
+fxc /T vs_5_1 /E VSMain  /Fo ../shaders/debug.vs ^
+	/D RENDER_DEBUG=1^
+	rasterization/common_vs.hlsl
+
+fxc /T ps_5_1 /E PSMain  /Fo ../shaders/debug.ps ^
+	/D RENDER_DEBUG=1^
+	rasterization/ss_ps.hlsl
+
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/gbuffer.ps ^
 	/D RENDER_GBUFFER=1^
 	rasterization/common_ps.hlsl
@@ -54,6 +62,10 @@ fxc /T ps_5_1 /E PSMain  /Fo ../shaders/ssao.ps ^
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/resolve.ps ^
 	/D RESOLVE=1^
 	rasterization/ss_ps.hlsl
+
+
+
+
 
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
 	/D IBL=1^

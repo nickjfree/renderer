@@ -123,6 +123,8 @@
 #define SLOT_RT_GI_IRRADIANCE_MAP      4
 #define SLOT_RT_GI_DISTANCE_MAP        5
 
+#define SLOT_RT_GI_DEBUG       		   0
+
 /*
 *	 raytraced reflection
 */

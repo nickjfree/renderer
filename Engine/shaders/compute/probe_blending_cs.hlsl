@@ -69,7 +69,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	}
 #ifdef BLEND_IRRANDIANCE
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
-	float4 output = float4(lerp(result.xyz, previous.xyz, 0.01), 1);
+	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else
 #endif
 	Output[targetCoord.xy] = output;

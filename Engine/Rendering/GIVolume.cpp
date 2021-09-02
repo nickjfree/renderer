@@ -60,22 +60,23 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 				.SetShaderConstant(CB_SLOT(CBFrame), camera->GetCBFrame(), sizeof(CBFrame))
 				.SetShaderConstant(CB_SLOT(CBGIVolume), &giVolume, sizeof(CBGIVolume))
 				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer);
+			// bind the irrandiance and distance map for "infinite bounce"
+
 		}
 		// blend irradiance and distance
 		{
 			cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 1, debug1)
-				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT + 2, debug2);
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);
 		}
-		// draw debug textures
-		//{
-		//	int targets[] = { debugOut };
-		//	cmdBuffer->RenderTargets(targets, 1, -1, true, false, 1000, 100);
-		//	cmdBuffer->Quad(giMaterial, 3)
-		//		.SetShaderResource(SLOT_RT_GI_DEBUG, irradianceMap);
-		//}
+		// fix the border
+		{
+			// irrandiance 
+			cmdBuffer->Dispatch(giMaterial, 2, giVolume.probeGridCounts.y * giVolume.probeGridCounts.x, giVolume.probeGridCounts.z, 1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceMap);
+			// distance
+		}
+		// done
 	}
 	return 0;
 }
@@ -121,8 +122,8 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	desc.DebugName = L"gi-irradiance-map";
 	irradianceMap = renderInterface->CreateTexture2D(&desc);
 	// debug
-	debug1 = renderInterface->CreateTexture2D(&desc);
-	debug2 = renderInterface->CreateTexture2D(&desc);
+	/*debug1 = renderInterface->CreateTexture2D(&desc);
+	debug2 = renderInterface->CreateTexture2D(&desc);*/
 	// distance map
 	desc.Width = distanceWidth;
 	desc.Height = distanceHeight;

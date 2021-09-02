@@ -37,7 +37,7 @@ public:
 	// set volume scale
 	void SetScale(Vector3 scale);
 	// get irrandiance map
-	int GetIrrandianceMap() { return debug2; }
+	int GetIrrandianceMap() { return irradianceMap; }
 private:
 	// create resource
 	void CreateResources(RenderContext* renderContext);

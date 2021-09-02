@@ -15,14 +15,7 @@ groupshared  float irrandianceData[RAYS_PER_PROBE];
 RWTexture2D<float4> Output : register(u1);	
 #endif
 
-
-
-
 RWTexture2D<float4> IrrandianceBuffer : register(u0);
-
-// debug
-RWTexture2D<float4> Output2 : register(u2);
-RWTexture2D<float4> Output3 : register(u3);
 
 
 [numthreads(THREAD_COUNT, THREAD_COUNT, 1)]
@@ -71,8 +64,8 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else
+	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
+	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #endif
 	Output[targetCoord.xy] = output;
-	Output2[targetCoord.xy] = previous;
-	Output3[targetCoord.xy] = result;
 }

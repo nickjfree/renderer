@@ -2,6 +2,7 @@ set PATH=%PATH%;%WindowsSDK_ExecutablePath_x64%
 
 cd %ProjectDir%shaders\
 
+:: common vs
 fxc /T vs_5_1 /E VSMain  /Fo ../shaders/basic-gbuffer.vs ^
 	/D RENDER_GBUFFER=1^
 	rasterization/common_vs.hlsl
@@ -34,6 +35,7 @@ fxc /T vs_5_1 /E VSMain  /Fo ../shaders/debug.vs ^
 	/D RENDER_DEBUG=1^
 	rasterization/common_vs.hlsl
 
+:: common ps
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/debug.ps ^
 	/D RENDER_DEBUG=1^
 	rasterization/ss_ps.hlsl
@@ -47,6 +49,7 @@ fxc /T ps_5_1 /E PSMain  /Fo ../shaders/terrain-gbuffer.ps ^
 	/D VS_CLIPMAP=1^
 	rasterization/common_ps.hlsl
 
+:: post processing
 fxc /T ps_5_1 /E PSMain  /Fo ../shaders/ibl.ps ^
 	/D IBL=1^
 	rasterization/ss_ps.hlsl
@@ -64,17 +67,29 @@ fxc /T ps_5_1 /E PSMain  /Fo ../shaders/resolve.ps ^
 	rasterization/ss_ps.hlsl
 
 
-
-
-
+:: light culling
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
 	/D IBL=1^
 	compute/light_culling_cs.hlsl
 
-fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_irrandiance.cs^
+:: gi
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_irradiance.cs^
 	/D BLEND_IRRANDIANCE^
 	compute/probe_blending_cs.hlsl
 
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_distance.cs^
+	/D BLEND_DISTANCE^
+	compute/probe_blending_cs.hlsl
+
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_fix_irradiance.cs^
+	/D BLEND_IRRANDIANCE^
+	compute/probe_fix_border_cs.hlsl
+
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_fix_distance.cs^
+	/D BLEND_DISTANCE^
+	compute/probe_fix_border_cs.hlsl
+
+:: fsr
 fxc /T cs_5_1 /E CS_Main /Fo ../shaders/fsr_easu.cs^
 	/D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=1 /D SAMPLE_RCAS=0^
 	rasterization/fsr/fsr.hlsl

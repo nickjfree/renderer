@@ -165,17 +165,27 @@
   <shader name="GI">
     <technique name="irrandiance">
       <pass name="irrandiance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+        <cs url="Shaders\shaders\gi_irradiance.cs"></cs>
       </pass>
     </technique>
     <technique name="distance">
       <pass name="distance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+        <cs url="Shaders\shaders\gi_distance.cs"></cs>
+      </pass>
+    </technique>
+    <technique name="fix_irradiance">
+      <pass name="fix_irradiance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\gi_fix_irradiance.cs"></cs>
+      </pass>
+    </technique>
+    <technique name="fix_distance">
+      <pass name="fix_distance" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
+        <cs url="Shaders\shaders\gi_fix_distance.cs"></cs>
       </pass>
     </technique>
     <technique name="probe_state">
       <pass name="probe_state" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <cs url="Shaders\shaders\gi_irrandiance.cs"></cs>
+        <cs url="Shaders\shaders\gi_irradiance.cs"></cs>
       </pass>
     </technique>
   </shader>

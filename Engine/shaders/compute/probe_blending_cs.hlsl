@@ -7,15 +7,17 @@
 
 #ifdef BLEND_IRRADIANCE
 #define THREAD_COUNT 8
-groupshared  float3 irrandianceData[RAYS_PER_PROBE];
-RWTexture2D<float4> Output : register(u1);	
+groupshared  float3 irradianceData[RAYS_PER_PROBE];
 #else
 #define THREAD_COUNT 16
-groupshared  float irrandianceData[RAYS_PER_PROBE];
-RWTexture2D<float4> Output : register(u1);	
 #endif
 
-RWTexture2D<float4> IrrandianceBuffer : register(u0);
+groupshared  float distanceData[RAYS_PER_PROBE];
+groupshared  float3 rayDirections[RAYS_PER_PROBE];
+
+
+RWTexture2D<float4> IrradianceBuffer : register(u0);
+RWTexture2D<float4> Output : register(u1);
 
 
 [numthreads(THREAD_COUNT, THREAD_COUNT, 1)]
@@ -31,10 +33,14 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	for (int i = linearId; i < RAYS_PER_PROBE; i += numStep) {
 
 #ifdef BLEND_IRRADIANCE
-		irrandianceData[i] = IrrandianceBuffer[int2(i, probeIndex)].rgb;
-#else
-		irrandianceData[i] = IrrandianceBuffer[int2(i, probeIndex)].a;
+		// cache irradiance
+		irradianceData[i] = IrradianceBuffer[int2(i, probeIndex)].rgb;
 #endif
+		// cache distance
+		distanceData[i] = IrradianceBuffer[int2(i, probeIndex)].a;
+		// cache direction
+		rayDirections[i] = SphericalFibonacci(i, RAYS_PER_PROBE);
+
 	}
 	GroupMemoryBarrierWithGroupSync();
 
@@ -49,14 +55,30 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
     float4 previous = Output[targetCoord.xy];
 
 	for (i = 0; i < RAYS_PER_PROBE; ++i) {
-		float3 rayDirection = SphericalFibonacci(i, RAYS_PER_PROBE);
+
+		float dist = distanceData[i];
+
+		// ignore backface		
+		if (dist < 0.f)
+        {
+        	// Output[targetCoord.xy] = float4(1, 0, 0, 0);
+        	// return;
+            continue;
+        }
+
+        float3 rayDirection = rayDirections[i];
 		float weight = max(0, dot(otcaDirection, rayDirection));
 
 #ifdef BLEND_IRRADIANCE
-		result += float4(irrandianceData[i] * weight, weight);
+		float3 irradiance = irradianceData[i];
+		result += float4(irradiance * weight, weight);
 #else
-		// do some extra ops for weight
-		result += float4(irrandianceData[i] * weight, irrandianceData[i] * irrandianceData[i], 0, weight);
+		// filter distance
+	    float maxDistance = length(CBGIVolume.probeGridSpacing) * 0.75f;
+		dist = min(abs(dist), maxDistance);
+		weight = pow(weight, CBGIVolume.distanceExponent);
+		result += float4(dist * weight, dist * dist * weight, 0, weight);
+
 #endif
 
 	}

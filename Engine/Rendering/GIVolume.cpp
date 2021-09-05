@@ -20,6 +20,7 @@ GIVolume::GIVolume()
 	giVolume.normalBias = gi_volume_normal_bias;
 	giVolume.viewBias = gi_volume_view_bias;
 	giVolume.hysteresis = gi_volume_hysteresis;
+	giVolume.distanceExponent = 50.0f;
 	// set default scale
 	SetScale(Vector3(20, 20, 20));
 }
@@ -68,6 +69,10 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 			cmdBuffer->Dispatch(giMaterial, 0, numProbes, 1, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, irradianceMap);
+
+			cmdBuffer->Dispatch(giMaterial, 1, numProbes, 1, 1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, distanceMap);
 		}
 		// fix the border
 		{
@@ -75,6 +80,8 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 			cmdBuffer->Dispatch(giMaterial, 2, giVolume.probeGridCounts.y * giVolume.probeGridCounts.x, giVolume.probeGridCounts.z, 1)
 				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceMap);
 			// distance
+			cmdBuffer->Dispatch(giMaterial, 3, giVolume.probeGridCounts.y * giVolume.probeGridCounts.x, giVolume.probeGridCounts.z, 1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, distanceMap);
 		}
 		// done
 	}
@@ -118,7 +125,7 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	// irrandiance map
 	desc.Width = irrandianceWidth;
 	desc.Height = irrandianceHeight;
-	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.Format = FORMAT_R11G11B10_FLOAT;
 	desc.DebugName = L"gi-irradiance-map";
 	irradianceMap = renderInterface->CreateTexture2D(&desc);
 	// debug
@@ -127,7 +134,7 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	// distance map
 	desc.Width = distanceWidth;
 	desc.Height = distanceHeight;
-	desc.Format = FORMAT_R16G16B16A16_FLOAT;
+	desc.Format = FORMAT_R16G16_FLOAT;
 	desc.DebugName = L"gi-distance-map";
 	distanceMap = renderInterface->CreateTexture2D(&desc);
 

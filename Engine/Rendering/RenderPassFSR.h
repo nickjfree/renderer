@@ -81,7 +81,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& hdrPass
 					return renderInterface->CreateTexture2D(&desc);
 				});
 			// debug
-			passData.debug = &debug.irrandianceMap;
+			passData.debug = &debug.irradianceMap;
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 

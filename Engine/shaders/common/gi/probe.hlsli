@@ -31,7 +31,7 @@ float3 GetProbePosition(uint probeIndex)
 
 uint GetTexelsNoBorder()
 {
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 	return CBGIVolume.probeNumIrradianceTexels;
 #else
 	return CBGIVolume.probeNumDistanceTexels;
@@ -40,7 +40,7 @@ uint GetTexelsNoBorder()
 
 uint GetTexelsWithBorder()
 {
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 	return CBGIVolume.probeNumIrradianceTexels + 2;
 #else
 	return CBGIVolume.probeNumDistanceTexels + 2;
@@ -56,6 +56,32 @@ int2 GetMapBaseCoord(int probeIndex)
 
 	return int2(baseX, baseY) * GetTexelsWithBorder();
 }
+
+// get base probe coord by position
+int3 GetProbeBaseCoord(float3 position)
+{
+	float3 volumeBase = CBGIVolume.origin - (0.5 * CBGIVolume.probeGridCounts * CBGIVolume.probeGridSpacing);
+	position -= volumeBase;
+	position *= 1.0f / CBGIVolume.probeGridSpacing;
+	return floor(position);
+}
+
+float3 GetProbeBasePosition(float3 position)
+{
+	int3 coord = GetProbeBaseCoord(position);
+	coord -= (0.5 * CBGIVolume.probeGridCounts);
+	return coord * CBGIVolume.probeGridSpacing + CBGIVolume.origin; 
+}
+
+
+float GetVolumeWeight(float3 position)
+{
+	float3 normlizedPos = 2 * (position - CBGIVolume.origin) / (CBGIVolume.probeGridCounts * CBGIVolume.probeGridSpacing);
+	float3 weight = max(0, 1 - abs(normlizedPos));
+	weight = ceil(weight);
+	return weight.x * weight.y * weight.z;
+}
+
 
 // normalized octahedron coord
 float2 NormalizedOctaCoord(int2 xy)
@@ -74,6 +100,51 @@ float3 OctaToDirection(float2 uv)
 		direction.xy = float2(1 - abs(uv.yx)) * sign(uv.xy);
 	}
 	return normalize(direction);
+}
+
+float2 DirectionToOctaUV(float3 direction)
+{
+	float total = abs(direction.x) + abs(direction.y) + abs(direction.z);
+	direction *= 1.0f / total;
+	if (direction.z < 0) {
+		direction.xy = float2(1 - abs(direction.yx)) * sign(direction.xy);
+	}
+	return direction.xy;
+}
+
+float2 GetMapBaseUV(int3 probeCoord)
+{
+	uint baseX = probeCoord.x + probeCoord.y * CBGIVolume.probeGridCounts.x;
+	uint baseY = probeCoord.z;
+	uint2 base = uint2(baseX, baseY);
+	float width = CBGIVolume.probeGridCounts.x * CBGIVolume.probeGridCounts.y;
+	float height = CBGIVolume.probeGridCounts.z;
+	float2 baseUV = base / float2(width, height);
+	return baseUV;
+}
+
+float2 GetIrrandianceMapUV(int3 probeCoord, float3 direction)
+{
+	float2 baseUV = GetMapBaseUV(probeCoord);
+	// get octa uv
+	uint texels = CBGIVolume.probeNumIrradianceTexels + 2;
+	float width = CBGIVolume.probeGridCounts.x * CBGIVolume.probeGridCounts.y;
+	float height = CBGIVolume.probeGridCounts.z;
+	float2 texelOffset = 1.0f / (float2(width, height) * texels);
+	float2 octaUV = DirectionToOctaUV(direction);
+	return baseUV +  texelOffset + (octaUV * 0.5 + 0.5) * CBGIVolume.probeNumIrradianceTexels * texelOffset;
+}
+
+float2 GetDistanceMapUV(int3 probeCoord, float3 direction)
+{
+	float2 baseUV = GetMapBaseUV(probeCoord);
+	// get octa uv
+	uint texels = CBGIVolume.probeNumDistanceTexels + 2;
+	float width = CBGIVolume.probeGridCounts.x * CBGIVolume.probeGridCounts.y;
+	float height = CBGIVolume.probeGridCounts.z;
+	float2 texelOffset = 1.0f / (float2(width, height) * texels);
+	float2 octaUV = DirectionToOctaUV(direction);
+	return baseUV + texelOffset + (octaUV * 0.5 + 0.5) * CBGIVolume.probeNumDistanceTexels * texelOffset;
 }
 
 #endif

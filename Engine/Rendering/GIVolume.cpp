@@ -21,7 +21,7 @@ GIVolume::GIVolume()
 	giVolume.viewBias = gi_volume_view_bias;
 	giVolume.hysteresis = gi_volume_hysteresis;
 	// set default scale
-	SetScale(Vector3(10, 10, 10));
+	SetScale(Vector3(20, 20, 20));
 }
 
 
@@ -61,7 +61,7 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 				.SetShaderConstant(CB_SLOT(CBGIVolume), &giVolume, sizeof(CBGIVolume))
 				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer);
 			// bind the irrandiance and distance map for "infinite bounce"
-
+			
 		}
 		// blend irradiance and distance
 		{
@@ -84,9 +84,9 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 void GIVolume::SetScale(Vector3 scale)
 {
 	// uniform  grid spacing 
-	giVolume.probeGridCounts.x = (int)scale.x / gi_volume_probe_spacing;
-	giVolume.probeGridCounts.y = (int)scale.y / gi_volume_probe_spacing;
-	giVolume.probeGridCounts.z = (int)scale.z / gi_volume_probe_spacing;
+	giVolume.probeGridCounts.x = (int)scale.x;
+	giVolume.probeGridCounts.y = (int)scale.y;
+	giVolume.probeGridCounts.z = (int)scale.z;
 	// num probes
 	numProbes = giVolume.probeGridCounts.x * giVolume.probeGridCounts.y * giVolume.probeGridCounts.z;
 }

@@ -5,7 +5,7 @@
 #define RAYS_PER_PROBE 144
 
 
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 #define THREAD_COUNT 8
 groupshared  float3 irrandianceData[RAYS_PER_PROBE];
 RWTexture2D<float4> Output : register(u1);	
@@ -30,7 +30,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	uint linearId = threadId.y * THREAD_COUNT + threadId.x; 	
 	for (int i = linearId; i < RAYS_PER_PROBE; i += numStep) {
 
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 		irrandianceData[i] = IrrandianceBuffer[int2(i, probeIndex)].rgb;
 #else
 		irrandianceData[i] = IrrandianceBuffer[int2(i, probeIndex)].a;
@@ -52,7 +52,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 		float3 rayDirection = SphericalFibonacci(i, RAYS_PER_PROBE);
 		float weight = max(0, dot(otcaDirection, rayDirection));
 
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 		result += float4(irrandianceData[i] * weight, weight);
 #else
 		// do some extra ops for weight
@@ -60,7 +60,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 #endif
 
 	}
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else

@@ -4,7 +4,6 @@
 #include "raytracing.hlsli"
 #include "shading.hlsli"
 
-
 // output
 RWTexture2D<float4> RenderTarget : register(u0, space0);
 
@@ -25,9 +24,11 @@ void Raygen()
     // direct lighting
     RayContext ray;
     ray.Seed = RandInit(linearIndex, gFrameNumber);
-
+    // direct lighting
     float4 direct = ComputeDirectLighting(gbuffer, ray);
-    RenderTarget[DispatchRaysIndex().xy] = direct;
+    // indirect lighting
+    float4 indirect = ComputeIndirectLighting(gbuffer);
+    RenderTarget[DispatchRaysIndex().xy] = direct + indirect;
 }
 
 [shader("closesthit")]

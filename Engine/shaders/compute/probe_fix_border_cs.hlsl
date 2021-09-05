@@ -3,7 +3,7 @@
 
 
 
-#ifdef BLEND_IRRANDIANCE
+#ifdef BLEND_IRRADIANCE
 #define THREAD_COUNT 32
 #else
 #define THREAD_COUNT 64

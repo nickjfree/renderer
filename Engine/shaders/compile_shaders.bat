@@ -74,7 +74,7 @@ fxc /T cs_5_1 /E CSMain  /Fo ../shaders/light_culling.cs^
 
 :: gi
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_irradiance.cs^
-	/D BLEND_IRRANDIANCE^
+	/D BLEND_IRRADIANCE^
 	compute/probe_blending_cs.hlsl
 
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_distance.cs^
@@ -82,7 +82,7 @@ fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_distance.cs^
 	compute/probe_blending_cs.hlsl
 
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_fix_irradiance.cs^
-	/D BLEND_IRRANDIANCE^
+	/D BLEND_IRRADIANCE^
 	compute/probe_fix_border_cs.hlsl
 
 fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_fix_distance.cs^

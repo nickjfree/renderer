@@ -37,7 +37,9 @@ public:
 	// set volume scale
 	void SetScale(Vector3 scale);
 	// get irrandiance map
-	int GetIrrandianceMap() { return irradianceMap; }
+	int GetIrradianceMap() { return irradianceMap; }
+	int GetDistanceMap() { return distanceMap; }
+	CBGIVolume* GetGIVolume() { return &giVolume; }
 private:
 	// create resource
 	void CreateResources(RenderContext* renderContext);

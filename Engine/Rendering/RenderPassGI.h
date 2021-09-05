@@ -17,7 +17,10 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 		// volumes
 		Vector<Node*> volumes;
 		// irrandiance map
-		int irrandianceMap;
+		int irradianceMap;
+		int distanceMap;
+		// volume
+		CBGIVolume* volume;
 	}PassData;
 
 	auto renderInterface = renderContext->GetRenderInterface();
@@ -32,7 +35,7 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 			
 			// render all the volumes
 			passData.volumes.Reset();
-			spatial->Query(cam->GetFrustum(), passData.volumes, Node::GIVOLUME);
+			spatial->Query(passData.volumes, Node::GIVOLUME);
 
 			// set lights for  probe tracing pass
 			cmdBuffer->Setup(true)
@@ -42,7 +45,9 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 			for (auto iter = passData.volumes.Begin(); iter != passData.volumes.End(); iter++) {
 				auto volume = *iter;
 				volume->Render(cmdBuffer, 0, 0, cam, renderContext);
-				passData.irrandianceMap = ((GIVolume*)volume)->GetIrrandianceMap();
+				passData.irradianceMap = ((GIVolume*)volume)->GetIrradianceMap();
+				passData.distanceMap = ((GIVolume*)volume)->GetDistanceMap();
+				passData.volume = ((GIVolume*)volume)->GetGIVolume();
 			}
 		});
 	return pass;

@@ -63,35 +63,35 @@ float4 ShadePixelIBL(GBufferContext gbuffer)
         float4 color = gLightProbe.Sample(gSam, -gbuffer.WorldSpaceLookVector) * light.Intensity;
         return color;
     }
-    
-    float NoV = saturate(dot(N, V));
+    return float4(0, 0, 0, 0);
+    // float NoV = saturate(dot(N, V));
 
-    // get params
-    float metallic = gbuffer.Metallic;
-    float roughness = gbuffer.Roughness;
-    float4 albedo = gbuffer.Diffuse;
+    // // get params
+    // float metallic = gbuffer.Metallic;
+    // float roughness = gbuffer.Roughness;
+    // float4 albedo = gbuffer.Diffuse;
 
-    // irrandiance off current pixel
-    float3 irradiance = gLightProbeIrradiance.Sample(gSam, gbuffer.WorldSpaceNormal).rgb;
+    // // irrandiance off current pixel
+    // float3 irradiance = gLightProbeIrradiance.Sample(gSam, gbuffer.WorldSpaceNormal).rgb;
 
-    // IBL Specular
-    float3 SpecularColor = gbuffer.Specular;
-    float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
-    float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
+    // // IBL Specular
+    // float3 SpecularColor = gbuffer.Specular;
+    // float3 kS = FresnelSchlickRoughness(SpecularColor, roughness, NoV);
+    // float3 specular = SpecularIBL(SpecularColor, roughness, N, V);
 
-    // ignore specular. replaced with raytracing
-    specular = specular * 0.0f;
+    // // ignore specular. replaced with raytracing
+    // specular = specular * 0.0f;
 
-    // IBL Diffuse
-    float3 diffuse = irradiance * albedo.xyz;
-    float3 kD = 1 - kS;
-    kD = lerp(kD, 0, metallic);
+    // // IBL Diffuse
+    // float3 diffuse = irradiance * albedo.xyz;
+    // float3 kD = 1 - kS;
+    // kD = lerp(kD, 0, metallic);
 
-    float4 color;
-    color.rgb = (kD * diffuse + specular) * light.Intensity;
-    color.a = 1;
+    // float4 color;
+    // color.rgb = (kD * diffuse + specular) * light.Intensity;
+    // color.a = 1;
 
-    return color;
+    // return color;
 }
 
 

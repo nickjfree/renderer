@@ -381,7 +381,8 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 
 		// lights
 		CBLights* lights;
-		
+		// gi data	
+		W* gi;
 		// TODO: reused render targets
 	}PassData;
 
@@ -401,9 +402,11 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 			passData.depth = builder.Read(&gbufferPassData.depth);
 			passData.specular = builder.Read(&gbufferPassData.specular);
 			passData.motion = builder.Read(&gbufferPassData.motion);
-
+			// light data
 			passData.culledLights = builder.Read(&lightCullingPassData.culledLights);
 			passData.lights = &lightCullingPassData.lights;
+			// gi data
+			passData.gi = &giPassData;
 			// create the output buffers
 
 
@@ -488,12 +491,18 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 				}
 				// disptach rays
 				{
-					cmdBuffer->DispatchRays(1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight)
-						.SetShaderConstant(CB_SLOT(CBLights), passData.lights, sizeof(CBLights))
-						// culled light index
-						.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
-						// result
-						.SetRWShaderResource(SLOT_RT_LIGHTING_TARGET, passData.rtLighting.GetActualResource());
+					if (passData.gi->volume && passData.gi->irradianceMap != -1) {
+						cmdBuffer->DispatchRays(1, rtMaterial, renderContext->FrameWidth, renderContext->FrameHeight)
+							.SetShaderConstant(CB_SLOT(CBLights), passData.lights, sizeof(CBLights))
+							// culled light index
+							.SetShaderResource(SLOT_RT_LIGHTING_LIGHTS, passData.culledLights.GetActualResource())
+							// gi data
+							.SetShaderConstant(CB_SLOT(CBGIVolume), passData.gi->volume, sizeof(CBGIVolume))
+							.SetShaderResource(SLOT_RT_GI_IRRADIANCE_MAP, passData.gi->irradianceMap)
+							.SetShaderResource(SLOT_RT_GI_DISTANCE_MAP, passData.gi->distanceMap)
+							// result
+							.SetRWShaderResource(SLOT_RT_LIGHTING_TARGET, passData.rtLighting.GetActualResource());
+					}
 				}
 				// flip color & moment buffer
 				passData.color0.Flip(&passData.color1);

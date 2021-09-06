@@ -500,6 +500,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 							.SetShaderConstant(CB_SLOT(CBGIVolume), passData.gi->volume, sizeof(CBGIVolume))
 							.SetShaderResource(SLOT_RT_GI_IRRADIANCE_MAP, passData.gi->irradianceMap)
 							.SetShaderResource(SLOT_RT_GI_DISTANCE_MAP, passData.gi->distanceMap)
+							.SetShaderResource(SLOT_RT_GI_STATE_MAP, passData.gi->stateMap)
 							// result
 							.SetRWShaderResource(SLOT_RT_LIGHTING_TARGET, passData.rtLighting.GetActualResource());
 					}
@@ -507,7 +508,7 @@ auto AddRaytracedLightingPass(FrameGraph& frameGraph, RenderContext* renderConte
 				// flip color & moment buffer
 				passData.color0.Flip(&passData.color1);
 				passData.moment0.Flip(&passData.moment1);
-				// accumulation 
+				// accumulation
 				{
 					int targets[] = {
 						passData.color0.GetActualResource(),

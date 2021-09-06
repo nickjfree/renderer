@@ -185,7 +185,7 @@
     </technique>
     <technique name="probe_state">
       <pass name="probe_state" depthstencil="NoZTest" rasterizer="NoCull" blend="Blend">
-        <cs url="Shaders\shaders\gi_irradiance.cs"></cs>
+        <cs url="Shaders\shaders\gi_probe_state.cs"></cs>
       </pass>
     </technique>
   </shader>

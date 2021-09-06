@@ -39,6 +39,7 @@ public:
 	// get irrandiance map
 	int GetIrradianceMap() { return irradianceMap; }
 	int GetDistanceMap() { return distanceMap; }
+	int GetStateMap() { return stateMap; }
 	CBGIVolume* GetGIVolume() { return &giVolume; }
 private:
 	// create resource

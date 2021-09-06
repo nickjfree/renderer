@@ -21,6 +21,7 @@ GIVolume::GIVolume()
 	giVolume.viewBias = gi_volume_view_bias;
 	giVolume.hysteresis = gi_volume_hysteresis;
 	giVolume.distanceExponent = 50.0f;
+	giVolume.backfaceThreshold = 0.5f;
 	// set default scale
 	SetScale(Vector3(20, 20, 20));
 }
@@ -63,6 +64,12 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer);
 			// bind the irrandiance and distance map for "infinite bounce"
 			
+		}
+		// update probe state
+		{
+			cmdBuffer->Dispatch(giMaterial, 4, giVolume.probeGridCounts.y * giVolume.probeGridCounts.x / 8, giVolume.probeGridCounts.z / 4, 1)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_INPUT, irradianceBuffer)
+				.SetRWShaderResource(SLOT_RT_GI_BLEND_OUTPUT, stateMap);
 		}
 		// blend irradiance and distance
 		{
@@ -128,14 +135,16 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	desc.Format = FORMAT_R11G11B10_FLOAT;
 	desc.DebugName = L"gi-irradiance-map";
 	irradianceMap = renderInterface->CreateTexture2D(&desc);
-	// debug
-	/*debug1 = renderInterface->CreateTexture2D(&desc);
-	debug2 = renderInterface->CreateTexture2D(&desc);*/
 	// distance map
 	desc.Width = distanceWidth;
 	desc.Height = distanceHeight;
 	desc.Format = FORMAT_R16G16_FLOAT;
 	desc.DebugName = L"gi-distance-map";
 	distanceMap = renderInterface->CreateTexture2D(&desc);
-
+	// state map
+	desc.Width = numPlanes * giVolume.probeGridCounts.x;
+	desc.Height = giVolume.probeGridCounts.z;
+	desc.Format = FORMAT_R16_FLOAT;
+	desc.DebugName = L"gi-state-map";
+	stateMap = renderInterface->CreateTexture2D(&desc);
 }

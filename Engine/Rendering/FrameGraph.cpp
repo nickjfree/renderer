@@ -118,7 +118,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 		auto cmdBuffer = CommandBuffer::Alloc();
 		// execute the gbuffer pass
 		gbuffer->Execute(cmdBuffer, cam, spatial);
-
+		
 		// sync point: flush the gbuffer command
 		auto renderCommandContext = renderInterface->BeginContext(false);
 		cmdBuffer->Flush(renderCommandContext);
@@ -149,7 +149,7 @@ void FrameGraph::Execute(RenderingCamera* cam, Spatial* spatial, RenderContext* 
 			// do rt-lighting
 			rtLighting->Execute(cmdBuffer, cam, spatial);
 			// do rt-relection
-			// reflection->Execute(cmdBuffer, cam, spatial);
+			reflection->Execute(cmdBuffer, cam, spatial);
 			// do resolve
 			resolve->Execute(cmdBuffer, cam, spatial);
 			// do hdr

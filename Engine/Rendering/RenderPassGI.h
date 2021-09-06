@@ -19,6 +19,7 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 		// irrandiance map
 		int irradianceMap;
 		int distanceMap;
+		int stateMap;
 		// volume
 		CBGIVolume* volume;
 	}PassData;
@@ -48,6 +49,7 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 				passData.irradianceMap = ((GIVolume*)volume)->GetIrradianceMap();
 				passData.distanceMap = ((GIVolume*)volume)->GetDistanceMap();
 				passData.volume = ((GIVolume*)volume)->GetGIVolume();
+				passData.stateMap = ((GIVolume*)volume)->GetStateMap();
 			}
 		});
 	return pass;

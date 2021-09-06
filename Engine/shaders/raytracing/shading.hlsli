@@ -142,6 +142,7 @@ float4 ComputeDirectLighting(GBufferContext gbuffer, RayContext ray)
 			// do deferred lighting
 			float falloff = 1.0f;
 			float3 color = GetLighting(gbuffer, lightIndex, falloff);
+			color = 0;
 			if (falloff <= 0.001f || dot(color, color) <= 0.001f ) {
 				// ignore weak lights
 				continue;
@@ -182,7 +183,7 @@ float4 ComputeIndirectLighting(GBufferContext gbuffer)
 	float3 irradiance = GetGIIrradiance(position, normal);
 	// diffuse lighting
 	float3 diffuse = irradiance * gbuffer.Diffuse.rgb;
-	diffuse = lerp(diffuse, 0, gbuffer.Metallic);
+	// diffuse = lerp(diffuse, 0, gbuffer.Metallic);
 	return float4(diffuse, 0);
 }
 

@@ -1453,6 +1453,7 @@ HWND D3D12RenderInterface::CreateRenderWindow(int width, int height)
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = L"Simple Renderer";
 	wcex.hIconSm = NULL;
+	wcex.hbrBackground = CreateSolidBrush(RGB(0, 0, 0));
 	RegisterClassEx(&wcex);
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	wchar_t title[1024];

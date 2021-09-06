@@ -5,6 +5,10 @@
 #include "../../common/shader_inputs.h"
 #include "operations.hlsli"
 
+#define PROBE_STATE_ACTIVE    0
+#define PROBE_STATE_INACTIVE  1
+
+
 uint numProbePerPlane()
 {
 	return CBGIVolume.probeGridCounts.x * CBGIVolume.probeGridCounts.z;
@@ -18,6 +22,19 @@ int3 GetProbeCoord(uint probeIndex)
 		probeIndex / numProbePerPlane(), 
 		(probeIndex / CBGIVolume.probeGridCounts.x) % CBGIVolume.probeGridCounts.z);
 	return coord;
+}
+
+uint GetProbeIndex(uint2 XY)
+{
+	uint probeIndex = XY.x % CBGIVolume.probeGridCounts.x;
+	probeIndex += floor(XY.x / CBGIVolume.probeGridCounts.x) * numProbePerPlane();
+	probeIndex += XY.y * CBGIVolume.probeGridCounts.x;
+	return probeIndex;
+}
+
+uint GetProbeIndex(int3 probeCoord)
+{
+	return probeCoord.x + probeCoord.y * numProbePerPlane() + probeCoord.z * CBGIVolume.probeGridCounts.x;
 }
 
 // get probe position
@@ -42,8 +59,10 @@ uint GetTexelsWithBorder()
 {
 #ifdef BLEND_IRRADIANCE
 	return CBGIVolume.probeNumIrradianceTexels + 2;
-#else
+#elif BLEND_DISTANCE
 	return CBGIVolume.probeNumDistanceTexels + 2;
+#else
+	return 1;
 #endif
 }
 

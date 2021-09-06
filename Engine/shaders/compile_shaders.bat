@@ -89,6 +89,9 @@ fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_fix_distance.cs^
 	/D BLEND_DISTANCE^
 	compute/probe_fix_border_cs.hlsl
 
+fxc /T cs_5_1 /E CSMain  /Fo ../shaders/gi_probe_state.cs^
+	compute/probe_update_state_cs.hlsl
+
 :: fsr
 fxc /T cs_5_1 /E CS_Main /Fo ../shaders/fsr_easu.cs^
 	/D SAMPLE_SLOW_FALLBACK=0 /D SAMPLE_EASU=1 /D SAMPLE_RCAS=0^

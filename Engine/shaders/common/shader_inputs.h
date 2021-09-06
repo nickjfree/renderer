@@ -190,6 +190,8 @@ struct GIVolumeType
     float       irrandianceChangeThreshold;
     float       irradianceEncodingGamma;
     float4x4    rayRotation;
+    float       backfaceThreshold;
+    float3      pad;
 };
 
 CONSTANTBUFFER(CBGIVolume, GIVolumeType, 1);

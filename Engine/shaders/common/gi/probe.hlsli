@@ -114,7 +114,7 @@ float2 NormalizedOctaCoord(int2 xy)
 // normalized octahedron coord to direction
 float3 OctaToDirection(float2 uv)
 {
-	float3 direction = float3(uv, 1 - abs(uv.x) + abs(uv.y));
+	float3 direction = float3(uv, 1 - abs(uv.x) - abs(uv.y));
 	if (direction.z < 0) {
 		direction.xy = float2(1 - abs(uv.yx)) * sign(uv.xy);
 	}

@@ -31,6 +31,8 @@ auto AddGIPass(FrameGraph& frameGraph, RenderContext* renderContext, T& lightCul
 			// nothing
 			passData.culledLights = builder.Read(&lightCullingPassData.culledLights);
 			passData.lights = &lightCullingPassData.lights;
+			
+			srand(12345);
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 			

@@ -22,8 +22,9 @@ GIVolume::GIVolume()
 	giVolume.hysteresis = gi_volume_hysteresis;
 	giVolume.distanceExponent = 50.0f;
 	giVolume.backfaceThreshold = 0.5f;
+	giVolume.brightnessThreshold = 10.0f;
 	// set default scale
-	SetScale(Vector3(20, 20, 20));
+	SetScale(Vector3(10, 10, 10));
 }
 
 
@@ -31,7 +32,7 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 {
 	// ensure resource create
 	if (irradianceBuffer == -1) {
-		CreateResources(renderContext);
+		createResources(renderContext);
 		// clear buffer
 		int targets[] = { irradianceMap, distanceMap };
 		cmdBuffer->RenderTargets(&targets[0], 1, -1, true, false, renderContext->FrameWidth, renderContext->FrameHeight);
@@ -50,8 +51,8 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 		giMaterial = value->as<Material*>();
 	}
 	// random rotation
-	Matrix4x4 randRotation;
-	Matrix4x4::Tranpose(randRotation, &giVolume.rayRotation);
+	updateRandomRotation();
+
 	if (rtMaterial && giMaterial) {
 
 		auto& position = GetPosition();
@@ -61,9 +62,11 @@ int GIVolume::Render(CommandBuffer* cmdBuffer, int stage, int lod, RenderingCame
 			cmdBuffer->DispatchRays(2, rtMaterial, gi_volume_probe_num_rays, numProbes)
 				.SetShaderConstant(CB_SLOT(CBFrame), camera->GetCBFrame(), sizeof(CBFrame))
 				.SetShaderConstant(CB_SLOT(CBGIVolume), &giVolume, sizeof(CBGIVolume))
-				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer);
-			// bind the irrandiance and distance map for "infinite bounce"
-			
+				.SetRWShaderResource(SLOT_RT_GI_IRRADIANCE_OUTPUT, irradianceBuffer)
+				// bind the irrandiance and distance map for "infinite bounce"
+				.SetShaderResource(SLOT_RT_GI_IRRADIANCE_MAP, irradianceMap)
+				.SetShaderResource(SLOT_RT_GI_DISTANCE_MAP, distanceMap)
+				.SetShaderResource(SLOT_RT_GI_STATE_MAP, stateMap);
 		}
 		// update probe state
 		{
@@ -105,7 +108,7 @@ void GIVolume::SetScale(Vector3 scale)
 	numProbes = giVolume.probeGridCounts.x * giVolume.probeGridCounts.y * giVolume.probeGridCounts.z;
 }
 
-void GIVolume::CreateResources(RenderContext* renderContext)
+void GIVolume::createResources(RenderContext* renderContext)
 {
 	auto renderInterface = renderContext->GetRenderInterface();
 	// create irrandiance buffer
@@ -147,4 +150,47 @@ void GIVolume::CreateResources(RenderContext* renderContext)
 	desc.Format = FORMAT_R16_FLOAT;
 	desc.DebugName = L"gi-state-map";
 	stateMap = renderInterface->CreateTexture2D(&desc);
+}
+
+void GIVolume::updateRandomRotation()
+{
+	constexpr float x_2pi = 3.1419565f;
+
+
+	float u1 = x_2pi * rand()/ (RAND_MAX + 1.0f);
+	float cos1 = std::cosf(u1);
+	float sin1 = std::sinf(u1);
+	
+	float u2 = x_2pi * rand() / (RAND_MAX + 1.0f);
+	float cos2 = std::cosf(u2);
+	float sin2 = std::sinf(u2);
+
+	float u3 = rand() / (RAND_MAX + 1.0f);
+	float sq3 = 2.f * std::sqrtf(u3 * (1.f - u3));
+
+	float s2 = 2.f * u3 * sin2 * sin2 - 1.f;
+	float c2 = 2.f * u3 * cos2 * cos2 - 1.f;
+	float sc = 2.f * u3 * sin2 * cos2;
+
+	// Create the random rotation matrix
+	float _11 = cos1 * c2 - sin1 * sc;
+	float _12 = sin1 * c2 + cos1 * sc;
+	float _13 = sq3 * cos2;
+
+	float _21 = cos1 * sc - sin1 * s2;
+	float _22 = sin1 * sc + cos1 * s2;
+	float _23 = sq3 * sin2;
+
+	float _31 = cos1 * (sq3 * cos2) - sin1 * (sq3 * sin2);
+	float _32 = sin1 * (sq3 * cos2) + cos1 * (sq3 * sin2);
+	float _33 = 1.f - 2.f * u3;
+
+	Matrix4x4 transform;
+	transform.matrix.r[0] = { _11, _12, _13, 0.f };
+	transform.matrix.r[1] = { _21, _22, _23, 0.f };
+	transform.matrix.r[2] = { _31, _32, _33, 0.f };
+	transform.matrix.r[3] = { 0.f, 0.f, 0.f, 1.f };
+
+	giVolume.rayRotation = transform;
+	// Matrix4x4::Tranpose(transform, &giVolume.rayRotation);
 }

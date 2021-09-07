@@ -17,14 +17,14 @@
 //float       giPad;
 //float4x4    rayRotation;
 
-constexpr int gi_volume_probe_spacing = 1;
+constexpr int gi_volume_probe_spacing = 2;
 constexpr int gi_volume_probe_num_rays = 144;
 constexpr int gi_volume_probe_ray_distance = 1000;
 constexpr int gi_volume_probe_irradiance_texels = 8;
 constexpr int gi_volume_probe_distance_texels = 16;
 constexpr float gi_volume_normal_bias = 0.01f;
 constexpr float gi_volume_view_bias = 0.01f;
-constexpr float gi_volume_hysteresis = 0.97f;
+constexpr float gi_volume_hysteresis = 0.99f;
 
 
 class GIVolume: public Node
@@ -43,7 +43,9 @@ public:
 	CBGIVolume* GetGIVolume() { return &giVolume; }
 private:
 	// create resource
-	void CreateResources(RenderContext* renderContext);
+	void createResources(RenderContext* renderContext);
+	// update random rotation
+	void updateRandomRotation();
 
 private:
 	// volume describe

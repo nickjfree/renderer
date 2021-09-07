@@ -14,7 +14,7 @@ Texture2D StateMap : register(t6);
 
 
 // get gi lighting
-float3 GetGIIrradiance(float3 position, float3 normal)
+float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 {
 	// base probe coord
 	int3 probeBase = GetProbeBaseCoord(position);
@@ -24,7 +24,7 @@ float3 GetGIIrradiance(float3 position, float3 normal)
 	// normalized position
 	float3 normalizedPosition = shadingPosition / CBGIVolume.probeGridSpacing;
 	// biased position
-	float3 biasedPosition = position + CBGIVolume.normalBias * normal + CBGIVolume.viewBias * normalize(gViewPoint.xyz - position);
+	float3 biasedPosition = position + bias; 
 	// irradiance
 	float4 irradiance = float4(0, 0, 0, 0);
 	// vlomue weight

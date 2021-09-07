@@ -24,6 +24,7 @@ void Raygen()
     uint seed = RandInit(linearIndex, gFrameNumber);
     // get ray diraction and position
     float3 direction = SphericalFibonacci(rayIndex, CBGIVolume.numRaysPerProbe);
+    direction.xyz = mul(float4(direction.xyz, 0), CBGIVolume.rayRotation).xyz;
     float3 position = GetProbePosition(probeIndex);
     // seed
     RayContext ray;

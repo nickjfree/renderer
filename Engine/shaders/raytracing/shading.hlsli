@@ -142,7 +142,7 @@ float4 ComputeDirectLighting(GBufferContext gbuffer, RayContext ray)
 			// do deferred lighting
 			float falloff = 1.0f;
 			float3 color = GetLighting(gbuffer, lightIndex, falloff);
-			color = 0;
+			// color = 0;
 			if (falloff <= 0.001f || dot(color, color) <= 0.001f ) {
 				// ignore weak lights
 				continue;
@@ -180,10 +180,12 @@ float4 ComputeIndirectLighting(GBufferContext gbuffer)
 	float3 position = gbuffer.WorldSpacePosition;
 	float3 normal = gbuffer.WorldSpaceNormal;
 	// get irradiance
-	float3 irradiance = GetGIIrradiance(position, normal);
+	float3 bias = CBGIVolume.normalBias * normal + CBGIVolume.viewBias * gbuffer.WorldSpaceLookVector;
+	float3 irradiance = GetGIIrradiance(position, normal, bias);
 	// diffuse lighting
 	float3 diffuse = irradiance * gbuffer.Diffuse.rgb;
-	// diffuse = lerp(diffuse, 0, gbuffer.Metallic);
+	// no diffuse for metalic materials
+	diffuse = lerp(diffuse, 0, gbuffer.Metallic);
 	return float4(diffuse, 0);
 }
 
@@ -196,7 +198,10 @@ float4 ComputeGIProbeTracingRadiance(float3 origin, float3 direction, RayContext
 		return payload.Diffuse;
 	} else {
 		GBufferContext hit = ShadingPayloadToGBufferContext(payload);
-		return float4(ComputeDirectLighting(hit, ray).xyz, payload.HitDistance);
+		float4 direct = ComputeDirectLighting(hit, ray);
+		// multi bounce
+		float4 indirect = ComputeIndirectLighting(hit);
+		return float4(direct.xyz + indirect.xyz, payload.HitDistance);
 	}
 }
 

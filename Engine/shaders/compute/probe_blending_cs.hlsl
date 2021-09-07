@@ -39,8 +39,8 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 		// cache distance
 		distanceData[i] = IrradianceBuffer[int2(i, probeIndex)].a;
 		// cache direction
-		rayDirections[i] = SphericalFibonacci(i, RAYS_PER_PROBE);
-
+		float3 r = SphericalFibonacci(i, RAYS_PER_PROBE);
+		rayDirections[i] = mul(float4(r, 0), CBGIVolume.rayRotation).xyz;
 	}
 	GroupMemoryBarrierWithGroupSync();
 
@@ -84,6 +84,14 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	}
 #ifdef BLEND_IRRADIANCE
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
+
+	// smoth the irradiance change
+	float3 delta = (result.xyz - previous.xyz);
+    if (length(delta) > CBGIVolume.brightnessThreshold)
+    {
+        result.xyz = previous.xyz + (delta * 0.25f);
+    }
+
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else
 	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);

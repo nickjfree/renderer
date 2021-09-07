@@ -93,12 +93,12 @@ int Level::CreateScene() {
 	// set translation
 	MainCamera->SetTranslation(Vector3(0, 20, -50));
 	GameObjects.PushBack(MainCamera);
-
+	
 	// add volume
 	auto giObject = scene->CreateGameObject("GIVolume");
 	auto volume = giObject->CreateComponent("Volume");
 	giObject->AddComponent(volume);
-	giObject->SetTranslation(Vector3(0, 10.5, 0));
+	giObject->SetTranslation(Vector3(0, 8.5, 30));
 	//MainCamera->Attach(giObject);
 	GameObjects.PushBack(giObject);
 	return 0;

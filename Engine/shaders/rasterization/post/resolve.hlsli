@@ -29,7 +29,7 @@ float4 ShadePixel(GBufferContext gbuffer)
     float3 reflection = gRaytracedReflection.Sample(gSam, gbuffer.uv).xyz;
     // pre-intergrated texture
     reflection =  reflection * EnvBRDF(specularColor, roughness, NoV);
-    reflection = 0;
+    // reflection = 0;
     // lighting
     float3 lighting = gPostBuffer.Sample(gSam, gbuffer.uv).xyz;
     // add raytraced lighting (test code)

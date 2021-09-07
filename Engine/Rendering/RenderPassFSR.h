@@ -81,7 +81,7 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& hdrPass
 					return renderInterface->CreateTexture2D(&desc);
 				});
 			// debug
-			passData.debug = &debug.irradianceMap;
+			passData.debug = &debug.distanceMap;
 		},
 		[=](PassData& passData, CommandBuffer* cmdBuffer, RenderingCamera* cam, Spatial* spatial) {
 
@@ -114,11 +114,11 @@ auto AddFSRPass(FrameGraph& frameGraph, RenderContext* renderContext, T& hdrPass
 				}
 				// debug draw
 				{
-					if (*passData.debug != -1) {
-						int targets[] = { passData.output.GetActualResource() };
-						cmdBuffer->RenderTargets(targets, 1, -1, false, false, displayWidth, displayHeight);
-						cmdBuffer->Quad(fsrMaterial, 2).SetShaderResource(SLOT_RT_GI_DEBUG, *passData.debug);
-					}
+					//if (*passData.debug != -1) {
+					//	int targets[] = { passData.output.GetActualResource() };
+					//	cmdBuffer->RenderTargets(targets, 1, -1, false, false, displayWidth, displayHeight);
+					//	cmdBuffer->Quad(fsrMaterial, 2).SetShaderResource(SLOT_RT_GI_DEBUG, *passData.debug);
+					//}
 				}
 				// copy pass
 				{

@@ -52,7 +52,7 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		// weight
 		float weight = 1.0f;
 		// wrap
-		float wrapWeight = (dot(-probeToPoint, normal) + 1.f) * 0.5f;
+		float wrapWeight = (dot(-probeDirection, normal) + 1.f) * 0.5f;
         weight *= (wrapWeight * wrapWeight) + 0.2f;
 		// blend
 		float3 blend = max(0.00001f, lerp(1 - normalizedPosition, normalizedPosition, probeOffset));

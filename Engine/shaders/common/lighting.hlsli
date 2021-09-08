@@ -148,7 +148,7 @@ LightContext getLightContext(GBufferContext gbuffer, uint lightIndex)
 
 	if (lightData.Type == LIGHT_TYPE_DIRECTIONAL) {
 		// directional light
-		lightContext.Direction = mul(normalize(-lightData.Direction), gViewMatrix).xyz;
+		lightContext.Direction = mul(float4(normalize(-lightData.Direction.xyz), 0), gViewMatrix).xyz;
 	} else if (lightData.Type == LIGHT_TYPE_SPHERE) {
 		// sphere/point/capsule, direction to light center
 		lightContext.Direction = normalize(lightContext.Position - gbuffer.ViewSpacePosition);

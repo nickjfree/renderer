@@ -83,7 +83,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	}
 #ifdef BLEND_IRRADIANCE
-	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
+	result.xyz *= 1.0f / max(0.001, result.w);
 
 	// smoth the irradiance change
 	float3 delta = (result.xyz - previous.xyz);
@@ -94,7 +94,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else
-	result.xyz *= 1.0f / max(0.001, 2.0f * result.w);
+	result.xyz *= 1.0f / max(0.001, result.w);
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #endif
 	Output[targetCoord.xy] = output;

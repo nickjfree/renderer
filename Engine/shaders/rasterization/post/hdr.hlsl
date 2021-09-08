@@ -7,7 +7,7 @@
 
 static const float3 LumVector  = float3(0.2125f, 0.7154f, 0.0721f);
 // static const float  MiddleGray = 0.18f;
-static const float  MiddleGray = 0.05f;
+static const float  MiddleGray = 0.18f;
 static const float  BRIGHT_PASS_THRESHOLD = 10.0f;
 
 

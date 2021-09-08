@@ -184,7 +184,7 @@ void GIVolume::updateRandomRotation()
 	float _31 = cos1 * (sq3 * cos2) - sin1 * (sq3 * sin2);
 	float _32 = sin1 * (sq3 * cos2) + cos1 * (sq3 * sin2);
 	float _33 = 1.f - 2.f * u3;
-
+	
 	Matrix4x4 transform;
 	transform.matrix.r[0] = { _11, _12, _13, 0.f };
 	transform.matrix.r[1] = { _21, _22, _23, 0.f };

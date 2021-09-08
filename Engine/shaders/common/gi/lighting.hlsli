@@ -58,7 +58,7 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		float3 blend = max(0.00001f, lerp(1 - normalizedPosition, normalizedPosition, probeOffset));
 		weight *= (blend.x * blend.y * blend.z);
 		// probe visibility distance
-		float2 visDistance = DistanceMap.SampleLevel(gSamBilinear, uvDistance, 0).xy * 2;
+		float2 visDistance = DistanceMap.SampleLevel(gSamBilinear, uvDistance, 0).xy;
 
 		float deltaDistance = pointDistance - visDistance.x;
 		if (deltaDistance > 0) {

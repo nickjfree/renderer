@@ -41,7 +41,7 @@ float DistributionGGX(float3 N, float3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return num / (denom + 1e-5f);
+    return num / (denom + 1e-6f);
 }
 
 float GeometrySchlickGGX(float NdotV, float roughness) 
@@ -82,7 +82,7 @@ float4 BRDF(float3 N, float3 V, float3 L, float3 f0, float f90, float roughness,
 
     float3 numerator = NDF * G * F;
     float denominator = 4.0 * NdotV * NdotL;
-    float3 specular = numerator / max(denominator, 0.001);
+    float3 specular = numerator / max(denominator, 0.000001);
 
     // Diffuse BRDF 
     float3 kS = F;

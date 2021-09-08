@@ -154,7 +154,7 @@ int TestGen(char * File) {
     // head
     strcpy_s(object.Name, "Plane");
     object.NumComponents = 2;
-    object.Position = Vector3(0.4f, 4.4, -5.5f);
+    object.Position = Vector3(0.4f, 4.4f, -5.5f);
     rot.RotationAxis(Vector3(1, 0, 0), 0.5f * 3.14159f);
     object.Rotation = rot;
     object.Scale = Vector3(1, 1, 1);
@@ -194,14 +194,14 @@ int TestGen(char * File) {
     light.MaterialIndex = 0;
     light.ModelIndex = 2;
     light.Color = Vector3(0, 1, 0);
-    light.Intensity = 3;
+    light.Intensity = 0.1f;
     light.Radius = 50;
     light.Type = 0;
     strcpy_s(light.Info.TypeName, "Light");
     // write light1
     WriteFile(hFile, &object, sizeof(ObjectEntry), &write, 0);
     WriteFile(hFile, &light, sizeof(light), &write, 0);
-
+    
     strcpy_s(object.Name, "Light2");
     object.NumComponents = 1;
     object.Position = Vector3(0, 1, 3);
@@ -209,8 +209,8 @@ int TestGen(char * File) {
     object.Scale = Vector3(1, 1, 1);
     light.MaterialIndex = 0;
     light.ModelIndex = 2;
-    light.Color = Vector3(1, 0.8, 0.5);
-    light.Intensity = 1.5;
+    light.Color = Vector3(1, 0.8f, 0.5f);
+    light.Intensity = 0.01f;
     light.Radius = 50;
     light.Type = 1;
     light.Direction = Vector3(1.414f, -1.414f, 0.5);

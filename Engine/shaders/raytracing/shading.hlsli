@@ -201,7 +201,8 @@ float4 ComputeGIProbeTracingRadiance(float3 origin, float3 direction, RayContext
 		float4 direct = ComputeDirectLighting(hit, ray);
 		// multi bounce
 		float4 indirect = ComputeIndirectLighting(hit);
-		return float4(direct.xyz + indirect.xyz, payload.HitDistance);
+		// indirect = 0;
+		return float4(direct.xyz + indirect.xyz * 0.9, payload.HitDistance);
 	}
 }
 

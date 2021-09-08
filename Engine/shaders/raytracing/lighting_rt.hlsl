@@ -28,6 +28,7 @@ void Raygen()
     float4 direct = ComputeDirectLighting(gbuffer, ray);
     // indirect lighting
     float4 indirect = ComputeIndirectLighting(gbuffer);
+    // indirect = 0;
     RenderTarget[DispatchRaysIndex().xy] = direct + indirect;
 }
 

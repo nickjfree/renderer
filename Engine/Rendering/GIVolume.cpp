@@ -21,7 +21,7 @@ GIVolume::GIVolume()
 	giVolume.viewBias = gi_volume_view_bias;
 	giVolume.hysteresis = gi_volume_hysteresis;
 	giVolume.distanceExponent = 50.0f;
-	giVolume.backfaceThreshold = 0.5f;
+	giVolume.backfaceThreshold = 0.2f;
 	giVolume.brightnessThreshold = 10.0f;
 	// set default scale
 	SetScale(Vector3(10, 10, 10));

@@ -26,7 +26,8 @@ int LevelLoader::Update(int ms) {
 	static int flag = 0;
 	ResourceCache* Cache = context->GetSubsystem<ResourceCache>();
 	// String LevelUrl = "Level\\levels\\desktop.level\\0";
-	String LevelUrl = "Level\\levels\\sun_temple.level\\0";
+	// String LevelUrl = "Level\\levels\\sun_temple.level\\0";
+	String LevelUrl = "Level\\levels\\two_rooms.level\\0";
 	if (!flag) {
 		LoadLevel(LevelUrl);
 		flag = 1;
@@ -51,8 +52,7 @@ int LevelLoader::Update(int ms) {
 				//UnloadLevel(LevelUrl);
 			}
 			// end test
-		}
-		else {
+		} else {
 			level->DestroyedFrames++;
 		}
 	}

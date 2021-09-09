@@ -107,8 +107,10 @@ float2 NormalizedOctaCoord(int2 xy)
 {
 	uint texels = GetTexelsNoBorder();
 	float2 coord = float2(xy.x % texels, xy.y % texels);
-	// coord + 0.5 / texels * 2 - 1
-	return (coord * 2.0f + 1.0f) / texels - float2(1, 1);
+	// coord + 0.5 / texels  * 2 - 1
+	coord = (coord + 0.5) / texels;
+	coord *= 2;
+	return  float2(coord.x - 1, 1 - coord.y); // (coord * 2.0f + 1.0f) / texels - float2(1, 1);
 }
 
 // normalized octahedron coord to direction
@@ -128,7 +130,7 @@ float2 DirectionToOctaUV(float3 direction)
 	if (direction.z < 0) {
 		direction.xy = float2(1 - abs(direction.yx)) * sign(direction.xy);
 	}
-	return direction.xy;
+	return float2(direction.x, 1 - direction.y);
 }
 
 float2 GetMapBaseUV(int3 probeCoord)

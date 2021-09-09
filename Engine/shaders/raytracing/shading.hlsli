@@ -195,12 +195,13 @@ float4 ComputeGIProbeTracingRadiance(float3 origin, float3 direction, RayContext
 	TraceShadingRay(origin, direction, payload);
 	if (!payload.Hit) {
 		// not hit
-		return payload.Diffuse;
+		return float4(payload.Diffuse.xyz, 1e9);
 	} else {
 		GBufferContext hit = ShadingPayloadToGBufferContext(payload);
 		float4 direct = ComputeDirectLighting(hit, ray);
 		// multi bounce
 		float4 indirect = ComputeIndirectLighting(hit);
+		indirect = 0;
 		// indirect = 0;
 		return float4(direct.xyz + indirect.xyz * 0.8, payload.HitDistance);
 	}

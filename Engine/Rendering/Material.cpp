@@ -166,7 +166,7 @@ int Material::GetRtShaderBindings(RenderContext* context, R_RAYTRACING_INSTANCE*
 			rtbinding.Slot = MATERIAL_RT_SLOT(texture.slot);
 			rtbinding.ResourceId = texture.resourceId;
 		}
-		instance->ShaderBindings[shaderIndex].NumBindings = index - 1;
+		instance->ShaderBindings[shaderIndex].NumBindings = index;
 		// inc numShaders
 		++instance->NumShaders;
 	}

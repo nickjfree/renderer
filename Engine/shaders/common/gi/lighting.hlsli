@@ -46,17 +46,34 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 
 		uint probeIndex = GetProbeIndex(probeCoord);
 		float probeState = StateMap[GetMapBaseCoord(probeIndex)].x;
-		if (probeState != PROBE_STATE_ACTIVE) {
-		 	continue;
-		}
+
+		// test
+		// if (floor(probePosition.x) != -9) {
+		// 	continue;
+		// }
+
+		// // if (floor(probePosition.y) != 4) {
+		// // 	continue;
+		// // }
+
+		// if (floor(probePosition.z) != -2) {
+		// 	continue;
+		// }
+
+
+		// if (!(floor(probePosition.y) == 5 || floor(probePosition.y) == 4)) {
+		// 	continue;
+		// }
+		// if (probeState != PROBE_STATE_ACTIVE) {
+		// 	continue;
+		// }
 		// weight
 		float weight = 1.0f;
 		// wrap
 		float wrapWeight = (dot(-probeDirection, normal) + 1.f) * 0.5f;
-        weight *= (wrapWeight * wrapWeight) + 0.2f;
+		weight *= (wrapWeight * wrapWeight) + 0.2f;
 		// blend
 		float3 blend = max(0.00001f, lerp(1 - normalizedPosition, normalizedPosition, probeOffset));
-		weight *= (blend.x * blend.y * blend.z);
 		// probe visibility distance
 		float2 visDistance = DistanceMap.SampleLevel(gSamBilinear, uvDistance, 0).xy;
 
@@ -64,25 +81,32 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		if (deltaDistance > 0) {
 			// the point is in shadow, decrease the probe weight
 			float variance = abs(visDistance.x * visDistance.x - visDistance.y);
-			float visWeight = max(0.005f, variance / (deltaDistance * deltaDistance + variance));
+			float visWeight = max(0, variance / (deltaDistance * deltaDistance + variance));
 			weight *= max((visWeight * visWeight * visWeight), 0);
-			// weight *= 0.0001f;
-			// return float3(deltaDistance, 0, weight);
+			// continue;
+			// return float3(weight, deltaDistance, variance);
 		}
- 		const float crushThreshold = 0.2f;
-        if (weight < crushThreshold)
-        {
-            weight *= (weight * weight) * (1.f / (crushThreshold * crushThreshold));
-        }
+		// return float3(probeDirection);
+		const float crushThreshold = 0.2f;
+		if (weight < crushThreshold)
+		{
+			weight *= (weight * weight) * (1.f / (crushThreshold * crushThreshold));
+		}
+		// blend probes
+		weight *= (blend.x * blend.y * blend.z);
 		// ensure weight > 0
-		weight = max(0.0001f, weight);
+		weight = max(0, weight);
+		// return float3(weight, deltaDistance, visDistance.x);
 		// get irradiance
 		float4 irr = IrrandianceMap.SampleLevel(gSamBilinear, uvIrradiance, 0);
 		// irradiance += 1 * weight;
 		irradiance += float4(irr.rgb * weight, weight);
-		// irradiance += float4(abs(deltaDistance)/CBGIVolume.probeGridSpacing * weight, weight);
+		// irradiance += float4(abs(deltaDistance) * weight, weight);
 	}
-	irradiance.rgb *= 1.0f / max(0.000001f, irradiance.w);
+	if (irradiance.w <= 0) {
+		return float3(0, 0, 0);
+	}
+	irradiance.rgb *= 1.0f / irradiance.w;
 	// return float4(probeBase, 0);
 	return irradiance.rgb * volumeWeight;
 }

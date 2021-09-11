@@ -4,7 +4,7 @@
   <textures>
     <texture unit="MATERIAL_DIFFUSE" name="diffuse" url="Texture\textures\ground_diffuse.dds\0">diffuse_color</texture>
     <texture unit="MATERIAL_NORMAL" name="normal" url="Texture\textures\ground_normal.dds\0">normal_map</texture>
-    <texture unit="MATERIAL_SPECULAR" name="specular" url="Texture\textures\ground_specular.dds\0">specular_map</texture>
+    <texture unit="MATERIAL_SPECULAR" name="specular" url="Texture\textures\resistor_s.dds\0">specular_map</texture>
   </textures> 
   
   <shader name="Basic" url="Shader\shaders\Instance\0"></shader>

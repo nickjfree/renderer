@@ -130,7 +130,7 @@ float2 DirectionToOctaUV(float3 direction)
 	if (direction.z < 0) {
 		direction.xy = float2(1 - abs(direction.yx)) * sign(direction.xy);
 	}
-	return float2(direction.x, 1 - direction.y);
+	return float2(direction.x, -direction.y);
 }
 
 float2 GetMapBaseUV(int3 probeCoord)

@@ -183,7 +183,7 @@ float4 ComputeIndirectLighting(GBufferContext gbuffer)
 	float3 bias = CBGIVolume.normalBias * normal + CBGIVolume.viewBias * gbuffer.WorldSpaceLookVector;
 	float3 irradiance = GetGIIrradiance(position, normal, bias);
 	// diffuse lighting
-	float3 diffuse = irradiance * gbuffer.Diffuse.rgb;
+	float3 diffuse = irradiance * gbuffer.Diffuse.rgb * 1.0f / PI;
 	// no diffuse for metalic materials
 	diffuse = lerp(diffuse, 0, gbuffer.Metallic);
 	return float4(diffuse, 0);

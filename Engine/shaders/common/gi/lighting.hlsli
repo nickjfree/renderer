@@ -107,6 +107,7 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		return float3(0, 0, 0);
 	}
 	irradiance.rgb *= 1.0f / irradiance.w;
+	irradiance *= 2 * PI;
 	// return float4(probeBase, 0);
 	return irradiance.rgb * volumeWeight;
 }

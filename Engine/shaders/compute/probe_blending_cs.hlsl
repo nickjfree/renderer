@@ -83,7 +83,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	}
 #ifdef BLEND_IRRADIANCE
-	result.xyz *= 1.0f / max(0.00001, result.w);
+	result.xyz *= 1.0f / (2 * max(0.00001, result.w));
 
 	// smoth the irradiance change
 	float3 delta = (result.xyz - previous.xyz);

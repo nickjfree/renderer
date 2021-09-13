@@ -64,9 +64,9 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		// if (!(floor(probePosition.y) == 5 || floor(probePosition.y) == 4)) {
 		// 	continue;
 		// }
-		// if (probeState != PROBE_STATE_ACTIVE) {
-		// 	continue;
-		// }
+		if (probeState != PROBE_STATE_ACTIVE) {
+			continue;
+		}
 		// weight
 		float weight = 1.0f;
 		// wrap

@@ -17,7 +17,7 @@
 //float       giPad;
 //float4x4    rayRotation;
 
-constexpr float gi_volume_probe_spacing = 1.5;
+constexpr float gi_volume_probe_spacing = 2;
 constexpr int gi_volume_probe_num_rays = 144;
 constexpr int gi_volume_probe_ray_distance = 1000;
 constexpr int gi_volume_probe_irradiance_texels = 8;

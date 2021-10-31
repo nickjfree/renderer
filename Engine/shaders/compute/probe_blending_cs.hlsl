@@ -52,7 +52,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 	float4 result = float4(0, 0, 0, 0);
 
 	float  hysteresis = CBGIVolume.hysteresis;
-    float4 previous = Output[targetCoord.xy];
+	float4 previous = Output[targetCoord.xy];
 
 	for (i = 0; i < RAYS_PER_PROBE; ++i) {
 
@@ -60,13 +60,13 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 		// ignore backface		
 		if (dist < 0.f)
-        {
-        	// Output[targetCoord.xy] = float4(1, 0, 0, 0);
-        	// return;
-            continue;
-        }
+		{
+			// Output[targetCoord.xy] = float4(1, 0, 0, 0);
+			// return;
+			continue;
+		}
 
-        float3 rayDirection = rayDirections[i];
+		float3 rayDirection = rayDirections[i];
 		float weight = max(0, dot(otcaDirection, rayDirection));
 
 #ifdef BLEND_IRRADIANCE
@@ -74,7 +74,7 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 		result += float4(irradiance * weight, weight);
 #else
 		// filter distance
-	    float maxDistance = length(CBGIVolume.probeGridSpacing) * 0.75f;
+		float maxDistance = length(CBGIVolume.probeGridSpacing) * 0.75f;
 		dist = min(abs(dist), maxDistance);
 		weight = pow(weight, CBGIVolume.distanceExponent);
 		result += float4(dist * weight, dist * dist * weight, 0, weight);
@@ -87,10 +87,10 @@ void CSMain(uint3 groupId : SV_GroupId, uint3 threadId : SV_GroupThreadID)
 
 	// smoth the irradiance change
 	float3 delta = (result.xyz - previous.xyz);
-    if (length(delta) > CBGIVolume.brightnessThreshold)
-    {
-        result.xyz = previous.xyz + (delta * 0.25f);
-    }
+	if (length(delta) > CBGIVolume.brightnessThreshold)
+	{
+		result.xyz = previous.xyz + (delta * 0.25f);
+	}
 
 	float4 output = float4(lerp(result.xyz, previous.xyz, hysteresis), 1);
 #else

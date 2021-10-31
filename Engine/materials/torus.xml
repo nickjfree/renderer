@@ -2,7 +2,7 @@
 <?xml version="1.0"?>
 <material>
   <textures>
-    <texture unit="MATERIAL_DIFFUSE" name="usbdrive_diffuse" url="Texture\textures\ground_d.dds\0">usbdrive_diffuse</texture>
+        <texture unit="MATERIAL_DIFFUSE" name="usbdrive_diffuse" url="Texture\textures\ground_d.dds\0">usbdrive_diffuse</texture>
     <texture unit="MATERIAL_NORMAL" name="usbdrive_normal" url="Texture\textures\ground_n.dds\0">usbdrive_normal</texture>
     <texture unit="MATERIAL_SPECULAR" name="usbdrive_normal" url="Texture\textures\ground_s.dds\0">sks_normal</texture>
   </textures> 

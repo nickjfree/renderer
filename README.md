@@ -13,4 +13,4 @@ A  simple 3d renderer with raytracing
 # Images
 ![gi][gi]
 
-[home]: engine/gi.png
+[gi]: engine/gi.png

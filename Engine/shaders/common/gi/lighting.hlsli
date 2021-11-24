@@ -23,7 +23,7 @@ bool IsDebugPosition(float3 position)
 
 bool IsDebugProb1(float3 position)
 {
-	return floor(position.x) == -4 && floor(position.y) == 2 && floor(position.z) == 12;
+	return floor(position.x) == -4 && floor(position.y) == 0 && floor(position.z) == 0;
 }
 
 bool IsDebugProb2(float3 position)
@@ -81,10 +81,9 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		uint probeIndex = GetProbeIndex(probeCoord);
 		float probeState = StateMap[GetMapBaseCoord(probeIndex)].x;
 
-		// if (IsDebugProb1(probePosition) || IsDebugProb2(probePosition)) {
+		// if (!IsDebugProb1(probePosition)) {
 		// 	continue;
 		// }
-
 
 		if (probeState != PROBE_STATE_ACTIVE) {
 			continue;
@@ -94,9 +93,6 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		// wrap
 		float wrapWeight = (dot(-probeDirection, normal) + 1.f) * 0.5f;
 		weight *= (wrapWeight * wrapWeight) + 0.2f;
-
-		// float wrapWeight = max(dot(-probeDirection, normal), 0); 
-		// weight *= (wrapWeight * wrapWeight);
 		// blend
 		float3 blend = max(0.001f, lerp(1 - normalizedPosition, normalizedPosition, probeOffset));
 		// probe visibility distance
@@ -110,8 +106,6 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 			variance = abs(visDistance.x * visDistance.x - visDistance.y);
 			visWeight = variance / (deltaDistance * deltaDistance + variance);
 			visWeight = max((visWeight * visWeight * visWeight), 0);
-			// weight = 0;
-			// continue;
 		}
 		weight *= max(0.0f, visWeight);
 
@@ -132,9 +126,10 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		numProbes += 1;
 
 		// if (IsDebugProb1(probePosition)) {
-		// 	debugValues.x = visDistance.x;
-		// 	debugValues.y = deltaDistance;
-		// 	debugValues.z = variance;
+		// 	debugValues.x = blend.z * blend.z;
+		// 	debugValues.y = blend.z * blend.z;
+		// 	debugValues.z = blend.z * blend.z;
+		// 	return debugValues;
 		// }
 		// if (IsDebugProb3(probePosition)) {
 		// 	visWeight *= 1000;

@@ -1,15 +1,16 @@
 # renderer
-A  simple 3d renderer
+A  simple 3d renderer with raytracing
 
 * Entity component System
 * Multithreaded Task
 * Physics Based Rendering
-* Simple Shadow maps
+* Raytraced Shadows
 * SSAO
 * HDR pipline
-* Unreal like IBL
+* DDGI
 
 
-# demo
+# Images
+![gi][gi]
 
-
+[home]: engine/gi.png

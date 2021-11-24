@@ -251,7 +251,11 @@ class Material(object):
 '''
 
         # find texture names
-        textures = {}
+        textures = {
+            "diffuse": "empty",
+            "specular": "empty",
+            "normal": "empty",
+        }
         for link in self.mat.node_tree.links:
 
             if link.to_node.type not in ["BSDF_PRINCIPLED", "NORMAL_MAP"]:
@@ -395,7 +399,7 @@ class Scene(object):
 
         for mesh in bpy.data.meshes:
             # export mesh to h3d files
-            # export_mesh(mesh)
+            export_mesh(mesh)
             # write mesh entry
             mesh_url = "Mesh\\%s.pack\\%s\\0" % (scene_name, mesh.name)
             file.write(self.pack_mesh(mesh_url))
@@ -508,7 +512,7 @@ class Scene(object):
 def export_scene():
     
     s = Scene()
-    s.export("sun_temple")
+    s.export("city")
 
 
 

@@ -3,15 +3,12 @@
 
 USING_ALLOCATER(GIVolume);
 
-
-
-
 GIVolume::GIVolume()
 {
 	Type = Node::GIVOLUME;
 	giVolume.numRaysPerProbe = gi_volume_probe_num_rays;
 	giVolume.origin = {};
-	giVolume.probeGridSpacing = { 4, 2, 4 };
+	giVolume.probeGridSpacing = { 2, 2, 2 };
 	giVolume.probeGridCounts = { 1, 1, 1 };
 	giVolume.probeMaxRayDistance = gi_volume_probe_ray_distance;
 	giVolume.probeNumIrradianceTexels = gi_volume_probe_irradiance_texels;
@@ -24,7 +21,7 @@ GIVolume::GIVolume()
 	giVolume.backfaceThreshold = 0.2f;
 	giVolume.brightnessThreshold = 10.0f;
 	// set default scale
-	SetScale(Vector3(16, 10, 16));
+	SetScale(Vector3(64, 4, 64));
 }
 
 

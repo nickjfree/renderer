@@ -8,7 +8,7 @@ GIVolume::GIVolume()
 	Type = Node::GIVOLUME;
 	giVolume.numRaysPerProbe = gi_volume_probe_num_rays;
 	giVolume.origin = {};
-	giVolume.probeGridSpacing = { 2, 2, 2 };
+	giVolume.probeGridSpacing = { 1, 2, 1 };
 	giVolume.probeGridCounts = { 1, 1, 1 };
 	giVolume.probeMaxRayDistance = gi_volume_probe_ray_distance;
 	giVolume.probeNumIrradianceTexels = gi_volume_probe_irradiance_texels;
@@ -20,8 +20,9 @@ GIVolume::GIVolume()
 	giVolume.distanceExponent = 50.0f;
 	giVolume.backfaceThreshold = 0.2f;
 	giVolume.brightnessThreshold = 10.0f;
+	giVolume.minFrontfaceDistance = 0.3f;
 	// set default scale
-	SetScale(Vector3(64, 4, 64));
+	SetScale(Vector3(32, 10, 32));
 }
 
 
@@ -144,7 +145,7 @@ void GIVolume::createResources(RenderContext* renderContext)
 	// state map
 	desc.Width = numPlanes * giVolume.probeGridCounts.x;
 	desc.Height = giVolume.probeGridCounts.z;
-	desc.Format = FORMAT_R16_FLOAT;
+	desc.Format = FORMAT_R16G16B16A16_FLOAT;
 	desc.DebugName = L"gi-state-map";
 	stateMap = renderInterface->CreateTexture2D(&desc);
 }

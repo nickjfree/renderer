@@ -68,9 +68,15 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		int3 probeOffset = int3(i, i >> 1, i >>2) & int3(1, 1, 1);
 		// probe coord
 		int3 probeCoord = probeBase + probeOffset;
+		// probe state
+		uint probeIndex = GetProbeIndex(probeCoord);
+		float4 probeState = StateMap[GetMapBaseCoord(probeIndex)];
 		// to probe distance
 		float3 probePosition = probeBasePosition + probeOffset * CBGIVolume.probeGridSpacing;
-		float3 probeToPoint = biasedPosition - probePosition;
+		// apply probe relocation
+		float3 relocatedProbePosition = probePosition + probeState.xyz;
+
+		float3 probeToPoint = biasedPosition - relocatedProbePosition;
 		float pointDistance = length(probeToPoint);	
 		// probe direction
 		float3 probeDirection = normalize(probeToPoint);	
@@ -78,14 +84,11 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		float2 uvIrradiance = GetIrrandianceMapUV(probeCoord, normal);
 		float2 uvDistance = GetDistanceMapUV(probeCoord, normalize(probeDirection));
 
-		uint probeIndex = GetProbeIndex(probeCoord);
-		float probeState = StateMap[GetMapBaseCoord(probeIndex)].x;
-
 		// if (!IsDebugProb1(probePosition)) {
 		// 	continue;
 		// }
 
-		if (probeState != PROBE_STATE_ACTIVE) {
+		if (probeState.a != PROBE_STATE_ACTIVE) {
 			continue;
 		}
 		// weight

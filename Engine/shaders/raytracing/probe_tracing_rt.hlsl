@@ -26,6 +26,9 @@ void Raygen()
     float3 direction = SphericalFibonacci(rayIndex, CBGIVolume.numRaysPerProbe);
     direction.xyz = mul(float4(direction.xyz, 0), CBGIVolume.rayRotation).xyz;
     float3 position = GetProbePosition(probeIndex);
+    // relocate probe by offset
+    float4 probeState = StateMap[GetMapBaseCoord(probeIndex)];
+    position += probeState.xyz;
     // seed
     RayContext ray;
     ray.Seed = RandInit(linearIndex, gFrameNumber);

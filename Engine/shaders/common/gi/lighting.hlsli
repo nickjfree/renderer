@@ -16,19 +16,19 @@ Texture2D StateMap : register(t6);
 
 bool IsDebugPosition(float3 position)
 {
-	return (position.x >= -4 && position.x <= -2  &&
-		position.y >= 2 && position.y <= 4 &&
-		position.z >= 12 && position.z <= 14);
+	return (position.x >= -10 && position.x <= -8  &&
+		position.y >= 0 && position.y <= 1 &&
+		position.z >= -10 && position.z <= -8);
 }
 
 bool IsDebugProb1(float3 position)
 {
-	return floor(position.x) == -4 && floor(position.y) == 0 && floor(position.z) == 0;
+	return floor(position.x) == -10 && floor(position.y) == 0 && floor(position.z) == -10;
 }
 
 bool IsDebugProb2(float3 position)
 {
-	return floor(position.x) == -4 && floor(position.y) == 2 && floor(position.z) == 14;
+	return floor(position.x) == -10 && floor(position.y) == 1 && floor(position.z) == -10;
 }
 
 bool IsDebugProb3(float3 position)
@@ -88,7 +88,11 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		// 	continue;
 		// }
 
-		if (probeState.a != PROBE_STATE_ACTIVE) {
+		// if (IsDebugProb2(probePosition)) {
+		// 	return relocatedProbePosition;
+		// }
+
+		if (probeState.a == PROBE_STATE_INACTIVE) {
 			continue;
 		}
 		// weight
@@ -129,9 +133,7 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 		numProbes += 1;
 
 		// if (IsDebugProb1(probePosition)) {
-		// 	debugValues.x = blend.z * blend.z;
-		// 	debugValues.y = blend.z * blend.z;
-		// 	debugValues.z = blend.z * blend.z;
+		// 	debugValues = relocatedProbePosition;
 		// 	return debugValues;
 		// }
 		// if (IsDebugProb3(probePosition)) {
@@ -149,7 +151,7 @@ float3 GetGIIrradiance(float3 position, float3 normal, float3 bias)
 
 	}
 	// if (IsDebugPosition(position)) {
-	// 	return float3(numProbes, irradiance.w, 0);
+	// 	return float3(numProbes, accumulatedWeights, 0);
 	// }
 	if (accumulatedWeights == 0.0f) {
 		return float3(0, 0, 0);

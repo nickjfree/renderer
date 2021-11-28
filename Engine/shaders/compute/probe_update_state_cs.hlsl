@@ -77,11 +77,13 @@ void CSMain(uint3 threadId : SV_DispatchThreadID)
 			float3 offset = farthestFrontfaceDirection * min(1, farthestFrontfaceDistance - CBGIVolume.minFrontfaceDistance);
 			fullOffset += offset;
 		}
+		status = 0.1;
 	} else if (closestFrontfaceDistance > CBGIVolume.minFrontfaceDistance) {
 		// probe isn't near anythong, move it back
 		float moveBackMargin = min(closestFrontfaceDistance - CBGIVolume.minFrontfaceDistance, length(fullOffset));
         float3 moveBackDirection = normalize(-fullOffset);
         fullOffset += (moveBackMargin * moveBackDirection);
+        status = 0.2;
 	}
 	// limit offset
 	float3 normalizedOffset = fullOffset / CBGIVolume.probeGridSpacing;
@@ -91,4 +93,5 @@ void CSMain(uint3 threadId : SV_DispatchThreadID)
     }
 
 	Output[threadId.xy] = float4(newOffset, status);
+	// Output[threadId.xy] = float4(0, 0, 0, status);
 }

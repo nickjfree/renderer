@@ -13,4 +13,4 @@ A  simple 3d renderer with raytracing
 # Images
 ![gi][gi]
 
-[gi]: http://git.utty.cn:13000/nick12/renderer/raw/branch/master/Engine/gi.png
+[gi]: https://github.com/nickjfree/renderer/blob/master/Engine/gi.png
